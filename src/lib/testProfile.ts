@@ -20,6 +20,7 @@ export const TEST_PROFILE: FullProfile = {
     addressLine1: '128 Maple Street',
     addressLine2: 'Apt 4B',
     city: 'Austin',
+    county: 'Travis County',
     state: 'TX',
     zipCode: '78701',
     country: 'United States',

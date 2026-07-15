@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.2.1
+- Precision from a real live Workday capture: exclude page-chrome comboboxes (language /
+  settings header menus) and anonymous framework helper inputs (hidden combobox
+  value-holders) from detection. Real "My Information" coverage 17/27 → 17/20.
+- New fields: Suffix, County (appear on Workday) — resolved + fillable.
+- Added the live Workday "My Information" capture as a regression fixture.
+
 ## 0.2.0
 - **Multi-row sections:** clicks "Add another" to create a row for every Work Experience
   and Education entry (Workday + Greenhouse), then fills each.
