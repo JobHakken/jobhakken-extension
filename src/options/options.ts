@@ -2,7 +2,7 @@ import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type Full
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
-import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadFullProfile, saveFullProfile } from '../lib/profileStore.js';
+import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadFillSensitive, loadFullProfile, saveFillSensitive, saveFullProfile } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -216,6 +216,9 @@ function renderAll() {
   fp.education ??= [];
   fp.rules ??= [];
   renderAll();
+  const sensitiveToggle = $('fillSensitive') as HTMLInputElement;
+  sensitiveToggle.checked = await loadFillSensitive();
+  sensitiveToggle.addEventListener('change', () => void saveFillSensitive(sensitiveToggle.checked));
   const conn = await loadConnection();
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;

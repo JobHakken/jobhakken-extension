@@ -2,7 +2,7 @@ import { autofillForm, deriveFullProfile, detectFields, type FullProfile } from 
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadFullProfile } from '../lib/profileStore.js';
+import { loadFillSensitive, loadFullProfile } from '../lib/profileStore.js';
 import { mountPanel } from './panel.js';
 
 /**
@@ -35,7 +35,8 @@ function updateBadge(): void {
 async function runAutofill(): Promise<{ filled: number; review: number; total: number } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
-  const report = autofillForm({ root: document, profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules });
+  const fillSensitive = await loadFillSensitive();
+  const report = autofillForm({ root: document, profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive });
   return { filled: report.filled, review: report.review, total: report.total };
 }
 

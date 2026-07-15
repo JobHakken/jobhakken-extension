@@ -17,6 +17,18 @@ export async function loadFullProfile(): Promise<FullProfile | null> {
   return (got[KEY] as FullProfile | undefined) ?? null;
 }
 
+// Whether to autofill sensitive fields (EEO/salary/visa). Default ON — nothing is
+// ever auto-submitted, so the user reviews on the page.
+const SENSITIVE_KEY = 'f2a_fill_sensitive';
+export async function loadFillSensitive(): Promise<boolean> {
+  const got = await chrome.storage.local.get(SENSITIVE_KEY);
+  const v = got[SENSITIVE_KEY];
+  return v === undefined ? true : !!v;
+}
+export async function saveFillSensitive(v: boolean): Promise<void> {
+  await chrome.storage.local.set({ [SENSITIVE_KEY]: v });
+}
+
 export type FieldDef = { key: ProfileKey; label: string; type?: 'text' | 'textarea'; sensitive?: boolean };
 
 /** Personal-tab single fields (order = display order). */
