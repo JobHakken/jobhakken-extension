@@ -67,14 +67,33 @@ async function uploadDocuments(): Promise<number> {
   const inputs = detectFileInputs(document).filter((f) => f.kind === 'resume' || f.kind === 'coverLetter');
   if (!inputs.length) return 0;
   const testMode = await loadTestMode();
-  const files: { resume?: File; coverLetter?: File } = testMode ? { resume: dummyResumeFile(), coverLetter: dummyCoverLetterFile() } : {};
-  // TODO: real files from the desktop bridge (latest generated résumé + cover letter)
+  const files: { resume?: File; coverLetter?: File } = testMode
+    ? { resume: dummyResumeFile(), coverLetter: dummyCoverLetterFile() }
+    : await realDocuments();
   let n = 0;
   for (const f of inputs) {
     const file = f.kind === 'coverLetter' ? files.coverLetter : files.resume;
     if (file && setInputFile(f.el, file)) n++;
   }
   return n;
+}
+
+/** Decode base64 → a File (for the résumé PDF the desktop app renders). */
+function base64ToFile(base64: string, name: string, type: string): File {
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  return new File([bytes], name, { type });
+}
+
+/** The real résumé (latest saved), rendered to PDF by the connected desktop app. */
+async function realDocuments(): Promise<{ resume?: File }> {
+  if (!connection) return {};
+  try {
+    const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, 'resumeFile', {});
+    if (r?.base64) return { resume: base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf') };
+  } catch {
+    /* no résumé saved, or rendering unavailable — skip upload */
+  }
+  return {};
 }
 
 function triggerDownload(name: string, content: string, type: string): void {
