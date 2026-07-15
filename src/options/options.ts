@@ -2,7 +2,7 @@ import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type Full
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
-import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadFillSensitive, loadFullProfile, loadTestMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
+import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -242,6 +242,9 @@ function renderAll() {
       ? '<span class="ok">🧪 Test mode on — autofilling anonymous dummy data</span>'
       : '';
   });
+  const captureToggle = $('captureMode') as HTMLInputElement;
+  captureToggle.checked = await loadCaptureMode();
+  captureToggle.addEventListener('change', () => void saveCaptureMode(captureToggle.checked));
   const conn = await loadConnection();
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;

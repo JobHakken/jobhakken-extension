@@ -1,8 +1,8 @@
-import { autofillForm, autofillInteractive, deriveFullProfile, detectFields, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFields, readLazyOptions, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { mountPanel } from './panel.js';
 
@@ -15,6 +15,7 @@ import { mountPanel } from './panel.js';
 let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
 let testMode = false;
+let captureMode = false;
 let fieldCount = 0;
 
 function mode(): 'connected' | 'standalone' | 'none' {
@@ -51,6 +52,45 @@ async function runAutofill(): Promise<{ filled: number; review: number; total: n
   return { filled: report.filled + live.comboboxes + live.dates, review: report.review, total: report.total };
 }
 
+function triggerDownload(name: string, content: string, type: string): void {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/**
+ * Capture the current page as a clean, PII-free fixture + a coverage report (what the
+ * generic engine resolved vs. couldn't). Site-agnostic. Opens each combobox first so the
+ * saved fixture includes the real options. Downloads two files and returns a summary.
+ */
+async function capturePage(): Promise<{ total: number; resolved: number; unresolved: number; unresolvedLabels: string[] } | null> {
+  try {
+    // open every lazy combobox so its options render into the DOM we serialize
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('[role="combobox"], [aria-haspopup="listbox"]'))) {
+      await readLazyOptions(el, 400);
+    }
+    const report: CoverageReport = captureCoverage(document, { url: location.href });
+    // scrub the user's own profile values from the saved HTML (belt-and-suspenders;
+    // in test mode the page holds only dummy data anyway)
+    const fp = await loadFullProfile();
+    const scrub = Object.values(fp?.profile ?? {}).filter((v): v is string => typeof v === 'string');
+    const html = cleanClone(document.documentElement, scrub);
+    const host = location.hostname.replace(/^www\./, '').split('.')[0] || 'page';
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    triggerDownload(`${host}-${stamp}.html`, html, 'text/html');
+    triggerDownload(`${host}-${stamp}.coverage.json`, JSON.stringify(report, null, 2), 'application/json');
+    return { total: report.total, resolved: report.resolved, unresolved: report.unresolved, unresolvedLabels: report.unresolvedLabels };
+  } catch (e) {
+    void e;
+    return null;
+  }
+}
+
 /** Best-effort "this job" from the page for the AI actions (rough JD extraction). */
 function pageJob() {
   return {
@@ -80,20 +120,22 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
+  captureMode = await loadCaptureMode();
   updateBadge();
 
-  // Reflect test-mode changes from the options page without a reload.
+  // Reflect test/capture-mode changes from the options page without a reload.
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && 'f2a_test_mode' in changes) {
-      testMode = !!changes['f2a_test_mode'].newValue;
-      panel.update();
-    }
+    if (area !== 'local') return;
+    if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
+    if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
+    panel.update();
   });
 
   const panel = mountPanel({
-    getState: () => ({ mode: mode(), fields: fieldCount, testMode }),
+    getState: () => ({ mode: mode(), fields: fieldCount, testMode, captureMode }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
+    onCapture: capturePage,
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
 

@@ -40,6 +40,17 @@ export async function saveTestMode(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [TEST_MODE_KEY]: v });
 }
 
+// Capture mode (developer): shows a "Capture fixture" button that saves a clean,
+// PII-scrubbed snapshot of the current page + a resolved/unresolved coverage report.
+const CAPTURE_MODE_KEY = 'f2a_capture_mode';
+export async function loadCaptureMode(): Promise<boolean> {
+  const got = await chrome.storage.local.get(CAPTURE_MODE_KEY);
+  return !!got[CAPTURE_MODE_KEY];
+}
+export async function saveCaptureMode(v: boolean): Promise<void> {
+  await chrome.storage.local.set({ [CAPTURE_MODE_KEY]: v });
+}
+
 export type FieldDef = { key: ProfileKey; label: string; type?: 'text' | 'textarea'; sensitive?: boolean };
 
 /** Personal-tab single fields (order = display order). */

@@ -4,12 +4,13 @@
  * passed as callbacks. Collapses to a small bubble.
  */
 
-export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number; testMode?: boolean };
+export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number; testMode?: boolean; captureMode?: boolean };
 
 export type PanelDeps = {
   getState: () => PanelState;
   onAutofill: () => Promise<{ filled: number; review: number; total: number } | null>;
   onAnalyze: () => Promise<{ ats?: number | null; visa?: string; error?: string } | null>;
+  onCapture: () => Promise<{ total: number; resolved: number; unresolved: number; unresolvedLabels: string[] } | null>;
   onOpenOptions: () => void;
 };
 
@@ -74,6 +75,10 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
             </div>
             <div class="note" id="aiNote">Connect the desktop app (Options) to unlock ATS match, visa signal &amp; a tailored résumé.</div>
           </div>
+          <div class="row hidden" id="captureRow">
+            <button class="btn ghost" id="capture">📸 Capture fixture (dev)</button>
+            <div class="sub" id="captureResult"></div>
+          </div>
           <div class="sub" id="modeNote"></div>
         </div>
       </div>
@@ -121,6 +126,23 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     }
   });
 
+  const captureBtn = $('capture') as HTMLButtonElement;
+  captureBtn.addEventListener('click', async () => {
+    captureBtn.disabled = true;
+    captureBtn.textContent = 'Capturing…';
+    const r = await deps.onCapture();
+    captureBtn.disabled = false;
+    captureBtn.textContent = '📸 Capture fixture (dev)';
+    if (!r) {
+      $('captureResult').textContent = 'Capture failed.';
+    } else {
+      const miss = r.unresolvedLabels.slice(0, 3).join(', ');
+      $('captureResult').innerHTML =
+        `Saved fixture + coverage. Resolved <b>${r.resolved}/${r.total}</b>.` +
+        (r.unresolved ? `<br>${r.unresolved} to teach${miss ? `: ${miss}${r.unresolvedLabels.length > 3 ? '…' : ''}` : ''}` : '');
+    }
+  });
+
   $('modeNote').addEventListener('click', () => {}); // reserved
   const openOptions = () => deps.onOpenOptions();
   $('aiNote').addEventListener('click', openOptions);
@@ -131,6 +153,7 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     ($('bubbleCount') as HTMLElement).textContent = String(s.fields);
     $('testbar').classList.toggle('hidden', !s.testMode);
     bubble.classList.toggle('test', !!s.testMode);
+    $('captureRow').classList.toggle('hidden', !s.captureMode);
     const dot = $('dot');
     dot.className = `dot ${s.mode}`;
     dot.title = s.mode === 'connected' ? 'Connected to desktop app' : s.mode === 'standalone' ? 'Standalone (local profile)' : 'No profile set';

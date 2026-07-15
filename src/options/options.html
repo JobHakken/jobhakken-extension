@@ -84,6 +84,10 @@
         <label><input type="checkbox" id="testMode" /> <b>🧪 Test mode — fill anonymous dummy data</b></label><br />
         Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely test on live application pages without exposing anything. The on-page panel shows a <b>TEST DATA</b> banner while this is on. Turn off before real applications.
       </p>
+      <p class="note">
+        <label><input type="checkbox" id="captureMode" /> <b>📸 Capture mode (developer)</b></label><br />
+        Adds a <b>Capture fixture</b> button to the on-page panel. It opens every dropdown to grab its options, then downloads a clean, PII-scrubbed HTML snapshot + a coverage report (which fields the engine mapped vs. couldn't) — so any ATS page becomes a test fixture in one click.
+      </p>
       <p class="note">Connect to the running First2Apply desktop app for AI (ATS match, visa signal, tailored résumé) and one-click résumé import.</p>
       <div class="f"><label for="token">Connection token</label><input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" /></div>
       <div class="bar" style="position:static;border:none;margin-top:12px;padding:0;">
