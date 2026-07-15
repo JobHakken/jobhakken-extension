@@ -1,0 +1,32 @@
+%PDF-1.4
+1 0 obj
+<</Type/Catalog/Pages 2 0 R>>
+endobj
+2 0 obj
+<</Type/Pages/Kids[3 0 R]/Count 1>>
+endobj
+3 0 obj
+<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>
+endobj
+4 0 obj
+<</Length 917>>
+stream
+BT /F1 16 Tf 50 760 Td 20 TL (Jordan Rivera - Resume \(TEST DATA - do not submit\)) Tj /F1 11 Tf 0 -28 Td 15 TL (Senior Engineer | jordan.rivera@example.com | \(555\) 010-0134 | Austin, TX) Tj T* (linkedin.com/in/jordan-rivera  |  github.com/jordan-rivera) Tj T* () Tj T* (EXPERIENCE) Tj T* (Globex Corp - Senior Engineer \(Jun 2021 - Present\)) Tj T* (  - Led the migration to microservices, cutting p95 latency by 40%.) Tj T* (  - Mentored five engineers and owned the on-call rotation.) Tj T* (Initech - Software Engineer \(Jan 2019 - May 2021\)) Tj T* (  - Built the billing service that grew to $2M ARR.) Tj T* (Umbrella Systems - Junior Engineer \(Jun 2017 - Dec 2018\)) Tj T* (  - Automated the release pipeline, cutting deploy time in half.) Tj T* () Tj T* (EDUCATION) Tj T* (State University - M.S. Computer Science \(2022 - 2024\)) Tj T* (City College - B.S. Electrical Engineering \(2016 - 2020\)) Tj T* ET
+endstream
+endobj
+5 0 obj
+<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000054 00000 n 
+0000000105 00000 n 
+0000000217 00000 n 
+0000001183 00000 n 
+trailer
+<</Size 6/Root 1 0 R>>
+startxref
+1246
+%%EOF
