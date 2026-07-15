@@ -245,6 +245,7 @@ function renderAll() {
   const captureToggle = $('captureMode') as HTMLInputElement;
   captureToggle.checked = await loadCaptureMode();
   captureToggle.addEventListener('change', () => void saveCaptureMode(captureToggle.checked));
+  $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
   const conn = await loadConnection();
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;

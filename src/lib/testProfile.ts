@@ -64,10 +64,17 @@ export const TEST_PROFILE: FullProfile = {
       period: 'Jan 2019 - May 2021',
       highlights: ['Built the billing service that grew to $2M ARR.'],
     },
+    {
+      company: 'Umbrella Systems',
+      position: 'Junior Engineer',
+      period: 'Jun 2017 - Dec 2018',
+      highlights: ['Automated the release pipeline, cutting deploy time in half.'],
+    },
   ],
   education: [
     { school: 'State University', degree: 'Masters', fieldOfStudy: 'Computer Science', period: '2022 - 2024' },
     { school: 'City College', degree: 'Bachelors', fieldOfStudy: 'Electrical Engineering', period: '2016 - 2020' },
+    { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: '2012 - 2016' },
   ],
   rules: [{ condition: '(how did you hear)', value: 'LinkedIn' }],
 };

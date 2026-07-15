@@ -7,6 +7,7 @@
 export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number; testMode?: boolean; captureMode?: boolean };
 
 export type PanelDeps = {
+  version?: string;
   getState: () => PanelState;
   onAutofill: () => Promise<{ filled: number; review: number; total: number } | null>;
   onAnalyze: () => Promise<{ ats?: number | null; visa?: string; error?: string } | null>;
@@ -23,6 +24,7 @@ const STYLE = `
 .hd { display:flex; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid #e3e6ec; }
 .mark { width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#5457d6,#0f9d6b);display:grid;place-items:center;color:#fff;font-size:12px; }
 .nm { font-weight:700; font-size:13.5px; letter-spacing:-.01em; }
+.ver { font-size:10px; color:#9aa1ac; font-weight:600; }
 .dot { width:7px;height:7px;border-radius:50%; margin-left:auto; }
 .dot.connected{background:#0f9d6b;box-shadow:0 0 0 3px #0f9d6b22;}
 .dot.standalone{background:#5457d6;box-shadow:0 0 0 3px #5457d622;}
@@ -61,6 +63,7 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
         <div class="testbar hidden" id="testbar"><span class="d"></span>TEST DATA — filling anonymous dummy values</div>
         <div class="hd">
           <span class="mark">⚡</span><span class="nm">First2Apply</span>
+          <span class="ver" id="ver">${deps.version ? `v${deps.version}` : ''}</span>
           <span class="dot none" id="dot" title=""></span>
           <button class="x" id="collapse" title="Collapse">–</button>
         </div>

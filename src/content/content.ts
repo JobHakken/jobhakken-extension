@@ -1,8 +1,9 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFields, readLazyOptions, type CoverageReport, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { mountPanel } from './panel.js';
 
@@ -45,11 +46,35 @@ async function runAutofill(): Promise<{ filled: number; review: number; total: n
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
   const common = { profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive };
+  // 1) grow repeated sections so there's a row per role/school ("Add another")
+  await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
+  // 2) synchronous fill (text/select/radio + multi-row groups)
   const report = autofillForm({ root: document, ...common });
-  // second, async pass for widgets that only fill through live interaction
-  // (Workday lazy comboboxes + Month/Day/Year date pickers)
+  // 3) async pass for widgets that only fill through live interaction
+  //    (Workday lazy comboboxes + Month/Day/Year date pickers)
   const live = await autofillInteractive({ root: document, ...common });
-  return { filled: report.filled + live.comboboxes + live.dates, review: report.review, total: report.total };
+  // 4) résumé / cover-letter upload
+  const uploaded = await uploadDocuments();
+  return { filled: report.filled + live.comboboxes + live.dates + uploaded, review: report.review, total: report.total };
+}
+
+/**
+ * Attach the résumé / cover letter to the page's file inputs. Test mode uses bundled
+ * dummy PDFs; otherwise (future) the latest generated docs from the connected desktop
+ * app. Only résumé/cover-letter inputs are touched — never a generic attachment field.
+ */
+async function uploadDocuments(): Promise<number> {
+  const inputs = detectFileInputs(document).filter((f) => f.kind === 'resume' || f.kind === 'coverLetter');
+  if (!inputs.length) return 0;
+  const testMode = await loadTestMode();
+  const files: { resume?: File; coverLetter?: File } = testMode ? { resume: dummyResumeFile(), coverLetter: dummyCoverLetterFile() } : {};
+  // TODO: real files from the desktop bridge (latest generated résumé + cover letter)
+  let n = 0;
+  for (const f of inputs) {
+    const file = f.kind === 'coverLetter' ? files.coverLetter : files.resume;
+    if (file && setInputFile(f.el, file)) n++;
+  }
+  return n;
 }
 
 function triggerDownload(name: string, content: string, type: string): void {
@@ -132,6 +157,7 @@ async function init() {
   });
 
   const panel = mountPanel({
+    version: chrome.runtime.getManifest().version,
     getState: () => ({ mode: mode(), fields: fieldCount, testMode, captureMode }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
