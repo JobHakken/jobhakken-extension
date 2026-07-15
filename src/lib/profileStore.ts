@@ -1,33 +1,60 @@
-import type { Profile } from '@first2apply/autofill';
+import type { FullProfile, ProfileKey } from '@first2apply/autofill';
 
 /**
- * A locally-entered profile (chrome.storage) so the extension autofills **without
- * the desktop app** — the standalone path. When the desktop is connected we prefer
- * its résumé-derived profile; otherwise we fall back to this one.
+ * The full profile (chrome.storage) so the extension autofills **without the desktop
+ * app** — the standalone path. When the desktop is connected we prefer its
+ * résumé-derived profile; otherwise we fall back to this one. Populated in one click
+ * by "Import from résumé" (from the desktop) or edited by hand.
  */
-const KEY = 'f2a_profile';
+const KEY = 'f2a_full_profile';
 
-export async function saveProfile(profile: Profile): Promise<void> {
-  await chrome.storage.local.set({ [KEY]: profile });
+export async function saveFullProfile(fp: FullProfile): Promise<void> {
+  await chrome.storage.local.set({ [KEY]: fp });
 }
 
-export async function loadProfile(): Promise<Profile | null> {
+export async function loadFullProfile(): Promise<FullProfile | null> {
   const got = await chrome.storage.local.get(KEY);
-  return (got[KEY] as Profile | undefined) ?? null;
+  return (got[KEY] as FullProfile | undefined) ?? null;
 }
 
-/** Editable fields shown in the options profile form (order = display order). */
-export const PROFILE_FIELDS: { key: keyof Profile; label: string; placeholder?: string }[] = [
-  { key: 'fullName', label: 'Full name', placeholder: 'Jordan Rivera' },
-  { key: 'email', label: 'Email', placeholder: 'you@example.com' },
-  { key: 'phone', label: 'Phone', placeholder: '(555) 010-0134' },
-  { key: 'location', label: 'Location', placeholder: 'Austin, TX' },
+export type FieldDef = { key: ProfileKey; label: string; type?: 'text' | 'textarea'; sensitive?: boolean };
+
+/** Personal-tab single fields (order = display order). */
+export const PERSONAL_FIELDS: FieldDef[] = [
+  { key: 'prefix', label: 'Prefix' },
+  { key: 'firstName', label: 'First name' },
+  { key: 'middleName', label: 'Middle name' },
+  { key: 'lastName', label: 'Last name' },
+  { key: 'preferredName', label: 'Preferred name' },
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'nationality', label: 'Nationality' },
+  { key: 'addressLine1', label: 'Address line 1' },
+  { key: 'addressLine2', label: 'Address line 2' },
+  { key: 'city', label: 'City' },
+  { key: 'state', label: 'State / Province' },
+  { key: 'zipCode', label: 'Zip / Postal code' },
+  { key: 'country', label: 'Country' },
   { key: 'linkedin', label: 'LinkedIn URL' },
   { key: 'github', label: 'GitHub URL' },
+  { key: 'twitter', label: 'Twitter / X URL' },
   { key: 'website', label: 'Website / portfolio' },
-  { key: 'currentCompany', label: 'Current company' },
-  { key: 'currentTitle', label: 'Current title' },
-  { key: 'school', label: 'School' },
-  { key: 'degree', label: 'Degree' },
-  { key: 'fieldOfStudy', label: 'Field of study' },
+];
+
+/** Additional-tab fields. Sensitive ones are labeled + only ever suggested on forms. */
+export const ADDITIONAL_FIELDS: FieldDef[] = [
+  { key: 'currentSalary', label: 'Current salary' },
+  { key: 'salaryExpectation', label: 'Expected salary', sensitive: true },
+  { key: 'noticePeriod', label: 'Notice period' },
+  { key: 'startDate', label: 'Earliest start date' },
+  { key: 'workAuthorization', label: 'Work authorization', sensitive: true },
+  { key: 'requiresSponsorship', label: 'Requires visa sponsorship?', sensitive: true },
+  { key: 'willingToRelocate', label: 'Willing to relocate?' },
+  { key: 'coverLetter', label: 'Default cover letter', type: 'textarea' },
+  { key: 'gender', label: 'Gender', sensitive: true },
+  { key: 'pronouns', label: 'Pronouns', sensitive: true },
+  { key: 'raceEthnicity', label: 'Race / Ethnicity', sensitive: true },
+  { key: 'hispanicLatino', label: 'Hispanic / Latino?', sensitive: true },
+  { key: 'veteranStatus', label: 'Veteran status', sensitive: true },
+  { key: 'disabilityStatus', label: 'Disability status', sensitive: true },
 ];

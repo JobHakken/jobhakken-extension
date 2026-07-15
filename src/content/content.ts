@@ -1,8 +1,8 @@
-import { autofillForm, deriveProfile, detectFields, type Profile } from '@first2apply/autofill';
+import { autofillForm, deriveFullProfile, detectFields, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadProfile } from '../lib/profileStore.js';
+import { loadFullProfile } from '../lib/profileStore.js';
 import { mountPanel } from './panel.js';
 
 /**
@@ -20,34 +20,11 @@ function mode(): 'connected' | 'standalone' | 'none' {
   return hasLocalProfile ? 'standalone' : 'none';
 }
 
-/** Prefer the desktop's résumé-derived profile; fall back to the local standalone one. */
-async function getProfile(): Promise<Profile | null> {
-  const p = connection?.profile as
-    | {
-        basics?: { name?: string; email?: string; phone?: string; location?: string; website?: string; links?: Array<{ text?: string; url?: string }> };
-        experience?: { company?: string; title?: string } | null;
-        education?: { school?: string; degree?: string; field?: string } | null;
-      }
-    | undefined;
-  if (p?.basics) {
-    const b = p.basics;
-    const findLink = (kw: string) => b.links?.find((l) => `${l.text ?? ''} ${l.url ?? ''}`.toLowerCase().includes(kw))?.url;
-    return deriveProfile({
-      name: b.name,
-      email: b.email,
-      phone: b.phone,
-      location: b.location,
-      website: b.website,
-      linkedin: findLink('linkedin'),
-      github: findLink('github'),
-      currentCompany: p.experience?.company,
-      currentTitle: p.experience?.title,
-      school: p.education?.school,
-      degree: p.education?.degree,
-      fieldOfStudy: p.education?.field,
-    });
-  }
-  return await loadProfile();
+/** Prefer the desktop's résumé-derived full profile; fall back to the local standalone one. */
+async function getFullProfile(): Promise<FullProfile | null> {
+  const p = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
+  if (p?.basics) return deriveFullProfile(p);
+  return await loadFullProfile();
 }
 
 function updateBadge(): void {
@@ -56,9 +33,9 @@ function updateBadge(): void {
 }
 
 async function runAutofill(): Promise<{ filled: number; review: number; total: number } | null> {
-  const profile = await getProfile();
-  if (!profile || Object.keys(profile).length === 0) return null;
-  const report = autofillForm({ root: document, profile });
+  const fp = await getFullProfile();
+  if (!fp || Object.keys(fp.profile).length === 0) return null;
+  const report = autofillForm({ root: document, profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules });
   return { filled: report.filled, review: report.review, total: report.total };
 }
 
@@ -88,7 +65,8 @@ async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; error
 
 async function init() {
   connection = await loadConnection();
-  hasLocalProfile = !!(await loadProfile());
+  const local = await loadFullProfile();
+  hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   updateBadge();
 
   const panel = mountPanel({

@@ -3,57 +3,93 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>First2Apply — Extension settings</title>
+    <title>First2Apply — Profile &amp; settings</title>
     <style>
-      :root { color-scheme: light dark; --line: #d9dce3; --muted: #6b7280; --accent: #5457d6; --ok: #0f9d6b; --err: #dc2626; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 28px; max-width: 620px; }
-      h1 { font-size: 19px; margin: 0 0 4px; letter-spacing: -0.01em; }
-      p.sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
-      .card { border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
-      h2 { font-size: 15px; margin: 0 0 4px; }
-      h2 .tag { font-size: 11px; font-weight: 500; color: var(--muted); }
-      .cardsub { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
-      .f { display: flex; flex-direction: column; gap: 5px; }
-      label { font-size: 11.5px; font-weight: 600; color: var(--muted); }
-      input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
-      .row { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
-      button { padding: 9px 16px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
-      button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--line); }
-      .status { font-size: 12.5px; }
-      .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-      .ok { color: var(--ok); } .err { color: var(--err); }
-      .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
-      code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+      :root { color-scheme: light dark; --line:#d9dce3; --muted:#6b7280; --accent:#5457d6; --ok:#0f9d6b; --warn:#c2740c; --err:#dc2626; --soft:#5457d614; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; padding:26px 20px 60px; max-width:840px; margin:0 auto; }
+      .mast { display:flex; align-items:center; gap:10px; }
+      .logo { width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#5457d6,#0f9d6b);display:grid;place-items:center;color:#fff;font-size:15px; }
+      h1 { font-size:18px; margin:0; letter-spacing:-.01em; }
+      p.sub { color:var(--muted); font-size:13px; margin:6px 0 18px; }
+      .import { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--soft); border:1px solid var(--line); border-radius:12px; margin-bottom:16px; }
+      .import .ic { font-size:20px; } .import .t { flex:1; } .import .t b{font-size:13.5px;} .import .t div{font-size:12px;color:var(--muted);}
+      .import button { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer; }
+      .import button:disabled { opacity:.5; cursor:not-allowed; }
+      .tabs { display:flex; gap:2px; border-bottom:1px solid var(--line); overflow-x:auto; }
+      .tab { border:none; background:none; font-family:inherit; font-size:13px; font-weight:600; color:var(--muted); padding:11px 13px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
+      .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+      .panel { display:none; padding:18px 2px; } .panel.active { display:block; }
+      .grid { display:grid; grid-template-columns:1fr 1fr; gap:11px 14px; }
+      @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+      .f { display:flex; flex-direction:column; gap:5px; } .f.full{grid-column:1/-1;}
+      label { font-size:11px; font-weight:600; color:var(--muted); }
+      label .lock { color:var(--warn); }
+      input, textarea { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; }
+      textarea { resize:vertical; min-height:70px; }
+      .entry { border:1px solid var(--line); border-radius:11px; padding:14px; margin-bottom:11px; position:relative; }
+      .entry .rm { position:absolute; top:11px; right:13px; font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; }
+      .add { display:inline-block; font-size:13px; color:var(--accent); font-weight:600; cursor:pointer; margin-top:2px; }
+      .note { font-size:11.5px; color:var(--muted); margin:0 0 14px; line-height:1.5; }
+      .note.warn { color:var(--warn); }
+      .rule { display:grid; grid-template-columns:1fr 1fr auto; gap:9px; margin-bottom:8px; align-items:center; }
+      .rule input { font-family:ui-monospace,Menlo,monospace; font-size:12px; }
+      .rule .rm { color:var(--muted); cursor:pointer; font-size:15px; padding:0 5px; }
+      .ops { font-size:11.5px; color:var(--muted); margin-top:10px; }
+      .ops code { background:var(--soft); color:var(--accent); padding:1px 5px; border-radius:4px; font-family:monospace; }
+      .bar { position:sticky; bottom:0; background:var(--surface,#fff); padding:14px 0 0; margin-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+      @media (prefers-color-scheme:dark){ .bar{background:#0c0e13;} }
+      button.save { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13.5px; font-weight:600; cursor:pointer; }
+      button.secondary { background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer; }
+      .status { font-size:12.5px; } .ok{color:var(--ok);} .err{color:var(--err);}
+      .status .dot { display:inline-block; width:8px;height:8px;border-radius:50%; margin-right:6px; }
+      code.inline { background:rgba(127,127,127,.15); padding:1px 5px; border-radius:4px; font-size:12px; }
     </style>
   </head>
   <body>
-    <h1>First2Apply — Apply Copilot</h1>
-    <p class="sub">Set up your profile to autofill applications. The desktop app is optional — connect it for AI (ATS match, visa signal, tailored résumé) and to pull your résumé automatically.</p>
+    <div class="mast"><span class="logo">⚡</span><h1>First2Apply — Profile &amp; settings</h1></div>
+    <p class="sub">Set up your profile once — it autofills job applications. The desktop app is optional (connect it to import your résumé + unlock AI).</p>
 
-    <div class="card">
-      <h2>Your profile <span class="tag">— used for autofill (works without the desktop app)</span></h2>
-      <p class="cardsub">Fill what you like; the extension maps these to application fields automatically.</p>
-      <div class="grid" id="profileForm"></div>
-      <div class="row">
-        <button id="saveProfile">Save profile</button>
-        <span class="status" id="profileStatus"></span>
-      </div>
+    <div class="import">
+      <span class="ic">✨</span>
+      <div class="t"><b>Import from my résumé</b><div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div></div>
+      <button id="importBtn" disabled title="Connect the desktop app first (Desktop tab)">Import</button>
     </div>
 
-    <div class="card">
-      <h2>Desktop app <span class="tag">— optional, unlocks AI</span></h2>
-      <p class="cardsub">Connect to the running First2Apply desktop app for ATS match, visa signal, and a résumé tailored per job.</p>
-      <div class="f">
-        <label for="token">Connection token</label>
-        <input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" />
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-t="personal">Personal</button>
+      <button class="tab" data-t="additional">Additional</button>
+      <button class="tab" data-t="education">Education</button>
+      <button class="tab" data-t="work">Work Experience</button>
+      <button class="tab" data-t="custom">Custom Fields</button>
+      <button class="tab" data-t="desktop">Desktop</button>
+    </div>
+
+    <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
+    <div class="panel" data-p="additional">
+      <p class="note warn">🔒 EEO / demographic, salary &amp; visa answers are only <b>suggested</b> on forms (never auto-submitted) — you review them before submitting.</p>
+      <div class="grid" id="additionalGrid"></div>
+    </div>
+    <div class="panel" data-p="education"><p class="note">Used to fill repeated Education sections on applications.</p><div id="eduList"></div><span class="add" id="addEdu">+ Add education</span></div>
+    <div class="panel" data-p="work"><p class="note">Used to fill repeated Work-Experience rows (company, title, dates).</p><div id="workList"></div><span class="add" id="addWork">+ Add experience</span></div>
+    <div class="panel" data-p="custom">
+      <p class="note">Your own rules for anything the auto-mapper misses. A condition matches a field's <b>label</b>; the value fills it. These always win.</p>
+      <div id="ruleList"></div><span class="add" id="addRule">+ Add rule</span>
+      <div class="ops">Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and · <code>||</code> or · <code>( )</code> group</div>
+    </div>
+    <div class="panel" data-p="desktop">
+      <p class="note">Connect to the running First2Apply desktop app for AI (ATS match, visa signal, tailored résumé) and one-click résumé import.</p>
+      <div class="f"><label for="token">Connection token</label><input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" /></div>
+      <div class="bar" style="position:static;border:none;margin-top:12px;padding:0;">
+        <button class="save" id="connect">Connect</button>
+        <button class="secondary" id="disconnect" hidden>Disconnect</button>
+        <span class="status" id="connStatus"></span>
       </div>
-      <div class="row">
-        <button id="connect">Connect</button>
-        <button id="disconnect" class="secondary" hidden>Disconnect</button>
-      </div>
-      <div class="status" id="connStatus" hidden></div>
-      <p class="hint">In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on <code>127.0.0.1</code>; your AI key never leaves the desktop.</p>
+      <p class="note">In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on <code class="inline">127.0.0.1</code>.</p>
+    </div>
+
+    <div class="bar">
+      <button class="save" id="saveProfile">Save profile</button>
+      <span class="status" id="profileStatus"></span>
     </div>
 
     <script type="module" src="options.js"></script>

@@ -1,12 +1,13 @@
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadProfile } from '../lib/profileStore.js';
+import { loadFullProfile } from '../lib/profileStore.js';
 
 /** Compact toolbar popup: status + one-click autofill + link to options. */
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 (async () => {
-  const [conn, profile] = await Promise.all([loadConnection(), loadProfile()]);
-  const mode = conn ? 'connected' : profile ? 'standalone' : 'none';
+  const [conn, fp] = await Promise.all([loadConnection(), loadFullProfile()]);
+  const hasLocal = !!fp && Object.keys(fp.profile ?? {}).length > 0;
+  const mode = conn ? 'connected' : hasLocal ? 'standalone' : 'none';
   $('dot').className = `dot ${mode}`;
   $<HTMLElement>('statusText').textContent =
     mode === 'connected'
