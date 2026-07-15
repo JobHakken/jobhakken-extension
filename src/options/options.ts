@@ -40,10 +40,12 @@ function renderFields(containerId: string, defs: typeof PERSONAL_FIELDS) {
 }
 
 // ── education / experience arrays ─────────────────────────────
+type EntryField<T> = { key: keyof T; label: string; type?: 'lines' };
+
 function renderEntries<T extends Record<string, unknown>>(
   listId: string,
   items: T[],
-  fields: { key: keyof T; label: string }[],
+  fields: EntryField<T>[],
 ) {
   const list = $(listId);
   list.innerHTML = '';
@@ -61,15 +63,27 @@ function renderEntries<T extends Record<string, unknown>>(
     grid.className = 'grid';
     for (const f of fields) {
       const wrap = document.createElement('div');
-      wrap.className = 'f';
+      wrap.className = f.type === 'lines' ? 'f full' : 'f';
       const label = document.createElement('label');
       label.textContent = f.label;
-      const input = document.createElement('input');
-      input.value = (item[f.key] as string | undefined) ?? '';
-      input.addEventListener('input', () => {
-        (item[f.key] as unknown) = input.value.trim() || undefined;
-      });
-      wrap.append(label, input);
+      if (f.type === 'lines') {
+        // string[] <-> one bullet per line
+        const ta = document.createElement('textarea');
+        ta.placeholder = 'One bullet point per line';
+        ta.value = ((item[f.key] as string[] | undefined) ?? []).join('\n');
+        ta.addEventListener('input', () => {
+          const lines = ta.value.split('\n').map((l) => l.trim()).filter(Boolean);
+          (item[f.key] as unknown) = lines.length ? lines : undefined;
+        });
+        wrap.append(label, ta);
+      } else {
+        const input = document.createElement('input');
+        input.value = (item[f.key] as string | undefined) ?? '';
+        input.addEventListener('input', () => {
+          (item[f.key] as unknown) = input.value.trim() || undefined;
+        });
+        wrap.append(label, input);
+      }
       grid.appendChild(wrap);
     }
     box.append(rm, grid);
@@ -77,12 +91,13 @@ function renderEntries<T extends Record<string, unknown>>(
   });
 }
 
-const EXP_FIELDS: { key: keyof ExperienceEntry; label: string }[] = [
+const EXP_FIELDS: EntryField<ExperienceEntry>[] = [
   { key: 'company', label: 'Company' },
   { key: 'position', label: 'Position' },
   { key: 'period', label: 'Period (e.g. Jun 2021 – Present)' },
+  { key: 'highlights', label: 'Highlights / bullet points (one per line)', type: 'lines' },
 ];
-const EDU_FIELDS: { key: keyof EducationEntry; label: string }[] = [
+const EDU_FIELDS: EntryField<EducationEntry>[] = [
   { key: 'school', label: 'School' },
   { key: 'degree', label: 'Degree' },
   { key: 'fieldOfStudy', label: 'Field of study' },
