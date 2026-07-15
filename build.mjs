@@ -7,11 +7,12 @@ import path from 'path';
 const outdir = 'dist';
 rmSync(outdir, { recursive: true, force: true });
 
-// Service worker (module) + options page → ESM.
+// Service worker (module) + options + popup pages → ESM.
 await esbuild.build({
   entryPoints: {
     'background/serviceWorker': 'src/background/serviceWorker.ts',
     'options/options': 'src/options/options.ts',
+    'popup/popup': 'src/popup/popup.ts',
   },
   outdir,
   bundle: true,
@@ -31,7 +32,9 @@ await esbuild.build({
 });
 
 mkdirSync(path.join(outdir, 'options'), { recursive: true });
+mkdirSync(path.join(outdir, 'popup'), { recursive: true });
 cpSync('src/manifest.json', path.join(outdir, 'manifest.json'));
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
+cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
 
 console.log('extension built → apps/extension/dist (load unpacked)');

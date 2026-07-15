@@ -6,38 +6,55 @@
     <title>First2Apply — Extension settings</title>
     <style>
       :root { color-scheme: light dark; --line: #d9dce3; --muted: #6b7280; --accent: #5457d6; --ok: #0f9d6b; --err: #dc2626; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 28px; max-width: 560px; }
-      h1 { font-size: 18px; margin: 0 0 4px; letter-spacing: -0.01em; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 28px; max-width: 620px; }
+      h1 { font-size: 19px; margin: 0 0 4px; letter-spacing: -0.01em; }
       p.sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
-      label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-      input { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; box-sizing: border-box; }
-      .row { display: flex; gap: 8px; margin-top: 12px; }
+      .card { border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+      h2 { font-size: 15px; margin: 0 0 4px; }
+      h2 .tag { font-size: 11px; font-weight: 500; color: var(--muted); }
+      .cardsub { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+      .f { display: flex; flex-direction: column; gap: 5px; }
+      label { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+      input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+      .row { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
       button { padding: 9px 16px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
       button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--line); }
-      .status { margin-top: 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
-      .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+      .status { font-size: 12.5px; }
+      .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
       .ok { color: var(--ok); } .err { color: var(--err); }
-      .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+      .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
       code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
     </style>
   </head>
   <body>
     <h1>First2Apply — Apply Copilot</h1>
-    <p class="sub">Connect this extension to the First2Apply desktop app so it can autofill applications and use your résumé + AI locally.</p>
+    <p class="sub">Set up your profile to autofill applications. The desktop app is optional — connect it for AI (ATS match, visa signal, tailored résumé) and to pull your résumé automatically.</p>
 
-    <label for="token">Connection token</label>
-    <input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" />
-    <div class="row">
-      <button id="connect">Connect</button>
-      <button id="disconnect" class="secondary" hidden>Disconnect</button>
+    <div class="card">
+      <h2>Your profile <span class="tag">— used for autofill (works without the desktop app)</span></h2>
+      <p class="cardsub">Fill what you like; the extension maps these to application fields automatically.</p>
+      <div class="grid" id="profileForm"></div>
+      <div class="row">
+        <button id="saveProfile">Save profile</button>
+        <span class="status" id="profileStatus"></span>
+      </div>
     </div>
 
-    <div id="status" class="status" hidden></div>
-
-    <p class="hint">
-      In the desktop app: <b>Settings → Browser extension (beta)</b> → enable it, then copy the token here. The app must be
-      running. Everything stays on <code>127.0.0.1</code>; your AI key never leaves the desktop.
-    </p>
+    <div class="card">
+      <h2>Desktop app <span class="tag">— optional, unlocks AI</span></h2>
+      <p class="cardsub">Connect to the running First2Apply desktop app for ATS match, visa signal, and a résumé tailored per job.</p>
+      <div class="f">
+        <label for="token">Connection token</label>
+        <input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" />
+      </div>
+      <div class="row">
+        <button id="connect">Connect</button>
+        <button id="disconnect" class="secondary" hidden>Disconnect</button>
+      </div>
+      <div class="status" id="connStatus" hidden></div>
+      <p class="hint">In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on <code>127.0.0.1</code>; your AI key never leaves the desktop.</p>
+    </div>
 
     <script type="module" src="options.js"></script>
   </body>

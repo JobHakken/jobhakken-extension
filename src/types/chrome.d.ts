@@ -15,6 +15,7 @@ declare namespace chrome {
     const id: string;
     const lastError: { message?: string } | undefined;
     function getURL(path: string): string;
+    function openOptionsPage(): Promise<void>;
     function sendMessage(message: F2aMessage): Promise<unknown>;
     const onInstalled: { addListener(cb: (details: { reason: string }) => void): void };
     const onMessage: {
