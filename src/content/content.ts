@@ -1,4 +1,4 @@
-import { autofillForm, deriveFullProfile, detectFields, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, deriveFullProfile, detectFields, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -43,8 +43,12 @@ async function runAutofill(): Promise<{ filled: number; review: number; total: n
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
-  const report = autofillForm({ root: document, profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive });
-  return { filled: report.filled, review: report.review, total: report.total };
+  const common = { profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive };
+  const report = autofillForm({ root: document, ...common });
+  // second, async pass for widgets that only fill through live interaction
+  // (Workday lazy comboboxes + Month/Day/Year date pickers)
+  const live = await autofillInteractive({ root: document, ...common });
+  return { filled: report.filled + live.comboboxes + live.dates, review: report.review, total: report.total };
 }
 
 /** Best-effort "this job" from the page for the AI actions (rough JD extraction). */
