@@ -2,7 +2,8 @@ import { autofillForm, deriveFullProfile, detectFields, type FullProfile } from 
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadFillSensitive, loadFullProfile } from '../lib/profileStore.js';
+import { loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { TEST_PROFILE } from '../lib/testProfile.js';
 import { mountPanel } from './panel.js';
 
 /**
@@ -13,6 +14,7 @@ import { mountPanel } from './panel.js';
 
 let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
+let testMode = false;
 let fieldCount = 0;
 
 function mode(): 'connected' | 'standalone' | 'none' {
@@ -20,8 +22,13 @@ function mode(): 'connected' | 'standalone' | 'none' {
   return hasLocalProfile ? 'standalone' : 'none';
 }
 
-/** Prefer the desktop's résumé-derived full profile; fall back to the local standalone one. */
+/**
+ * The profile to fill from. In TEST MODE this is always the built-in anonymous
+ * TEST_PROFILE (so nothing real is exposed on a live page). Otherwise prefer the
+ * desktop's résumé-derived profile, falling back to the local standalone one.
+ */
 async function getFullProfile(): Promise<FullProfile | null> {
+  if (await loadTestMode()) return TEST_PROFILE;
   const p = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
   if (p?.basics) return deriveFullProfile(p);
   return await loadFullProfile();
@@ -68,10 +75,19 @@ async function init() {
   connection = await loadConnection();
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
+  testMode = await loadTestMode();
   updateBadge();
 
+  // Reflect test-mode changes from the options page without a reload.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && 'f2a_test_mode' in changes) {
+      testMode = !!changes['f2a_test_mode'].newValue;
+      panel.update();
+    }
+  });
+
   const panel = mountPanel({
-    getState: () => ({ mode: mode(), fields: fieldCount }),
+    getState: () => ({ mode: mode(), fields: fieldCount, testMode }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),

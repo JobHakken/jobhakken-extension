@@ -10,6 +10,13 @@ declare namespace chrome {
       remove(keys: string | string[]): Promise<void>;
     }
     const local: StorageArea;
+    interface StorageChange {
+      oldValue?: unknown;
+      newValue?: unknown;
+    }
+    const onChanged: {
+      addListener(cb: (changes: Record<string, StorageChange>, areaName: string) => void): void;
+    };
   }
   namespace runtime {
     const id: string;

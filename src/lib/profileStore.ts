@@ -29,6 +29,17 @@ export async function saveFillSensitive(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [SENSITIVE_KEY]: v });
 }
 
+// Test mode: autofill from the built-in anonymous TEST_PROFILE instead of your real
+// data, so you can test on live application pages without exposing real information.
+const TEST_MODE_KEY = 'f2a_test_mode';
+export async function loadTestMode(): Promise<boolean> {
+  const got = await chrome.storage.local.get(TEST_MODE_KEY);
+  return !!got[TEST_MODE_KEY];
+}
+export async function saveTestMode(v: boolean): Promise<void> {
+  await chrome.storage.local.set({ [TEST_MODE_KEY]: v });
+}
+
 export type FieldDef = { key: ProfileKey; label: string; type?: 'text' | 'textarea'; sensitive?: boolean };
 
 /** Personal-tab single fields (order = display order). */

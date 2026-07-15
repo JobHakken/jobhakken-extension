@@ -4,7 +4,7 @@
  * passed as callbacks. Collapses to a small bubble.
  */
 
-export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number };
+export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number; testMode?: boolean };
 
 export type PanelDeps = {
   getState: () => PanelState;
@@ -42,6 +42,9 @@ const STYLE = `
   background:linear-gradient(135deg,#5457d6,#0f9d6b); color:#fff; display:grid;place-items:center; cursor:pointer;
   box-shadow:0 10px 30px -8px rgba(84,87,214,.6); font-size:18px; border:none; position:relative; }
 .bubble .b { position:absolute; top:-4px; right:-4px; background:#0f9d6b; color:#fff; font-size:10px; font-weight:800; min-width:16px;height:16px;border-radius:999px; display:grid;place-items:center; padding:0 3px; border:2px solid #fff; }
+.testbar { display:flex; align-items:center; gap:7px; background:#c2740c; color:#fff; font-size:11.5px; font-weight:700; padding:7px 12px; letter-spacing:.01em; }
+.testbar .d { width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #ffffff44; }
+.bubble.test { background:linear-gradient(135deg,#c2740c,#e0952f); box-shadow:0 10px 30px -8px rgba(194,116,12,.6); }
 .hidden { display:none !important; }
 `;
 
@@ -54,6 +57,7 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     <button class="bubble hidden" id="bubble">⚡<span class="b" id="bubbleCount">0</span></button>
     <div class="wrap" id="wrap">
       <div class="card">
+        <div class="testbar hidden" id="testbar"><span class="d"></span>TEST DATA — filling anonymous dummy values</div>
         <div class="hd">
           <span class="mark">⚡</span><span class="nm">First2Apply</span>
           <span class="dot none" id="dot" title=""></span>
@@ -125,6 +129,8 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     const s = deps.getState();
     $('fieldCount').textContent = String(s.fields);
     ($('bubbleCount') as HTMLElement).textContent = String(s.fields);
+    $('testbar').classList.toggle('hidden', !s.testMode);
+    bubble.classList.toggle('test', !!s.testMode);
     const dot = $('dot');
     dot.className = `dot ${s.mode}`;
     dot.title = s.mode === 'connected' ? 'Connected to desktop app' : s.mode === 'standalone' ? 'Standalone (local profile)' : 'No profile set';
