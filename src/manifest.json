@@ -6,6 +6,19 @@
   "background": { "service_worker": "background/serviceWorker.js", "type": "module" },
   "options_page": "options/options.html",
   "action": { "default_title": "First2Apply" },
-  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "autofill": {
+      "suggested_key": { "default": "Ctrl+Shift+2", "mac": "MacCtrl+2" },
+      "description": "Autofill this application"
+    }
+  },
+  "permissions": ["storage", "activeTab"],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
 }

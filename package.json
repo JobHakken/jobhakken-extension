@@ -7,5 +7,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "node build.mjs",
     "test": "jest --config ./jest.config.ts"
+  },
+  "dependencies": {
+    "@first2apply/autofill": "workspace:*"
   }
 }

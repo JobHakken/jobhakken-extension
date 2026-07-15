@@ -7,6 +7,7 @@ import path from 'path';
 const outdir = 'dist';
 rmSync(outdir, { recursive: true, force: true });
 
+// Service worker (module) + options page → ESM.
 await esbuild.build({
   entryPoints: {
     'background/serviceWorker': 'src/background/serviceWorker.ts',
@@ -15,6 +16,16 @@ await esbuild.build({
   outdir,
   bundle: true,
   format: 'esm',
+  target: 'es2020',
+  logLevel: 'info',
+});
+
+// Content script → IIFE (content scripts don't support ESM imports).
+await esbuild.build({
+  entryPoints: { 'content/content': 'src/content/content.ts' },
+  outdir,
+  bundle: true,
+  format: 'iife',
   target: 'es2020',
   logLevel: 'info',
 });
