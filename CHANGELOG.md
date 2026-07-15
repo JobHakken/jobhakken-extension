@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.2.3
+- Real résumé upload: when connected to the desktop app, Autofill attaches your latest
+  saved résumé (rendered to PDF by the app's `resumeFile` bridge RPC). Test mode still
+  uses the bundled dummy PDF.
+- Playwright E2E now asserts résumé upload (DataTransfer) + live lazy-combobox pick in a
+  real browser — coverage jsdom can't provide.
+
 ## 0.2.2
 - Answer bank: sensible default answers for common screening questions that don't map to
   a profile field — e.g. "Have you previously worked here?" → No (review confidence; a
