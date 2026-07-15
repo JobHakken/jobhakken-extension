@@ -2,6 +2,11 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.2.2
+- Answer bank: sensible default answers for common screening questions that don't map to
+  a profile field — e.g. "Have you previously worked here?" → No (review confidence; a
+  user rule always overrides). Desktop app gains an isolated Test Mode (Settings).
+
 ## 0.2.1
 - Precision from a real live Workday capture: exclude page-chrome comboboxes (language /
   settings header menus) and anonymous framework helper inputs (hidden combobox
