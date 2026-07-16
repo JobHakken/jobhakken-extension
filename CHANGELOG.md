@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.5.2
+- Fix the panel flashing on non-application pages (e.g. GitHub settings). The "looks like
+  an application" heuristic no longer triggers on a bare count of profile fields
+  (name/email/company also appear on settings pages) — it now requires a real
+  job-application signal: a résumé/CV upload, or an EEO/screening field (work
+  authorization, sponsorship, cover letter, salary, veteran/disability, …).
+
 ## 0.5.1
 - Options → "Import from my résumé" now respects test mode: when test mode is on (the
   extension toggle, or the connected app's sandbox), Import loads the **anonymous dummy

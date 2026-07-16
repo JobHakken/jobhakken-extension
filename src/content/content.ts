@@ -73,16 +73,22 @@ async function getFullProfile(): Promise<FullProfile | null> {
 }
 
 let panelRef: { update: () => void; setVisible: (v: boolean) => void } | null = null;
-let appLike = false; // page looks like a job application (≥3 fields map to profile keys, or a résumé upload)
+let appLike = false; // page looks like a JOB application (résumé upload, or an EEO/screening field)
+
+// Job-application-specific fields — these appear on real applications but NOT on ordinary
+// account/profile/settings pages (which have name/email/company but none of these). Using
+// them (instead of a raw "≥3 profile fields" count) stops the panel flashing on e.g. a
+// GitHub profile-settings page.
+const APPLICATION_KEYS = new Set(['workAuthorization', 'requiresSponsorship', 'coverLetter', 'salaryExpectation', 'veteranStatus', 'disabilityStatus', 'hispanicLatino', 'raceEthnicity', 'howHeard']);
 
 /**
- * The panel opens ONLY on job-application pages, never on ordinary sites (e.g. google.com,
- * whose lone search box previously tripped a bare field-count gate). A page qualifies if:
+ * The panel opens ONLY on job-application pages, never on ordinary sites (google.com,
+ * a GitHub settings page, etc.). A page qualifies if:
  *   • it's a known ATS host (Workday/Greenhouse/Lever/…), OR
  *   • it's fingerprinted as an ATS (company career site running one under the hood), OR
  *   • the user opted this site in, OR
- *   • it looks like an application form — ≥3 detected fields resolve to profile fields
- *     (name/email/phone/…) or it has a résumé/CV upload.
+ *   • it has a real job-application signal — a résumé/CV upload, or an EEO/screening field
+ *     (work authorization, sponsorship, cover letter, salary, veteran/disability, …).
  */
 function isRelevantPage(): boolean {
   return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
@@ -91,9 +97,12 @@ function isRelevantPage(): boolean {
 function updateBadge(): void {
   const fields = detectFields(document);
   fieldCount = fields.length;
-  const resolved = fields.filter((f) => resolveField(f)).length;
   const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
-  appLike = resolved >= 3 || hasResume;
+  const hasAppSignal = fields.some((f) => {
+    const key = resolveField(f)?.key;
+    return key ? APPLICATION_KEYS.has(key) : false;
+  });
+  appLike = hasResume || hasAppSignal;
   const relevant = isRelevantPage();
   panelRef?.setVisible(relevant);
   // badge only on application pages too
