@@ -63,6 +63,29 @@ export async function saveAutoCapture(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [AUTO_CAPTURE_KEY]: v });
 }
 
+// Visa-sponsorship filter: when ON, job pages whose description explicitly rules out
+// sponsorship (citizenship / clearance / no-sponsorship / export-control) get a warning
+// badge and their list card is dimmed. Off by default — only relevant to sponsorship seekers.
+const NEEDS_SPONSORSHIP_KEY = 'f2a_needs_sponsorship';
+export async function loadNeedsSponsorship(): Promise<boolean> {
+  const got = await chrome.storage.local.get(NEEDS_SPONSORSHIP_KEY);
+  return !!got[NEEDS_SPONSORSHIP_KEY];
+}
+export async function saveNeedsSponsorship(v: boolean): Promise<void> {
+  await chrome.storage.local.set({ [NEEDS_SPONSORSHIP_KEY]: v });
+}
+
+// When on (and needs-sponsorship is on), won't-sponsor jobs are HIDDEN from the list rather
+// than just marked. Off by default → mark (red pill) so nothing silently disappears.
+const HIDE_UNSPONSORED_KEY = 'f2a_hide_unsponsored';
+export async function loadHideUnsponsored(): Promise<boolean> {
+  const got = await chrome.storage.local.get(HIDE_UNSPONSORED_KEY);
+  return !!got[HIDE_UNSPONSORED_KEY];
+}
+export async function saveHideUnsponsored(v: boolean): Promise<void> {
+  await chrome.storage.local.set({ [HIDE_UNSPONSORED_KEY]: v });
+}
+
 export type FieldDef = { key: ProfileKey; label: string; type?: 'text' | 'textarea'; sensitive?: boolean };
 
 /** Personal-tab single fields (order = display order). */

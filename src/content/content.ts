@@ -3,11 +3,12 @@ import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveF
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadHideUnsponsored, loadNeedsSponsorship, loadTestMode } from '../lib/profileStore.js';
 import { textToPdfFile } from '../lib/pdf.js';
 import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
-import { mountPanel } from './panel.js';
+import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js';
+import { applyH1bBadges, getH1bVerdict } from './h1b.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -22,7 +23,10 @@ let appTest = false;
 let captureMode = false;
 let autoCaptureOn = true;
 let siteOptedIn = false;
+let needsSponsorship = false; // "I need visa sponsorship" → mark/hide roles that won't sponsor
+let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
 let fieldCount = 0;
+let autofillAbort: AbortController | null = null; // lets the popup cancel a running autofill
 
 function mode(): 'connected' | 'standalone' | 'none' {
   if (connection) return 'connected';
@@ -72,7 +76,6 @@ async function getFullProfile(): Promise<FullProfile | null> {
   return await loadFullProfile();
 }
 
-let panelRef: { update: () => void; setVisible: (v: boolean) => void } | null = null;
 let appLike = false; // page looks like a JOB application (résumé upload, or an EEO/screening field)
 
 // Job-application-specific fields — these appear on real applications but NOT on ordinary
@@ -104,19 +107,67 @@ function updateBadge(): void {
   });
   appLike = hasResume || hasAppSignal;
   const relevant = isRelevantPage();
-  panelRef?.setVisible(relevant);
-  // badge only on application pages too
+  // Toolbar icon badge: show the fillable-field count on application pages (the popup is the UI now).
   void chrome.runtime.sendMessage({ type: 'f2a-detected', count: relevant ? fieldCount : 0 }).catch(() => {});
 }
 
-async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ filled: number; review: number; total: number } | null> {
+/** Real company for the opened job. LinkedIn (and many boards) title as "Title | Company | Site",
+ *  so the middle segment is the company — far better than the hostname ("linkedin"). */
+function pageCompany(): string {
+  const parts = document.title.split(/\s[|·—–]\s/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length >= 3) return parts[parts.length - 2]; // …| Company | LinkedIn
+  return location.hostname.replace(/^www\./, '').split('.')[0];
+}
+
+/** Snapshot of everything the toolbar popup renders. Queried fresh each time the popup opens. */
+function getState() {
+  const verdict = getEligibilityVerdict();
+  return {
+    mode: mode(),
+    fields: fieldCount,
+    relevant: isRelevantPage(),
+    job: { title: cleanTitle(document.title), company: pageCompany(), url: location.href },
+    testMode: testMode || appTest,
+    captureMode,
+    captureSite: { show: !isAtsHost(location.hostname), optedIn: siteOptedIn },
+    eligibility: verdict && verdict.blocked ? { blocked: true, categories: Array.from(new Set(verdict.reasons.map((r) => r.category))) } : null,
+    h1b: getH1bVerdict(),
+  };
+}
+
+/** Race a promise against a timeout + optional abort signal — so autofill never hangs the UI. */
+function withTimeout<T>(p: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms);
+    const onAbort = () => {
+      clearTimeout(t);
+      reject(new Error('aborted'));
+    };
+    if (signal) {
+      if (signal.aborted) return onAbort();
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      },
+    );
+  });
+}
+
+async function runAutofill(mode: 'default' | 'ats' = 'default', signal?: AbortSignal): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
   const common = { profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
-  // 2) synchronous fill (text/select/radio + multi-row groups)
+  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes
   const report = autofillForm({ root: document, ...common });
   // tag what WE filled, so a later capture can tell autofill from manual entry
   for (const r of report.results) {
@@ -125,13 +176,27 @@ async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ fille
       r.field.el.dataset.f2aValue = String(r.value);
     }
   }
-  // 3) async pass for widgets that only fill through live interaction
-  //    (Workday lazy comboboxes + Month/Day/Year date pickers)
-  const live = await autofillInteractive({ root: document, ...common });
-  // 4) résumé / cover-letter upload (ATS mode → tailored résumé)
-  const uploaded = await uploadDocuments(mode);
+  // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
+  //      upload (ATS mode renders a tailored résumé via the desktop AI, which can be slow).
+  //      Bound it so the button never hangs forever, and honor Cancel. On timeout/cancel we
+  //      keep the synchronous field fills and report a partial result.
+  let extra = 0;
+  let partial = false;
+  try {
+    extra = await withTimeout(
+      (async () => {
+        const live = await autofillInteractive({ root: document, ...common });
+        const uploaded = await uploadDocuments(mode);
+        return live.comboboxes + live.dates + uploaded;
+      })(),
+      mode === 'ats' ? 45_000 : 20_000,
+      signal,
+    );
+  } catch {
+    partial = true; // timed out or cancelled — the synchronous fields are still filled
+  }
   void captureFlow(); // record the autofilled state into the corpus
-  return { filled: report.filled + live.comboboxes + live.dates + uploaded, review: report.review, total: report.total };
+  return { filled: report.filled + extra, review: report.review, total: report.total, partial };
 }
 
 /**
@@ -371,6 +436,8 @@ async function init() {
   appTest = await appTestMode(); // sync with the connected app's sandbox
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
+  needsSponsorship = await loadNeedsSponsorship();
+  hideUnsponsored = await loadHideUnsponsored();
   siteOptedIn = !isAtsHost(location.hostname) && (await isCaptureAllowed(location.hostname));
 
   // Reflect setting changes from the options page without a reload.
@@ -379,44 +446,26 @@ async function init() {
     if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
     if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
     if ('f2a_auto_capture' in changes) autoCaptureOn = changes['f2a_auto_capture'].newValue !== false;
-    panel.update();
+    if ('f2a_hide_unsponsored' in changes) hideUnsponsored = !!changes['f2a_hide_unsponsored'].newValue;
+    if ('f2a_needs_sponsorship' in changes) {
+      needsSponsorship = !!changes['f2a_needs_sponsorship'].newValue;
+      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // reflect immediately
+      void applyH1bBadges(needsSponsorship);
+    }
   });
 
-  const panel = mountPanel({
-    version: chrome.runtime.getManifest().version,
-    getState: () => ({
-      mode: mode(),
-      fields: fieldCount,
-      job: { title: cleanTitle(document.title), company: location.hostname.replace(/^www\./, '').split('.')[0], url: location.href },
-      testMode: testMode || appTest, // extension toggle OR the app's sandbox
-      captureMode,
-      // "add this site" control — on any non-builtin host (the panel itself only renders
-      // on relevant pages, so this appears exactly where it's useful)
-      captureSite: { show: !isAtsHost(location.hostname), optedIn: siteOptedIn },
-    }),
-    onAutofill: runAutofill,
-    onAnalyze: analyzeJob,
-    onDraft: draftAnswer,
-    onSave: async () => ({ ok: false, error: 'soon' }), // save-to-feed: next step
-    onCapture: capturePage,
-    onToggleCaptureSite: (on) => {
-      siteOptedIn = on;
-      void setSiteOptIn(location.hostname, on).then(() => {
-        if (on) void captureFlow();
-      });
-    },
-    onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
-  });
-  panelRef = panel;
-  updateBadge(); // sets field count + shows the panel only on relevant pages
+  updateBadge(); // toolbar-icon field count
+  applyEligibilityFilter(needsSponsorship, hideUnsponsored); // mark/hide won't-sponsor tiles
+  void applyH1bBadges(needsSponsorship); // green H-1B sponsor badge per company
 
-  // Re-detect on SPA/DOM changes (debounced) → refresh badge + panel count + passive capture.
+  // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
   const schedule = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       updateBadge();
-      panel.update();
+      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // re-run as you switch jobs
+      void applyH1bBadges(needsSponsorship);
       void captureFlow();
     }, 800);
   };
@@ -433,23 +482,58 @@ async function init() {
   document.addEventListener('input', onUserInput, true);
   document.addEventListener('change', onUserInput, true);
 
-  // Keep the panel's TEST banner in sync with the desktop app's test mode: if you toggle
-  // it in the app, the extension reflects it (data behavior is already live via
-  // isTestActive). Refresh on tab focus + a modest interval; only polls when connected.
-  const refreshAppTest = async () => {
-    const v = await appTestMode();
-    if (v !== appTest) {
-      appTest = v;
-      panel.update();
-    }
-  };
+  // Keep the app-sandbox test flag fresh so the popup shows the right TEST state.
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) void refreshAppTest();
+    if (!document.hidden) void appTestMode().then((v) => (appTest = v));
   });
-  setInterval(() => void refreshAppTest(), 15000);
 
-  chrome.runtime.onMessage.addListener((msg) => {
-    if (msg?.type === 'f2a-run-autofill') void runAutofill();
+  // ── RPC: the toolbar popup drives everything through the active tab's content script ──
+  type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
+  chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
+    const msg = raw as Rpc;
+    if (msg?.type === 'f2a-run-autofill') {
+      void runAutofill(); // legacy one-shot (kept for the popup's quick action)
+      return; // no response
+    }
+    if (msg?.type !== 'f2a-rpc') return;
+    (async () => {
+      switch (msg.method) {
+        case 'getState':
+          sendResponse(getState());
+          break;
+        case 'autofill':
+          autofillAbort?.abort(); // supersede any in-flight run
+          autofillAbort = new AbortController();
+          sendResponse(await runAutofill(msg.params?.mode ?? 'default', autofillAbort.signal));
+          autofillAbort = null;
+          break;
+        case 'cancelAutofill':
+          autofillAbort?.abort();
+          sendResponse({ ok: true });
+          break;
+        case 'analyze':
+          sendResponse(await analyzeJob());
+          break;
+        case 'draft':
+          sendResponse(await draftAnswer());
+          break;
+        case 'save':
+          sendResponse({ ok: false, error: 'soon' }); // save-to-feed: next step
+          break;
+        case 'capture':
+          sendResponse(await capturePage());
+          break;
+        case 'toggleSite':
+          siteOptedIn = !!msg.params?.on;
+          await setSiteOptIn(location.hostname, siteOptedIn);
+          if (siteOptedIn) void captureFlow();
+          sendResponse({ ok: true });
+          break;
+        default:
+          sendResponse({ error: 'unknown method' });
+      }
+    })();
+    return true; // async sendResponse
   });
 }
 

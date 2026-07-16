@@ -41,6 +41,7 @@ declare namespace chrome {
   namespace tabs {
     function sendMessage(tabId: number, message: F2aMessage): Promise<unknown>;
     function query(query: { active?: boolean; currentWindow?: boolean }): Promise<{ id?: number }[]>;
+    function create(props: { url: string; active?: boolean }): Promise<{ id?: number }>;
   }
   namespace commands {
     const onCommand: { addListener(cb: (command: string) => void): void };

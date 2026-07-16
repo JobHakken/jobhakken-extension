@@ -4,7 +4,7 @@ import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
-import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
+import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadHideUnsponsored, loadNeedsSponsorship, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveHideUnsponsored, saveNeedsSponsorship, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -155,8 +155,10 @@ async function onSave() {
 
 // ── desktop connection + import ──────────────────────────────
 function renderConn(connected: boolean, name?: string, port?: number) {
+  // In test mode, never surface the real cached identity — show a neutral test label.
+  const shownName = testModeOn ? '🧪 Demo mode' : name;
   $('connStatus').innerHTML = connected
-    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${name ? ` · <b>${name}</b>` : ''}`
+    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${shownName ? ` · <b>${shownName}</b>` : ''}`
     : '';
   ($('disconnect') as HTMLButtonElement).hidden = !connected;
   ($('connect') as HTMLButtonElement).textContent = connected ? 'Reconnect' : 'Connect';
@@ -164,7 +166,7 @@ function renderConn(connected: boolean, name?: string, port?: number) {
   const importBtn = $('importBtn') as HTMLButtonElement;
   importBtn.dataset.connected = connected ? '1' : '0';
   importBtn.disabled = !connected && !testModeOn;
-  importBtn.title = testModeOn ? 'Import anonymous dummy test data' : connected ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
+  importBtn.title = testModeOn ? 'Import anonymous sample data' : connected ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
 }
 
 async function onConnect() {
@@ -209,7 +211,7 @@ async function onImport() {
     fp = JSON.parse(JSON.stringify(TEST_PROFILE)) as FullProfile;
     renderAll();
     await saveFullProfile(fp);
-    $('profileStatus').innerHTML = `<span class="ok">🧪 Imported dummy test data (${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s))</span>`;
+    $('profileStatus').innerHTML = `<span class="ok">🧪 Imported sample data (${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s))</span>`;
     return;
   }
   if (!conn) return;
@@ -268,11 +270,24 @@ function renderAll() {
     // reflect on the Import button (usable in test mode → imports dummy data)
     const ib = $('importBtn') as HTMLButtonElement;
     ib.disabled = !testModeOn && ib.dataset.connected !== '1';
-    ib.title = testModeOn ? 'Import anonymous dummy test data' : ib.dataset.connected === '1' ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
+    ib.title = testModeOn ? 'Import anonymous sample data' : ib.dataset.connected === '1' ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
     $('profileStatus').innerHTML = testToggle.checked
-      ? '<span class="ok">🧪 Test mode on — autofilling anonymous dummy data</span>'
+      ? '<span class="ok">🧪 Demo mode on — autofilling anonymous sample data</span>'
       : '';
+    // re-render the connection line so the identity masks/unmasks immediately
+    void loadConnection().then((c) => (c ? renderConn(true, c.profile?.basics?.name, c.port) : renderConn(false)));
   });
+  const sponsorToggle = $('needsSponsorship') as HTMLInputElement;
+  const hideToggle = $('hideUnsponsored') as HTMLInputElement;
+  sponsorToggle.checked = await loadNeedsSponsorship();
+  hideToggle.checked = await loadHideUnsponsored();
+  hideToggle.disabled = !sponsorToggle.checked; // only meaningful when the filter is on
+  sponsorToggle.addEventListener('change', () => {
+    void saveNeedsSponsorship(sponsorToggle.checked);
+    hideToggle.disabled = !sponsorToggle.checked;
+  });
+  hideToggle.addEventListener('change', () => void saveHideUnsponsored(hideToggle.checked));
+
   const captureToggle = $('captureMode') as HTMLInputElement;
   captureToggle.checked = await loadCaptureMode();
   captureToggle.addEventListener('change', () => void saveCaptureMode(captureToggle.checked));

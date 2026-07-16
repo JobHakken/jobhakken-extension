@@ -80,9 +80,16 @@
       <div class="ops">Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and · <code>||</code> or · <code>( )</code> group</div>
     </div>
     <div class="panel" data-p="desktop">
+      <p class="note">
+        <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label><br />
+        On job pages (LinkedIn, career sites), flags roles whose description explicitly rules out sponsorship — those requiring U.S. citizenship, a security clearance, “no sponsorship,” or export-control (ITAR/EAR) eligibility. Runs entirely on your machine (no AI). Off by default.
+        <br />
+        <label style="display:inline-block;margin-top:8px;margin-left:22px;"><input type="checkbox" id="hideUnsponsored" /> <b>Hide these jobs</b> instead of marking them</label><br />
+        <span style="margin-left:22px;color:var(--muted)">When off, a red “No sponsorship” mark is added to the job’s tile. When on, the job’s tile is hidden from the list. (LinkedIn shows the full description only once a job is opened, so a job is judged when you open it; the desktop app hides them upfront.)</span>
+      </p>
       <p class="note warn">
-        <label><input type="checkbox" id="testMode" /> <b>🧪 Test mode — fill anonymous dummy data</b></label><br />
-        Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely test on live application pages without exposing anything. The on-page panel shows a <b>TEST DATA</b> banner while this is on. Turn off before real applications.
+        <label><input type="checkbox" id="testMode" /> <b>🧪 Demo mode — fill anonymous sample data</b></label><br />
+        Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely try it on live application pages without exposing anything. The toolbar popup shows a <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
       </p>
       <p class="note">
         <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — recommended, on by default</label><br />

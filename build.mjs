@@ -33,7 +33,9 @@ await esbuild.build({
 
 mkdirSync(path.join(outdir, 'options'), { recursive: true });
 mkdirSync(path.join(outdir, 'popup'), { recursive: true });
+mkdirSync(path.join(outdir, 'data'), { recursive: true });
 cpSync('src/manifest.json', path.join(outdir, 'manifest.json'));
+cpSync('src/data/h1b-sponsors.txt', path.join(outdir, 'data', 'h1b-sponsors.txt')); // bundled H-1B list
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
 cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
 

@@ -1,6 +1,141 @@
 # First2Apply extension — changelog
 
-Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
+Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest().version`).
+SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
+**major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
+
+## 0.8.7
+- **Fix:** badges no longer **duplicate** (a row of repeated pills). The green H-1B badge and
+  red mark sit next to the same company, so each one's "am I already here?" check saw the other
+  badge as the immediate sibling and re-injected — now the check scans a small sibling window,
+  so exactly one of each stays. New E2E guards both no-duplication and re-injection-after-wipe.
+
+## 0.8.6
+- **Fix (the "works on saved page, gone on live" bug):** LinkedIn is a React app that wipes
+  DOM nodes it didn't create on every re-render — so our injected badges flashed in and
+  vanished. Badges now **re-inject automatically**: idempotency is keyed on the badge actually
+  being present in the page (not a one-time flag), and the company→approvals lookup is cached,
+  so each DOM re-render cheaply restores both the green H-1B badge and the red won't-sponsor
+  mark. This is why they held on the downloaded (static) page but not live.
+
+## 0.8.5
+- **Fix (regression):** the green H-1B badge + popup verdict stopped showing after 0.8.2
+  because tile-matching returned early and skipped the reliable detail-pane company. The
+  opened job's company is now always looked up (drives the badge + popup), with tiles as
+  best-effort on top.
+- **Red "won't sponsor" mark now shows on the page too**, next to the green H-1B badge on the
+  opened job (previously only in the popup) — both signals appear together on LinkedIn.
+- **Richer feedback issue:** "⚑ Report this page" now files a structured GitHub issue (job
+  title, company, full posting URL, detection state, sponsorship + H-1B flags, repro steps).
+
+## 0.8.4
+- **Classifier hardened against the full 703-job ground truth** (shared core). New catches
+  found by a precision/recall audit (`scripts/eligibility-audit.mjs`): plural "no visa
+  **sponsorships** available", "unable to consider candidates requiring sponsorship", "U.S.
+  Citizen **or Green Card** holder / Permanent Resident", and non-adjacent "Active **SECRET**
+  U.S. Government **Clearance**". Precision guards added so these stay clean: permissive
+  "citizens, PRs, **or otherwise authorized to work**", "sponsorship **experience**" (skills
+  line), positive plural "sponsorships **are available**", and electrical "**creepage/
+  clearance**". Result on the 703 jobs: 281 flagged, **0 false positives**.
+
+## 0.8.3
+- **Won't-sponsor detection catches more real phrasings** (shared core classifier): e.g.
+  "Sponsorship for work authorization, now or in the future, is unavailable" (words between
+  "sponsorship" and "unavailable"), "Indefinite U.S. work authorization required", and
+  "temporary visas are ineligible". Re-validated on 703 real jobs — still 0 false positives.
+
+## 0.8.2
+- **Feedback now goes to a public repo.** "⚑ Report this page" filed to the private
+  first2apply repo (404 for users) — it now opens an issue on the public
+  `pranav083/cautious-octo-spork` with the `extension-feedback` label.
+- **More live-robust LinkedIn tiles.** The H-1B badge (and won't-sponsor mark) anchor to the
+  job-title link inside each list `<li>` (present on every live card regardless of LinkedIn's
+  obfuscated classes) and read the company from known elements or the tile's text; badges are
+  forced visible with `!important` so host CSS can't hide them. (Still best-confirmed on saved
+  pages — see note; a live card's HTML nails it.)
+
+## 0.8.1
+- **Fix:** the popup job line showed the site ("linkedin") as the company. It now reads the
+  real company from the page title ("Title | Company | LinkedIn").
+- **Broader LinkedIn tile matching** for the H-1B badge + won't-sponsor mark: added more
+  list-item and company selectors (`scaffold-layout__list-item`, `data-job-id`, entity-lockup
+  subtitle, primary-description) since LinkedIn's list DOM uses obfuscated classes. (Detail
+  pages are validated; the search-list tiles need a saved list page to fully confirm.)
+
+## 0.8.0
+- **Inline H-1B sponsor badges on LinkedIn.** A green "✓ H-1B sponsor" pill now appears next
+  to a company on job tiles/pages when that employer has H-1B approvals on record — no need to
+  open the popup, and it works **standalone** (a compact ~124k-employer list, ~2.8 MB, is
+  bundled and owned by the background worker). Matching sums a brand's exact + word-prefix
+  entries ("emerson" → "emerson electric" + "emerson process …") so short LinkedIn names
+  resolve like the desktop's fuzzy matcher. The popup shows the same as a green chip.
+- **Two complementary signals, by design:** the green H-1B badge is a *company-level* hint
+  (has this employer sponsored before?), while the red "🛂 won't sponsor" mark is the
+  *role-level* override read from the specific job description — both can appear on the same
+  tile (e.g. a sponsoring company posting a citizenship-only role). Both gated by
+  "I need visa sponsorship". Regenerate the list with `pnpm run gen:h1b-ext`.
+
+## 0.7.2
+- **"Test mode" is now "Demo mode"** (clearer for users) — same anonymous sample identity;
+  labels updated across the popup and Options (storage/behavior unchanged). A seeded demo
+  *account* is planned for when the hosted/paid tier adds sign-in.
+- **Feedback → prefilled GitHub issue.** New "⚑ Report this page" in the popup with quick
+  reasons (not detected / autofill missed / wrong sponsorship flag / other). It opens a
+  prefilled issue with PII-safe context (host only, version, mode, field count) — and for
+  "not detected" it also opts the site in so it works next time.
+- **Clearer site control.** "Always active on this site" → "➕ Always run First2Apply on this
+  site", with a one-line hint (for job/career sites we don't auto-detect).
+- E2E now attaches before/after autofill screenshots so filling quality is visible in the
+  report/trace.
+
+## 0.7.1
+- **Sponsorship marker now actually attaches on LinkedIn.** The job id is read from the JD
+  container's stable id (`JobDetails_AboutTheJob_<id>`) rather than the URL, so it works on a
+  single job-detail page (and saved pages) too. On the search list it marks/hides the job's
+  **tile**; on a job-detail page (no list) it marks right next to the **job title**. Validated
+  against real saved LinkedIn pages (Emerson, West Coast Solutions).
+- **Marker + popup verdict are compact.** A small red "🛂 No sponsorship" pill (on the tile/
+  title) and a small "🛂 Won't sponsor" chip in the popup — both reveal the full reason on
+  hover, instead of a large always-on banner.
+- **Autofill can be cancelled and times out.** While running, the Autofill button becomes
+  "✕ Cancel" (a second click aborts). The slow AI/résumé step is bounded (20s default, 45s for
+  ATS-tailored) so it never hangs — synchronous field fills are kept and reported as partial.
+
+## 0.7.0
+- **Toolbar popup is now the whole UI — the floating on-page panel is gone.** The docked
+  "⚡" circle was fragile on SPA re-renders (LinkedIn/Workday); the extension is now driven
+  entirely from the toolbar icon, which is always available regardless of the page. The popup
+  holds everything the panel did: connection/test status, live fillable-field count, Autofill
+  (+ ATS-tailored), Job insights (ATS match / visa / keywords), Draft answer, Save job, dev
+  Capture, and "always active on this site". It drives the page via a content-script RPC; all
+  page work still happens in the content script.
+- **Sponsorship marker moved to the job tile.** Instead of a badge in the description, a
+  blocked job now gets a red "🛂 No sponsorship" pill + red rail on its list card (tile).
+- **New: "Hide these jobs" option** (Options → under "I need visa sponsorship"). When on,
+  won't-sponsor jobs are hidden from the list rather than marked. LinkedIn reveals the full
+  description only when a job is opened, so a job is judged on open; the desktop app hides
+  them upfront (it has every job's full description).
+
+## 0.6.1
+- **Fix:** the sponsorship badge now matches the current LinkedIn DOM. LinkedIn ships
+  obfuscated CSS classes with a stable id prefix `JobDetails_AboutTheJob_<jobId>`; the badge
+  now targets `[id^="JobDetails"]` (older `#job-details` + generic `job-description` kept as
+  fallbacks) and reads `textContent` so a collapsed "…show more" description is still
+  classified. Validated against a real saved LinkedIn page.
+- **Fix (privacy):** in test mode the popup and Options no longer show the real cached
+  identity — the connection line reads **"Connected · 🧪 Test mode"** instead of your name.
+- **Fix (reliability):** the on-page panel/bubble re-attaches itself if a single-page-app
+  re-render (LinkedIn, Workday) drops its host, so the ⚡ icon reappears instead of vanishing.
+
+## 0.6.0
+- **Visa-sponsorship filter (local, no AI).** New Options toggle **"🛂 I need visa
+  sponsorship"** (off by default). When on, job pages (LinkedIn and generic career sites)
+  whose description explicitly rules out sponsorship — U.S. citizenship, a security
+  clearance, "no sponsorship," or export-control (ITAR/EAR) — get a warning badge on the
+  open job, and that job's list card is dimmed. Runs entirely on-device using the same
+  classifier the desktop app uses (`@first2apply/core`, validated against ~700 real jobs).
+  LinkedIn list cards lack the full description, so only the opened job is judged; the
+  desktop feed does the full hiding. Reflected live when toggled (no reload). E2E-guarded.
 
 ## 0.5.2
 - Fix the panel flashing on non-application pages (e.g. GitHub settings). The "looks like

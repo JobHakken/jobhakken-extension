@@ -4,26 +4,119 @@
     <meta charset="utf-8" />
     <title>First2Apply</title>
     <style>
-      :root { color-scheme: light dark; }
-      body { width: 260px; margin: 0; padding: 14px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-      .hd { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-      .mark { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #5457d6, #0f9d6b); display: grid; place-items: center; color: #fff; font-size: 12px; }
-      .nm { font-weight: 700; font-size: 14px; }
-      .status { font-size: 12px; margin: 8px 0 12px; display: flex; align-items: center; gap: 7px; }
-      .dot { width: 8px; height: 8px; border-radius: 50%; }
-      .connected { background: #0f9d6b; } .standalone { background: #5457d6; } .none { background: #c2740c; }
-      button { width: 100%; border: none; border-radius: 8px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
-      .primary { background: #5457d6; color: #fff; } .primary:hover { filter: brightness(1.06); }
-      .ghost { background: transparent; border: 1px solid #d9dce3; color: inherit; margin-top: 8px; }
-      .msg { font-size: 12px; color: #6b7280; margin-top: 10px; min-height: 15px; }
+      :root { color-scheme: light dark; --bg:#fff; --fg:#171a21; --muted:#6b7280; --line:#e3e6ec; --accent:#5457d6; --green:#0f9d6b; --amber:#c2740c; --red:#b91c1c; --surf:#f6f7f9; }
+      @media (prefers-color-scheme: dark) { :root { --bg:#171a21; --fg:#e6e8ec; --muted:#9aa1ac; --line:#2a2f3a; --surf:#1d212a; } }
+      * { box-sizing: border-box; }
+      body { width: 330px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); font-size: 13px; }
+      .hd { display: flex; align-items: center; gap: 8px; padding: 12px 13px; border-bottom: 1px solid var(--line); }
+      .mark { width: 23px; height: 23px; border-radius: 7px; background: linear-gradient(135deg, var(--accent), var(--green)); display: grid; place-items: center; color: #fff; font-size: 12px; }
+      .nm { font-weight: 700; font-size: 13.5px; }
+      .ver { font-size: 10px; color: var(--muted); font-weight: 600; }
+      .conn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--muted); }
+      .conn .d { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+      .conn.connected .d { background: var(--green); box-shadow: 0 0 0 3px #0f9d6b22; }
+      .gear { border: none; background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; padding: 2px 4px; }
+      .testbar { display: none; align-items: center; gap: 7px; background: var(--amber); color: #fff; font-size: 11px; font-weight: 700; padding: 6px 13px; }
+      .testbar.on { display: flex; }
+      .bd { padding: 13px; display: flex; flex-direction: column; gap: 11px; }
+      .jobline { display: none; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); min-width: 0; }
+      .jobline.on { display: flex; }
+      .jobline b { color: var(--fg); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .count { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+      .count b { color: var(--fg); font-size: 13.5px; }
+      .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px #5457d622; }
+      /* compact signal chips — small; hover (title) explains them. */
+      .sigrow { display: flex; flex-wrap: wrap; gap: 6px; }
+      .elig, .h1b { display: none; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #fff; border-radius: 999px; padding: 3px 10px; cursor: help; }
+      .elig { background: var(--red); }
+      .h1b { background: var(--green); }
+      .elig.on, .h1b.on { display: inline-flex; }
+      .fill2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+      .fill { display: flex; flex-direction: column; gap: 2px; border: none; border-radius: 11px; padding: 11px 10px; cursor: pointer; text-align: center; align-items: center; font: inherit; }
+      .fill:disabled { opacity: .55; cursor: not-allowed; }
+      .fill .big { font-size: 12.5px; font-weight: 700; }
+      .fill .sm { font-size: 10px; font-weight: 500; opacity: .85; }
+      .fill.p { background: var(--accent); color: #fff; } .fill.p:hover:not(:disabled) { filter: brightness(1.06); }
+      .fill.canceling { background: var(--amber) !important; color: #fff !important; border-color: var(--amber) !important; }
+      .fill.a { background: var(--bg); color: var(--accent); border: 1px solid var(--accent); }
+      .fill.a.hidden { display: none; }
+      .fill.solo { grid-column: 1 / -1; }
+      .result { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-height: 0; }
+      .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+      .chip.ok { background: #0f9d6b1f; color: var(--green); } .chip.rev { background: #c2740c1f; color: var(--amber); }
+      details.ins { border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+      details.ins.hidden { display: none; }
+      .ins summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 9px; padding: 9px 12px; font-size: 12px; font-weight: 600; }
+      .ins summary::-webkit-details-marker { display: none; }
+      .ins .car { transition: transform .2s; color: var(--muted); font-size: 11px; } .ins[open] .car { transform: rotate(90deg); }
+      .ins .body { padding: 11px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 10px; }
+      .visa { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--green); background: #0f9d6b1f; padding: 4px 9px; border-radius: 999px; }
+      .kw { display: flex; flex-wrap: wrap; gap: 5px; } .kw span { font-size: 10.5px; padding: 2px 7px; border-radius: 6px; font-weight: 500; }
+      .kw .have { background: #0f9d6b1f; color: var(--green); } .kw .gap { background: #c2740c1f; color: var(--amber); }
+      .mini { display: flex; gap: 8px; }
+      .mini.hidden { display: none; }
+      .mini button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); border-radius: 9px; padding: 7px; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+      .mini button:hover { border-color: var(--accent); color: var(--fg); }
+      .sitecap { display: none; align-items: center; gap: 7px; font-size: 11.5px; color: var(--fg); cursor: pointer; font-weight: 600; }
+      .sitecap.on { display: flex; }
+      .sitehint { display: none; font-size: 10.5px; color: var(--muted); line-height: 1.4; margin-top: -4px; }
+      .sitehint.on { display: block; }
+      details.report { border-top: 1px solid var(--line); margin: 2px -13px -13px; padding: 0; }
+      details.report summary { list-style: none; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--muted); padding: 9px 13px; }
+      details.report summary::-webkit-details-marker { display: none; }
+      details.report[open] summary { color: var(--fg); }
+      .rbody { display: flex; flex-direction: column; gap: 6px; padding: 0 13px 12px; }
+      .rbody button { text-align: left; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 8px; padding: 7px 10px; font-size: 11.5px; font-weight: 500; cursor: pointer; font-family: inherit; }
+      .rbody button:hover { border-color: var(--accent); }
+      .foot { border-top: 1px solid var(--line); padding: 9px 13px; font-size: 10.5px; color: var(--muted); line-height: 1.5; background: var(--surf); }
+      .foot a { color: var(--accent); text-decoration: none; font-weight: 600; cursor: pointer; }
     </style>
   </head>
   <body>
-    <div class="hd"><span class="mark">⚡</span><span class="nm">First2Apply</span></div>
-    <div class="status"><span class="dot none" id="dot"></span><span id="statusText">Checking…</span></div>
-    <button class="primary" id="autofill">⚡ Autofill this page</button>
-    <button class="ghost" id="options">Profile &amp; settings</button>
-    <div class="msg" id="msg"></div>
+    <div class="hd">
+      <span class="mark">⚡</span><span class="nm">First2Apply</span><span class="ver" id="ver"></span>
+      <span class="conn" id="conn"><span class="d"></span><span id="connLabel">Checking…</span></span>
+      <button class="gear" id="gear" title="Profile &amp; settings">⚙</button>
+    </div>
+    <div class="testbar" id="testbar"><span>🧪</span> DEMO DATA — filling anonymous sample values</div>
+    <div class="bd">
+      <div class="jobline" id="jobline"></div>
+      <div class="sigrow" id="sigrow"><span class="elig" id="elig"></span><span class="h1b" id="h1b"></span></div>
+      <div class="count"><span class="pulse"></span><b id="fieldCount">0</b> fillable fields</div>
+
+      <div class="fill2">
+        <button class="fill p" id="autofill"><span class="big">⚡ Autofill</span><span class="sm">+ my résumé</span></button>
+        <button class="fill a hidden" id="autofillAts"><span class="big">✨ Autofill + ATS</span><span class="sm">tailored résumé</span></button>
+      </div>
+      <div class="result" id="fillResult"></div>
+
+      <details class="ins hidden" id="insights">
+        <summary><span class="car">▸</span> Job insights <span id="insPeek" style="margin-left:auto;display:flex;gap:6px;"></span></summary>
+        <div class="body" id="insBody">Analyzing…</div>
+      </details>
+
+      <div class="mini hidden" id="mini">
+        <button id="draft">✍️ Draft answer</button>
+        <button id="save">📌 Save job</button>
+      </div>
+
+      <label class="sitecap" id="siteCapRow"><input type="checkbox" id="siteCap" /> <span id="siteCapLabel"></span></label>
+      <div class="sitehint" id="siteHint">Turn on for a job/career site we didn't auto-detect — First2Apply will always run here.</div>
+
+      <div class="mini hidden" id="captureRow"><button id="capture">📸 Capture fixture (dev)</button></div>
+      <div class="result" id="captureResult"></div>
+
+      <details class="report" id="report">
+        <summary>⚑ Report this page</summary>
+        <div class="rbody">
+          <button data-r="not-detected">Not detected as a job page</button>
+          <button data-r="autofill-missed">Autofill missed fields</button>
+          <button data-r="wrong-sponsorship">Wrong sponsorship flag</button>
+          <button data-r="other">Something else</button>
+        </div>
+      </details>
+    </div>
+    <div class="foot" id="foot"></div>
     <script type="module" src="popup.js"></script>
   </body>
 </html>
