@@ -1,4 +1,4 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { addCapture, isAtsHost, isCaptureAllowed, setSiteOptIn } from '../lib/captureStore.js';
@@ -73,16 +73,31 @@ async function getFullProfile(): Promise<FullProfile | null> {
 }
 
 let panelRef: { update: () => void; setVisible: (v: boolean) => void } | null = null;
+let appLike = false; // page looks like a job application (≥3 fields map to profile keys, or a résumé upload)
 
-/** The panel belongs on application pages only — fields present, or a recognized ATS. */
+/**
+ * The panel opens ONLY on job-application pages, never on ordinary sites (e.g. google.com,
+ * whose lone search box previously tripped a bare field-count gate). A page qualifies if:
+ *   • it's a known ATS host (Workday/Greenhouse/Lever/…), OR
+ *   • it's fingerprinted as an ATS (company career site running one under the hood), OR
+ *   • the user opted this site in, OR
+ *   • it looks like an application form — ≥3 detected fields resolve to profile fields
+ *     (name/email/phone/…) or it has a résumé/CV upload.
+ */
 function isRelevantPage(): boolean {
-  return fieldCount > 0 || isAtsPage(document);
+  return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
 }
 
 function updateBadge(): void {
-  fieldCount = detectFields(document).length;
-  panelRef?.setVisible(isRelevantPage());
-  void chrome.runtime.sendMessage({ type: 'f2a-detected', count: fieldCount }).catch(() => {});
+  const fields = detectFields(document);
+  fieldCount = fields.length;
+  const resolved = fields.filter((f) => resolveField(f)).length;
+  const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
+  appLike = resolved >= 3 || hasResume;
+  const relevant = isRelevantPage();
+  panelRef?.setVisible(relevant);
+  // badge only on application pages too
+  void chrome.runtime.sendMessage({ type: 'f2a-detected', count: relevant ? fieldCount : 0 }).catch(() => {});
 }
 
 async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ filled: number; review: number; total: number } | null> {

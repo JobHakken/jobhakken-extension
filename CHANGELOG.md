@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.4
+- Tighten when the panel opens — the v0.4.3 gate used "any fillable field", so a lone
+  search box (google.com etc.) tripped it. Now the panel opens ONLY on job-application
+  pages: a known ATS host, an ATS-fingerprinted page, a user-opted-in site, or a page
+  that looks like an application form (≥3 fields map to profile data, or a résumé upload).
+  E2E asserts it stays hidden on a search-box page.
+
 ## 0.4.3
 - Fix: the panel no longer appears on every website — it shows only on **application
   pages** (fillable fields present, or a page fingerprinted as a known ATS). This also
