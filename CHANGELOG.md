@@ -2,6 +2,18 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.0
+- Redesigned on-page panel (autofill-first):
+  - **Two autofill actions** with the résumé merged in — **Autofill** (your default
+    résumé) and **Autofill + ATS** (résumé tailored to this job via the new
+    `tailoredResumeFile` bridge RPC). No separate attach step.
+  - **Job insights collapse** behind a click-to-expand bar (ATS match ring, H-1B/visa
+    signal, keyword gaps) so autofill stays the focus; analyzed lazily on expand.
+  - **Settings gear** in the header; **Draft answer** (AI, fills the first screening
+    field) and Save as small secondary buttons.
+  - **Not connected → only Autofill** is shown; all app/AI surfaces are omitted.
+- Save-to-feed is stubbed ("soon") pending proper job creation.
+
 ## 0.3.2
 - Test mode now **syncs with the desktop app**: a `status` bridge RPC reports the app's
   sandbox state, and the extension fills anonymous data whenever *either* its own toggle

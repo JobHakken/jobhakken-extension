@@ -57,7 +57,7 @@ function updateBadge(): void {
   void chrome.runtime.sendMessage({ type: 'f2a-detected', count: fieldCount }).catch(() => {});
 }
 
-async function runAutofill(): Promise<{ filled: number; review: number; total: number } | null> {
+async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ filled: number; review: number; total: number } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
@@ -69,23 +69,23 @@ async function runAutofill(): Promise<{ filled: number; review: number; total: n
   // 3) async pass for widgets that only fill through live interaction
   //    (Workday lazy comboboxes + Month/Day/Year date pickers)
   const live = await autofillInteractive({ root: document, ...common });
-  // 4) résumé / cover-letter upload
-  const uploaded = await uploadDocuments();
+  // 4) résumé / cover-letter upload (ATS mode → tailored résumé)
+  const uploaded = await uploadDocuments(mode);
   return { filled: report.filled + live.comboboxes + live.dates + uploaded, review: report.review, total: report.total };
 }
 
 /**
  * Attach the résumé / cover letter to the page's file inputs. Test mode uses bundled
- * dummy PDFs; otherwise (future) the latest generated docs from the connected desktop
- * app. Only résumé/cover-letter inputs are touched — never a generic attachment field.
+ * dummy PDFs; otherwise the connected desktop app's résumé — the default one, or (ATS
+ * mode) one tailored to this job. Only résumé/cover-letter inputs are touched.
  */
-async function uploadDocuments(): Promise<number> {
+async function uploadDocuments(mode: 'default' | 'ats' = 'default'): Promise<number> {
   const inputs = detectFileInputs(document).filter((f) => f.kind === 'resume' || f.kind === 'coverLetter');
   if (!inputs.length) return 0;
   const testMode = await loadTestMode();
   const files: { resume?: File; coverLetter?: File } = testMode
     ? { resume: dummyResumeFile(), coverLetter: dummyCoverLetterFile() }
-    : await realDocuments();
+    : await realDocuments(mode);
   let n = 0;
   for (const f of inputs) {
     const file = f.kind === 'coverLetter' ? files.coverLetter : files.resume;
@@ -105,11 +105,12 @@ function base64ToFile(base64: string, name: string, type: string): File {
  * desktop app) and the user's default cover letter (their saved text → PDF, client-side,
  * no AI needed).
  */
-async function realDocuments(): Promise<{ resume?: File; coverLetter?: File }> {
+async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ resume?: File; coverLetter?: File }> {
   const out: { resume?: File; coverLetter?: File } = {};
   if (connection) {
     try {
-      const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, 'resumeFile', {});
+      const method = mode === 'ats' ? 'tailoredResumeFile' : 'resumeFile';
+      const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, method, mode === 'ats' ? pageJob() : {});
       if (r?.base64) out.resume = base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf');
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
@@ -205,6 +206,11 @@ async function maybeAutoCapture(): Promise<void> {
   }
 }
 
+/** A tidy job title from the page <title> (strip trailing " - Company" / site noise). */
+function cleanTitle(t: string): string {
+  return t.split(/\s[|·—–-]\s/)[0].trim().slice(0, 80);
+}
+
 /** Best-effort "this job" from the page for the AI actions (rough JD extraction). */
 function pageJob() {
   return {
@@ -214,18 +220,43 @@ function pageJob() {
   };
 }
 
-async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; error?: string } | null> {
+type Keyword = { keyword?: string; canonical?: string; status?: string };
+async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; keywords?: { have: string[]; gap: string[] }; error?: string } | null> {
   if (!connection) return null;
   try {
     const job = pageJob();
     const [kw, visa] = await Promise.all([
-      rpc<{ atsMatchPercent?: number }>(connection.port, connection.token, 'keywords', job).catch(() => null),
+      rpc<{ atsMatchPercent?: number; keywords?: Keyword[] }>(connection.port, connection.token, 'keywords', job).catch(() => null),
       rpc<{ h1b?: { employer?: string } | null; uk?: { organisation?: string } | null }>(connection.port, connection.token, 'visa', { company: job.company }).catch(() => null),
     ]);
     const visaLabel = visa?.h1b ? 'Known H-1B sponsor' : visa?.uk ? 'UK visa sponsor' : undefined;
-    return { ats: kw?.atsMatchPercent ?? null, visa: visaLabel };
+    const list = kw?.keywords ?? [];
+    const keywords = {
+      have: list.filter((k) => k.status === 'present').map((k) => k.canonical || k.keyword || '').filter(Boolean),
+      gap: list.filter((k) => k.status === 'missing').map((k) => k.canonical || k.keyword || '').filter(Boolean),
+    };
+    return { ats: kw?.atsMatchPercent ?? null, visa: visaLabel, keywords };
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Analysis failed' };
+  }
+}
+
+/** Draft an answer for the first empty long-text (screening) field via the desktop AI. */
+async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
+  if (!connection) return { ok: false, error: 'Connect the app' };
+  const ta = Array.from(document.querySelectorAll('textarea')).find((t) => !t.value.trim() && t.offsetParent !== null) as HTMLTextAreaElement | undefined;
+  if (!ta) return { ok: false, error: 'No question field' };
+  try {
+    const label = ta.labels?.[0]?.textContent?.trim() || ta.getAttribute('aria-label') || ta.placeholder || 'Why are you a good fit?';
+    const r = await rpc<{ text?: string }>(connection.port, connection.token, 'answer', { ...pageJob(), question: label });
+    if (!r?.text) return { ok: false, error: 'No draft' };
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+    setter?.call(ta, r.text);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
   }
 }
 
@@ -254,6 +285,7 @@ async function init() {
     getState: () => ({
       mode: mode(),
       fields: fieldCount,
+      job: { title: cleanTitle(document.title), company: location.hostname.replace(/^www\./, '').split('.')[0], url: location.href },
       testMode: testMode || appTest, // extension toggle OR the app's sandbox
       captureMode,
       // per-site opt-in prompt: only for unknown hosts with a real form, when auto-capture is on
@@ -261,6 +293,8 @@ async function init() {
     }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
+    onDraft: draftAnswer,
+    onSave: async () => ({ ok: false, error: 'soon' }), // save-to-feed: next step
     onCapture: capturePage,
     onToggleCaptureSite: (on) => {
       siteOptedIn = on;
