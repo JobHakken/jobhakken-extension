@@ -94,9 +94,10 @@ const STYLE = `
 .hidden{ display:none !important; }
 `;
 
-export function mountPanel(deps: PanelDeps): { update: () => void } {
+export function mountPanel(deps: PanelDeps): { update: () => void; setVisible: (v: boolean) => void } {
   const host = document.createElement('div');
   host.id = 'f2a-panel-host';
+  host.style.display = 'none'; // revealed via setVisible() only on relevant pages
   const sr = host.attachShadow({ mode: 'open' });
   sr.innerHTML = `
     <style>${STYLE}</style>
@@ -281,7 +282,11 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     if (fc) fc.addEventListener('click', () => deps.onOpenOptions());
   };
   update();
-  return { update };
+  // Show the panel only on relevant (application) pages; hidden elsewhere.
+  const setVisible = (v: boolean) => {
+    host.style.display = v ? '' : 'none';
+  };
+  return { update, setVisible };
 }
 
 function esc(s: string): string {

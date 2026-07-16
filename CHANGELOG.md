@@ -2,6 +2,12 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.3
+- Fix: the panel no longer appears on every website — it shows only on **application
+  pages** (fillable fields present, or a page fingerprinted as a known ATS). This also
+  makes it appear on ATS pages like Greenhouse even before the form finishes loading
+  (re-evaluated on DOM changes). Starts hidden to avoid a flash on ordinary pages.
+
 ## 0.4.2
 - Fix: no more "allow this site to access local device" prompt on every page. Bridge
   calls (127.0.0.1) are now proxied through the background service worker (extension

@@ -72,8 +72,16 @@ async function getFullProfile(): Promise<FullProfile | null> {
   return await loadFullProfile();
 }
 
+let panelRef: { update: () => void; setVisible: (v: boolean) => void } | null = null;
+
+/** The panel belongs on application pages only — fields present, or a recognized ATS. */
+function isRelevantPage(): boolean {
+  return fieldCount > 0 || isAtsPage(document);
+}
+
 function updateBadge(): void {
   fieldCount = detectFields(document).length;
+  panelRef?.setVisible(isRelevantPage());
   void chrome.runtime.sendMessage({ type: 'f2a-detected', count: fieldCount }).catch(() => {});
 }
 
@@ -290,7 +298,6 @@ async function init() {
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   siteOptedIn = !isAtsHost(location.hostname) && (await isCaptureAllowed(location.hostname));
-  updateBadge();
 
   // Reflect setting changes from the options page without a reload.
   chrome.storage.onChanged.addListener((changes, area) => {
@@ -325,6 +332,8 @@ async function init() {
     },
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
+  panelRef = panel;
+  updateBadge(); // sets field count + shows the panel only on relevant pages
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + panel count + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
