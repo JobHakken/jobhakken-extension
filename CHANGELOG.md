@@ -2,6 +2,14 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.3.2
+- Test mode now **syncs with the desktop app**: a `status` bridge RPC reports the app's
+  sandbox state, and the extension fills anonymous data whenever *either* its own toggle
+  or the connected app is in test mode (no more mismatched modes).
+- Company career sites: auto-capture now also fires when a page is **fingerprinted as an
+  ATS** (Workday/Greenhouse/Lever/… running under a company domain / in an iframe), not
+  just on the hostname allowlist.
+
 ## 0.3.1
 - Auto-capture now scoped to a **known-ATS allowlist** (Workday, Greenhouse, Lever,
   Ashby, iCIMS, SmartRecruiters, Workable, Taleo, SuccessFactors, BambooHR, Jobvite, …)

@@ -1,4 +1,4 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { addCapture, isAtsHost, isCaptureAllowed, setSiteOptIn } from '../lib/captureStore.js';
@@ -18,6 +18,7 @@ import { mountPanel } from './panel.js';
 let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
 let testMode = false;
+let appTest = false;
 let captureMode = false;
 let autoCaptureOn = true;
 let siteOptedIn = false;
@@ -28,13 +29,24 @@ function mode(): 'connected' | 'standalone' | 'none' {
   return hasLocalProfile ? 'standalone' : 'none';
 }
 
+/** Is the connected desktop app running in its test-data sandbox? (keeps modes in sync) */
+async function appTestMode(): Promise<boolean> {
+  if (!connection) return false;
+  try {
+    const s = await rpc<{ testMode?: boolean }>(connection.port, connection.token, 'status', {});
+    return !!s?.testMode;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * The profile to fill from. In TEST MODE this is always the built-in anonymous
- * TEST_PROFILE (so nothing real is exposed on a live page). Otherwise prefer the
- * desktop's résumé-derived profile, falling back to the local standalone one.
+ * The profile to fill from. TEST MODE (the extension toggle OR the connected app's
+ * sandbox) → the built-in anonymous TEST_PROFILE, so the two stay in sync and nothing
+ * real is exposed. Otherwise prefer the desktop's résumé-derived profile, else local.
  */
 async function getFullProfile(): Promise<FullProfile | null> {
-  if (await loadTestMode()) return TEST_PROFILE;
+  if ((await loadTestMode()) || (await appTestMode())) return TEST_PROFILE;
   const p = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
   if (p?.basics) return deriveFullProfile(p);
   return await loadFullProfile();
@@ -166,7 +178,9 @@ const captured = new Set<string>();
 async function maybeAutoCapture(): Promise<void> {
   try {
     if (!(await loadAutoCapture())) return;
-    if (!(await isCaptureAllowed(location.hostname))) return; // known ATS or user opted this site in
+    // capture on: known ATS host, a page fingerprinted as an ATS (company-branded career
+    // sites running Workday/Greenhouse/… underneath), or a host the user opted in
+    if (!isAtsPage(document) && !(await isCaptureAllowed(location.hostname))) return;
     const report = captureCoverage(document, { url: location.href });
     if (report.total < 4) return; // gate: only real application forms, never arbitrary pages
     const key = `${location.href}|${report.total}`;
@@ -220,6 +234,7 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
+  appTest = await appTestMode(); // sync with the connected app's sandbox
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   siteOptedIn = !isAtsHost(location.hostname) && (await isCaptureAllowed(location.hostname));
@@ -239,7 +254,7 @@ async function init() {
     getState: () => ({
       mode: mode(),
       fields: fieldCount,
-      testMode,
+      testMode: testMode || appTest, // extension toggle OR the app's sandbox
       captureMode,
       // per-site opt-in prompt: only for unknown hosts with a real form, when auto-capture is on
       captureSite: { show: autoCaptureOn && !isAtsHost(location.hostname) && fieldCount >= 4, optedIn: siteOptedIn },
