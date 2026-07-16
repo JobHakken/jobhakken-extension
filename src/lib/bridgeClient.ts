@@ -17,32 +17,58 @@ export type BridgeProfile = {
 
 export type BridgeConnection = { port: number; token: string; profile: BridgeProfile };
 
-type Opts = { fetchImpl?: typeof fetch; ports?: number[] };
+type Opts = { fetchImpl?: typeof fetch; ports?: number[]; timeoutMs?: number };
+
+/** fetch with an AbortController timeout so a hung/crashed desktop app can't stall us forever. */
+async function fetchWithTimeout(f: typeof fetch, url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await f(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 /** Find the desktop bridge by probing /health across the candidate ports. */
 export async function discoverBridge(opts: Opts = {}): Promise<{ port: number } | null> {
   const f = opts.fetchImpl ?? fetch;
   for (const port of opts.ports ?? CANDIDATE_PORTS) {
     try {
-      const res = await f(`http://127.0.0.1:${port}/health`);
+      const res = await fetchWithTimeout(f, `http://127.0.0.1:${port}/health`, {}, opts.timeoutMs ?? 1500);
       if (!res.ok) continue;
       const body = (await res.json()) as { name?: string };
       if (body?.name === 'first2apply') return { port };
     } catch {
-      /* nothing listening here — try the next port */
+      /* nothing listening (or timed out) — try the next port */
     }
   }
   return null;
 }
 
-/** Call one RPC method against a known bridge port with the bearer token. */
+/**
+ * Call one RPC method against a known bridge port with the bearer token. Bounded by a
+ * generous default timeout (AI methods like score/keywords are slow, so it's long — but
+ * finite, so a crashed app surfaces an error instead of a forever-pending UI).
+ */
 export async function rpc<T = unknown>(port: number, token: string, method: string, params: unknown = {}, opts: Opts = {}): Promise<T> {
   const f = opts.fetchImpl ?? fetch;
-  const res = await f(`http://127.0.0.1:${port}/rpc`, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ method, params }),
-  });
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(
+      f,
+      `http://127.0.0.1:${port}/rpc`,
+      {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ method, params }),
+      },
+      opts.timeoutMs ?? 60000,
+    );
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') throw new Error(`RPC ${method} timed out — is the desktop app responding?`);
+    throw e;
+  }
   const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string };
   if (!res.ok) throw new Error(body?.error || `RPC ${method} failed (${res.status})`);
   return body.result as T;
