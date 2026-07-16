@@ -1,8 +1,9 @@
 import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
+import { addCapture } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
 import { textToPdfFile } from '../lib/pdf.js';
 import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
@@ -146,6 +147,47 @@ async function capturePage(): Promise<{ total: number; resolved: number; unresol
   }
 }
 
+/** Smallest region containing the application's fields (keeps captures small). */
+function formRegion(): Element {
+  const els = detectFields(document)
+    .map((f) => f.el)
+    .filter((e) => e instanceof HTMLElement && !e.closest('nav, header, footer'));
+  if (!els.length) return document.body;
+  let anc: Element | null = els[0];
+  for (const el of els.slice(1)) while (anc && !anc.contains(el)) anc = anc.parentElement;
+  return (anc?.closest('form, main, section') as Element | null) ?? anc ?? document.body;
+}
+
+// Passive, anonymized auto-capture of application pages → local corpus (learning).
+// Never opens dropdowns or otherwise touches the live form. Deduped per URL+field-count.
+const captured = new Set<string>();
+async function maybeAutoCapture(): Promise<void> {
+  try {
+    if (!(await loadAutoCapture())) return;
+    const report = captureCoverage(document, { url: location.href });
+    if (report.total < 4) return; // gate: only real application forms, never arbitrary pages
+    const key = `${location.href}|${report.total}`;
+    if (captured.has(key)) return;
+    captured.add(key);
+    // anonymize at source: scrub the user's own profile values (+ emails, in cleanClone)
+    const local = await loadFullProfile();
+    const scrub = Object.values(local?.profile ?? {}).filter((v): v is string => typeof v === 'string');
+    const html = cleanClone(formRegion(), scrub);
+    await addCapture({
+      ts: new Date().toISOString(),
+      url: location.href,
+      host: location.hostname.replace(/^www\./, ''),
+      total: report.total,
+      resolved: report.resolved,
+      unresolved: report.unresolved,
+      unresolvedLabels: report.unresolvedLabels,
+      html,
+    });
+  } catch {
+    /* capture is best-effort; never disrupt the page */
+  }
+}
+
 /** Best-effort "this job" from the page for the AI actions (rough JD extraction). */
 function pageJob() {
   return {
@@ -195,16 +237,18 @@ async function init() {
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
 
-  // Re-detect on SPA/DOM changes (debounced) → refresh badge + panel count.
+  // Re-detect on SPA/DOM changes (debounced) → refresh badge + panel count + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
   const schedule = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       updateBadge();
       panel.update();
-    }, 500);
+      void maybeAutoCapture();
+    }, 800);
   };
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  void maybeAutoCapture(); // initial (page may already be settled)
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg?.type === 'f2a-run-autofill') void runAutofill();

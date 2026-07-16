@@ -2,6 +2,15 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.3.0
+- Auto-capture corpus (default on): passively snapshots every job-application page
+  (≥4 fields), scrubs your personal details at source, and stores it locally
+  (chrome.storage.local, `unlimitedStorage`) to learn field coverage over time. Never
+  opens dropdowns / touches the form, never captures other browsing, never leaves the
+  machine. Options: toggle + count + **Export corpus** + Clear.
+- Aims: strengthen the offline seed/filters from real data and pinpoint where LLM calls
+  are actually needed — reducing manual data entry over time.
+
 ## 0.2.4
 - Cover-letter upload: your default cover-letter text (saved in the profile) is rendered
   to a PDF in-browser and attached to cover-letter file inputs on Autofill — no AI needed.

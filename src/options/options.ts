@@ -2,7 +2,8 @@ import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type Full
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
-import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
+import { clearCaptures, getCaptures } from '../lib/captureStore.js';
+import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -245,6 +246,31 @@ function renderAll() {
   const captureToggle = $('captureMode') as HTMLInputElement;
   captureToggle.checked = await loadCaptureMode();
   captureToggle.addEventListener('change', () => void saveCaptureMode(captureToggle.checked));
+  // auto-capture corpus
+  const autoToggle = $('autoCapture') as HTMLInputElement;
+  autoToggle.checked = await loadAutoCapture();
+  autoToggle.addEventListener('change', () => void saveAutoCapture(autoToggle.checked));
+  const refreshCount = async () => {
+    const n = (await getCaptures()).length;
+    $('capCount').textContent = n ? ` — ${n} captured` : ' — none yet';
+  };
+  void refreshCount();
+  $('exportCorpus').addEventListener('click', async () => {
+    const all = await getCaptures();
+    if (!all.length) return void ($('profileStatus').innerHTML = '<span class="err">No captures yet</span>');
+    const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `first2apply-corpus-${all.length}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  });
+  $('clearCorpus').addEventListener('click', async () => {
+    if (!confirm('Clear all captured applications?')) return;
+    await clearCaptures();
+    await refreshCount();
+  });
   $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
   const conn = await loadConnection();
   if (conn) {

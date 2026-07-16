@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "First2Apply — Apply Copilot",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Autofill job applications smartly, with a live ATS match, H-1B/UK visa signal, and a résumé tailored for the job.",
   "background": { "service_worker": "background/serviceWorker.js", "type": "module" },
   "options_page": "options/options.html",
@@ -19,6 +19,6 @@
       "description": "Autofill this application"
     }
   },
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab"],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
 }
