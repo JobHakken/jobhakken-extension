@@ -2,6 +2,12 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.2.4
+- Cover-letter upload: your default cover-letter text (saved in the profile) is rendered
+  to a PDF in-browser and attached to cover-letter file inputs on Autofill — no AI needed.
+  Test mode uses the bundled dummy. Shared minimal PDF builder (lib/pdf.ts).
+- E2E now also asserts the cover letter attaches.
+
 ## 0.2.3
 - Real résumé upload: when connected to the desktop app, Autofill attaches your latest
   saved résumé (rendered to PDF by the app's `resumeFile` bridge RPC). Test mode still

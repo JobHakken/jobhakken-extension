@@ -3,6 +3,7 @@ import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveF
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
+import { textToPdfFile } from '../lib/pdf.js';
 import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { mountPanel } from './panel.js';
@@ -84,16 +85,26 @@ function base64ToFile(base64: string, name: string, type: string): File {
   return new File([bytes], name, { type });
 }
 
-/** The real résumé (latest saved), rendered to PDF by the connected desktop app. */
-async function realDocuments(): Promise<{ resume?: File }> {
-  if (!connection) return {};
-  try {
-    const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, 'resumeFile', {});
-    if (r?.base64) return { resume: base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf') };
-  } catch {
-    /* no résumé saved, or rendering unavailable — skip upload */
+/**
+ * Real documents to attach: the latest saved résumé (rendered to PDF by the connected
+ * desktop app) and the user's default cover letter (their saved text → PDF, client-side,
+ * no AI needed).
+ */
+async function realDocuments(): Promise<{ resume?: File; coverLetter?: File }> {
+  const out: { resume?: File; coverLetter?: File } = {};
+  if (connection) {
+    try {
+      const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, 'resumeFile', {});
+      if (r?.base64) out.resume = base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf');
+    } catch {
+      /* no résumé saved, or rendering unavailable — skip résumé */
+    }
   }
-  return {};
+  // default cover letter comes from the user's saved profile text (local), rendered here
+  const local = await loadFullProfile();
+  const coverText = local?.profile.coverLetter?.trim();
+  if (coverText) out.coverLetter = textToPdfFile(coverText, 'cover-letter.pdf', 'Cover Letter');
+  return out;
 }
 
 function triggerDownload(name: string, content: string, type: string): void {
