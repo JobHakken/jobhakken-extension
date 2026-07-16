@@ -2,6 +2,12 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.2
+- Fix: no more "allow this site to access local device" prompt on every page. Bridge
+  calls (127.0.0.1) are now proxied through the background service worker (extension
+  origin) instead of fetched from the content script (page origin), which the browser
+  gated behind a per-site permission prompt. Same functionality, zero prompts.
+
 ## 0.4.1
 - Fix: test mode is now consistent across ALL personal data. A single `isTestActive()`
   (extension toggle OR connected-app sandbox) governs the profile **and** documents, so

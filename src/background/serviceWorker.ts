@@ -1,11 +1,35 @@
 /**
  * MV3 background service worker (Phase 7.2/7.3). Owns the toolbar badge (the "ON"
- * indicator), opens Options on request, and routes the autofill trigger (keyboard
- * command) to the active tab. The toolbar click opens the popup. Ephemeral — no
- * in-memory state.
+ * indicator), opens Options on request, routes the autofill trigger (keyboard command)
+ * to the active tab, and — crucially — PROXIES all desktop-bridge calls. Bridge fetches
+ * hit http://127.0.0.1; from a content script (page origin) the browser prompts the site
+ * for local-device access on every page, so the content script messages us instead and
+ * WE fetch (extension origin + host_permissions → no prompt). Ephemeral — no state.
  */
+import { rpc } from '../lib/bridgeClient.js';
+import { loadConnection } from '../lib/connectionStore.js';
+
 chrome.runtime.onInstalled.addListener((details) => {
   console.log(`First2Apply extension installed (${details.reason}).`);
+});
+
+// Bridge proxy: content script → SW → 127.0.0.1 (no per-site local-access prompt).
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-bridge') return;
+  (async () => {
+    try {
+      const conn = await loadConnection();
+      if (!conn) {
+        sendResponse({ error: 'not-connected' });
+        return;
+      }
+      const result = await rpc(conn.port, conn.token, String(msg.method), msg.params ?? {});
+      sendResponse({ result });
+    } catch (e) {
+      sendResponse({ error: e instanceof Error ? e.message : 'bridge error' });
+    }
+  })();
+  return true; // async response
 });
 
 chrome.runtime.onMessage.addListener((msg, sender) => {

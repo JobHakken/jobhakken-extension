@@ -1,6 +1,6 @@
 import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
-import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
+import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { addCapture, isAtsHost, isCaptureAllowed, setSiteOptIn } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
@@ -29,11 +29,22 @@ function mode(): 'connected' | 'standalone' | 'none' {
   return hasLocalProfile ? 'standalone' : 'none';
 }
 
+/**
+ * Call a desktop-bridge RPC via the background service worker. The SW fetches 127.0.0.1
+ * from the extension origin (host_permissions) — so the page never triggers the browser's
+ * per-site "access local device" prompt that a content-script fetch would.
+ */
+async function bridgeRpc<T>(method: string, params: unknown = {}): Promise<T> {
+  const res = (await chrome.runtime.sendMessage({ type: 'f2a-bridge', method, params })) as { result?: T; error?: string } | undefined;
+  if (!res || res.error) throw new Error(res?.error || 'bridge error');
+  return res.result as T;
+}
+
 /** Is the connected desktop app running in its test-data sandbox? (keeps modes in sync) */
 async function appTestMode(): Promise<boolean> {
   if (!connection) return false;
   try {
-    const s = await rpc<{ testMode?: boolean }>(connection.port, connection.token, 'status', {});
+    const s = await bridgeRpc<{ testMode?: boolean }>('status');
     return !!s?.testMode;
   } catch {
     return false;
@@ -119,7 +130,7 @@ async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ res
   if (connection) {
     try {
       const method = mode === 'ats' ? 'tailoredResumeFile' : 'resumeFile';
-      const r = await rpc<{ fileName?: string; base64?: string; mimeType?: string }>(connection.port, connection.token, method, mode === 'ats' ? pageJob() : {});
+      const r = await bridgeRpc<{ fileName?: string; base64?: string; mimeType?: string }>(method, mode === 'ats' ? pageJob() : {});
       if (r?.base64) out.resume = base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf');
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
@@ -235,8 +246,8 @@ async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; keywo
   try {
     const job = pageJob();
     const [kw, visa] = await Promise.all([
-      rpc<{ atsMatchPercent?: number; keywords?: Keyword[] }>(connection.port, connection.token, 'keywords', job).catch(() => null),
-      rpc<{ h1b?: { employer?: string } | null; uk?: { organisation?: string } | null }>(connection.port, connection.token, 'visa', { company: job.company }).catch(() => null),
+      bridgeRpc<{ atsMatchPercent?: number; keywords?: Keyword[] }>('keywords', job).catch(() => null),
+      bridgeRpc<{ h1b?: { employer?: string } | null; uk?: { organisation?: string } | null }>('visa', { company: job.company }).catch(() => null),
     ]);
     const visaLabel = visa?.h1b ? 'Known H-1B sponsor' : visa?.uk ? 'UK visa sponsor' : undefined;
     const list = kw?.keywords ?? [];
@@ -258,7 +269,7 @@ async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
   if (!ta) return { ok: false, error: 'No question field' };
   try {
     const label = ta.labels?.[0]?.textContent?.trim() || ta.getAttribute('aria-label') || ta.placeholder || 'Why are you a good fit?';
-    const r = await rpc<{ text?: string }>(connection.port, connection.token, 'answer', { ...pageJob(), question: label });
+    const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
     if (!r?.text) return { ok: false, error: 'No draft' };
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
     setter?.call(ta, r.text);
