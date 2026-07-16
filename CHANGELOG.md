@@ -4,6 +4,19 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.9.0
+- **New ATS: SAP SuccessFactors autofill.** The engine now fills SuccessFactors (SAP RCM)
+  application forms (e.g. `career4.successfactors.com/portalcareer`). Its dropdowns are
+  `sfCascadingPicklist` widgets — an `<input role="combobox">` whose options load on click —
+  which the engine was mis-reading as plain text (so Country / State / work-authorization /
+  veteran & disability self-ID never filled). They're now classified as comboboxes and driven
+  by the interactive pass. Coverage on the captured form is 18/21 fields (86%). Locked in with
+  a real-page fixture + regression suite (`sites/successfactors.test.ts`).
+- **Fix:** the **GDPR cookie-consent banner** is no longer treated as form fields. In
+  particular the *"Consent to cookies from provider LinkedIn"* toggle previously mis-resolved
+  to the `linkedin` profile key and could be toggled during autofill — cookie-consent controls
+  (by class/id/ancestor/label) are now excluded everywhere.
+
 ## 0.8.7
 - **Fix:** badges no longer **duplicate** (a row of repeated pills). The green H-1B badge and
   red mark sit next to the same company, so each one's "am I already here?" check saw the other
