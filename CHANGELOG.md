@@ -2,6 +2,16 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.5.0
+- Auto-capture now records the **whole application flow**, not just structure: per field,
+  whether it was **filled by autofill, filled manually by you, or left empty**, plus a
+  PII-safe value (your details scrubbed; emails/phones/long text → shapes like `[email]`;
+  short answers like "Yes"/"LinkedIn" kept). Updated live as you fill (debounced), one
+  evolving record per application URL. The **manually-filled fields are the autofill gaps**
+  — the key learning signal.
+- Options copy clarified: **Auto-capture** = the local corpus (default on, with Export);
+  **Fixture capture (developer)** = the separate one-off download tool.
+
 ## 0.4.6
 - Test mode is now unmistakable + synced:
   - **Desktop app:** an app-wide amber "🧪 TEST MODE — sandbox with dummy data, your real

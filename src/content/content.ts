@@ -1,7 +1,7 @@
 import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
-import { addCapture, isAtsHost, isCaptureAllowed, setSiteOptIn } from '../lib/captureStore.js';
+import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
 import { textToPdfFile } from '../lib/pdf.js';
@@ -109,11 +109,19 @@ async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ fille
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
   // 2) synchronous fill (text/select/radio + multi-row groups)
   const report = autofillForm({ root: document, ...common });
+  // tag what WE filled, so a later capture can tell autofill from manual entry
+  for (const r of report.results) {
+    if (r.status === 'filled' && r.field.el instanceof HTMLElement) {
+      r.field.el.dataset.f2aFilled = '1';
+      r.field.el.dataset.f2aValue = String(r.value);
+    }
+  }
   // 3) async pass for widgets that only fill through live interaction
   //    (Workday lazy comboboxes + Month/Day/Year date pickers)
   const live = await autofillInteractive({ root: document, ...common });
   // 4) résumé / cover-letter upload (ATS mode → tailored résumé)
   const uploaded = await uploadDocuments(mode);
+  void captureFlow(); // record the autofilled state into the corpus
   return { filled: report.filled + live.comboboxes + live.dates + uploaded, review: report.review, total: report.total };
 }
 
@@ -216,25 +224,64 @@ function formRegion(): Element {
   return (anc?.closest('form, main, section') as Element | null) ?? anc ?? document.body;
 }
 
-// Passive, anonymized auto-capture of application pages → local corpus (learning).
-// Never opens dropdowns or otherwise touches the live form. Deduped per URL+field-count.
-const captured = new Set<string>();
-async function maybeAutoCapture(): Promise<void> {
+/** Current value of a detected field (text/select/textarea, radio group, or combobox). */
+function fieldCurrentValue(f: ReturnType<typeof detectFields>[number]): string {
+  const el = f.el as HTMLElement;
+  if (f.kind === 'radio') {
+    const checked = f.name ? document.querySelector<HTMLInputElement>(`input[name="${CSS.escape(f.name)}"]:checked`) : null;
+    return checked ? (checked.labels?.[0]?.textContent?.trim() || checked.value || 'on') : '';
+  }
+  if (f.kind === 'combobox') return (el.getAttribute('data-f2a-value') || el.textContent || '').trim();
+  const v = (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
+  if (f.kind === 'select') {
+    const sel = el as HTMLSelectElement;
+    return sel.selectedOptions?.[0]?.textContent?.trim() || v || '';
+  }
+  return (v ?? '').trim();
+}
+
+/** Make a field value safe to store: scrub known PII, reduce emails/phones/long text to shapes. */
+function safeValue(raw: string, scrub: string[]): string {
+  if (!raw) return '';
+  if (/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(raw)) return '[email]';
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length >= 7 && /^[\d+()\-.\s]+$/.test(raw)) return '[phone]';
+  let v = raw;
+  for (const s of scrub) if (s && s.length >= 3) v = v.split(s).join('[redacted]');
+  if (v.length > 60) return `[text ${v.length} chars]`;
+  return v;
+}
+
+/**
+ * Capture the application FLOW into the local corpus: for each field, whether it was filled
+ * by autofill, filled manually by the person, or left empty, plus a PII-safe value. Called
+ * on page-settle and (debounced) as the user fills, upserting one evolving record per URL —
+ * so the manually-filled fields (the autofill gaps) are captured on real applications.
+ * Passive: never opens dropdowns or touches the form. Anonymized at source; local only.
+ */
+async function captureFlow(): Promise<void> {
   try {
     if (!(await loadAutoCapture())) return;
-    // capture on: known ATS host, a page fingerprinted as an ATS (company-branded career
-    // sites running Workday/Greenhouse/… underneath), or a host the user opted in
     if (!isAtsPage(document) && !(await isCaptureAllowed(location.hostname))) return;
+    const detected = detectFields(document);
+    if (detected.length < 4) return; // only real application forms
     const report = captureCoverage(document, { url: location.href });
-    if (report.total < 4) return; // gate: only real application forms, never arbitrary pages
-    const key = `${location.href}|${report.total}`;
-    if (captured.has(key)) return;
-    captured.add(key);
-    // anonymize at source: scrub the user's own profile values (+ emails, in cleanClone)
     const local = await loadFullProfile();
     const scrub = Object.values(local?.profile ?? {}).filter((v): v is string => typeof v === 'string');
-    const html = cleanClone(formRegion(), scrub);
-    await addCapture({
+
+    let filledByAutofill = 0;
+    let filledManually = 0;
+    const fields: CaptureField[] = detected.map((f) => {
+      const el = f.el as HTMLElement;
+      const val = fieldCurrentValue(f);
+      const tagged = el.dataset?.f2aFilled === '1' && el.dataset?.f2aValue === val;
+      const filledBy: CaptureField['filledBy'] = !val ? 'empty' : tagged ? 'autofill' : 'manual';
+      if (filledBy === 'autofill') filledByAutofill++;
+      else if (filledBy === 'manual') filledManually++;
+      return { label: f.label, key: resolveField(f)?.key, kind: f.kind, filledBy, value: filledBy === 'empty' ? undefined : safeValue(val, scrub) };
+    });
+
+    await upsertCapture({
       ts: new Date().toISOString(),
       url: location.href,
       host: location.hostname.replace(/^www\./, ''),
@@ -242,7 +289,10 @@ async function maybeAutoCapture(): Promise<void> {
       resolved: report.resolved,
       unresolved: report.unresolved,
       unresolvedLabels: report.unresolvedLabels,
-      html,
+      filledByAutofill,
+      filledManually,
+      fields,
+      html: cleanClone(formRegion(), scrub),
     });
   } catch {
     /* capture is best-effort; never disrupt the page */
@@ -343,7 +393,7 @@ async function init() {
     onToggleCaptureSite: (on) => {
       siteOptedIn = on;
       void setSiteOptIn(location.hostname, on).then(() => {
-        if (on) void maybeAutoCapture();
+        if (on) void captureFlow();
       });
     },
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
@@ -358,11 +408,21 @@ async function init() {
     timer = setTimeout(() => {
       updateBadge();
       panel.update();
-      void maybeAutoCapture();
+      void captureFlow();
     }, 800);
   };
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
-  void maybeAutoCapture(); // initial (page may already be settled)
+  void captureFlow(); // initial (page may already be settled)
+
+  // Capture the filled FLOW as the person types (debounced) — records manual entries, not
+  // just structure, so we learn which fields autofill missed on real applications.
+  let fillTimer: ReturnType<typeof setTimeout> | undefined;
+  const onUserInput = () => {
+    if (fillTimer) clearTimeout(fillTimer);
+    fillTimer = setTimeout(() => void captureFlow(), 1500);
+  };
+  document.addEventListener('input', onUserInput, true);
+  document.addEventListener('change', onUserInput, true);
 
   // Keep the panel's TEST banner in sync with the desktop app's test mode: if you toggle
   // it in the app, the extension reflects it (data behavior is already live via

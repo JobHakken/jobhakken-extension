@@ -8,6 +8,15 @@
  * Records are stored under per-record keys (`f2a_cap:<ts>`) with a small separate index,
  * so appending a capture doesn't rewrite the whole (potentially many-MB) corpus.
  */
+/** One field in a captured application flow — who filled it and (PII-safe) what. */
+export type CaptureField = {
+  label: string;
+  key?: string; // resolved profile key, if any
+  kind: string;
+  filledBy: 'autofill' | 'manual' | 'empty';
+  value?: string; // PII-safe: known details scrubbed, emails/phones/long-text → shapes
+};
+
 export type CaptureRecord = {
   ts: string;
   url: string;
@@ -16,10 +25,13 @@ export type CaptureRecord = {
   resolved: number;
   unresolved: number;
   unresolvedLabels: string[];
-  html: string; // anonymized form region (full, during the discovery phase)
+  filledByAutofill: number;
+  filledManually: number;
+  fields: CaptureField[]; // the completed flow (autofill + manual)
+  html: string; // anonymized form region (structure)
 };
 
-type IndexEntry = { key: string; ts: string; url: string; host: string; total: number; resolved: number; unresolved: number };
+type IndexEntry = { key: string; ts: string; url: string; host: string; total: number; resolved: number; unresolved: number; filledManually: number };
 
 const INDEX = 'f2a_cap_index';
 const REC = (ts: string) => `f2a_cap:${ts}`;
@@ -34,12 +46,18 @@ export async function captureCount(): Promise<number> {
   return (await getIndex()).length;
 }
 
-/** Append a capture unless the same URL+field-count was already stored (a re-render). */
-export async function addCapture(rec: CaptureRecord): Promise<boolean> {
+/**
+ * Upsert a capture by URL — the record for a page EVOLVES as the flow is filled (autofill
+ * then manual edits), so we replace the prior snapshot for that URL with the latest rather
+ * than appending duplicates. Returns whether anything was written.
+ */
+export async function upsertCapture(rec: CaptureRecord): Promise<boolean> {
   const index = await getIndex();
-  if (index.some((e) => e.url === rec.url && e.total === rec.total)) return false;
-  const key = REC(rec.ts);
-  index.push({ key, ts: rec.ts, url: rec.url, host: rec.host, total: rec.total, resolved: rec.resolved, unresolved: rec.unresolved });
+  const entry = { ts: rec.ts, url: rec.url, host: rec.host, total: rec.total, resolved: rec.resolved, unresolved: rec.unresolved, filledManually: rec.filledManually };
+  const existing = index.find((e) => e.url === rec.url);
+  const key = existing?.key ?? REC(rec.ts);
+  if (existing) Object.assign(existing, entry, { key });
+  else index.push({ key, ...entry });
   const evict: string[] = [];
   while (index.length > MAX) evict.push(index.shift()!.key);
   await chrome.storage.local.set({ [key]: rec, [INDEX]: index });

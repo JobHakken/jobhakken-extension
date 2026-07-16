@@ -85,16 +85,16 @@
         Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely test on live application pages without exposing anything. The on-page panel shows a <b>TEST DATA</b> banner while this is on. Turn off before real applications.
       </p>
       <p class="note">
-        <label><input type="checkbox" id="captureMode" /> <b>📸 Capture mode (developer)</b></label><br />
-        Adds a <b>Capture fixture</b> button to the on-page panel. It opens every dropdown to grab its options, then downloads a clean, PII-scrubbed HTML snapshot + a coverage report (which fields the engine mapped vs. couldn't) — so any ATS page becomes a test fixture in one click.
-      </p>
-      <p class="note">
-        <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b></label><br />
-        Passively snapshots every job-application page you visit (≥4 fields), scrubs your personal details, and stores it locally to improve field coverage over time. Never touches the form, never leaves your machine, never captures other browsing.
+        <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — recommended, on by default</label><br />
+        As you apply, this records the <b>whole flow of each application</b> — which fields autofill handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter over time. Never touches the form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis.
         <span id="capCount" style="color:var(--muted)"></span>
         <br />
         <button id="exportCorpus" class="secondary" style="margin-top:8px;">Export corpus</button>
         <button id="clearCorpus" class="secondary" style="margin-top:8px;">Clear</button>
+      </p>
+      <p class="note">
+        <label><input type="checkbox" id="captureMode" /> <b>📸 Fixture capture (developer)</b></label><br />
+        Separate one-off tool: adds a <b>Capture fixture</b> button to the panel that <b>downloads</b> a scrubbed HTML snapshot + coverage report for engineering. Not needed for normal use — the auto-capture above is the corpus.
       </p>
       <p class="note">
         <b>🌐 My sites</b> — where First2Apply is always active (opens the panel + auto-captures), in addition to the built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this site” toggle in the on-page panel.
