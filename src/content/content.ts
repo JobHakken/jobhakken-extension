@@ -20,6 +20,7 @@ let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
 let testMode = false;
 let appTest = false;
+let bridgeLive = false; // is the desktop app actually reachable right now (live health)?
 let captureMode = false;
 let autoCaptureOn = true;
 let siteOptedIn = false;
@@ -28,9 +29,35 @@ let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
 let fieldCount = 0;
 let autofillAbort: AbortController | null = null; // lets the popup cancel a running autofill
 
+/**
+ * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
+ * app flips the panel to standalone (and reopening it reconnects on the next poll). Cached
+ * connection creds still allow standalone autofill from the last-known profile.
+ */
 function mode(): 'connected' | 'standalone' | 'none' {
-  if (connection) return 'connected';
-  return hasLocalProfile ? 'standalone' : 'none';
+  if (connection && bridgeLive) return 'connected';
+  return connection || hasLocalProfile ? 'standalone' : 'none';
+}
+
+/**
+ * Live bridge check: ping the app's status over the SW proxy. Updates bridgeLive (real
+ * reachability) + appTest (its sandbox state). Distinguishes "app closed" from "not test
+ * mode" — a bare appTestMode() couldn't.
+ */
+async function checkBridge(): Promise<void> {
+  if (!connection) {
+    bridgeLive = false;
+    appTest = false;
+    return;
+  }
+  try {
+    const s = await bridgeRpc<{ testMode?: boolean }>('status');
+    bridgeLive = true;
+    appTest = !!s?.testMode;
+  } catch {
+    bridgeLive = false; // app closed / bridge disabled
+    appTest = false;
+  }
 }
 
 /**
@@ -433,7 +460,7 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
-  appTest = await appTestMode(); // sync with the connected app's sandbox
+  await checkBridge(); // live reachability + app sandbox state
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   needsSponsorship = await loadNeedsSponsorship();
@@ -482,10 +509,13 @@ async function init() {
   document.addEventListener('input', onUserInput, true);
   document.addEventListener('change', onUserInput, true);
 
-  // Keep the app-sandbox test flag fresh so the popup shows the right TEST state.
+  // Keep the connection status + TEST state LIVE: poll the bridge so closing the app flips to
+  // "standalone" and reopening reconnects — and the app's demo mode syncs. The popup reads
+  // this fresh via getState (no push-update needed now the floating panel is gone).
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) void appTestMode().then((v) => (appTest = v));
+    if (!document.hidden) void checkBridge();
   });
+  setInterval(() => void checkBridge(), 8000);
 
   // ── RPC: the toolbar popup drives everything through the active tab's content script ──
   type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
