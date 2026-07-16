@@ -12,7 +12,7 @@ import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log(`First2Apply extension installed (${details.reason}).`);
+  console.log(`Jobhakken extension installed (${details.reason}).`);
 });
 
 // ── H-1B sponsor lookup (bundled, standalone) ──────────────────────────────
@@ -110,7 +110,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       const count = typeof msg.count === 'number' ? msg.count : 0;
       chrome.action.setBadgeBackgroundColor({ color: '#0f9d6b', tabId });
       chrome.action.setBadgeText({ tabId, text: count > 0 ? String(count) : '' });
-      chrome.action.setTitle({ tabId, title: count > 0 ? `First2Apply — ${count} fillable field(s)` : 'First2Apply' });
+      chrome.action.setTitle({ tabId, title: count > 0 ? `Jobhakken — ${count} fillable field(s)` : 'Jobhakken' });
     }
     return;
   }

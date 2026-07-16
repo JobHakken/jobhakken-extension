@@ -1,5 +1,5 @@
 /**
- * Talks to the First2Apply desktop app's loopback bridge (Phase 7.0). The bridge
+ * Talks to the Jobhakken desktop app's loopback bridge (Phase 7.0). The bridge
  * binds one of a small candidate-port range on 127.0.0.1, so we discover it by
  * probing /health, then call the token-guarded /rpc surface.
  *
@@ -79,9 +79,9 @@ export async function rpc<T = unknown>(port: number, token: string, method: stri
  * user-facing message when the app isn't running or the token is wrong.
  */
 export async function connect(token: string, opts: Opts = {}): Promise<BridgeConnection> {
-  if (!token.trim()) throw new Error('Paste the connection token from the First2Apply app (Settings → Browser extension).');
+  if (!token.trim()) throw new Error('Paste the connection token from the Jobhakken app (Settings → Browser extension).');
   const found = await discoverBridge(opts);
-  if (!found) throw new Error('First2Apply desktop app not found. Open it and enable the browser extension in Settings.');
+  if (!found) throw new Error('Jobhakken desktop app not found. Open it and enable the browser extension in Settings.');
   let profile: BridgeProfile;
   try {
     profile = await rpc<BridgeProfile>(found.port, token, 'profile', {}, opts);

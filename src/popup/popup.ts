@@ -61,7 +61,7 @@ async function render() {
 
   if (!state) {
     $('connLabel').textContent = 'Open a job page';
-    $('foot').innerHTML = 'First2Apply works on application pages and job boards. Open one to autofill or check sponsorship.';
+    $('foot').innerHTML = 'Jobhakken works on application pages and job boards. Open one to autofill or check sponsorship.';
     (['fill2', 'insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
     $('siteHint').classList.remove('on');
     ($('autofill') as HTMLButtonElement).disabled = true;
@@ -114,7 +114,7 @@ async function render() {
   $('siteHint').classList.toggle('on', !!cs?.show && !cs?.optedIn);
   if (cs?.show) {
     ($('siteCap') as HTMLInputElement).checked = cs.optedIn;
-    $('siteCapLabel').textContent = cs.optedIn ? '✓ Always running on this site' : '➕ Always run First2Apply on this site';
+    $('siteCapLabel').textContent = cs.optedIn ? '✓ Always running on this site' : '➕ Always run Jobhakken on this site';
   }
   $('captureRow').classList.toggle('hidden', !state.captureMode);
 
@@ -260,7 +260,7 @@ async function openReport(reasonKey: string) {
     '2. ',
     '',
     '---',
-    `_First2Apply extension v${version} · auto-filled from the page; no personal data included._`,
+    `_Jobhakken extension v${version} · auto-filled from the page; no personal data included._`,
   ].join('\n');
   const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(`[extension] ${reason} — ${company !== '(unknown)' ? company : host}`)}&body=${encodeURIComponent(body)}`;
   await chrome.tabs.create({ url });
