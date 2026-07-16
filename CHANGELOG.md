@@ -2,6 +2,12 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.5.1
+- Options → "Import from my résumé" now respects test mode: when test mode is on (the
+  extension toggle, or the connected app's sandbox), Import loads the **anonymous dummy
+  profile** instead of your real résumé, and the button stays usable even without a
+  connection. E2E guards it.
+
 ## 0.5.0
 - Auto-capture now records the **whole application flow**, not just structure: per field,
   whether it was **filled by autofill, filled manually by you, or left empty**, plus a

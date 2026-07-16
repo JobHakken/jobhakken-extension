@@ -3,12 +3,14 @@ import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type Full
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
+import { TEST_PROFILE } from '../lib/testProfile.js';
 import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 // Working state (mutated by inputs; persisted on Save).
 let fp: FullProfile = { profile: {}, experience: [], education: [], rules: [] };
+let testModeOn = false; // extension test toggle (import brings dummy data when on)
 
 // ── tabs ─────────────────────────────────────────────────────
 $('tabs').addEventListener('click', (e) => {
@@ -158,8 +160,11 @@ function renderConn(connected: boolean, name?: string, port?: number) {
     : '';
   ($('disconnect') as HTMLButtonElement).hidden = !connected;
   ($('connect') as HTMLButtonElement).textContent = connected ? 'Reconnect' : 'Connect';
-  ($('importBtn') as HTMLButtonElement).disabled = !connected;
-  ($('importBtn') as HTMLButtonElement).title = connected ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
+  // in test mode, Import brings the dummy profile — usable even without a connection
+  const importBtn = $('importBtn') as HTMLButtonElement;
+  importBtn.dataset.connected = connected ? '1' : '0';
+  importBtn.disabled = !connected && !testModeOn;
+  importBtn.title = testModeOn ? 'Import anonymous dummy test data' : connected ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
 }
 
 async function onConnect() {
@@ -185,10 +190,29 @@ async function onDisconnect() {
   renderConn(false);
 }
 
+/** App test mode via the bridge (options page can call it directly — it's an extension page). */
+async function appInTestMode(conn: { port: number; token: string }): Promise<boolean> {
+  try {
+    const s = await rpc<{ testMode?: boolean }>(conn.port, conn.token, 'status', {});
+    return !!s?.testMode;
+  } catch {
+    return false;
+  }
+}
+
 async function onImport() {
   const conn = await loadConnection();
-  if (!conn) return;
   const btn = $('importBtn') as HTMLButtonElement;
+  // TEST MODE (extension toggle, or the connected app's sandbox) → import the anonymous
+  // dummy profile, never the real résumé.
+  if (testModeOn || (conn && (await appInTestMode(conn)))) {
+    fp = JSON.parse(JSON.stringify(TEST_PROFILE)) as FullProfile;
+    renderAll();
+    await saveFullProfile(fp);
+    $('profileStatus').innerHTML = `<span class="ok">🧪 Imported dummy test data (${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s))</span>`;
+    return;
+  }
+  if (!conn) return;
   btn.disabled = true;
   btn.textContent = 'Importing…';
   try {
@@ -237,8 +261,14 @@ function renderAll() {
   sensitiveToggle.addEventListener('change', () => void saveFillSensitive(sensitiveToggle.checked));
   const testToggle = $('testMode') as HTMLInputElement;
   testToggle.checked = await loadTestMode();
+  testModeOn = testToggle.checked;
   testToggle.addEventListener('change', () => {
+    testModeOn = testToggle.checked;
     void saveTestMode(testToggle.checked);
+    // reflect on the Import button (usable in test mode → imports dummy data)
+    const ib = $('importBtn') as HTMLButtonElement;
+    ib.disabled = !testModeOn && ib.dataset.connected !== '1';
+    ib.title = testModeOn ? 'Import anonymous dummy test data' : ib.dataset.connected === '1' ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
     $('profileStatus').innerHTML = testToggle.checked
       ? '<span class="ok">🧪 Test mode on — autofilling anonymous dummy data</span>'
       : '';
@@ -321,6 +351,8 @@ function renderAll() {
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;
     renderConn(true, conn.profile?.basics?.name, conn.port);
+  } else {
+    renderConn(false); // still enables Import when test mode is on (imports dummy)
   }
 })();
 
