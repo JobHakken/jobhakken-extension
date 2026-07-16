@@ -364,6 +364,21 @@ async function init() {
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
   void maybeAutoCapture(); // initial (page may already be settled)
 
+  // Keep the panel's TEST banner in sync with the desktop app's test mode: if you toggle
+  // it in the app, the extension reflects it (data behavior is already live via
+  // isTestActive). Refresh on tab focus + a modest interval; only polls when connected.
+  const refreshAppTest = async () => {
+    const v = await appTestMode();
+    if (v !== appTest) {
+      appTest = v;
+      panel.update();
+    }
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) void refreshAppTest();
+  });
+  setInterval(() => void refreshAppTest(), 15000);
+
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg?.type === 'f2a-run-autofill') void runAutofill();
   });

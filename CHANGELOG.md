@@ -2,6 +2,15 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.6
+- Test mode is now unmistakable + synced:
+  - **Desktop app:** an app-wide amber "🧪 TEST MODE — sandbox with dummy data, your real
+    jobs & résumé are safe" banner on every screen, with an "Exit test mode" button. (An
+    empty test sandbox can no longer be mistaken for data loss.)
+  - **Extension:** the panel's TEST banner live-syncs to the app's test mode (refreshes on
+    tab focus + periodically), matching the fill behavior which already uses dummy data
+    whenever the app is in its sandbox.
+
 ## 0.4.5
 - Manage the sites the extension is active on:
   - **Panel:** "➕ Always open First2Apply on this site" — one click adds the current host
