@@ -2,6 +2,12 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.5.3
+- Live connection status: the panel showed "Connected" from cached credentials even after
+  the desktop app was closed. It now **polls the bridge** (on load, tab focus, every 8s),
+  so closing the app flips to **Standalone** and reopening it **auto-reconnects** — the
+  status reflects real reachability. Cached creds still allow standalone autofill.
+
 ## 0.5.2
 - Fix the panel flashing on non-application pages (e.g. GitHub settings). The "looks like
   an application" heuristic no longer triggers on a bare count of profile fields

@@ -19,14 +19,41 @@ let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
 let testMode = false;
 let appTest = false;
+let bridgeLive = false; // is the desktop app actually reachable right now (live health)?
 let captureMode = false;
 let autoCaptureOn = true;
 let siteOptedIn = false;
 let fieldCount = 0;
 
+/**
+ * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
+ * app flips the panel to standalone (and reopening it reconnects on the next poll). Cached
+ * connection creds still allow standalone autofill from the last-known profile.
+ */
 function mode(): 'connected' | 'standalone' | 'none' {
-  if (connection) return 'connected';
-  return hasLocalProfile ? 'standalone' : 'none';
+  if (connection && bridgeLive) return 'connected';
+  return connection || hasLocalProfile ? 'standalone' : 'none';
+}
+
+/**
+ * Live bridge check: ping the app's status over the SW proxy. Updates bridgeLive (real
+ * reachability) + appTest (its sandbox state). Distinguishes "app closed" from "not test
+ * mode" — a bare appTestMode() couldn't.
+ */
+async function checkBridge(): Promise<void> {
+  if (!connection) {
+    bridgeLive = false;
+    appTest = false;
+    return;
+  }
+  try {
+    const s = await bridgeRpc<{ testMode?: boolean }>('status');
+    bridgeLive = true;
+    appTest = !!s?.testMode;
+  } catch {
+    bridgeLive = false; // app closed / bridge disabled
+    appTest = false;
+  }
 }
 
 /**
@@ -368,7 +395,7 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
-  appTest = await appTestMode(); // sync with the connected app's sandbox
+  await checkBridge(); // live reachability + app sandbox state
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   siteOptedIn = !isAtsHost(location.hostname) && (await isCaptureAllowed(location.hostname));
@@ -433,20 +460,18 @@ async function init() {
   document.addEventListener('input', onUserInput, true);
   document.addEventListener('change', onUserInput, true);
 
-  // Keep the panel's TEST banner in sync with the desktop app's test mode: if you toggle
-  // it in the app, the extension reflects it (data behavior is already live via
-  // isTestActive). Refresh on tab focus + a modest interval; only polls when connected.
-  const refreshAppTest = async () => {
-    const v = await appTestMode();
-    if (v !== appTest) {
-      appTest = v;
-      panel.update();
-    }
+  // Keep the connection status + TEST banner LIVE: poll the bridge so closing the app flips
+  // the panel to "standalone" and reopening it reconnects — and the app's test mode syncs.
+  const refreshBridge = async () => {
+    const wasLive = bridgeLive;
+    const wasTest = appTest;
+    await checkBridge();
+    if (bridgeLive !== wasLive || appTest !== wasTest) panel.update();
   };
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) void refreshAppTest();
+    if (!document.hidden) void refreshBridge();
   });
-  setInterval(() => void refreshAppTest(), 15000);
+  setInterval(() => void refreshBridge(), 8000);
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg?.type === 'f2a-run-autofill') void runAutofill();
