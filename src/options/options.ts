@@ -2,7 +2,7 @@ import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type Full
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
-import { clearCaptures, getCaptures } from '../lib/captureStore.js';
+import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -270,6 +270,51 @@ function renderAll() {
     if (!confirm('Clear all captured applications?')) return;
     await clearCaptures();
     await refreshCount();
+  });
+  // My sites — user-managed hosts where the extension is always active
+  const normHost = (v: string): string => {
+    const s = v.trim();
+    try {
+      return new URL(s.includes('://') ? s : `https://${s}`).hostname.replace(/^www\./, '');
+    } catch {
+      return s.toLowerCase().replace(/^www\./, '').replace(/\/.*$/, '');
+    }
+  };
+  const renderSites = async () => {
+    const list = $('siteList');
+    const sites = await getOptInSites();
+    list.innerHTML = sites.length
+      ? ''
+      : '<span style="font-size:12px;color:var(--muted)">No custom sites yet — the built-in ATS list is always active.</span>';
+    for (const host of sites) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;';
+      const name = document.createElement('span');
+      name.textContent = host;
+      name.style.flex = '1';
+      const rm = document.createElement('span');
+      rm.textContent = '✕';
+      rm.style.cssText = 'cursor:pointer;color:var(--accent);font-weight:600;';
+      rm.addEventListener('click', async () => {
+        await setSiteOptIn(host, false);
+        await renderSites();
+      });
+      row.append(name, rm);
+      list.appendChild(row);
+    }
+  };
+  void renderSites();
+  const addSite = async () => {
+    const input = $('siteInput') as HTMLInputElement;
+    const host = normHost(input.value);
+    if (!host || !host.includes('.')) return void ($('profileStatus').innerHTML = '<span class="err">Enter a valid domain</span>');
+    await setSiteOptIn(host, true);
+    input.value = '';
+    await renderSites();
+  };
+  $('siteAdd').addEventListener('click', addSite);
+  ($('siteInput') as HTMLInputElement).addEventListener('keydown', (e) => {
+    if ((e as KeyboardEvent).key === 'Enter') void addSite();
   });
   $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
   const conn = await loadConnection();

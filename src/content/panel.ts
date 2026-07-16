@@ -131,7 +131,7 @@ export function mountPanel(deps: PanelDeps): { update: () => void; setVisible: (
             <button id="save">📌 Save job</button>
           </div>
 
-          <label class="sitecap hidden" id="siteCapRow"><input type="checkbox" id="siteCap" /> Capture applications on this site (anonymized, local)</label>
+          <label class="sitecap hidden" id="siteCapRow"><input type="checkbox" id="siteCap" /> <span id="siteCapLabel">➕ Always open First2Apply on this site</span></label>
 
           <div class="mini hidden" id="captureRow">
             <button id="capture">📸 Capture fixture (dev)</button>
@@ -266,10 +266,13 @@ export function mountPanel(deps: PanelDeps): { update: () => void; setVisible: (
     $('mini').classList.toggle('hidden', !connected);
     void mini;
 
-    // capture-site opt-in
+    // "add this site" control (make the extension always active on this host)
     const cs = s.captureSite;
     $('siteCapRow').classList.toggle('hidden', !cs?.show);
-    if (cs?.show) siteCap.checked = cs.optedIn;
+    if (cs?.show) {
+      siteCap.checked = cs.optedIn;
+      ($('siteCapLabel') as HTMLElement).textContent = cs.optedIn ? '✓ First2Apply is active on this site' : '➕ Always open First2Apply on this site';
+    }
     // dev capture-fixture button
     $('captureRow').classList.toggle('hidden', !s.captureMode);
 

@@ -96,6 +96,14 @@
         <button id="exportCorpus" class="secondary" style="margin-top:8px;">Export corpus</button>
         <button id="clearCorpus" class="secondary" style="margin-top:8px;">Clear</button>
       </p>
+      <p class="note">
+        <b>🌐 My sites</b> — where First2Apply is always active (opens the panel + auto-captures), in addition to the built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this site” toggle in the on-page panel.
+      </p>
+      <div id="siteList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input id="siteInput" type="text" placeholder="careers.company.com" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;" />
+        <button id="siteAdd" class="secondary">Add</button>
+      </div>
       <p class="note">Connect to the running First2Apply desktop app for AI (ATS match, visa signal, tailored résumé) and one-click résumé import.</p>
       <div class="f"><label for="token">Connection token</label><input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" /></div>
       <div class="bar" style="position:static;border:none;margin-top:12px;padding:0;">

@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.5
+- Manage the sites the extension is active on:
+  - **Panel:** "➕ Always open First2Apply on this site" — one click adds the current host
+    (panel opens + auto-captures there); shows "✓ active" once added.
+  - **Options → My sites:** list your added domains with remove (✕), plus add any domain
+    by hand (e.g. `careers.company.com`). Built-in ATS list stays always-on.
+
 ## 0.4.4
 - Tighten when the panel opens — the v0.4.3 gate used "any fillable field", so a lone
   search box (google.com etc.) tripped it. Now the panel opens ONLY on job-application

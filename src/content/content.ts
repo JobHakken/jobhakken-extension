@@ -331,8 +331,9 @@ async function init() {
       job: { title: cleanTitle(document.title), company: location.hostname.replace(/^www\./, '').split('.')[0], url: location.href },
       testMode: testMode || appTest, // extension toggle OR the app's sandbox
       captureMode,
-      // per-site opt-in prompt: only for unknown hosts with a real form, when auto-capture is on
-      captureSite: { show: autoCaptureOn && !isAtsHost(location.hostname) && fieldCount >= 4, optedIn: siteOptedIn },
+      // "add this site" control — on any non-builtin host (the panel itself only renders
+      // on relevant pages, so this appears exactly where it's useful)
+      captureSite: { show: !isAtsHost(location.hostname), optedIn: siteOptedIn },
     }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
