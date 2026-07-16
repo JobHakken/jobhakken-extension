@@ -2,6 +2,17 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.3.1
+- Auto-capture now scoped to a **known-ATS allowlist** (Workday, Greenhouse, Lever,
+  Ashby, iCIMS, SmartRecruiters, Workable, Taleo, SuccessFactors, BambooHR, Jobvite, …)
+  — no more capturing arbitrary non-application pages that happen to have a few fields.
+- **Per-site opt-in**: on an unknown host, the panel offers "Capture applications on this
+  site" so you decide. Everything still anonymized + local.
+- Corpus storage moved to per-record keys + a small index (no more rewriting the whole
+  corpus on each save) — matters for a heavy multi-day run.
+- (Full form-region capture kept as the default during the discovery phase; a compact
+  coverage-only format will come once the corpus shows which signals actually matter.)
+
 ## 0.3.0
 - Auto-capture corpus (default on): passively snapshots every job-application page
   (≥4 fields), scrubs your personal details at source, and stores it locally

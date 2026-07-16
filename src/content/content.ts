@@ -1,7 +1,7 @@
 import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, readLazyOptions, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
 
 import { rpc, type BridgeConnection } from '../lib/bridgeClient.js';
-import { addCapture } from '../lib/captureStore.js';
+import { addCapture, isAtsHost, isCaptureAllowed, setSiteOptIn } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadTestMode } from '../lib/profileStore.js';
 import { textToPdfFile } from '../lib/pdf.js';
@@ -19,6 +19,8 @@ let connection: BridgeConnection | null = null;
 let hasLocalProfile = false;
 let testMode = false;
 let captureMode = false;
+let autoCaptureOn = true;
+let siteOptedIn = false;
 let fieldCount = 0;
 
 function mode(): 'connected' | 'standalone' | 'none' {
@@ -164,6 +166,7 @@ const captured = new Set<string>();
 async function maybeAutoCapture(): Promise<void> {
   try {
     if (!(await loadAutoCapture())) return;
+    if (!(await isCaptureAllowed(location.hostname))) return; // known ATS or user opted this site in
     const report = captureCoverage(document, { url: location.href });
     if (report.total < 4) return; // gate: only real application forms, never arbitrary pages
     const key = `${location.href}|${report.total}`;
@@ -218,22 +221,38 @@ async function init() {
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
   captureMode = await loadCaptureMode();
+  autoCaptureOn = await loadAutoCapture();
+  siteOptedIn = !isAtsHost(location.hostname) && (await isCaptureAllowed(location.hostname));
   updateBadge();
 
-  // Reflect test/capture-mode changes from the options page without a reload.
+  // Reflect setting changes from the options page without a reload.
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
     if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
+    if ('f2a_auto_capture' in changes) autoCaptureOn = changes['f2a_auto_capture'].newValue !== false;
     panel.update();
   });
 
   const panel = mountPanel({
     version: chrome.runtime.getManifest().version,
-    getState: () => ({ mode: mode(), fields: fieldCount, testMode, captureMode }),
+    getState: () => ({
+      mode: mode(),
+      fields: fieldCount,
+      testMode,
+      captureMode,
+      // per-site opt-in prompt: only for unknown hosts with a real form, when auto-capture is on
+      captureSite: { show: autoCaptureOn && !isAtsHost(location.hostname) && fieldCount >= 4, optedIn: siteOptedIn },
+    }),
     onAutofill: runAutofill,
     onAnalyze: analyzeJob,
     onCapture: capturePage,
+    onToggleCaptureSite: (on) => {
+      siteOptedIn = on;
+      void setSiteOptIn(location.hostname, on).then(() => {
+        if (on) void maybeAutoCapture();
+      });
+    },
     onOpenOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
 

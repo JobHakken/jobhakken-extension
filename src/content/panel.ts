@@ -4,7 +4,13 @@
  * passed as callbacks. Collapses to a small bubble.
  */
 
-export type PanelState = { mode: 'connected' | 'standalone' | 'none'; fields: number; testMode?: boolean; captureMode?: boolean };
+export type PanelState = {
+  mode: 'connected' | 'standalone' | 'none';
+  fields: number;
+  testMode?: boolean;
+  captureMode?: boolean;
+  captureSite?: { show: boolean; optedIn: boolean };
+};
 
 export type PanelDeps = {
   version?: string;
@@ -12,6 +18,7 @@ export type PanelDeps = {
   onAutofill: () => Promise<{ filled: number; review: number; total: number } | null>;
   onAnalyze: () => Promise<{ ats?: number | null; visa?: string; error?: string } | null>;
   onCapture: () => Promise<{ total: number; resolved: number; unresolved: number; unresolvedLabels: string[] } | null>;
+  onToggleCaptureSite?: (on: boolean) => void;
   onOpenOptions: () => void;
 };
 
@@ -38,6 +45,7 @@ const STYLE = `
 .btn.ghost { background:transparent; color:#171a21; border-color:#e3e6ec; }
 .row { border-top:1px solid #e3e6ec; padding-top:11px; display:flex; flex-direction:column; gap:8px; }
 .note { background:#f6f7f9; border-radius:9px; padding:9px 11px; font-size:11.5px; color:#6b7280; line-height:1.45; }
+.sitecap { display:flex; align-items:center; gap:7px; font-size:11.5px; color:#6b7280; cursor:pointer; }
 .result { font-size:12.5px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
 .chip { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; }
 .chip.ok{background:#0f9d6b1f;color:#0f9d6b;} .chip.warn{background:#c2740c1f;color:#c2740c;}
@@ -78,6 +86,7 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
             </div>
             <div class="note" id="aiNote">Connect the desktop app (Options) to unlock ATS match, visa signal &amp; a tailored résumé.</div>
           </div>
+          <label class="sitecap hidden" id="siteCapRow"><input type="checkbox" id="siteCap" /> Capture applications on this site (anonymized, local)</label>
           <div class="row hidden" id="captureRow">
             <button class="btn ghost" id="capture">📸 Capture fixture (dev)</button>
             <div class="sub" id="captureResult"></div>
@@ -146,6 +155,9 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     }
   });
 
+  const siteCap = $('siteCap') as HTMLInputElement;
+  siteCap.addEventListener('change', () => deps.onToggleCaptureSite?.(siteCap.checked));
+
   $('modeNote').addEventListener('click', () => {}); // reserved
   const openOptions = () => deps.onOpenOptions();
   $('aiNote').addEventListener('click', openOptions);
@@ -157,6 +169,9 @@ export function mountPanel(deps: PanelDeps): { update: () => void } {
     $('testbar').classList.toggle('hidden', !s.testMode);
     bubble.classList.toggle('test', !!s.testMode);
     $('captureRow').classList.toggle('hidden', !s.captureMode);
+    const cs = s.captureSite;
+    $('siteCapRow').classList.toggle('hidden', !cs?.show);
+    if (cs?.show) (siteCap as HTMLInputElement).checked = cs.optedIn;
     const dot = $('dot');
     dot.className = `dot ${s.mode}`;
     dot.title = s.mode === 'connected' ? 'Connected to desktop app' : s.mode === 'standalone' ? 'Standalone (local profile)' : 'No profile set';
