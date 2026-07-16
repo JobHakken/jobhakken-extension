@@ -2,6 +2,13 @@
 
 Version shown in the on-page panel header and Options footer (`chrome.runtime.getManifest().version`).
 
+## 0.4.1
+- Fix: test mode is now consistent across ALL personal data. A single `isTestActive()`
+  (extension toggle OR connected-app sandbox) governs the profile **and** documents, so
+  résumé upload no longer fetched the real résumé (real name) when test mode came from
+  the app. AI "Draft answer" is disabled in test mode (it's grounded in the real résumé).
+  Job insights / linking stay on the real connection — jobs carry no personal data.
+
 ## 0.4.0
 - Redesigned on-page panel (autofill-first):
   - **Two autofill actions** with the résumé merged in — **Autofill** (your default

@@ -41,12 +41,21 @@ async function appTestMode(): Promise<boolean> {
 }
 
 /**
- * The profile to fill from. TEST MODE (the extension toggle OR the connected app's
- * sandbox) → the built-in anonymous TEST_PROFILE, so the two stay in sync and nothing
+ * Test mode is active when EITHER the extension toggle or the connected app is in its
+ * sandbox. The single source of truth for "use anonymous dummy data, never real" — used
+ * for the profile AND documents, so no real personal data (name, résumé) is ever used.
+ * (Job/insights still use the real connection — jobs carry no personal data.)
+ */
+async function isTestActive(): Promise<boolean> {
+  return (await loadTestMode()) || (await appTestMode());
+}
+
+/**
+ * The profile to fill from. TEST MODE → the built-in anonymous TEST_PROFILE, so nothing
  * real is exposed. Otherwise prefer the desktop's résumé-derived profile, else local.
  */
 async function getFullProfile(): Promise<FullProfile | null> {
-  if ((await loadTestMode()) || (await appTestMode())) return TEST_PROFILE;
+  if (await isTestActive()) return TEST_PROFILE;
   const p = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
   if (p?.basics) return deriveFullProfile(p);
   return await loadFullProfile();
@@ -82,8 +91,8 @@ async function runAutofill(mode: 'default' | 'ats' = 'default'): Promise<{ fille
 async function uploadDocuments(mode: 'default' | 'ats' = 'default'): Promise<number> {
   const inputs = detectFileInputs(document).filter((f) => f.kind === 'resume' || f.kind === 'coverLetter');
   if (!inputs.length) return 0;
-  const testMode = await loadTestMode();
-  const files: { resume?: File; coverLetter?: File } = testMode
+  // test mode (extension toggle OR connected app sandbox) → dummy docs; never the real résumé
+  const files: { resume?: File; coverLetter?: File } = (await isTestActive())
     ? { resume: dummyResumeFile(), coverLetter: dummyCoverLetterFile() }
     : await realDocuments(mode);
   let n = 0;
@@ -243,6 +252,7 @@ async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; keywo
 
 /** Draft an answer for the first empty long-text (screening) field via the desktop AI. */
 async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
+  if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
   if (!connection) return { ok: false, error: 'Connect the app' };
   const ta = Array.from(document.querySelectorAll('textarea')).find((t) => !t.value.trim() && t.offsetParent !== null) as HTMLTextAreaElement | undefined;
   if (!ta) return { ok: false, error: 'No question field' };
