@@ -4,6 +4,18 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.9.2
+- **Store-ready packaging.** The toolbar + Web Store icon set (16/32/48/128) is now declared in
+  the manifest and **generated at build time from the website brand mark**
+  (`apps/landingPage/public/favicon.svg`) — one source of truth, so a rebrand of the favicon
+  flows into the extension automatically. Added a `pnpm run package` script that builds and
+  emits the upload `.zip`.
+- **Scoped the content script to job sites.** It no longer runs on every page (`<all_urls>`) —
+  it now activates only on job boards + applicant-tracking hosts (LinkedIn, Indeed, Workday,
+  Greenhouse, Lever, iCIMS, SuccessFactors, Ashby, SmartRecruiters, Taleo, …), with
+  `all_frames` so embedded ATS forms on company career pages still work. Cleaner permissions +
+  faster Web Store review.
+
 ## 0.9.1
 - **Renamed to JobHakken.** The extension name, toolbar title, popup, and Options page now read
   **JobHakken** (UI/behavior otherwise unchanged, per the rebrand). The desktop-app bridge
