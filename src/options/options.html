@@ -5,16 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>JobHakken — Profile &amp; settings</title>
     <style>
-      :root { color-scheme: light dark; --bg:#fff; --fg:#171a21; --surface:#fff; --line:#d9dce3; --muted:#6b7280; --accent:#5457d6; --ok:#0f9d6b; --warn:#c2740c; --err:#dc2626; --soft:#5457d614; }
-      @media (prefers-color-scheme:dark){ :root{ --bg:#0c0e13; --fg:#e6e8ec; --surface:#12151c; --line:#2a2f3a; --muted:#9aa1ac; --soft:#5457d626; } }
+      /* JobHakken brand palette — matches apps/landingPage globals.css (sage on warm canvas) */
+      :root { color-scheme: light dark;
+        --bg:hsl(41.5 22% 88.4%); --fg:hsl(48 6.2% 15.9%); --surface:hsl(45 40% 98%); --line:hsl(40 20% 85.3%);
+        --muted:hsl(44 6.1% 51.6%); --accent:hsl(144.8 19.7% 45.9%); --accent-fg:hsl(45 40% 98%);
+        --ok:hsl(144.8 19.7% 45.9%); --warn:#b8791f; --err:hsl(12.5 43.8% 47.5%); --soft:hsl(133.3 20% 91.2%); }
+      @media (prefers-color-scheme:dark){ :root{
+        --bg:hsl(40 10.3% 11.4%); --fg:hsl(40 28.3% 89.6%); --surface:hsl(36 13.5% 14.5%); --line:hsl(36 15.5% 19%);
+        --muted:hsl(38.8 6.8% 51.2%); --accent:hsl(142.4 23.9% 58.2%); --accent-fg:hsl(36 13.5% 14.5%);
+        --ok:hsl(142.4 23.9% 58.2%); --warn:#d99a3f; --err:hsl(14.1 50.2% 56.7%); --soft:hsl(147.7 15.3% 16.7%); } }
       /* explicit theme override (manual toggle) wins over the media query */
-      :root[data-theme="light"]{ color-scheme:light; --bg:#fff; --fg:#171a21; --surface:#fff; --line:#d9dce3; --muted:#6b7280; --soft:#5457d614; }
-      :root[data-theme="dark"]{ color-scheme:dark; --bg:#0c0e13; --fg:#e6e8ec; --surface:#12151c; --line:#2a2f3a; --muted:#9aa1ac; --soft:#5457d626; }
+      :root[data-theme="light"]{ color-scheme:light;
+        --bg:hsl(41.5 22% 88.4%); --fg:hsl(48 6.2% 15.9%); --surface:hsl(45 40% 98%); --line:hsl(40 20% 85.3%);
+        --muted:hsl(44 6.1% 51.6%); --accent:hsl(144.8 19.7% 45.9%); --accent-fg:hsl(45 40% 98%);
+        --ok:hsl(144.8 19.7% 45.9%); --warn:#b8791f; --err:hsl(12.5 43.8% 47.5%); --soft:hsl(133.3 20% 91.2%); }
+      :root[data-theme="dark"]{ color-scheme:dark;
+        --bg:hsl(40 10.3% 11.4%); --fg:hsl(40 28.3% 89.6%); --surface:hsl(36 13.5% 14.5%); --line:hsl(36 15.5% 19%);
+        --muted:hsl(38.8 6.8% 51.2%); --accent:hsl(142.4 23.9% 58.2%); --accent-fg:hsl(36 13.5% 14.5%);
+        --ok:hsl(142.4 23.9% 58.2%); --warn:#d99a3f; --err:hsl(14.1 50.2% 56.7%); --soft:hsl(147.7 15.3% 16.7%); }
       body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; padding:26px 20px 60px; max-width:840px; margin:0 auto; background:var(--bg); color:var(--fg); }
       .mast { display:flex; align-items:center; gap:10px; }
       .themebtn { margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--fg); border-radius:8px; width:34px; height:34px; font-size:15px; cursor:pointer; display:grid; place-items:center; }
       .themebtn:hover { border-color:var(--accent); }
-      .logo { width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#5457d6,#0f9d6b);display:grid;place-items:center;color:#fff;font-size:15px; }
+      .logo { width:28px;height:28px;border-radius:8px;overflow:hidden;display:block; }
+      .logo svg { width:28px;height:28px;display:block; }
       h1 { font-size:18px; margin:0; letter-spacing:-.01em; }
       p.sub { color:var(--muted); font-size:13px; margin:6px 0 18px; }
       .import { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--soft); border:1px solid var(--line); border-radius:12px; margin-bottom:16px; }
@@ -51,7 +65,7 @@
     </style>
   </head>
   <body>
-    <div class="mast"><span class="logo">⚡</span><h1>JobHakken — Profile &amp; settings</h1><button class="themebtn" id="theme" title="Theme">🖥</button></div>
+    <div class="mast"><span class="logo"><svg viewBox="0 0 64 64" aria-label="JobHakken"><rect width="64" height="64" rx="16" fill="#5E8C71"/><rect x="20" y="20" width="24" height="24" rx="6" transform="rotate(45 32 32)" fill="none" stroke="#FCFBF8" stroke-width="4.5"/><rect x="27" y="27" width="10" height="10" rx="2.5" transform="rotate(45 32 32)" fill="#FCFBF8"/></svg></span><h1>JobHakken — Profile &amp; settings</h1><button class="themebtn" id="theme" title="Theme">🖥</button></div>
     <p class="sub">Set up your profile once — it autofills job applications. The desktop app is optional (connect it to import your résumé + unlock AI). <span id="ver" style="color:var(--muted);font-size:11px;"></span></p>
 
     <div class="import">

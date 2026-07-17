@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.9.3
+- **Manual light/dark theme toggle.** A 🖥→☀→🌙 button in the popup header and on the Options
+  page. Default follows the system theme; Light/Dark override it and the choice persists across
+  both surfaces (`chrome.storage`). The Options (profile) page got real dark tokens so the whole
+  form reads correctly in dark, not just the save bar.
+- **Brand-matched UI.** The popup + Options now use the JobHakken website palette (sage-green on a
+  warm canvas, off-white text — pulled from `landingPage` design tokens) instead of the old indigo
+  accent, and the in-app logo is the **same diamond mark as the toolbar icon** (was a ⚡ gradient).
+  One consistent identity across the icon, popup, and options.
+
 ## 0.9.2
 - **Store-ready packaging.** The toolbar + Web Store icon set (16/32/48/128) is now declared in
   the manifest and **generated at build time from the website brand mark**
