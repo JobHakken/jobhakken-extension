@@ -1,12 +1,12 @@
-# Jobhakken extension — changelog
+# JobHakken extension — changelog
 
 Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest().version`).
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.9.1
-- **Renamed to Jobhakken.** The extension name, toolbar title, popup, and Options page now read
-  **Jobhakken** (UI/behavior otherwise unchanged, per the rebrand). The desktop-app bridge
+- **Renamed to JobHakken.** The extension name, toolbar title, popup, and Options page now read
+  **JobHakken** (UI/behavior otherwise unchanged, per the rebrand). The desktop-app bridge
   handshake keeps its internal identifier so existing connections keep working.
 
 ## 0.9.0
