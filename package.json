@@ -1,5 +1,5 @@
 {
-  "name": "first2apply-extension",
+  "name": "jobhakken-extension",
   "version": "0.5.2",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@first2apply/autofill": "workspace:*",
-    "@first2apply/core": "workspace:*"
+    "@jobhakken/autofill": "workspace:*",
+    "@jobhakken/core": "workspace:*"
   }
 }

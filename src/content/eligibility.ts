@@ -1,5 +1,5 @@
 // Client-side "won't sponsor" detection for LinkedIn (and generic career sites). Shares the
-// EXACT classifier the desktop feed uses (@first2apply/core) — imported by its specific,
+// EXACT classifier the desktop feed uses (@jobhakken/core) — imported by its specific,
 // dependency-free file so the content-script bundle stays lean (the core package index is
 // node-heavy and CJS). Only active when the user turns on "I need visa sponsorship".
 //
@@ -7,7 +7,7 @@
 // Two surfaces: on the SEARCH page we mark (or hide) the job's list TILE; on a single job
 // (detail) page there's no list, so we mark next to the job TITLE. The desktop feed hides
 // won't-sponsor roles upfront (it has every job's full description).
-import { classifyEligibility, type EligibilityCategory, type EligibilityResult } from '@first2apply/core/build/eligibility';
+import { classifyEligibility, type EligibilityCategory, type EligibilityResult } from '@jobhakken/core/build/eligibility';
 
 const MARK_ATTR = 'data-f2a-elig'; // 'marked' | 'hidden' — set on the anchor once handled
 

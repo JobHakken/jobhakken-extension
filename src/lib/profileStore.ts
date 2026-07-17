@@ -1,4 +1,4 @@
-import type { FullProfile, ProfileKey } from '@first2apply/autofill';
+import type { FullProfile, ProfileKey } from '@jobhakken/autofill';
 
 /**
  * The full profile (chrome.storage) so the extension autofills **without the desktop

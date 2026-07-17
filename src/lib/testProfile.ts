@@ -1,4 +1,4 @@
-import type { FullProfile } from '@first2apply/autofill';
+import type { FullProfile } from '@jobhakken/autofill';
 
 /**
  * A built-in, fully anonymous profile for TEST MODE. When test mode is on the extension

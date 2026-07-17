@@ -151,7 +151,7 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   whose description explicitly rules out sponsorship — U.S. citizenship, a security
   clearance, "no sponsorship," or export-control (ITAR/EAR) — get a warning badge on the
   open job, and that job's list card is dimmed. Runs entirely on-device using the same
-  classifier the desktop app uses (`@first2apply/core`, validated against ~700 real jobs).
+  classifier the desktop app uses (`@jobhakken/core`, validated against ~700 real jobs).
   LinkedIn list cards lack the full description, so only the opened job is judged; the
   desktop feed does the full hiding. Reflected live when toggled (no reload). E2E-guarded.
 

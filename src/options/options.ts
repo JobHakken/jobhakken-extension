@@ -1,4 +1,4 @@
-import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type FullProfile, type UserRule } from '@first2apply/autofill';
+import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type FullProfile, type UserRule } from '@jobhakken/autofill';
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';

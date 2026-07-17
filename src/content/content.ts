@@ -1,4 +1,4 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile } from '@first2apply/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile } from '@jobhakken/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';

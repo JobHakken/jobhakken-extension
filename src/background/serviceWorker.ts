@@ -6,7 +6,7 @@
  * for local-device access on every page, so the content script messages us instead and
  * WE fetch (extension origin + host_permissions → no prompt). Ephemeral — no state.
  */
-import { normalizeCompanyName } from '@first2apply/core/build/sponsors';
+import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
