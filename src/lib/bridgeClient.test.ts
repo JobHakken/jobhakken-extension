@@ -8,7 +8,7 @@ function makeFetch(livePort: number, validToken: string): typeof fetch {
     const u = String(url);
     if (u.endsWith('/health')) {
       if (!u.includes(`:${livePort}/`)) throw new Error('ECONNREFUSED');
-      return { ok: true, status: 200, json: async () => ({ ok: true, name: 'first2apply' }) } as unknown as Response;
+      return { ok: true, status: 200, json: async () => ({ ok: true, name: 'jobhakken' }) } as unknown as Response;
     }
     if (u.endsWith('/rpc')) {
       const auth = (init?.headers as Record<string, string>)?.authorization ?? '';

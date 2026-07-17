@@ -38,7 +38,7 @@ export async function discoverBridge(opts: Opts = {}): Promise<{ port: number } 
       const res = await fetchWithTimeout(f, `http://127.0.0.1:${port}/health`, {}, opts.timeoutMs ?? 1500);
       if (!res.ok) continue;
       const body = (await res.json()) as { name?: string };
-      if (body?.name === 'first2apply') return { port };
+      if (body?.name === 'jobhakken') return { port };
     } catch {
       /* nothing listening (or timed out) — try the next port */
     }
