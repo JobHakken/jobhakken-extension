@@ -64,7 +64,7 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 
 ## 0.8.2
 - **Feedback now goes to a public repo.** "⚑ Report this page" filed to the private
-  first2apply repo (404 for users) — it now opens an issue on the public
+  jobhakken repo (404 for users) — it now opens an issue on the public
   `pranav083/cautious-octo-spork` with the `extension-feedback` label.
 - **More live-robust LinkedIn tiles.** The H-1B badge (and won't-sponsor mark) anchor to the
   job-title link inside each list `<li>` (present on every live card regardless of LinkedIn's
@@ -101,7 +101,7 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   reasons (not detected / autofill missed / wrong sponsorship flag / other). It opens a
   prefilled issue with PII-safe context (host only, version, mode, field count) — and for
   "not detected" it also opts the site in so it works next time.
-- **Clearer site control.** "Always active on this site" → "➕ Always run First2Apply on this
+- **Clearer site control.** "Always active on this site" → "➕ Always run JobHakken on this
   site", with a one-line hint (for job/career sites we don't auto-detect).
 - E2E now attaches before/after autofill screenshots so filling quality is visible in the
   report/trace.
@@ -195,7 +195,7 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 
 ## 0.4.5
 - Manage the sites the extension is active on:
-  - **Panel:** "➕ Always open First2Apply on this site" — one click adds the current host
+  - **Panel:** "➕ Always open JobHakken on this site" — one click adds the current host
     (panel opens + auto-captures there); shows "✓ active" once added.
   - **Options → My sites:** list your added domains with remove (✕), plus add any domain
     by hand (e.g. `careers.company.com`). Built-in ATS list stays always-on.

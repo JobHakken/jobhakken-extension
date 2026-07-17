@@ -48,7 +48,7 @@ async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-// Public repo so anyone can file feedback (the main first2apply repo is private → 404 for users).
+// Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
 const REPO = 'https://github.com/pranav083/cautious-octo-spork';
 let lastState: State | null = null;
 
