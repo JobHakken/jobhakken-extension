@@ -111,8 +111,8 @@
         Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely try it on live application pages without exposing anything. The toolbar popup shows a <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
       </p>
       <p class="note">
-        <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — recommended, on by default</label><br />
-        As you apply, this records the <b>whole flow of each application</b> — which fields autofill handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter over time. Never touches the form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis.
+        <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — off by default; opt in below</label><br />
+        <b>This is off unless you turn it on.</b> When enabled, as you apply it takes a passive <b>snapshot of each application page’s HTML</b> and records the <b>whole flow</b> — which fields autofill handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter over time. Only on job-application pages you visit (built-in ATS list + your own sites) — never touches the form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis. By ticking the box you consent to this local capture; untick any time to stop.
         <span id="capCount" style="color:var(--muted)"></span>
         <br />
         <button id="exportCorpus" class="secondary" style="margin-top:8px;">Export corpus</button>

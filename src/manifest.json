@@ -64,7 +64,9 @@
         "*://*.phenompeople.com/*",
         "*://*.eightfold.ai/*",
         "*://*.gr8people.com/*",
-        "*://*.paycomonline.com/*"
+        "*://*.paycomonline.com/*",
+        "*://127.0.0.1/*",
+        "*://localhost/*"
       ],
       "js": ["content/content.js"],
       "run_at": "document_idle",
@@ -77,6 +79,6 @@
       "description": "Autofill this application"
     }
   },
-  "permissions": ["storage", "unlimitedStorage", "activeTab"],
+  "permissions": ["storage", "unlimitedStorage"],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
 }

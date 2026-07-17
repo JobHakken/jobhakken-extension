@@ -10,6 +10,7 @@ declare namespace chrome {
       remove(keys: string | string[]): Promise<void>;
     }
     const local: StorageArea;
+    const session: StorageArea;
     interface StorageChange {
       oldValue?: unknown;
       newValue?: unknown;
@@ -28,7 +29,7 @@ declare namespace chrome {
     const onInstalled: { addListener(cb: (details: { reason: string }) => void): void };
     const onMessage: {
       addListener(
-        cb: (message: JhMessage, sender: { tab?: { id?: number } }, sendResponse: (response?: unknown) => void) => void | boolean,
+        cb: (message: JhMessage, sender: { tab?: { id?: number }; frameId?: number }, sendResponse: (response?: unknown) => void) => void | boolean,
       ): void;
     };
   }
@@ -39,9 +40,10 @@ declare namespace chrome {
     const onClicked: { addListener(cb: (tab: { id?: number }) => void): void };
   }
   namespace tabs {
-    function sendMessage(tabId: number, message: JhMessage): Promise<unknown>;
+    function sendMessage(tabId: number, message: JhMessage, options?: { frameId?: number }): Promise<unknown>;
     function query(query: { active?: boolean; currentWindow?: boolean }): Promise<{ id?: number }[]>;
     function create(props: { url: string; active?: boolean }): Promise<{ id?: number }>;
+    const onRemoved: { addListener(cb: (tabId: number, removeInfo?: { windowId?: number; isWindowClosing?: boolean }) => void): void };
   }
   namespace commands {
     const onCommand: { addListener(cb: (command: string) => void): void };

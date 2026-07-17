@@ -51,13 +51,13 @@ export async function saveCaptureMode(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [CAPTURE_MODE_KEY]: v });
 }
 
-// Auto-capture: passively snapshot every detected application page (anonymized, local)
-// to build a learning corpus. Default ON for the data-collection phase.
+// Auto-capture: passively snapshot every detected application page (anonymized, local) to
+// build a learning corpus. Default OFF — it passively snapshots page HTML, so it's strictly
+// opt-in (explicit consent in Options), which also keeps the Web Store review clean.
 const AUTO_CAPTURE_KEY = 'f2a_auto_capture';
 export async function loadAutoCapture(): Promise<boolean> {
   const got = await chrome.storage.local.get(AUTO_CAPTURE_KEY);
-  const v = got[AUTO_CAPTURE_KEY];
-  return v === undefined ? true : !!v;
+  return !!got[AUTO_CAPTURE_KEY]; // default OFF (undefined → false)
 }
 export async function saveAutoCapture(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [AUTO_CAPTURE_KEY]: v });

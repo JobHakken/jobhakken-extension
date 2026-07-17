@@ -1,4 +1,5 @@
 import { loadConnection } from '../lib/connectionStore.js';
+import { bestFrameId } from '../lib/frameStore.js';
 import { loadTestMode } from '../lib/profileStore.js';
 import { initThemeToggle } from '../lib/theme.js';
 
@@ -36,12 +37,18 @@ async function activeTabId(): Promise<number | undefined> {
   return tab?.id;
 }
 
-/** Call the active tab's content script. Returns null if there's no content script (chrome://, etc.). */
+/**
+ * Call the active tab's content script — targeting the FORM frame by frameId. The content
+ * script runs in every frame (all_frames), so a bare sendMessage would be delivered to all
+ * of them and the empty top frame's reply could win; frameStore tells us which frame holds
+ * the fields. Returns null if there's no content script (chrome://, etc.).
+ */
 async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
   const id = await activeTabId();
   if (id == null) return null;
+  const frameId = await bestFrameId(id);
   try {
-    return (await chrome.tabs.sendMessage(id, { type: 'f2a-rpc', method, params })) as T;
+    return (await chrome.tabs.sendMessage(id, { type: 'f2a-rpc', method, params }, frameId != null ? { frameId } : {})) as T;
   } catch {
     return null;
   }

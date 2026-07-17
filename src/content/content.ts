@@ -22,7 +22,7 @@ let testMode = false;
 let appTest = false;
 let bridgeLive = false; // is the desktop app actually reachable right now (live health)?
 let captureMode = false;
-let autoCaptureOn = true;
+let autoCaptureOn = false; // opt-in (default OFF) — see loadAutoCapture / Options consent
 let siteOptedIn = false;
 let needsSponsorship = false; // "I need visa sponsorship" → mark/hide roles that won't sponsor
 let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
@@ -472,7 +472,7 @@ async function init() {
     if (area !== 'local') return;
     if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
     if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
-    if ('f2a_auto_capture' in changes) autoCaptureOn = changes['f2a_auto_capture'].newValue !== false;
+    if ('f2a_auto_capture' in changes) autoCaptureOn = !!changes['f2a_auto_capture'].newValue;
     if ('f2a_hide_unsponsored' in changes) hideUnsponsored = !!changes['f2a_hide_unsponsored'].newValue;
     if ('f2a_needs_sponsorship' in changes) {
       needsSponsorship = !!changes['f2a_needs_sponsorship'].newValue;
@@ -512,10 +512,29 @@ async function init() {
   // Keep the connection status + TEST state LIVE: poll the bridge so closing the app flips to
   // "standalone" and reopening reconnects — and the app's demo mode syncs. The popup reads
   // this fresh via getState (no push-update needed now the floating panel is gone).
+  //
+  // Throttled to the FOREGROUND: the poll only runs while the tab is visible (and only when
+  // there's a connection to check), and is cleared when the tab is hidden — so background
+  // tabs (and every extra frame under all_frames) stop hitting 127.0.0.1 every 8s.
+  let bridgeTimer: ReturnType<typeof setInterval> | undefined;
+  const startBridgePolling = () => {
+    if (bridgeTimer || document.hidden || !connection) return;
+    bridgeTimer = setInterval(() => void checkBridge(), 8000);
+  };
+  const stopBridgePolling = () => {
+    if (bridgeTimer) {
+      clearInterval(bridgeTimer);
+      bridgeTimer = undefined;
+    }
+  };
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) void checkBridge();
+    if (document.hidden) stopBridgePolling();
+    else {
+      void checkBridge(); // refresh immediately on return, then resume polling
+      startBridgePolling();
+    }
   });
-  setInterval(() => void checkBridge(), 8000);
+  startBridgePolling();
 
   // ── RPC: the toolbar popup drives everything through the active tab's content script ──
   type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
