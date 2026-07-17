@@ -6,6 +6,9 @@
     <style>
       :root { color-scheme: light dark; --bg:#fff; --fg:#171a21; --muted:#6b7280; --line:#e3e6ec; --accent:#5457d6; --green:#0f9d6b; --amber:#c2740c; --red:#b91c1c; --surf:#f6f7f9; }
       @media (prefers-color-scheme: dark) { :root { --bg:#171a21; --fg:#e6e8ec; --muted:#9aa1ac; --line:#2a2f3a; --surf:#1d212a; } }
+      /* explicit theme override (manual toggle) wins over the media query */
+      :root[data-theme="light"] { color-scheme: light; --bg:#fff; --fg:#171a21; --muted:#6b7280; --line:#e3e6ec; --surf:#f6f7f9; }
+      :root[data-theme="dark"] { color-scheme: dark; --bg:#171a21; --fg:#e6e8ec; --muted:#9aa1ac; --line:#2a2f3a; --surf:#1d212a; }
       * { box-sizing: border-box; }
       body { width: 330px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); font-size: 13px; }
       .hd { display: flex; align-items: center; gap: 8px; padding: 12px 13px; border-bottom: 1px solid var(--line); }
@@ -76,6 +79,7 @@
     <div class="hd">
       <span class="mark">⚡</span><span class="nm">JobHakken</span><span class="ver" id="ver"></span>
       <span class="conn" id="conn"><span class="d"></span><span id="connLabel">Checking…</span></span>
+      <button class="gear" id="theme" title="Theme">🖥</button>
       <button class="gear" id="gear" title="Profile &amp; settings">⚙</button>
     </div>
     <div class="testbar" id="testbar"><span>🧪</span> DEMO DATA — filling anonymous sample values</div>

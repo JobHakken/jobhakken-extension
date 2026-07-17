@@ -4,6 +4,7 @@ import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
+import { initThemeToggle } from '../lib/theme.js';
 import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadHideUnsponsored, loadNeedsSponsorship, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveHideUnsponsored, saveNeedsSponsorship, saveTestMode } from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -11,6 +12,8 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 // Working state (mutated by inputs; persisted on Save).
 let fp: FullProfile = { profile: {}, experience: [], education: [], rules: [] };
 let testModeOn = false; // extension test toggle (import brings dummy data when on)
+
+void initThemeToggle($('theme')); // manual light/dark toggle (default: follow system)
 
 // ── tabs ─────────────────────────────────────────────────────
 $('tabs').addEventListener('click', (e) => {

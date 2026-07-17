@@ -1,5 +1,6 @@
 import { loadConnection } from '../lib/connectionStore.js';
 import { loadTestMode } from '../lib/profileStore.js';
+import { initThemeToggle } from '../lib/theme.js';
 
 /**
  * Toolbar popup — the extension's control center (replaces the old floating on-page panel,
@@ -54,6 +55,7 @@ let lastState: State | null = null;
 
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
+void initThemeToggle($('theme'));
 
 async function render() {
   const [state, conn, testMode] = await Promise.all([rpc<State>('getState'), loadConnection(), loadTestMode()]);

@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>JobHakken — Profile &amp; settings</title>
     <style>
-      :root { color-scheme: light dark; --line:#d9dce3; --muted:#6b7280; --accent:#5457d6; --ok:#0f9d6b; --warn:#c2740c; --err:#dc2626; --soft:#5457d614; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; padding:26px 20px 60px; max-width:840px; margin:0 auto; }
+      :root { color-scheme: light dark; --bg:#fff; --fg:#171a21; --surface:#fff; --line:#d9dce3; --muted:#6b7280; --accent:#5457d6; --ok:#0f9d6b; --warn:#c2740c; --err:#dc2626; --soft:#5457d614; }
+      @media (prefers-color-scheme:dark){ :root{ --bg:#0c0e13; --fg:#e6e8ec; --surface:#12151c; --line:#2a2f3a; --muted:#9aa1ac; --soft:#5457d626; } }
+      /* explicit theme override (manual toggle) wins over the media query */
+      :root[data-theme="light"]{ color-scheme:light; --bg:#fff; --fg:#171a21; --surface:#fff; --line:#d9dce3; --muted:#6b7280; --soft:#5457d614; }
+      :root[data-theme="dark"]{ color-scheme:dark; --bg:#0c0e13; --fg:#e6e8ec; --surface:#12151c; --line:#2a2f3a; --muted:#9aa1ac; --soft:#5457d626; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; padding:26px 20px 60px; max-width:840px; margin:0 auto; background:var(--bg); color:var(--fg); }
       .mast { display:flex; align-items:center; gap:10px; }
+      .themebtn { margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--fg); border-radius:8px; width:34px; height:34px; font-size:15px; cursor:pointer; display:grid; place-items:center; }
+      .themebtn:hover { border-color:var(--accent); }
       .logo { width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#5457d6,#0f9d6b);display:grid;place-items:center;color:#fff;font-size:15px; }
       h1 { font-size:18px; margin:0; letter-spacing:-.01em; }
       p.sub { color:var(--muted); font-size:13px; margin:6px 0 18px; }
@@ -24,7 +30,7 @@
       .f { display:flex; flex-direction:column; gap:5px; } .f.full{grid-column:1/-1;}
       label { font-size:11px; font-weight:600; color:var(--muted); }
       label .lock { color:var(--warn); }
-      input, textarea { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; }
+      input, textarea { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; background:var(--surface); color:var(--fg); }
       textarea { resize:vertical; min-height:70px; }
       .entry { border:1px solid var(--line); border-radius:11px; padding:14px; margin-bottom:11px; position:relative; }
       .entry .rm { position:absolute; top:11px; right:13px; font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; }
@@ -36,8 +42,7 @@
       .rule .rm { color:var(--muted); cursor:pointer; font-size:15px; padding:0 5px; }
       .ops { font-size:11.5px; color:var(--muted); margin-top:10px; }
       .ops code { background:var(--soft); color:var(--accent); padding:1px 5px; border-radius:4px; font-family:monospace; }
-      .bar { position:sticky; bottom:0; background:var(--surface,#fff); padding:14px 0 0; margin-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-      @media (prefers-color-scheme:dark){ .bar{background:#0c0e13;} }
+      .bar { position:sticky; bottom:0; background:var(--bg); padding:14px 0 0; margin-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; gap:12px; }
       button.save { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13.5px; font-weight:600; cursor:pointer; }
       button.secondary { background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer; }
       .status { font-size:12.5px; } .ok{color:var(--ok);} .err{color:var(--err);}
@@ -46,7 +51,7 @@
     </style>
   </head>
   <body>
-    <div class="mast"><span class="logo">⚡</span><h1>JobHakken — Profile &amp; settings</h1></div>
+    <div class="mast"><span class="logo">⚡</span><h1>JobHakken — Profile &amp; settings</h1><button class="themebtn" id="theme" title="Theme">🖥</button></div>
     <p class="sub">Set up your profile once — it autofills job applications. The desktop app is optional (connect it to import your résumé + unlock AI). <span id="ver" style="color:var(--muted);font-size:11px;"></span></p>
 
     <div class="import">
