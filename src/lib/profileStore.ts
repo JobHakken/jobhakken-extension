@@ -17,13 +17,14 @@ export async function loadFullProfile(): Promise<FullProfile | null> {
   return (got[KEY] as FullProfile | undefined) ?? null;
 }
 
-// Whether to autofill sensitive fields (EEO/salary/visa). Default ON — nothing is
-// ever auto-submitted, so the user reviews on the page.
+// Whether to autofill sensitive fields (protected-class EEO / salary / visa). Default OFF —
+// protected-class data (race/ethnicity, veteran & disability status, gender, salary) is never
+// written unless the user explicitly opts in. Even opted in, nothing is ever auto-submitted.
 const SENSITIVE_KEY = 'f2a_fill_sensitive';
 export async function loadFillSensitive(): Promise<boolean> {
   const got = await chrome.storage.local.get(SENSITIVE_KEY);
   const v = got[SENSITIVE_KEY];
-  return v === undefined ? true : !!v;
+  return v === undefined ? false : !!v;
 }
 export async function saveFillSensitive(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [SENSITIVE_KEY]: v });
