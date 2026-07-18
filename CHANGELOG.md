@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.10.0
+- **Save a job to the desktop feed.** The popup's **Save job** button now adds the open role to
+  the desktop app's tracker (the New column) over the local bridge — deduped by URL, so
+  re-clicking never creates a duplicate. Needs the app open. (Was a "coming soon" stub.)
+- **Loupe brand mark.** The popup + Options header now show the JobHakken **loupe** monogram —
+  matching the desktop app, website, and toolbar icon. The old diamond mark is retired everywhere.
+- **Fix: visa-sponsor lookup used the site name.** Analyze was querying the *hostname*
+  ("linkedin") instead of the real employer, so the H-1B / UK sponsor signal often missed. It now
+  reads the actual company from the page title.
+
 ## 0.9.3
 - **Manual light/dark theme toggle.** A 🖥→☀→🌙 button in the popup header and on the Options
   page. Default follows the system theme; Light/Dark override it and the choice persists across
