@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "JobHakken — Apply Copilot",
   "version": "0.10.0",
-  "description": "Autofill job applications smartly, with a live ATS match, H-1B/UK visa signal, and a résumé tailored for the job.",
+  "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
