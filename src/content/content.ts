@@ -437,7 +437,9 @@ function cleanTitle(t: string): string {
 function pageJob() {
   return {
     title: document.title.slice(0, 200),
-    company: location.hostname.replace(/^www\./, '').split('.')[0],
+    // Real employer from the page title (falls back to hostname) — the hostname alone made the
+    // visa-sponsor lookup query "linkedin" instead of the actual company.
+    company: pageCompany(),
     description: (document.body?.innerText ?? '').slice(0, 8000),
   };
 }
@@ -460,6 +462,21 @@ async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; keywo
     return { ats: kw?.atsMatchPercent ?? null, visa: visaLabel, keywords };
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Analysis failed' };
+  }
+}
+
+/** Save the currently-open job into the connected desktop app's feed (New column). */
+async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: string }> {
+  if (!connection) return { ok: false, error: 'Open the JobHakken app to save jobs' };
+  try {
+    const r = await bridgeRpc<{ saved?: boolean; already?: boolean }>('saveJob', {
+      title: cleanTitle(document.title),
+      company: pageCompany(),
+      url: location.href,
+    });
+    return { ok: !!r?.saved, already: r?.already };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed to save' };
   }
 }
 
@@ -595,7 +612,7 @@ async function init() {
           sendResponse(await draftAnswer());
           break;
         case 'save':
-          sendResponse({ ok: false, error: 'soon' }); // save-to-feed: next step
+          sendResponse(await saveJob());
           break;
         case 'capture':
           sendResponse(await capturePage());
