@@ -1,4 +1,4 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile } from '@jobhakken/autofill';
+import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile, type Profile } from '@jobhakken/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
@@ -298,10 +298,9 @@ async function capturePage(): Promise<{ total: number; resolved: number; unresol
       await readLazyOptions(el, 400);
     }
     const report: CoverageReport = captureCoverage(document, { url: location.href });
-    // scrub the user's own profile values from the saved HTML (belt-and-suspenders;
-    // in test mode the page holds only dummy data anyway)
-    const fp = await loadFullProfile();
-    const scrub = Object.values(fp?.profile ?? {}).filter((v): v is string => typeof v === 'string');
+    // scrub the fill profile's values (bridge when connected, else local) from the saved
+    // HTML (belt-and-suspenders; in test mode the page holds only dummy data anyway)
+    const scrub = await scrubValues();
     const html = cleanClone(document.documentElement, scrub);
     const host = location.hostname.replace(/^www\./, '').split('.')[0] || 'page';
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -341,6 +340,36 @@ function fieldCurrentValue(f: ReturnType<typeof detectFields>[number]): string {
   return (v ?? '').trim();
 }
 
+/** Escape a literal string for use inside a RegExp. */
+function reEscape(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * PII strings to redact from captured HTML/field values. Sourced from the profile we
+ * ACTUALLY fill from — the connected desktop's bridge profile when connected, else the
+ * local profile — plus the local profile, and expanded with name tokens so a first/last
+ * name shows redacted even when a field holds only one part of it. Address/city/zip are
+ * whole profile values and are covered directly. (Test mode fills dummy data — nothing
+ * real to add.)
+ */
+async function scrubValues(): Promise<string[]> {
+  const local = await loadFullProfile();
+  const bridge = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
+  const profiles: Array<Profile | undefined> = [local?.profile, bridge?.basics ? deriveFullProfile(bridge).profile : undefined];
+  const set = new Set<string>();
+  for (const p of profiles) {
+    if (!p) continue;
+    for (const v of Object.values(p)) if (typeof v === 'string' && v.trim()) set.add(v.trim());
+    // name tokens: a field may hold just "Jordan" while the profile has "Jordan Rivera"
+    for (const key of ['fullName', 'firstName', 'middleName', 'lastName', 'preferredName'] as const) {
+      const nm = p[key];
+      if (typeof nm === 'string') for (const tok of nm.split(/\s+/)) if (tok.trim().length >= 3) set.add(tok.trim());
+    }
+  }
+  return [...set].filter((s) => s.length >= 3);
+}
+
 /** Make a field value safe to store: scrub known PII, reduce emails/phones/long text to shapes. */
 function safeValue(raw: string, scrub: string[]): string {
   if (!raw) return '';
@@ -348,7 +377,7 @@ function safeValue(raw: string, scrub: string[]): string {
   const digits = raw.replace(/\D/g, '');
   if (digits.length >= 7 && /^[\d+()\-.\s]+$/.test(raw)) return '[phone]';
   let v = raw;
-  for (const s of scrub) if (s && s.length >= 3) v = v.split(s).join('[redacted]');
+  for (const s of scrub) if (s && s.length >= 3) v = v.replace(new RegExp(reEscape(s), 'gi'), '[redacted]');
   if (v.length > 60) return `[text ${v.length} chars]`;
   return v;
 }
@@ -367,8 +396,7 @@ async function captureFlow(): Promise<void> {
     const detected = detectFields(document);
     if (detected.length < 4) return; // only real application forms
     const report = captureCoverage(document, { url: location.href });
-    const local = await loadFullProfile();
-    const scrub = Object.values(local?.profile ?? {}).filter((v): v is string => typeof v === 'string');
+    const scrub = await scrubValues();
 
     let filledByAutofill = 0;
     let filledManually = 0;
