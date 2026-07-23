@@ -1,6 +1,10 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { BrowserContext, chromium, expect, test as base } from '@playwright/test';
+
+// ESM scope (package is "type":"module") — no CJS __dirname; derive it from import.meta.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // `chrome` is a browser-context global available inside page.evaluate on an extension page
 declare const chrome: {
