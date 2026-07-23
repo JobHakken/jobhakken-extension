@@ -1,0 +1,38 @@
+name: CI
+
+# Verifies the standalone extension builds: installs the @jobhakken/* libs from GitHub Packages
+# (using the Actions GITHUB_TOKEN for read access), typechecks, builds the MV3 bundle, and runs tests.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@jobhakken"
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build (MV3 bundle)
+        run: npm run build
+      - name: Test
+        run: npm test --if-present
