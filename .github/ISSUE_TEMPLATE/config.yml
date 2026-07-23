@@ -1,0 +1,13 @@
+# Bug reports and feature requests are tracked in the public JobHakken-issues repo
+# (one tracker for the desktop app + extension). Redirect users there.
+blank_issues_enabled: false
+contact_links:
+  - name: 🐞 Report a bug / 💡 request a feature
+    url: https://github.com/JobHakken/JobHakken-issues/issues/new/choose
+    about: All extension feedback is tracked in our public issues repo, JobHakken-issues.
+  - name: 💬 Questions & discussion
+    url: https://github.com/JobHakken/JobHakken-issues/discussions
+    about: Ask questions or discuss ideas there.
+  - name: 🔒 Security vulnerability
+    url: https://github.com/JobHakken/JobHakken/security/advisories/new
+    about: Report privately — never a public issue.

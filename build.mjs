@@ -36,11 +36,11 @@ mkdirSync(path.join(outdir, 'options'), { recursive: true });
 mkdirSync(path.join(outdir, 'popup'), { recursive: true });
 mkdirSync(path.join(outdir, 'data'), { recursive: true });
 
-// Toolbar + Web Store icons (16/32/48/128) are GENERATED at build time from the website's
-// brand mark (apps/landingPage/public/favicon.svg) — the single source of truth. The icon is
-// being rebranded (and by other agents too); rendering from the SVG each build means the
-// extension always tracks the current mark instead of a copy that goes stale.
-const BRAND_SVG = path.resolve('..', 'landingPage', 'public', 'favicon.svg');
+// Toolbar + Web Store icons (16/32/48/128) are GENERATED at build time from the brand mark
+// (brand/favicon.svg). Keep this SVG in sync with the website's favicon (the canonical mark)
+// when the brand changes — rendering from the SVG each build means the extension always tracks
+// this repo's copy of the mark instead of a stale PNG.
+const BRAND_SVG = path.resolve('brand', 'favicon.svg');
 mkdirSync(path.join(outdir, 'icons'), { recursive: true });
 const brandSvg = readFileSync(BRAND_SVG);
 for (const size of [16, 32, 48, 128]) {

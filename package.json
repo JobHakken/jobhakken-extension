@@ -3,15 +3,18 @@
   "version": "0.10.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "node build.mjs",
-    "package": "node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged → apps/extension/jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
+    "package": "node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged → jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@jobhakken/autofill": "workspace:*",
-    "@jobhakken/core": "workspace:*"
+    "@jobhakken/autofill": "^0.1.0",
+    "@jobhakken/core": "^0.1.0"
   },
   "devDependencies": {
     "sharp": "^0.34.5"

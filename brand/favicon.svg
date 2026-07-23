@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="JobHakken">
+  <rect width="64" height="64" rx="16" fill="#5E8C71"/>
+  <g transform="translate(2 1) scale(0.9)" fill="none" stroke="#FCFBF8" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40,10 L40,29"/>
+    <circle cx="33" cy="40" r="12"/>
+    <line x1="42" y1="49" x2="54" y2="59"/>
+  </g>
+  <circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8"/>
+</svg>
