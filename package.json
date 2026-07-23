@@ -10,13 +10,19 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "node build.mjs",
     "package": "node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged → jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
-    "test": "jest --config ./jest.config.ts"
+    "test": "jest --config ./jest.config.ts",
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:headed": "npm run build && PWHEAD=1 playwright test",
+    "test:e2e:ui": "npm run build && playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "gen:h1b": "node scripts/gen-h1b-data.mjs"
   },
   "dependencies": {
     "@jobhakken/autofill": "^0.1.0",
     "@jobhakken/core": "^0.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20.19.33",
     "esbuild": "^0.25.2",
     "jest": "^29.7.0",

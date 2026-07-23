@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  Minimal LinkedIn-shaped job page for the eligibility-badge E2E. The detail pane uses
+  #job-details (as the real site does) and the list card links to /jobs/view/<id> so the
+  content script can match + dim the open card. JD carries an EXPLICIT sponsorship blocker
+  (U.S. citizenship + security clearance). Anonymous content only.
+  Open with ?currentJobId=12345 so the card-dim id-match fires.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Firmware Engineer | Example Aerospace | LinkedIn</title>
+  </head>
+  <body>
+    <main class="scaffold-layout__list">
+      <ul>
+        <li class="jobs-search-results__list-item">
+          <div class="job-card-container">
+            <a class="job-card-container__link" href="/jobs/view/12345">Firmware Engineer — Example Aerospace</a>
+          </div>
+        </li>
+        <li class="jobs-search-results__list-item">
+          <div class="job-card-container">
+            <a class="job-card-container__link" href="/jobs/view/67890">Frontend Engineer — Example Cloud</a>
+          </div>
+        </li>
+      </ul>
+    </main>
+
+    <section class="jobs-details">
+      <h1>Firmware Engineer</h1>
+      <!-- current LinkedIn DOM: hashed classes + stable id prefix JobDetails_AboutTheJob_<jobId> -->
+      <div id="JobDetails_AboutTheJob_12345" class="_87ed9fa4 _05d76f20">
+        <p>
+          Example Aerospace is hiring a Firmware Engineer to build embedded control systems for our
+          next-generation avionics platform. You will own bring-up, driver development, and real-time
+          scheduling across our sensor suite.
+        </p>
+        <p>
+          <strong>Eligibility:</strong> Must be a U.S. Citizen. This position requires an active
+          security clearance (or the ability to obtain one). Applicants must be able to access
+          export-controlled (ITAR) technical data.
+        </p>
+        <ul>
+          <li>5+ years of embedded C/C++</li>
+          <li>Experience with RTOS and low-level debugging</li>
+          <li>Bachelor's in EE, CE, or related field</li>
+        </ul>
+      </div>
+    </section>
+  </body>
+</html>

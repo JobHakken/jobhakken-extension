@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Account settings (E2E) — not a job application</title>
+  </head>
+  <body>
+    <h1>Account settings</h1>
+    <!-- name/email/phone/company like a GitHub / profile-settings page: profile fields but
+         NO job-application signal (no résumé upload, no EEO/screening). Panel must stay hidden
+         — this is the "flash on github" regression guard. -->
+    <form>
+      <label for="q">Search</label><input type="search" id="q" name="q" aria-label="Search" />
+      <label for="fn">First name</label><input id="fn" name="first_name" type="text" />
+      <label for="ln">Last name</label><input id="ln" name="last_name" type="text" />
+      <label for="em">Email</label><input id="em" name="email" type="email" />
+      <label for="ph">Phone</label><input id="ph" name="phone" type="tel" />
+      <label for="co">Company</label><input id="co" name="company" type="text" />
+      <button type="submit">Save</button>
+    </form>
+  </body>
+</html>

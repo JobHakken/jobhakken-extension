@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>JobHakken E2E sandbox</title>
+  </head>
+  <body>
+    <h1>Application (E2E sandbox)</h1>
+    <form>
+      <p><label for="fn">First Name</label><input id="fn" name="first_name" type="text" /></p>
+      <p><label for="em">Email</label><input id="em" name="email" type="email" /></p>
+      <p><label for="ph">Phone</label><input id="ph" name="phone" type="tel" /></p>
+      <p><label for="rz">Resume/CV</label><input id="rz" name="resume" type="file" accept=".pdf,.doc,.docx" /></p>
+      <p><label for="cl">Cover Letter</label><input id="cl" name="cover_letter" type="file" accept=".pdf" /></p>
+      <p>
+        <label id="glabel">Gender</label>
+        <!-- a Workday-style lazy combobox: options render only when opened -->
+        <button id="g" name="gender" type="button" aria-haspopup="listbox" aria-controls="glb" aria-labelledby="glabel">Select…</button>
+        <div id="glb" role="listbox"></div>
+      </p>
+    </form>
+    <script>
+      // Reproduce a real lazy dropdown: options are injected on first open.
+      const btn = document.getElementById('g');
+      const lb = document.getElementById('glb');
+      btn.addEventListener('click', () => {
+        if (lb.childElementCount) return;
+        for (const t of ['Male', 'Female', 'Prefer not to say', 'Non-binary']) {
+          const o = document.createElement('div');
+          o.setAttribute('role', 'option');
+          o.textContent = t;
+          o.addEventListener('click', () => {
+            btn.dataset.value = t;
+            btn.textContent = t;
+          });
+          lb.appendChild(o);
+        }
+      });
+    </script>
+  </body>
+</html>

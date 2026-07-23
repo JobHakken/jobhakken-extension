@@ -1,0 +1,26 @@
+<!doctype html>
+<!--
+  A LinkedIn job page for a KNOWN H-1B sponsor (Google) with a neutral JD (no sponsorship
+  blocker). Exercises the inline green "✓ H-1B sponsor" badge: the content script reads the
+  company from the a[href*="/company/"] link, the service worker matches it against the bundled
+  H-1B list, and a badge is added next to the company. Anonymous/neutral content.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Software Engineer | Google | LinkedIn</title>
+  </head>
+  <body>
+    <section class="_top_card">
+      <p class="_206505cb"><a class="fa281b20" href="/jobs/view/4400000001">Software Engineer</a></p>
+      <div class="_company"><a href="/company/google/">Google</a> · Mountain View, CA</div>
+      <div id="JobDetails_AboutTheJob_4400000001" class="_87ed9fa4">
+        <p>
+          Google is hiring a Software Engineer to build large-scale distributed systems. You'll
+          design services, write tests, and collaborate across teams to ship reliable software.
+        </p>
+        <ul><li>Strong CS fundamentals</li><li>Experience with a modern language</li></ul>
+      </div>
+    </section>
+  </body>
+</html>
