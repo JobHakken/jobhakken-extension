@@ -1,0 +1,84 @@
+{
+  "manifest_version": 3,
+  "name": "JobHakken — Apply Copilot",
+  "version": "0.10.0",
+  "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "background": { "service_worker": "background/serviceWorker.js", "type": "module" },
+  "options_page": "options/options.html",
+  "action": {
+    "default_title": "JobHakken",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.linkedin.com/*",
+        "*://*.indeed.com/*",
+        "*://*.glassdoor.com/*",
+        "*://*.ziprecruiter.com/*",
+        "*://*.dice.com/*",
+        "*://*.monster.com/*",
+        "*://*.simplyhired.com/*",
+        "*://*.wellfound.com/*",
+        "*://*.builtin.com/*",
+        "*://*.remoteok.com/*",
+        "*://*.remoteok.io/*",
+        "*://*.weworkremotely.com/*",
+        "*://*.workingnomads.com/*",
+        "*://*.myworkdayjobs.com/*",
+        "*://*.myworkdaysite.com/*",
+        "*://*.greenhouse.io/*",
+        "*://*.lever.co/*",
+        "*://*.ashbyhq.com/*",
+        "*://*.icims.com/*",
+        "*://*.successfactors.com/*",
+        "*://*.successfactors.eu/*",
+        "*://*.sapsf.com/*",
+        "*://*.sapsf.eu/*",
+        "*://*.jobs2web.com/*",
+        "*://*.smartrecruiters.com/*",
+        "*://*.workable.com/*",
+        "*://*.taleo.net/*",
+        "*://*.bamboohr.com/*",
+        "*://*.jobvite.com/*",
+        "*://*.applytojob.com/*",
+        "*://*.breezy.hr/*",
+        "*://*.recruitee.com/*",
+        "*://*.teamtailor.com/*",
+        "*://*.dayforcehcm.com/*",
+        "*://*.oraclecloud.com/*",
+        "*://*.brassring.com/*",
+        "*://*.kenexa.com/*",
+        "*://*.phenompeople.com/*",
+        "*://*.eightfold.ai/*",
+        "*://*.gr8people.com/*",
+        "*://*.paycomonline.com/*",
+        "*://127.0.0.1/*",
+        "*://localhost/*"
+      ],
+      "js": ["content/content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "commands": {
+    "autofill": {
+      "suggested_key": { "default": "Ctrl+Shift+2", "mac": "MacCtrl+2" },
+      "description": "Autofill this application"
+    }
+  },
+  "permissions": ["storage", "unlimitedStorage"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
+}
