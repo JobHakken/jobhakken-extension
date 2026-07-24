@@ -20,11 +20,15 @@ if (!CSV) {
 
 function parseLine(line) {
   // quote-aware split (employer names contain commas); we only need col0 + col2
-  const out = []; let cur = ''; let q = false;
+  const out = [];
+  let cur = '';
+  let q = false;
   for (const ch of line) {
     if (ch === '"') q = !q;
-    else if (ch === ',' && !q) { out.push(cur); cur = ''; }
-    else cur += ch;
+    else if (ch === ',' && !q) {
+      out.push(cur);
+      cur = '';
+    } else cur += ch;
   }
   out.push(cur);
   return out;

@@ -16,7 +16,15 @@ import { beforeAll, describe, expect, it, jest } from '@jest/globals';
 // Pre-sorted (JS string order) synthetic index. Note the word-boundary trap "emersonx": a query
 // of "emerson" must sum emerson + "emerson electric" + "emerson process management" but NOT
 // "emersonx" (no space at the query boundary), i.e. 4050, never 4149.
-const SPONSORS = ['acme\t1200', 'emerson\t50', 'emerson electric\t3400', 'emerson process management\t600', 'emersonx\t99', 'google\t9000', 'microsoft\t8000'].join('\n');
+const SPONSORS = [
+  'acme\t1200',
+  'emerson\t50',
+  'emerson electric\t3400',
+  'emerson process management\t600',
+  'emersonx\t99',
+  'google\t9000',
+  'microsoft\t8000',
+].join('\n');
 
 type Listener = (msg: unknown, sender: unknown, sendResponse: (r: unknown) => void) => unknown;
 const messageListeners: Listener[] = [];
@@ -25,7 +33,9 @@ const messageListeners: Listener[] = [];
 function lookup(companies: string[]): Promise<Record<string, number>> {
   return new Promise((resolve) => {
     for (const fn of messageListeners) {
-      fn({ type: 'f2a-h1b', companies }, {}, (res) => resolve((res as { matches?: Record<string, number> })?.matches ?? {}));
+      fn({ type: 'f2a-h1b', companies }, {}, (res) =>
+        resolve((res as { matches?: Record<string, number> })?.matches ?? {}),
+      );
     }
   });
 }

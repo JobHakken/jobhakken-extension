@@ -8,7 +8,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // `chrome` is a browser-context global available inside page.evaluate on an extension page
 declare const chrome: {
-  storage: { local: { set(items: Record<string, unknown>): Promise<void>; get(keys: string): Promise<Record<string, unknown>> } };
+  storage: {
+    local: { set(items: Record<string, unknown>): Promise<void>; get(keys: string): Promise<Record<string, unknown>> };
+  };
   tabs: { query(q: object): Promise<Array<{ id?: number }>>; sendMessage(id: number, msg: unknown): Promise<unknown> };
 };
 
@@ -36,7 +38,9 @@ const test = base.extend<{ context: BrowserContext; extensionId: string }>({
       // DEMO_VIDEO=<dir> records each page's video to <dir> (for store-listing / demo clips).
       // This context is built manually (extensions require launchPersistentContext), so it's
       // NOT covered by playwright.config.ts's `use.video` — recordVideo must be set here.
-      recordVideo: process.env.DEMO_VIDEO ? { dir: process.env.DEMO_VIDEO, size: { width: 1280, height: 800 } } : undefined,
+      recordVideo: process.env.DEMO_VIDEO
+        ? { dir: process.env.DEMO_VIDEO, size: { width: 1280, height: 800 } }
+        : undefined,
       args: [
         ...(HEADED ? [] : ['--headless=new']),
         `--disable-extensions-except=${EXT_DIR}`,
@@ -81,7 +85,10 @@ test('autofills the Greenhouse fixture from the built-in test profile', async ({
   const page = await context.newPage();
   await page.goto('/greenhouse.samsung.html');
   // visual evidence: the empty form BEFORE autofill
-  await testInfo.attach('autofill-1-before.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('autofill-1-before.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 
   // retry autofill until the content script is ready + the field takes the test-profile value.
   // autofillActiveTab awaits the FULL autofill (sync fields + the interactive combobox/upload
@@ -91,17 +98,26 @@ test('autofills the Greenhouse fixture from the built-in test profile', async ({
     .poll(
       async () => {
         await autofillActiveTab(context);
-        return page.getByLabel(/First Name/i).inputValue().catch(() => '');
+        return page
+          .getByLabel(/First Name/i)
+          .inputValue()
+          .catch(() => '');
       },
       { timeout: 25_000 },
     )
     .toBe('Jordan');
   await expect(page.getByLabel(/Email/i).first()).toHaveValue('jordan.rivera@example.com');
   // visual evidence: the same form AFTER autofill (open the trace/report to see filling quality)
-  await testInfo.attach('autofill-2-after.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('autofill-2-after.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 });
 
-test('popup renders the control center (status + Autofill), no floating panel is injected', async ({ context, extensionId }) => {
+test('popup renders the control center (status + Autofill), no floating panel is injected', async ({
+  context,
+  extensionId,
+}) => {
   // a job page never gets a floating on-page panel anymore (the popup is the UI)
   const page = await context.newPage();
   await page.goto('/greenhouse.samsung.html');
@@ -124,7 +140,9 @@ test('captures the filled flow — autofill vs manual, with PII reduced to shape
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   // auto-capture is opt-in (default OFF) → enable it explicitly for this capture test
-  await opt.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true, f2a_auto_capture: true, f2a_capture_sites: ['127.0.0.1'] }));
+  await opt.evaluate(() =>
+    chrome.storage.local.set({ f2a_test_mode: true, f2a_auto_capture: true, f2a_capture_sites: ['127.0.0.1'] }),
+  );
   await opt.close();
 
   const page = await context.newPage();
@@ -133,7 +151,10 @@ test('captures the filled flow — autofill vs manual, with PII reduced to shape
     .poll(
       async () => {
         await autofillActiveTab(context);
-        return page.getByLabel(/First Name/i).inputValue().catch(() => '');
+        return page
+          .getByLabel(/First Name/i)
+          .inputValue()
+          .catch(() => '');
       },
       { timeout: 8000 },
     )
@@ -148,7 +169,9 @@ test('captures the filled flow — autofill vs manual, with PII reduced to shape
   const fields = await store.evaluate(async () => {
     const idx = (await chrome.storage.local.get('f2a_cap_index'))['f2a_cap_index'] as Array<{ key: string }>;
     if (!idx?.length) return null;
-    const rec = (await chrome.storage.local.get(idx[0].key))[idx[0].key] as { fields?: Array<{ label: string; filledBy: string; value?: string }> };
+    const rec = (await chrome.storage.local.get(idx[0].key))[idx[0].key] as {
+      fields?: Array<{ label: string; filledBy: string; value?: string }>;
+    };
     return rec?.fields ?? null;
   });
   expect(fields).toBeTruthy();
@@ -182,7 +205,10 @@ test('app-in-test-mode syncs to the extension — fills DUMMY, never the real na
     .poll(
       async () => {
         await autofillActiveTab(context);
-        return page.getByLabel(/First Name/i).inputValue().catch(() => '');
+        return page
+          .getByLabel(/First Name/i)
+          .inputValue()
+          .catch(() => '');
       },
       { timeout: 8000 },
     )
@@ -197,11 +223,23 @@ test('Options: "Import" in test mode loads the dummy profile, not real data', as
   await opt.reload(); // pick up test mode → Import becomes usable + imports dummy
   await opt.locator('#importBtn').click();
   await expect
-    .poll(async () => opt.evaluate(async () => ((await chrome.storage.local.get('f2a_full_profile'))['f2a_full_profile'] as { profile?: { firstName?: string } })?.profile?.firstName ?? ''))
+    .poll(async () =>
+      opt.evaluate(
+        async () =>
+          (
+            (await chrome.storage.local.get('f2a_full_profile'))['f2a_full_profile'] as {
+              profile?: { firstName?: string };
+            }
+          )?.profile?.firstName ?? '',
+      ),
+    )
     .toBe('Jordan');
 });
 
-test('sponsorship filter: marks a blocked LinkedIn job TILE when the toggle is on', async ({ context, extensionId }, testInfo) => {
+test('sponsorship filter: marks a blocked LinkedIn job TILE when the toggle is on', async ({
+  context,
+  extensionId,
+}, testInfo) => {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   await opt.evaluate(() => chrome.storage.local.set({ f2a_needs_sponsorship: true }));
@@ -214,10 +252,16 @@ test('sponsorship filter: marks a blocked LinkedIn job TILE when the toggle is o
   const card = page.locator('.job-card-container', { has: page.locator('a[href*="/jobs/view/12345"]') });
   await expect(card.locator('.f2a-elig-mark')).toBeVisible({ timeout: 5000 });
   await expect(card.locator('.f2a-elig-mark')).toContainText(/no sponsorship/i);
-  await testInfo.attach('sponsorship-tile-mark.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('sponsorship-tile-mark.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 });
 
-test('sponsorship filter: marks next to the TITLE on a job-detail page (no list tiles)', async ({ context, extensionId }, testInfo) => {
+test('sponsorship filter: marks next to the TITLE on a job-detail page (no list tiles)', async ({
+  context,
+  extensionId,
+}, testInfo) => {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   await opt.evaluate(() => chrome.storage.local.set({ f2a_needs_sponsorship: true }));
@@ -230,10 +274,16 @@ test('sponsorship filter: marks next to the TITLE on a job-detail page (no list 
   await expect(mark).toHaveAttribute('title', /won't sponsor/i);
   // it sits right after the job title link (not in the description)
   await expect(page.locator('a[href="/jobs/view/4422607999"] + .f2a-elig-mark')).toHaveCount(1);
-  await testInfo.attach('sponsorship-title-mark.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('sponsorship-title-mark.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 });
 
-test('H-1B badge: flags a known sponsor company inline (bundled data, no app)', async ({ context, extensionId }, testInfo) => {
+test('H-1B badge: flags a known sponsor company inline (bundled data, no app)', async ({
+  context,
+  extensionId,
+}, testInfo) => {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   await opt.evaluate(() => chrome.storage.local.set({ f2a_needs_sponsorship: true }));
@@ -250,7 +300,10 @@ test('H-1B badge: flags a known sponsor company inline (bundled data, no app)', 
   await testInfo.attach('h1b-badge.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 });
 
-test('Workday: autofills the real My Information page (text fields fill)', async ({ context, extensionId }, testInfo) => {
+test('Workday: autofills the real My Information page (text fields fill)', async ({
+  context,
+  extensionId,
+}, testInfo) => {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   await opt.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true }));
@@ -258,13 +311,19 @@ test('Workday: autofills the real My Information page (text fields fill)', async
 
   const page = await context.newPage();
   await page.goto('/workday/02-my-information.html');
-  await testInfo.attach('workday-before.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('workday-before.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 
   await expect
     .poll(
       async () => {
         await autofillActiveTab(context);
-        return page.locator('#name--legalName--firstName').inputValue().catch(() => '');
+        return page
+          .locator('#name--legalName--firstName')
+          .inputValue()
+          .catch(() => '');
       },
       { timeout: 8000 },
     )
@@ -273,10 +332,16 @@ test('Workday: autofills the real My Information page (text fields fill)', async
   await expect(page.locator('#name--legalName--lastName')).toHaveValue('Rivera');
   await expect(page.locator('#address--city')).not.toHaveValue('');
   expect(await page.locator('[data-f2a-filled="1"]').count()).toBeGreaterThanOrEqual(4);
-  await testInfo.attach('workday-after.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+  await testInfo.attach('workday-after.png', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
 });
 
-test('both signals coexist without duplicating, and re-inject after a wipe (React-churn guard)', async ({ context, extensionId }) => {
+test('both signals coexist without duplicating, and re-inject after a wipe (React-churn guard)', async ({
+  context,
+  extensionId,
+}) => {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   await opt.evaluate(() => chrome.storage.local.set({ f2a_needs_sponsorship: true }));
@@ -349,7 +414,11 @@ test('reports Standalone (not Connected) when the app/bridge is unreachable', as
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
   // cached connection creds pointing at a DEAD port → bridge not live (app closed)
-  await opt.evaluate(() => chrome.storage.local.set({ f2a_connection: { port: 49999, token: 'x', profile: { hasResume: true, basics: { name: 'X' } } } }));
+  await opt.evaluate(() =>
+    chrome.storage.local.set({
+      f2a_connection: { port: 49999, token: 'x', profile: { hasResume: true, basics: { name: 'X' } } },
+    }),
+  );
   await opt.close();
 
   const page = await context.newPage();
@@ -364,7 +433,9 @@ test('reports Standalone (not Connected) when the app/bridge is unreachable', as
           const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
           if (!tab?.id) return '';
           try {
-            const s = (await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method: 'getState' })) as { mode?: string };
+            const s = (await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method: 'getState' })) as {
+              mode?: string;
+            };
             return s?.mode ?? '';
           } catch {
             return '';
@@ -381,7 +452,14 @@ test('uploads a résumé and picks a lazy dropdown in a real browser', async ({ 
   // test mode + auto-capture ON (opt-in, default OFF) + opt this (non-ATS) host in, to exercise the
   // capture path. fill_sensitive ON because this test asserts the Gender (EEO/sensitive) combobox —
   // sensitive fields default OFF (bd3a43b), so without this the Gender field is correctly skipped.
-  await opt.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true, f2a_auto_capture: true, f2a_capture_sites: ['127.0.0.1'], f2a_fill_sensitive: true }));
+  await opt.evaluate(() =>
+    chrome.storage.local.set({
+      f2a_test_mode: true,
+      f2a_auto_capture: true,
+      f2a_capture_sites: ['127.0.0.1'],
+      f2a_fill_sensitive: true,
+    }),
+  );
   await opt.close();
 
   const page = await context.newPage();
@@ -391,7 +469,10 @@ test('uploads a résumé and picks a lazy dropdown in a real browser', async ({ 
     .poll(
       async () => {
         await autofillActiveTab(context);
-        return page.getByLabel(/First Name/i).inputValue().catch(() => '');
+        return page
+          .getByLabel(/First Name/i)
+          .inputValue()
+          .catch(() => '');
       },
       { timeout: 8000 },
     )
@@ -413,6 +494,10 @@ test('uploads a résumé and picks a lazy dropdown in a real browser', async ({ 
   const store = await context.newPage();
   await store.goto(`chrome-extension://${extensionId}/options/options.html`);
   await expect
-    .poll(async () => store.evaluate(async () => ((await chrome.storage.local.get('f2a_cap_index'))['f2a_cap_index'] as unknown[])?.length ?? 0))
+    .poll(async () =>
+      store.evaluate(
+        async () => ((await chrome.storage.local.get('f2a_cap_index'))['f2a_cap_index'] as unknown[])?.length ?? 0,
+      ),
+    )
     .toBeGreaterThan(0);
 });

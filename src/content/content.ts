@@ -1,9 +1,33 @@
-import { autofillForm, autofillInteractive, captureCoverage, cleanClone, deriveFullProfile, detectFileInputs, detectFields, expandRepeatingSections, isAtsPage, readLazyOptions, resolveField, setInputFile, type CoverageReport, type FullProfile, type Profile } from '@jobhakken/autofill';
+import {
+  autofillForm,
+  autofillInteractive,
+  captureCoverage,
+  cleanClone,
+  deriveFullProfile,
+  detectFileInputs,
+  detectFields,
+  expandRepeatingSections,
+  isAtsPage,
+  readLazyOptions,
+  resolveField,
+  setInputFile,
+  type CoverageReport,
+  type FullProfile,
+  type Profile,
+} from '@jobhakken/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadHideUnsponsored, loadNeedsSponsorship, loadTestMode } from '../lib/profileStore.js';
+import {
+  loadAutoCapture,
+  loadCaptureMode,
+  loadFillSensitive,
+  loadFullProfile,
+  loadHideUnsponsored,
+  loadNeedsSponsorship,
+  loadTestMode,
+} from '../lib/profileStore.js';
 import { textToPdfFile } from '../lib/pdf.js';
 import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
@@ -66,7 +90,9 @@ async function checkBridge(): Promise<void> {
  * per-site "access local device" prompt that a content-script fetch would.
  */
 async function bridgeRpc<T>(method: string, params: unknown = {}): Promise<T> {
-  const res = (await chrome.runtime.sendMessage({ type: 'f2a-bridge', method, params })) as { result?: T; error?: string } | undefined;
+  const res = (await chrome.runtime.sendMessage({ type: 'f2a-bridge', method, params })) as
+    | { result?: T; error?: string }
+    | undefined;
   if (!res || res.error) throw new Error(res?.error || 'bridge error');
   return res.result as T;
 }
@@ -109,7 +135,17 @@ let appLike = false; // page looks like a JOB application (résumé upload, or a
 // account/profile/settings pages (which have name/email/company but none of these). Using
 // them (instead of a raw "≥3 profile fields" count) stops the panel flashing on e.g. a
 // GitHub profile-settings page.
-const APPLICATION_KEYS = new Set(['workAuthorization', 'requiresSponsorship', 'coverLetter', 'salaryExpectation', 'veteranStatus', 'disabilityStatus', 'hispanicLatino', 'raceEthnicity', 'howHeard']);
+const APPLICATION_KEYS = new Set([
+  'workAuthorization',
+  'requiresSponsorship',
+  'coverLetter',
+  'salaryExpectation',
+  'veteranStatus',
+  'disabilityStatus',
+  'hispanicLatino',
+  'raceEthnicity',
+  'howHeard',
+]);
 
 /**
  * The panel opens ONLY on job-application pages, never on ordinary sites (google.com,
@@ -141,7 +177,10 @@ function updateBadge(): void {
 /** Real company for the opened job. LinkedIn (and many boards) title as "Title | Company | Site",
  *  so the middle segment is the company — far better than the hostname ("linkedin"). */
 function pageCompany(): string {
-  const parts = document.title.split(/\s[|·—–]\s/).map((s) => s.trim()).filter(Boolean);
+  const parts = document.title
+    .split(/\s[|·—–]\s/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (parts.length >= 3) return parts[parts.length - 2]; // …| Company | LinkedIn
   return location.hostname.replace(/^www\./, '').split('.')[0];
 }
@@ -157,7 +196,10 @@ function getState() {
     testMode: testMode || appTest,
     captureMode,
     captureSite: { show: !isAtsHost(location.hostname), optedIn: siteOptedIn },
-    eligibility: verdict && verdict.blocked ? { blocked: true, categories: Array.from(new Set(verdict.reasons.map((r) => r.category))) } : null,
+    eligibility:
+      verdict && verdict.blocked
+        ? { blocked: true, categories: Array.from(new Set(verdict.reasons.map((r) => r.category))) }
+        : null,
     h1b: getH1bVerdict(),
   };
 }
@@ -187,11 +229,20 @@ function withTimeout<T>(p: Promise<T>, ms: number, signal?: AbortSignal): Promis
   });
 }
 
-async function runAutofill(mode: 'default' | 'ats' = 'default', signal?: AbortSignal): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
+async function runAutofill(
+  mode: 'default' | 'ats' = 'default',
+  signal?: AbortSignal,
+): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
-  const common = { profile: fp.profile, experience: fp.experience, education: fp.education, userRules: fp.rules, fillSensitive };
+  const common = {
+    profile: fp.profile,
+    experience: fp.experience,
+    education: fp.education,
+    userRules: fp.rules,
+    fillSensitive,
+  };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
   // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes
@@ -262,7 +313,10 @@ async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ res
   if (connection) {
     try {
       const method = mode === 'ats' ? 'tailoredResumeFile' : 'resumeFile';
-      const r = await bridgeRpc<{ fileName?: string; base64?: string; mimeType?: string }>(method, mode === 'ats' ? pageJob() : {});
+      const r = await bridgeRpc<{ fileName?: string; base64?: string; mimeType?: string }>(
+        method,
+        mode === 'ats' ? pageJob() : {},
+      );
       if (r?.base64) out.resume = base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf');
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
@@ -291,10 +345,17 @@ function triggerDownload(name: string, content: string, type: string): void {
  * generic engine resolved vs. couldn't). Site-agnostic. Opens each combobox first so the
  * saved fixture includes the real options. Downloads two files and returns a summary.
  */
-async function capturePage(): Promise<{ total: number; resolved: number; unresolved: number; unresolvedLabels: string[] } | null> {
+async function capturePage(): Promise<{
+  total: number;
+  resolved: number;
+  unresolved: number;
+  unresolvedLabels: string[];
+} | null> {
   try {
     // open every lazy combobox so its options render into the DOM we serialize
-    for (const el of Array.from(document.querySelectorAll<HTMLElement>('[role="combobox"], [aria-haspopup="listbox"]'))) {
+    for (const el of Array.from(
+      document.querySelectorAll<HTMLElement>('[role="combobox"], [aria-haspopup="listbox"]'),
+    )) {
       await readLazyOptions(el, 400);
     }
     const report: CoverageReport = captureCoverage(document, { url: location.href });
@@ -306,7 +367,12 @@ async function capturePage(): Promise<{ total: number; resolved: number; unresol
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     triggerDownload(`${host}-${stamp}.html`, html, 'text/html');
     triggerDownload(`${host}-${stamp}.coverage.json`, JSON.stringify(report, null, 2), 'application/json');
-    return { total: report.total, resolved: report.resolved, unresolved: report.unresolved, unresolvedLabels: report.unresolvedLabels };
+    return {
+      total: report.total,
+      resolved: report.resolved,
+      unresolved: report.unresolved,
+      unresolvedLabels: report.unresolvedLabels,
+    };
   } catch (e) {
     void e;
     return null;
@@ -328,8 +394,10 @@ function formRegion(): Element {
 function fieldCurrentValue(f: ReturnType<typeof detectFields>[number]): string {
   const el = f.el as HTMLElement;
   if (f.kind === 'radio') {
-    const checked = f.name ? document.querySelector<HTMLInputElement>(`input[name="${CSS.escape(f.name)}"]:checked`) : null;
-    return checked ? (checked.labels?.[0]?.textContent?.trim() || checked.value || 'on') : '';
+    const checked = f.name
+      ? document.querySelector<HTMLInputElement>(`input[name="${CSS.escape(f.name)}"]:checked`)
+      : null;
+    return checked ? checked.labels?.[0]?.textContent?.trim() || checked.value || 'on' : '';
   }
   if (f.kind === 'combobox') return (el.getAttribute('data-f2a-value') || el.textContent || '').trim();
   const v = (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
@@ -356,7 +424,10 @@ function reEscape(s: string): string {
 async function scrubValues(): Promise<string[]> {
   const local = await loadFullProfile();
   const bridge = connection?.profile as Parameters<typeof deriveFullProfile>[0] | undefined;
-  const profiles: Array<Profile | undefined> = [local?.profile, bridge?.basics ? deriveFullProfile(bridge).profile : undefined];
+  const profiles: Array<Profile | undefined> = [
+    local?.profile,
+    bridge?.basics ? deriveFullProfile(bridge).profile : undefined,
+  ];
   const set = new Set<string>();
   for (const p of profiles) {
     if (!p) continue;
@@ -407,7 +478,13 @@ async function captureFlow(): Promise<void> {
       const filledBy: CaptureField['filledBy'] = !val ? 'empty' : tagged ? 'autofill' : 'manual';
       if (filledBy === 'autofill') filledByAutofill++;
       else if (filledBy === 'manual') filledManually++;
-      return { label: f.label, key: resolveField(f)?.key, kind: f.kind, filledBy, value: filledBy === 'empty' ? undefined : safeValue(val, scrub) };
+      return {
+        label: f.label,
+        key: resolveField(f)?.key,
+        kind: f.kind,
+        filledBy,
+        value: filledBy === 'empty' ? undefined : safeValue(val, scrub),
+      };
     });
 
     await upsertCapture({
@@ -430,7 +507,10 @@ async function captureFlow(): Promise<void> {
 
 /** A tidy job title from the page <title> (strip trailing " - Company" / site noise). */
 function cleanTitle(t: string): string {
-  return t.split(/\s[|·—–-]\s/)[0].trim().slice(0, 80);
+  return t
+    .split(/\s[|·—–-]\s/)[0]
+    .trim()
+    .slice(0, 80);
 }
 
 /** Best-effort "this job" from the page for the AI actions (rough JD extraction). */
@@ -445,19 +525,32 @@ function pageJob() {
 }
 
 type Keyword = { keyword?: string; canonical?: string; status?: string };
-async function analyzeJob(): Promise<{ ats?: number | null; visa?: string; keywords?: { have: string[]; gap: string[] }; error?: string } | null> {
+async function analyzeJob(): Promise<{
+  ats?: number | null;
+  visa?: string;
+  keywords?: { have: string[]; gap: string[] };
+  error?: string;
+} | null> {
   if (!connection) return null;
   try {
     const job = pageJob();
     const [kw, visa] = await Promise.all([
       bridgeRpc<{ atsMatchPercent?: number; keywords?: Keyword[] }>('keywords', job).catch(() => null),
-      bridgeRpc<{ h1b?: { employer?: string } | null; uk?: { organisation?: string } | null }>('visa', { company: job.company }).catch(() => null),
+      bridgeRpc<{ h1b?: { employer?: string } | null; uk?: { organisation?: string } | null }>('visa', {
+        company: job.company,
+      }).catch(() => null),
     ]);
     const visaLabel = visa?.h1b ? 'Known H-1B sponsor' : visa?.uk ? 'UK visa sponsor' : undefined;
     const list = kw?.keywords ?? [];
     const keywords = {
-      have: list.filter((k) => k.status === 'present').map((k) => k.canonical || k.keyword || '').filter(Boolean),
-      gap: list.filter((k) => k.status === 'missing').map((k) => k.canonical || k.keyword || '').filter(Boolean),
+      have: list
+        .filter((k) => k.status === 'present')
+        .map((k) => k.canonical || k.keyword || '')
+        .filter(Boolean),
+      gap: list
+        .filter((k) => k.status === 'missing')
+        .map((k) => k.canonical || k.keyword || '')
+        .filter(Boolean),
     };
     return { ats: kw?.atsMatchPercent ?? null, visa: visaLabel, keywords };
   } catch (e) {
@@ -484,10 +577,16 @@ async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: stri
 async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
   if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
   if (!connection) return { ok: false, error: 'Connect the app' };
-  const ta = Array.from(document.querySelectorAll('textarea')).find((t) => !t.value.trim() && t.offsetParent !== null) as HTMLTextAreaElement | undefined;
+  const ta = Array.from(document.querySelectorAll('textarea')).find(
+    (t) => !t.value.trim() && t.offsetParent !== null,
+  ) as HTMLTextAreaElement | undefined;
   if (!ta) return { ok: false, error: 'No question field' };
   try {
-    const label = ta.labels?.[0]?.textContent?.trim() || ta.getAttribute('aria-label') || ta.placeholder || 'Why are you a good fit?';
+    const label =
+      ta.labels?.[0]?.textContent?.trim() ||
+      ta.getAttribute('aria-label') ||
+      ta.placeholder ||
+      'Why are you a good fit?';
     const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
     if (!r?.text) return { ok: false, error: 'No draft' };
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;

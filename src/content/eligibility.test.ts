@@ -60,7 +60,10 @@ describe('applyEligibilityFilter (content-script "won\'t sponsor" matching)', ()
   });
 
   it('does NOT flag when sponsorship is explicitly offered (negation guard)', () => {
-    detailPane('5456789012', 'Visa sponsorship is available for this position and we will sponsor qualified candidates.');
+    detailPane(
+      '5456789012',
+      'Visa sponsorship is available for this position and we will sponsor qualified candidates.',
+    );
     applyEligibilityFilter(true, false);
 
     expect(getEligibilityVerdict()?.blocked).toBe(false);

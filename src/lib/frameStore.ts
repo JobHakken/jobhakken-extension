@@ -26,7 +26,11 @@ function pickBest(counts: FrameCounts): { frameId: number; count: number } | nul
 }
 
 /** Record a frame's fillable-field count; returns the current best frame for the tab (for the badge). */
-export async function recordFrameFields(tabId: number, frameId: number, count: number): Promise<{ frameId: number; count: number } | null> {
+export async function recordFrameFields(
+  tabId: number,
+  frameId: number,
+  count: number,
+): Promise<{ frameId: number; count: number } | null> {
   const key = KEY(tabId);
   const got = await chrome.storage.session.get(key);
   const counts = (got[key] as FrameCounts | undefined) ?? {};

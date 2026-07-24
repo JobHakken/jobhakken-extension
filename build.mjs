@@ -45,7 +45,10 @@ mkdirSync(path.join(outdir, 'icons'), { recursive: true });
 const brandSvg = readFileSync(BRAND_SVG);
 for (const size of [16, 32, 48, 128]) {
   // high density so the 64-unit SVG rasterizes crisply before the downscale to `size`
-  await sharp(brandSvg, { density: 512 }).resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toFile(path.join(outdir, 'icons', `icon-${size}.png`));
+  await sharp(brandSvg, { density: 512 })
+    .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toFile(path.join(outdir, 'icons', `icon-${size}.png`));
 }
 
 cpSync('src/manifest.json', path.join(outdir, 'manifest.json'));

@@ -29,7 +29,11 @@ declare namespace chrome {
     const onInstalled: { addListener(cb: (details: { reason: string }) => void): void };
     const onMessage: {
       addListener(
-        cb: (message: JhMessage, sender: { tab?: { id?: number }; frameId?: number }, sendResponse: (response?: unknown) => void) => void | boolean,
+        cb: (
+          message: JhMessage,
+          sender: { tab?: { id?: number }; frameId?: number },
+          sendResponse: (response?: unknown) => void,
+        ) => void | boolean,
       ): void;
     };
   }
@@ -43,7 +47,9 @@ declare namespace chrome {
     function sendMessage(tabId: number, message: JhMessage, options?: { frameId?: number }): Promise<unknown>;
     function query(query: { active?: boolean; currentWindow?: boolean }): Promise<{ id?: number }[]>;
     function create(props: { url: string; active?: boolean }): Promise<{ id?: number }>;
-    const onRemoved: { addListener(cb: (tabId: number, removeInfo?: { windowId?: number; isWindowClosing?: boolean }) => void): void };
+    const onRemoved: {
+      addListener(cb: (tabId: number, removeInfo?: { windowId?: number; isWindowClosing?: boolean }) => void): void;
+    };
   }
   namespace commands {
     const onCommand: { addListener(cb: (command: string) => void): void };

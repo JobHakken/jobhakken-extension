@@ -36,7 +36,7 @@ describe('applyH1bBadges (content-script H-1B sponsor matching)', () => {
     document.body.innerHTML = '';
   });
 
-  it('badges the opened job\'s company and records the popup verdict', async () => {
+  it("badges the opened job's company and records the popup verdict", async () => {
     mockWorker({ 'Acme Widgets': 1500 });
     detailPane('Acme Widgets');
 
