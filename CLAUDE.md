@@ -47,13 +47,15 @@ Live: [Chrome Web Store](https://chromewebstore.google.com/detail/jobhakken-%E2%
 
 ### Git development pipeline (follow every time)
 
-One feature per branch, verified locally, merged via PR. Never commit straight to `main`; never
-delete branches without explicit permission.
+`develop` is the **integration branch**; `main` is the **stable/release branch**. Feature/phase
+branches come off `develop` and PR back into `develop`; `develop` is promoted to `main` at green
+milestones. One feature per branch, verified locally, merged via PR. Never commit straight to
+`develop`/`main`; never delete branches without explicit permission.
 
 ```bash
-# 1. Branch off the latest main (each feature/phase gets its own branch)
-git checkout main && git pull
-git checkout -b <type>/<short-topic>        # e.g. standards/phase-2-types
+# 1. Branch off the latest develop (each feature/phase gets its own branch)
+git checkout develop && git pull
+git checkout -b <type>/<short-topic>        # e.g. standards/phase-7-safeguards
 
 # 2. Do the work as atomic Conventional Commits (husky enforces the message + pre-commit lint/format)
 
@@ -63,14 +65,17 @@ npm ci
 npm run verify            # typecheck + lint + build + test (the exact CI job)
 npm run ci:local          # optional: run the real GitHub Actions in a container via act
 
-# 4. Push (pre-push re-runs verify) and open a PR
+# 4. Push (pre-push re-runs verify) and open a PR into develop
 git push -u origin <branch>
-gh pr create --base main --fill
+gh pr create --base develop --fill
 
-# 5. Merge the PR once green (branches stay off main until merged; do NOT --delete-branch)
+# 5. Merge the PR once green (do NOT --delete-branch)
 gh pr merge <n> --merge
 
-# 6. Next feature starts again from an updated main (step 1) — don't stack branches
+# 6. Next feature starts again from an updated develop (step 1) — don't stack branches
+
+# Promote to main at a green milestone (dependabot reads its config from main, the default branch):
+#   gh pr create --base main --head develop --fill && gh pr merge develop --merge
 ```
 
 CI is minimized: it runs typecheck+build+test+lint on PR / `main` push; e2e is gated to `ext-v*`
