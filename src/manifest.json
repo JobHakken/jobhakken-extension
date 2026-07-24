@@ -67,9 +67,7 @@
         "*://*.phenompeople.com/*",
         "*://*.eightfold.ai/*",
         "*://*.gr8people.com/*",
-        "*://*.paycomonline.com/*",
-        "*://127.0.0.1/*",
-        "*://localhost/*"
+        "*://*.paycomonline.com/*"
       ],
       "js": ["content/content.js"],
       "run_at": "document_idle",

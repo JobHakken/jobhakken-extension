@@ -42,8 +42,6 @@
     "*://*.weworkremotely.com/*",
     "*://*.workable.com/*",
     "*://*.workingnomads.com/*",
-    "*://*.ziprecruiter.com/*",
-    "*://127.0.0.1/*",
-    "*://localhost/*"
+    "*://*.ziprecruiter.com/*"
   ]
 }
