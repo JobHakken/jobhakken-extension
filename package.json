@@ -16,7 +16,12 @@
     "test:e2e:ui": "npm run build && playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "gen:h1b": "node scripts/gen-h1b-data.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "npm run typecheck && npm run lint && npm run build && npm test"
   },
   "dependencies": {
     "@jobhakken/autofill": "^0.1.0",
@@ -25,15 +30,23 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "9.39.2",
     "@playwright/test": "^1.61.1",
     "@types/node": "^20.19.33",
     "esbuild": "^0.25.2",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "9.1.2",
+    "eslint-plugin-security": "3.0.1",
+    "globals": "15.15.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "lint-staged": "15.5.2",
+    "prettier": "3.8.1",
     "sharp": "^0.34.5",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "8.39.0"
   }
 }

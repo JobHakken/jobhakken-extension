@@ -1,0 +1,11 @@
+dist/
+node_modules/
+package-lock.json
+e2e/fixtures/
+full_website/
+playwright-report/
+test-results/
+src/data/
+brand/
+*.zip
+CHANGELOG.md
