@@ -41,19 +41,41 @@ Live: [Chrome Web Store](https://chromewebstore.google.com/detail/jobhakken-%E2%
   - Internal / engineering / **security** findings → **this private repo** (`JobHakken/jobhakken-extension`).
   - **User-facing** bug reports & feature requests → the public **`JobHakken/JobHakken-issues`** tracker
     (the in-repo issue-template config already redirects there). Never put security specifics there.
-- **Branch + PR always** — never commit straight to `main`; focused branch per change, atomic
-  **Conventional Commits**. Never delete branches without explicit permission. Isolate from other
-  agents (separate clone/worktree).
-- **Local sanity check is the merge gate** (CI is minimized to save minutes — it runs typecheck+build+
-  test on PR/`main` push; e2e is gated to `ext-v*` tags + dispatch). Before merging:
-  ```bash
-  export NODE_AUTH_TOKEN=<GitHub token with read:packages>   # to install @jobhakken/*
-  npm ci && npm run typecheck && npm run build && npm test
-  ```
-  (Once Phase 1 lands, `npm run verify` wraps these; hooks will enforce them — epic #11.)
 - **SemVer**, tagged `ext-vX.Y.Z`; **keep `package.json` and `manifest.json` versions in sync** and add
   a `CHANGELOG.md` entry for every user-facing change.
 - Security issues → a **private advisory**, never a public issue.
+
+### Git development pipeline (follow every time)
+
+One feature per branch, verified locally, merged via PR. Never commit straight to `main`; never
+delete branches without explicit permission.
+
+```bash
+# 1. Branch off the latest main (each feature/phase gets its own branch)
+git checkout main && git pull
+git checkout -b <type>/<short-topic>        # e.g. standards/phase-2-types
+
+# 2. Do the work as atomic Conventional Commits (husky enforces the message + pre-commit lint/format)
+
+# 3. Verify locally — this is the merge gate (CI is minimized)
+export NODE_AUTH_TOKEN=<GitHub token with read:packages>   # to install @jobhakken/*
+npm ci
+npm run verify            # typecheck + lint + build + test (the exact CI job)
+npm run ci:local          # optional: run the real GitHub Actions in a container via act
+
+# 4. Push (pre-push re-runs verify) and open a PR
+git push -u origin <branch>
+gh pr create --base main --fill
+
+# 5. Merge the PR once green (branches stay off main until merged; do NOT --delete-branch)
+gh pr merge <n> --merge
+
+# 6. Next feature starts again from an updated main (step 1) — don't stack branches
+```
+
+CI is minimized: it runs typecheck+build+test+lint on PR / `main` push; e2e is gated to `ext-v*`
+tags + dispatch. So the **local `npm run verify` (and `npm run ci:local` for container fidelity) is
+the real gate** — green locally before you merge.
 
 ## Build / dev
 
