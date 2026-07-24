@@ -15,7 +15,11 @@ function makeFetch(livePort: number, validToken: string): typeof fetch {
       if (auth !== `Bearer ${validToken}`) {
         return { ok: false, status: 401, json: async () => ({ error: 'unauthorized' }) } as unknown as Response;
       }
-      return { ok: true, status: 200, json: async () => ({ result: { hasResume: true, basics: { name: 'Pranav' } } }) } as unknown as Response;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ result: { hasResume: true, basics: { name: 'Pranav' } } }),
+      } as unknown as Response;
     }
     throw new Error(`unexpected url ${u}`);
   }) as unknown as typeof fetch;
@@ -37,12 +41,20 @@ describe('bridgeClient (Phase 7.1)', () => {
   });
 
   it('rpc sends the bearer token and unwraps result', async () => {
-    const res = await rpc<{ hasResume: boolean }>(41575, 'good', 'profile', {}, { fetchImpl: makeFetch(41575, 'good') });
+    const res = await rpc<{ hasResume: boolean }>(
+      41575,
+      'good',
+      'profile',
+      {},
+      { fetchImpl: makeFetch(41575, 'good') },
+    );
     expect(res.hasResume).toBe(true);
   });
 
   it('rpc throws on a non-ok response', async () => {
-    await expect(rpc(41575, 'bad', 'profile', {}, { fetchImpl: makeFetch(41575, 'good') })).rejects.toThrow(/unauthorized|failed/i);
+    await expect(rpc(41575, 'bad', 'profile', {}, { fetchImpl: makeFetch(41575, 'good') })).rejects.toThrow(
+      /unauthorized|failed/i,
+    );
   });
 
   it('connect discovers + verifies the token + returns the profile', async () => {
@@ -52,7 +64,9 @@ describe('bridgeClient (Phase 7.1)', () => {
   });
 
   it('connect rejects a bad token with a friendly message', async () => {
-    await expect(connect('wrong', { fetchImpl: makeFetch(41575, 'good'), ports: PORTS })).rejects.toThrow(/rejected|token/i);
+    await expect(connect('wrong', { fetchImpl: makeFetch(41575, 'good'), ports: PORTS })).rejects.toThrow(
+      /rejected|token/i,
+    );
   });
 
   it('connect requires a token', async () => {

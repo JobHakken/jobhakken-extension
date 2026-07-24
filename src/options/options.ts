@@ -1,11 +1,34 @@
-import { deriveFullProfile, type EducationEntry, type ExperienceEntry, type FullProfile, type UserRule } from '@jobhakken/autofill';
+import {
+  deriveFullProfile,
+  type EducationEntry,
+  type ExperienceEntry,
+  type FullProfile,
+  type UserRule,
+} from '@jobhakken/autofill';
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { initThemeToggle } from '../lib/theme.js';
-import { ADDITIONAL_FIELDS, PERSONAL_FIELDS, loadAutoCapture, loadCaptureMode, loadFillSensitive, loadFullProfile, loadHideUnsponsored, loadNeedsSponsorship, loadTestMode, saveAutoCapture, saveCaptureMode, saveFillSensitive, saveFullProfile, saveHideUnsponsored, saveNeedsSponsorship, saveTestMode } from '../lib/profileStore.js';
+import {
+  ADDITIONAL_FIELDS,
+  PERSONAL_FIELDS,
+  loadAutoCapture,
+  loadCaptureMode,
+  loadFillSensitive,
+  loadFullProfile,
+  loadHideUnsponsored,
+  loadNeedsSponsorship,
+  loadTestMode,
+  saveAutoCapture,
+  saveCaptureMode,
+  saveFillSensitive,
+  saveFullProfile,
+  saveHideUnsponsored,
+  saveNeedsSponsorship,
+  saveTestMode,
+} from '../lib/profileStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -21,7 +44,9 @@ $('tabs').addEventListener('click', (e) => {
   if (!b) return;
   const key = b.dataset.t;
   document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === b));
-  document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('active', (p as HTMLElement).dataset.p === key));
+  document
+    .querySelectorAll('.panel')
+    .forEach((p) => p.classList.toggle('active', (p as HTMLElement).dataset.p === key));
 });
 
 // ── personal / additional single fields ──────────────────────
@@ -48,11 +73,7 @@ function renderFields(containerId: string, defs: typeof PERSONAL_FIELDS) {
 // ── education / experience arrays ─────────────────────────────
 type EntryField<T> = { key: keyof T; label: string; type?: 'lines' };
 
-function renderEntries<T extends Record<string, unknown>>(
-  listId: string,
-  items: T[],
-  fields: EntryField<T>[],
-) {
+function renderEntries<T extends Record<string, unknown>>(listId: string, items: T[], fields: EntryField<T>[]) {
   const list = $(listId);
   list.innerHTML = '';
   items.forEach((item, idx) => {
@@ -78,7 +99,10 @@ function renderEntries<T extends Record<string, unknown>>(
         ta.placeholder = 'One bullet point per line';
         ta.value = ((item[f.key] as string[] | undefined) ?? []).join('\n');
         ta.addEventListener('input', () => {
-          const lines = ta.value.split('\n').map((l) => l.trim()).filter(Boolean);
+          const lines = ta.value
+            .split('\n')
+            .map((l) => l.trim())
+            .filter(Boolean);
           (item[f.key] as unknown) = lines.length ? lines : undefined;
         });
         wrap.append(label, ta);
@@ -169,7 +193,11 @@ function renderConn(connected: boolean, name?: string, port?: number) {
   const importBtn = $('importBtn') as HTMLButtonElement;
   importBtn.dataset.connected = connected ? '1' : '0';
   importBtn.disabled = !connected && !testModeOn;
-  importBtn.title = testModeOn ? 'Import anonymous sample data' : connected ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
+  importBtn.title = testModeOn
+    ? 'Import anonymous sample data'
+    : connected
+      ? 'Import your parsed résumé'
+      : 'Connect the desktop app first (Desktop tab)';
 }
 
 async function onConnect() {
@@ -214,7 +242,8 @@ async function onImport() {
     fp = JSON.parse(JSON.stringify(TEST_PROFILE)) as FullProfile;
     renderAll();
     await saveFullProfile(fp);
-    $('profileStatus').innerHTML = `<span class="ok">🧪 Imported sample data (${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s))</span>`;
+    $('profileStatus').innerHTML =
+      `<span class="ok">🧪 Imported sample data (${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s))</span>`;
     return;
   }
   if (!conn) return;
@@ -237,7 +266,8 @@ async function onImport() {
     };
     renderAll();
     await saveFullProfile(fp);
-    $('profileStatus').innerHTML = `<span class="ok">✓ Imported ${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s)</span>`;
+    $('profileStatus').innerHTML =
+      `<span class="ok">✓ Imported ${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s)</span>`;
   } catch (e) {
     $('profileStatus').innerHTML = `<span class="err">${e instanceof Error ? e.message : 'Import failed'}</span>`;
   } finally {
@@ -273,7 +303,11 @@ function renderAll() {
     // reflect on the Import button (usable in test mode → imports dummy data)
     const ib = $('importBtn') as HTMLButtonElement;
     ib.disabled = !testModeOn && ib.dataset.connected !== '1';
-    ib.title = testModeOn ? 'Import anonymous sample data' : ib.dataset.connected === '1' ? 'Import your parsed résumé' : 'Connect the desktop app first (Desktop tab)';
+    ib.title = testModeOn
+      ? 'Import anonymous sample data'
+      : ib.dataset.connected === '1'
+        ? 'Import your parsed résumé'
+        : 'Connect the desktop app first (Desktop tab)';
     $('profileStatus').innerHTML = testToggle.checked
       ? '<span class="ok">🧪 Demo mode on — autofilling anonymous sample data</span>'
       : '';
@@ -325,7 +359,10 @@ function renderAll() {
     try {
       return new URL(s.includes('://') ? s : `https://${s}`).hostname.replace(/^www\./, '');
     } catch {
-      return s.toLowerCase().replace(/^www\./, '').replace(/\/.*$/, '');
+      return s
+        .toLowerCase()
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '');
     }
   };
   const renderSites = async () => {
@@ -355,7 +392,8 @@ function renderAll() {
   const addSite = async () => {
     const input = $('siteInput') as HTMLInputElement;
     const host = normHost(input.value);
-    if (!host || !host.includes('.')) return void ($('profileStatus').innerHTML = '<span class="err">Enter a valid domain</span>');
+    if (!host || !host.includes('.'))
+      return void ($('profileStatus').innerHTML = '<span class="err">Enter a valid domain</span>');
     await setSiteOptIn(host, true);
     input.value = '';
     await renderSites();

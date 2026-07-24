@@ -31,9 +31,19 @@ function handle(method, token) {
       };
     case 'resumeFile':
     case 'tailoredResumeFile':
-      return { fileName: 'real-person-resume.pdf', mimeType: 'application/pdf', base64: Buffer.from('%PDF-1.4 real résumé\n%%EOF').toString('base64') };
+      return {
+        fileName: 'real-person-resume.pdf',
+        mimeType: 'application/pdf',
+        base64: Buffer.from('%PDF-1.4 real résumé\n%%EOF').toString('base64'),
+      };
     case 'keywords':
-      return { atsMatchPercent: 77, keywords: [{ keyword: 'C++', status: 'present' }, { keyword: 'RTOS', status: 'missing' }] };
+      return {
+        atsMatchPercent: 77,
+        keywords: [
+          { keyword: 'C++', status: 'present' },
+          { keyword: 'RTOS', status: 'missing' },
+        ],
+      };
     case 'visa':
       return { h1b: { employer: 'Realco' }, uk: null };
     case 'answer':

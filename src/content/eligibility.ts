@@ -7,7 +7,11 @@
 // Two surfaces: on the SEARCH page we mark (or hide) the job's list TILE; on a single job
 // (detail) page there's no list, so we mark next to the job TITLE. The desktop feed hides
 // won't-sponsor roles upfront (it has every job's full description).
-import { classifyEligibility, type EligibilityCategory, type EligibilityResult } from '@jobhakken/core/build/eligibility';
+import {
+  classifyEligibility,
+  type EligibilityCategory,
+  type EligibilityResult,
+} from '@jobhakken/core/build/eligibility';
 
 const MARK_ATTR = 'data-f2a-elig'; // 'marked' | 'hidden' — set on the anchor once handled
 
@@ -56,7 +60,10 @@ function jobIdFrom(jd: HTMLElement): string | null {
 
 type Anchor = { kind: 'tile' | 'title'; el: HTMLElement };
 
-const inTile = (a: HTMLElement) => !!a.closest('li[data-occludable-job-id], .job-card-container, li.scaffold-layout__list-item, .jobs-search-results__list-item, [data-job-id]');
+const inTile = (a: HTMLElement) =>
+  !!a.closest(
+    'li[data-occludable-job-id], .job-card-container, li.scaffold-layout__list-item, .jobs-search-results__list-item, [data-job-id]',
+  );
 
 /** The place to mark for this job. Preference: the opened job's COMPANY link in the detail pane
  *  (reliable + visible, and sits next to the green H-1B badge so both signals show together);
@@ -73,7 +80,9 @@ function anchorFor(id: string | null): Anchor | null {
     if (byData) return { kind: 'tile', el: byData };
     const link = document.querySelector<HTMLElement>(`a[href*="/jobs/view/${id}"], a[href*="currentJobId=${id}"]`);
     if (link) {
-      const tile = link.closest<HTMLElement>('.job-card-container, li[data-occludable-job-id], li.scaffold-layout__list-item, .jobs-search-results__list-item, [data-job-id]');
+      const tile = link.closest<HTMLElement>(
+        '.job-card-container, li[data-occludable-job-id], li.scaffold-layout__list-item, .jobs-search-results__list-item, [data-job-id]',
+      );
       if (tile) return { kind: 'tile', el: tile };
       return { kind: 'title', el: link }; // single job page — anchor to the title link
     }

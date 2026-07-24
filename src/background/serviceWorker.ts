@@ -155,6 +155,8 @@ chrome.commands.onCommand.addListener(async (command) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id == null) return;
     const frameId = await bestFrameId(tab.id);
-    void chrome.tabs.sendMessage(tab.id, { type: 'f2a-run-autofill' }, frameId != null ? { frameId } : {}).catch(() => {});
+    void chrome.tabs
+      .sendMessage(tab.id, { type: 'f2a-run-autofill' }, frameId != null ? { frameId } : {})
+      .catch(() => {});
   }
 });

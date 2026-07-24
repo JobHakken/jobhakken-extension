@@ -6,71 +6,372 @@
     <title>JobHakken — Profile &amp; settings</title>
     <style>
       /* JobHakken brand palette — matches apps/landingPage globals.css (sage on warm canvas) */
-      :root { color-scheme: light dark;
-        --bg:hsl(41.5 22% 88.4%); --fg:hsl(48 6.2% 15.9%); --surface:hsl(45 40% 98%); --line:hsl(40 20% 85.3%);
-        --muted:hsl(44 6.1% 51.6%); --accent:hsl(144.8 19.7% 45.9%); --accent-fg:hsl(45 40% 98%);
-        --ok:hsl(144.8 19.7% 45.9%); --warn:#b8791f; --err:hsl(12.5 43.8% 47.5%); --soft:hsl(133.3 20% 91.2%); }
-      @media (prefers-color-scheme:dark){ :root{
-        --bg:hsl(40 10.3% 11.4%); --fg:hsl(40 28.3% 89.6%); --surface:hsl(36 13.5% 14.5%); --line:hsl(36 15.5% 19%);
-        --muted:hsl(38.8 6.8% 51.2%); --accent:hsl(142.4 23.9% 58.2%); --accent-fg:hsl(36 13.5% 14.5%);
-        --ok:hsl(142.4 23.9% 58.2%); --warn:#d99a3f; --err:hsl(14.1 50.2% 56.7%); --soft:hsl(147.7 15.3% 16.7%); } }
+      :root {
+        color-scheme: light dark;
+        --bg: hsl(41.5 22% 88.4%);
+        --fg: hsl(48 6.2% 15.9%);
+        --surface: hsl(45 40% 98%);
+        --line: hsl(40 20% 85.3%);
+        --muted: hsl(44 6.1% 51.6%);
+        --accent: hsl(144.8 19.7% 45.9%);
+        --accent-fg: hsl(45 40% 98%);
+        --ok: hsl(144.8 19.7% 45.9%);
+        --warn: #b8791f;
+        --err: hsl(12.5 43.8% 47.5%);
+        --soft: hsl(133.3 20% 91.2%);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: hsl(40 10.3% 11.4%);
+          --fg: hsl(40 28.3% 89.6%);
+          --surface: hsl(36 13.5% 14.5%);
+          --line: hsl(36 15.5% 19%);
+          --muted: hsl(38.8 6.8% 51.2%);
+          --accent: hsl(142.4 23.9% 58.2%);
+          --accent-fg: hsl(36 13.5% 14.5%);
+          --ok: hsl(142.4 23.9% 58.2%);
+          --warn: #d99a3f;
+          --err: hsl(14.1 50.2% 56.7%);
+          --soft: hsl(147.7 15.3% 16.7%);
+        }
+      }
       /* explicit theme override (manual toggle) wins over the media query */
-      :root[data-theme="light"]{ color-scheme:light;
-        --bg:hsl(41.5 22% 88.4%); --fg:hsl(48 6.2% 15.9%); --surface:hsl(45 40% 98%); --line:hsl(40 20% 85.3%);
-        --muted:hsl(44 6.1% 51.6%); --accent:hsl(144.8 19.7% 45.9%); --accent-fg:hsl(45 40% 98%);
-        --ok:hsl(144.8 19.7% 45.9%); --warn:#b8791f; --err:hsl(12.5 43.8% 47.5%); --soft:hsl(133.3 20% 91.2%); }
-      :root[data-theme="dark"]{ color-scheme:dark;
-        --bg:hsl(40 10.3% 11.4%); --fg:hsl(40 28.3% 89.6%); --surface:hsl(36 13.5% 14.5%); --line:hsl(36 15.5% 19%);
-        --muted:hsl(38.8 6.8% 51.2%); --accent:hsl(142.4 23.9% 58.2%); --accent-fg:hsl(36 13.5% 14.5%);
-        --ok:hsl(142.4 23.9% 58.2%); --warn:#d99a3f; --err:hsl(14.1 50.2% 56.7%); --soft:hsl(147.7 15.3% 16.7%); }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; padding:26px 20px 60px; max-width:840px; margin:0 auto; background:var(--bg); color:var(--fg); }
-      .mast { display:flex; align-items:center; gap:10px; }
-      .themebtn { margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--fg); border-radius:8px; width:34px; height:34px; font-size:15px; cursor:pointer; display:grid; place-items:center; }
-      .themebtn:hover { border-color:var(--accent); }
-      .logo { width:28px;height:28px;border-radius:8px;overflow:hidden;display:block; }
-      .logo svg { width:28px;height:28px;display:block; }
-      h1 { font-size:18px; margin:0; letter-spacing:-.01em; }
-      p.sub { color:var(--muted); font-size:13px; margin:6px 0 18px; }
-      .import { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--soft); border:1px solid var(--line); border-radius:12px; margin-bottom:16px; }
-      .import .ic { font-size:20px; } .import .t { flex:1; } .import .t b{font-size:13.5px;} .import .t div{font-size:12px;color:var(--muted);}
-      .import button { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer; }
-      .import button:disabled { opacity:.5; cursor:not-allowed; }
-      .tabs { display:flex; gap:2px; border-bottom:1px solid var(--line); overflow-x:auto; }
-      .tab { border:none; background:none; font-family:inherit; font-size:13px; font-weight:600; color:var(--muted); padding:11px 13px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
-      .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-      .panel { display:none; padding:18px 2px; } .panel.active { display:block; }
-      .grid { display:grid; grid-template-columns:1fr 1fr; gap:11px 14px; }
-      @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
-      .f { display:flex; flex-direction:column; gap:5px; } .f.full{grid-column:1/-1;}
-      label { font-size:11px; font-weight:600; color:var(--muted); }
-      label .lock { color:var(--warn); }
-      input, textarea { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; background:var(--surface); color:var(--fg); }
-      textarea { resize:vertical; min-height:70px; }
-      .entry { border:1px solid var(--line); border-radius:11px; padding:14px; margin-bottom:11px; position:relative; }
-      .entry .rm { position:absolute; top:11px; right:13px; font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; }
-      .add { display:inline-block; font-size:13px; color:var(--accent); font-weight:600; cursor:pointer; margin-top:2px; }
-      .note { font-size:11.5px; color:var(--muted); margin:0 0 14px; line-height:1.5; }
-      .note.warn { color:var(--warn); }
-      .rule { display:grid; grid-template-columns:1fr 1fr auto; gap:9px; margin-bottom:8px; align-items:center; }
-      .rule input { font-family:ui-monospace,Menlo,monospace; font-size:12px; }
-      .rule .rm { color:var(--muted); cursor:pointer; font-size:15px; padding:0 5px; }
-      .ops { font-size:11.5px; color:var(--muted); margin-top:10px; }
-      .ops code { background:var(--soft); color:var(--accent); padding:1px 5px; border-radius:4px; font-family:monospace; }
-      .bar { position:sticky; bottom:0; background:var(--bg); padding:14px 0 0; margin-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-      button.save { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13.5px; font-weight:600; cursor:pointer; }
-      button.secondary { background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600; cursor:pointer; }
-      .status { font-size:12.5px; } .ok{color:var(--ok);} .err{color:var(--err);}
-      .status .dot { display:inline-block; width:8px;height:8px;border-radius:50%; margin-right:6px; }
-      code.inline { background:rgba(127,127,127,.15); padding:1px 5px; border-radius:4px; font-size:12px; }
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: hsl(41.5 22% 88.4%);
+        --fg: hsl(48 6.2% 15.9%);
+        --surface: hsl(45 40% 98%);
+        --line: hsl(40 20% 85.3%);
+        --muted: hsl(44 6.1% 51.6%);
+        --accent: hsl(144.8 19.7% 45.9%);
+        --accent-fg: hsl(45 40% 98%);
+        --ok: hsl(144.8 19.7% 45.9%);
+        --warn: #b8791f;
+        --err: hsl(12.5 43.8% 47.5%);
+        --soft: hsl(133.3 20% 91.2%);
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: hsl(40 10.3% 11.4%);
+        --fg: hsl(40 28.3% 89.6%);
+        --surface: hsl(36 13.5% 14.5%);
+        --line: hsl(36 15.5% 19%);
+        --muted: hsl(38.8 6.8% 51.2%);
+        --accent: hsl(142.4 23.9% 58.2%);
+        --accent-fg: hsl(36 13.5% 14.5%);
+        --ok: hsl(142.4 23.9% 58.2%);
+        --warn: #d99a3f;
+        --err: hsl(14.1 50.2% 56.7%);
+        --soft: hsl(147.7 15.3% 16.7%);
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 26px 20px 60px;
+        max-width: 840px;
+        margin: 0 auto;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .mast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .themebtn {
+        margin-left: auto;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--fg);
+        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+      .themebtn:hover {
+        border-color: var(--accent);
+      }
+      .logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: block;
+      }
+      .logo svg {
+        width: 28px;
+        height: 28px;
+        display: block;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      p.sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 18px;
+      }
+      .import {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 14px 16px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+      .import .ic {
+        font-size: 20px;
+      }
+      .import .t {
+        flex: 1;
+      }
+      .import .t b {
+        font-size: 13.5px;
+      }
+      .import .t div {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .import button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .import button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .tabs {
+        display: flex;
+        gap: 2px;
+        border-bottom: 1px solid var(--line);
+        overflow-x: auto;
+      }
+      .tab {
+        border: none;
+        background: none;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        padding: 11px 13px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+      }
+      .tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .panel {
+        display: none;
+        padding: 18px 2px;
+      }
+      .panel.active {
+        display: block;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px 14px;
+      }
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .f {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .f.full {
+        grid-column: 1/-1;
+      }
+      label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      label .lock {
+        color: var(--warn);
+      }
+      input,
+      textarea {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-family: inherit;
+        background: var(--surface);
+        color: var(--fg);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+      .entry {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 14px;
+        margin-bottom: 11px;
+        position: relative;
+      }
+      .entry .rm {
+        position: absolute;
+        top: 11px;
+        right: 13px;
+        font-size: 12px;
+        color: var(--accent);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .add {
+        display: inline-block;
+        font-size: 13px;
+        color: var(--accent);
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 2px;
+      }
+      .note {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin: 0 0 14px;
+        line-height: 1.5;
+      }
+      .note.warn {
+        color: var(--warn);
+      }
+      .rule {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 9px;
+        margin-bottom: 8px;
+        align-items: center;
+      }
+      .rule input {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12px;
+      }
+      .rule .rm {
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 15px;
+        padding: 0 5px;
+      }
+      .ops {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .ops code {
+        background: var(--soft);
+        color: var(--accent);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      .bar {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg);
+        padding: 14px 0 0;
+        margin-top: 16px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      button.save {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .status {
+        font-size: 12.5px;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .err {
+        color: var(--err);
+      }
+      .status .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+      code.inline {
+        background: rgba(127, 127, 127, 0.15);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
     </style>
   </head>
   <body>
-    <div class="mast"><span class="logo"><svg viewBox="0 0 64 64" aria-label="JobHakken"><rect width="64" height="64" rx="16" fill="#5E8C71"/><g transform="translate(2 1) scale(0.9)" fill="none" stroke="#FCFBF8" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><path d="M40,10 L40,29"/><circle cx="33" cy="40" r="12"/><line x1="42" y1="49" x2="54" y2="59"/></g><circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8"/></svg></span><h1>JobHakken — Profile &amp; settings</h1><button class="themebtn" id="theme" title="Theme">🖥</button></div>
-    <p class="sub">Set up your profile once — it autofills job applications. The desktop app is optional (connect it to import your résumé + unlock AI). <span id="ver" style="color:var(--muted);font-size:11px;"></span></p>
+    <div class="mast">
+      <span class="logo"
+        ><svg viewBox="0 0 64 64" aria-label="JobHakken">
+          <rect width="64" height="64" rx="16" fill="#5E8C71" />
+          <g
+            transform="translate(2 1) scale(0.9)"
+            fill="none"
+            stroke="#FCFBF8"
+            stroke-width="5.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M40,10 L40,29" />
+            <circle cx="33" cy="40" r="12" />
+            <line x1="42" y1="49" x2="54" y2="59" />
+          </g>
+          <circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8" /></svg
+      ></span>
+      <h1>JobHakken — Profile &amp; settings</h1>
+      <button class="themebtn" id="theme" title="Theme">🖥</button>
+    </div>
+    <p class="sub">
+      Set up your profile once — it autofills job applications. The desktop app is optional (connect it to import your
+      résumé + unlock AI). <span id="ver" style="color: var(--muted); font-size: 11px"></span>
+    </p>
 
     <div class="import">
       <span class="ic">✨</span>
-      <div class="t"><b>Import from my résumé</b><div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div></div>
+      <div class="t">
+        <b>Import from my résumé</b>
+        <div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div>
+      </div>
       <button id="importBtn" disabled title="Connect the desktop app first (Desktop tab)">Import</button>
     </div>
 
@@ -86,58 +387,121 @@
     <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
     <div class="panel" data-p="additional">
       <p class="note warn">
-        <label><input type="checkbox" id="fillSensitive" checked /> <b>Autofill sensitive fields</b> (EEO / demographic, salary, visa) by default</label><br />
-        Nothing is ever auto-submitted — you review everything on the page before submitting. Uncheck to leave these blank and fill them yourself.
+        <label
+          ><input type="checkbox" id="fillSensitive" checked /> <b>Autofill sensitive fields</b> (EEO / demographic,
+          salary, visa) by default</label
+        ><br />
+        Nothing is ever auto-submitted — you review everything on the page before submitting. Uncheck to leave these
+        blank and fill them yourself.
       </p>
       <div class="grid" id="additionalGrid"></div>
     </div>
-    <div class="panel" data-p="education"><p class="note">Used to fill repeated Education sections on applications.</p><div id="eduList"></div><span class="add" id="addEdu">+ Add education</span></div>
-    <div class="panel" data-p="work"><p class="note">Used to fill repeated Work-Experience rows (company, title, dates).</p><div id="workList"></div><span class="add" id="addWork">+ Add experience</span></div>
+    <div class="panel" data-p="education">
+      <p class="note">Used to fill repeated Education sections on applications.</p>
+      <div id="eduList"></div>
+      <span class="add" id="addEdu">+ Add education</span>
+    </div>
+    <div class="panel" data-p="work">
+      <p class="note">Used to fill repeated Work-Experience rows (company, title, dates).</p>
+      <div id="workList"></div>
+      <span class="add" id="addWork">+ Add experience</span>
+    </div>
     <div class="panel" data-p="custom">
-      <p class="note">Your own rules for anything the auto-mapper misses. A condition matches a field's <b>label</b>; the value fills it. These always win.</p>
-      <div id="ruleList"></div><span class="add" id="addRule">+ Add rule</span>
-      <div class="ops">Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and · <code>||</code> or · <code>( )</code> group</div>
+      <p class="note">
+        Your own rules for anything the auto-mapper misses. A condition matches a field's <b>label</b>; the value fills
+        it. These always win.
+      </p>
+      <div id="ruleList"></div>
+      <span class="add" id="addRule">+ Add rule</span>
+      <div class="ops">
+        Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and
+        · <code>||</code> or · <code>( )</code> group
+      </div>
     </div>
     <div class="panel" data-p="desktop">
       <p class="note">
-        <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label><br />
-        On job pages (LinkedIn, career sites), flags roles whose description explicitly rules out sponsorship — those requiring U.S. citizenship, a security clearance, “no sponsorship,” or export-control (ITAR/EAR) eligibility. Runs entirely on your machine (no AI). Off by default.
+        <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label
+        ><br />
+        On job pages (LinkedIn, career sites), flags roles whose description explicitly rules out sponsorship — those
+        requiring U.S. citizenship, a security clearance, “no sponsorship,” or export-control (ITAR/EAR) eligibility.
+        Runs entirely on your machine (no AI). Off by default.
         <br />
-        <label style="display:inline-block;margin-top:8px;margin-left:22px;"><input type="checkbox" id="hideUnsponsored" /> <b>Hide these jobs</b> instead of marking them</label><br />
-        <span style="margin-left:22px;color:var(--muted)">When off, a red “No sponsorship” mark is added to the job’s tile. When on, the job’s tile is hidden from the list. (LinkedIn shows the full description only once a job is opened, so a job is judged when you open it; the desktop app hides them upfront.)</span>
+        <label style="display: inline-block; margin-top: 8px; margin-left: 22px"
+          ><input type="checkbox" id="hideUnsponsored" /> <b>Hide these jobs</b> instead of marking them</label
+        ><br />
+        <span style="margin-left: 22px; color: var(--muted)"
+          >When off, a red “No sponsorship” mark is added to the job’s tile. When on, the job’s tile is hidden from the
+          list. (LinkedIn shows the full description only once a job is opened, so a job is judged when you open it; the
+          desktop app hides them upfront.)</span
+        >
       </p>
       <p class="note warn">
-        <label><input type="checkbox" id="testMode" /> <b>🧪 Demo mode — fill anonymous sample data</b></label><br />
-        Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can safely try it on live application pages without exposing anything. The toolbar popup shows a <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
+        <label><input type="checkbox" id="testMode" /> <b>🧪 Demo mode — fill anonymous sample data</b></label
+        ><br />
+        Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can
+        safely try it on live application pages without exposing anything. The toolbar popup shows a
+        <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
       </p>
       <p class="note">
-        <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — off by default; opt in below</label><br />
-        <b>This is off unless you turn it on.</b> When enabled, as you apply it takes a passive <b>snapshot of each application page’s HTML</b> and records the <b>whole flow</b> — which fields autofill handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter over time. Only on job-application pages you visit (built-in ATS list + your own sites) — never touches the form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis. By ticking the box you consent to this local capture; untick any time to stop.
-        <span id="capCount" style="color:var(--muted)"></span>
+        <label
+          ><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — off by
+          default; opt in below</label
+        ><br />
+        <b>This is off unless you turn it on.</b> When enabled, as you apply it takes a passive
+        <b>snapshot of each application page’s HTML</b> and records the <b>whole flow</b> — which fields autofill
+        handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced
+        to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter
+        over time. Only on job-application pages you visit (built-in ATS list + your own sites) — never touches the
+        form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis. By
+        ticking the box you consent to this local capture; untick any time to stop.
+        <span id="capCount" style="color: var(--muted)"></span>
         <br />
-        <button id="exportCorpus" class="secondary" style="margin-top:8px;">Export corpus</button>
-        <button id="clearCorpus" class="secondary" style="margin-top:8px;">Clear</button>
+        <button id="exportCorpus" class="secondary" style="margin-top: 8px">Export corpus</button>
+        <button id="clearCorpus" class="secondary" style="margin-top: 8px">Clear</button>
       </p>
       <p class="note">
-        <label><input type="checkbox" id="captureMode" /> <b>📸 Fixture capture (developer)</b></label><br />
-        Separate one-off tool: adds a <b>Capture fixture</b> button to the panel that <b>downloads</b> a scrubbed HTML snapshot + coverage report for engineering. Not needed for normal use — the auto-capture above is the corpus.
+        <label><input type="checkbox" id="captureMode" /> <b>📸 Fixture capture (developer)</b></label
+        ><br />
+        Separate one-off tool: adds a <b>Capture fixture</b> button to the panel that <b>downloads</b> a scrubbed HTML
+        snapshot + coverage report for engineering. Not needed for normal use — the auto-capture above is the corpus.
       </p>
       <p class="note">
-        <b>🌐 My sites</b> — where JobHakken is always active (opens the panel + auto-captures), in addition to the built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this site” toggle in the on-page panel.
+        <b>🌐 My sites</b> — where JobHakken is always active (opens the panel + auto-captures), in addition to the
+        built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this
+        site” toggle in the on-page panel.
       </p>
-      <div id="siteList" style="display:flex;flex-direction:column;gap:6px;"></div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <input id="siteInput" type="text" placeholder="careers.company.com" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;" />
+      <div id="siteList" style="display: flex; flex-direction: column; gap: 6px"></div>
+      <div style="display: flex; gap: 6px; margin-top: 8px">
+        <input
+          id="siteInput"
+          type="text"
+          placeholder="careers.company.com"
+          style="flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px"
+        />
         <button id="siteAdd" class="secondary">Add</button>
       </div>
-      <p class="note">Connect to the running JobHakken desktop app for AI (ATS match, visa signal, tailored résumé) and one-click résumé import.</p>
-      <div class="f"><label for="token">Connection token</label><input id="token" type="password" placeholder="Paste from the app → Settings → Browser extension" autocomplete="off" /></div>
-      <div class="bar" style="position:static;border:none;margin-top:12px;padding:0;">
+      <p class="note">
+        Connect to the running JobHakken desktop app for AI (ATS match, visa signal, tailored résumé) and one-click
+        résumé import.
+      </p>
+      <div class="f">
+        <label for="token">Connection token</label
+        ><input
+          id="token"
+          type="password"
+          placeholder="Paste from the app → Settings → Browser extension"
+          autocomplete="off"
+        />
+      </div>
+      <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
         <button class="save" id="connect">Connect</button>
         <button class="secondary" id="disconnect" hidden>Disconnect</button>
         <span class="status" id="connStatus"></span>
       </div>
-      <p class="note">In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on <code class="inline">127.0.0.1</code>.</p>
+      <p class="note">
+        In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on
+        <code class="inline">127.0.0.1</code>.
+      </p>
     </div>
 
     <div class="bar">

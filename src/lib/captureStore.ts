@@ -31,7 +31,16 @@ export type CaptureRecord = {
   html: string; // anonymized form region (structure)
 };
 
-type IndexEntry = { key: string; ts: string; url: string; host: string; total: number; resolved: number; unresolved: number; filledManually: number };
+type IndexEntry = {
+  key: string;
+  ts: string;
+  url: string;
+  host: string;
+  total: number;
+  resolved: number;
+  unresolved: number;
+  filledManually: number;
+};
 
 const INDEX = 'f2a_cap_index';
 const REC = (ts: string) => `f2a_cap:${ts}`;
@@ -53,7 +62,15 @@ export async function captureCount(): Promise<number> {
  */
 export async function upsertCapture(rec: CaptureRecord): Promise<boolean> {
   const index = await getIndex();
-  const entry = { ts: rec.ts, url: rec.url, host: rec.host, total: rec.total, resolved: rec.resolved, unresolved: rec.unresolved, filledManually: rec.filledManually };
+  const entry = {
+    ts: rec.ts,
+    url: rec.url,
+    host: rec.host,
+    total: rec.total,
+    resolved: rec.resolved,
+    unresolved: rec.unresolved,
+    filledManually: rec.filledManually,
+  };
   const existing = index.find((e) => e.url === rec.url);
   const key = existing?.key ?? REC(rec.ts);
   if (existing) Object.assign(existing, entry, { key });

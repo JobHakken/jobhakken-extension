@@ -51,7 +51,13 @@ export async function discoverBridge(opts: Opts = {}): Promise<{ port: number } 
  * generous default timeout (AI methods like score/keywords are slow, so it's long — but
  * finite, so a crashed app surfaces an error instead of a forever-pending UI).
  */
-export async function rpc<T = unknown>(port: number, token: string, method: string, params: unknown = {}, opts: Opts = {}): Promise<T> {
+export async function rpc<T = unknown>(
+  port: number,
+  token: string,
+  method: string,
+  params: unknown = {},
+  opts: Opts = {},
+): Promise<T> {
   const f = opts.fetchImpl ?? fetch;
   let res: Response;
   try {
@@ -66,7 +72,8 @@ export async function rpc<T = unknown>(port: number, token: string, method: stri
       opts.timeoutMs ?? 60000,
     );
   } catch (e) {
-    if (e instanceof Error && e.name === 'AbortError') throw new Error(`RPC ${method} timed out — is the desktop app responding?`);
+    if (e instanceof Error && e.name === 'AbortError')
+      throw new Error(`RPC ${method} timed out — is the desktop app responding?`);
     throw e;
   }
   const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string };
@@ -79,7 +86,8 @@ export async function rpc<T = unknown>(port: number, token: string, method: stri
  * user-facing message when the app isn't running or the token is wrong.
  */
 export async function connect(token: string, opts: Opts = {}): Promise<BridgeConnection> {
-  if (!token.trim()) throw new Error('Paste the connection token from the JobHakken app (Settings → Browser extension).');
+  if (!token.trim())
+    throw new Error('Paste the connection token from the JobHakken app (Settings → Browser extension).');
   const found = await discoverBridge(opts);
   if (!found) throw new Error('JobHakken desktop app not found. Open it and enable the browser extension in Settings.');
   let profile: BridgeProfile;

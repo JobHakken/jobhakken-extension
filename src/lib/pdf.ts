@@ -6,7 +6,10 @@
  * for a document the user reviews before submitting.
  */
 function asciiFold(s: string): string {
-  return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^\x20-\x7e]/g, '');
+  return s
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^\x20-\x7e]/g, '');
 }
 function escapePdf(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');

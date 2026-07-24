@@ -34,7 +34,13 @@ function cleanCompany(text: string): string {
 }
 
 // Where a company name lives inside a tile — a /company/ link, or (list cards) a subtitle text.
-const COMPANY_SELECTORS = ['a[href*="/company/"]', '.artdeco-entity-lockup__subtitle', '[class*="primary-description"]', '[class*="company-name"]', '[class*="subtitle"]'];
+const COMPANY_SELECTORS = [
+  'a[href*="/company/"]',
+  '.artdeco-entity-lockup__subtitle',
+  '[class*="primary-description"]',
+  '[class*="company-name"]',
+  '[class*="subtitle"]',
+];
 
 const valid = (c: string) => !!c && c.length <= 60 && !NOISE.test(c);
 
@@ -48,7 +54,10 @@ function tileTarget(tile: HTMLElement, titleLink: HTMLElement): { el: HTMLElemen
       if (valid(c)) return { el, company: c };
     }
   }
-  const lines = (tile.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean);
+  const lines = (tile.innerText || '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
   const c = cleanCompany(lines[1] || ''); // line 0 is the title; the company usually follows
   return valid(c) ? { el: titleLink, company: c } : null;
 }
@@ -71,7 +80,10 @@ function tileTargets(): { el: HTMLElement; company: string }[] {
  *  inside a list tile. This is the reliable surface that drives the badge + the popup verdict. */
 function detailCompany(): { el: HTMLElement; company: string } | null {
   const links = Array.from(document.querySelectorAll<HTMLElement>('a[href*="/company/"]'));
-  const inTile = (a: HTMLElement) => !!a.closest('li[data-occludable-job-id], .job-card-container, li.scaffold-layout__list-item, .jobs-search-results__list-item');
+  const inTile = (a: HTMLElement) =>
+    !!a.closest(
+      'li[data-occludable-job-id], .job-card-container, li.scaffold-layout__list-item, .jobs-search-results__list-item',
+    );
   for (const a of links) {
     if (inTile(a)) continue;
     const c = cleanCompany(a.textContent || '');
@@ -130,7 +142,9 @@ export async function applyH1bBadges(active: boolean): Promise<void> {
   const unknown = Array.from(new Set(targets.map((t) => t.company).filter((c) => !cache.has(c))));
   if (unknown.length) {
     try {
-      const res = (await chrome.runtime.sendMessage({ type: 'f2a-h1b', companies: unknown })) as { matches?: Record<string, number> } | undefined;
+      const res = (await chrome.runtime.sendMessage({ type: 'f2a-h1b', companies: unknown })) as
+        | { matches?: Record<string, number> }
+        | undefined;
       const matches = res?.matches ?? {};
       for (const c of unknown) cache.set(c, matches[c] ?? 0);
     } catch {

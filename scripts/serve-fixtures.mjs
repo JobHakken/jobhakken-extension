@@ -56,4 +56,6 @@ createServer((req, res) => {
     res.writeHead(404);
     res.end('not found');
   }
-}).listen(PORT, '127.0.0.1', () => console.log(`Real ATS pages on http://127.0.0.1:${PORT}  (serving ${path.relative(ROOT, DIR)}; Ctrl+C to stop)`));
+}).listen(PORT, '127.0.0.1', () =>
+  console.log(`Real ATS pages on http://127.0.0.1:${PORT}  (serving ${path.relative(ROOT, DIR)}; Ctrl+C to stop)`),
+);
