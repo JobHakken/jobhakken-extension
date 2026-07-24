@@ -64,4 +64,12 @@ for (const key of ['manifest_version', 'name', 'version', 'background']) {
 }
 if (manifest.manifest_version !== 3) throw new Error(`expected manifest_version 3, got ${manifest.manifest_version}`);
 
+// No-remote-code guarantee: the CSP for extension pages must be present and must not weaken
+// script-src (no unsafe-eval / unsafe-inline / remote hosts). esbuild bundles everything locally,
+// so the only way remote/eval'd code sneaks in is a loosened CSP — fail the build if so.
+const csp = manifest.content_security_policy?.extension_pages ?? '';
+if (!/script-src[^;]*'self'/.test(csp)) throw new Error("manifest CSP must set script-src 'self'");
+if (/unsafe-eval|unsafe-inline|https?:/.test(csp))
+  throw new Error(`manifest CSP weakens script-src (no eval/inline/remote): "${csp}"`);
+
 console.log(`extension built → ${outdir}/ (${prod ? 'production, minified' : 'dev, source maps'}) — load unpacked`);
