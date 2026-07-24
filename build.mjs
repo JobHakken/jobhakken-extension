@@ -6,6 +6,10 @@ import sharp from 'sharp';
 // Build the MV3 extension into dist/ (loadable unpacked). esbuild bundles the TS
 // entry points; static assets (manifest, options html, icons) are copied over.
 const outdir = 'dist';
+// Prod (packaging / release): minify, no source maps. Dev (default): source maps for
+// debugging, no minify. `npm run package` sets NODE_ENV=production.
+const prod = process.env.NODE_ENV === 'production' || process.argv.includes('--prod');
+const shared = { bundle: true, target: 'es2020', logLevel: 'info', minify: prod, sourcemap: prod ? false : 'linked' };
 rmSync(outdir, { recursive: true, force: true });
 
 // Service worker (module) + options + popup pages → ESM.
@@ -16,20 +20,16 @@ await esbuild.build({
     'popup/popup': 'src/popup/popup.ts',
   },
   outdir,
-  bundle: true,
   format: 'esm',
-  target: 'es2020',
-  logLevel: 'info',
+  ...shared,
 });
 
 // Content script → IIFE (content scripts don't support ESM imports).
 await esbuild.build({
   entryPoints: { 'content/content': 'src/content/content.ts' },
   outdir,
-  bundle: true,
   format: 'iife',
-  target: 'es2020',
-  logLevel: 'info',
+  ...shared,
 });
 
 mkdirSync(path.join(outdir, 'options'), { recursive: true });
@@ -56,4 +56,12 @@ cpSync('src/data/h1b-sponsors.txt', path.join(outdir, 'data', 'h1b-sponsors.txt'
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
 cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
 
-console.log('extension built → apps/extension/dist (load unpacked)');
+// Sanity-check the manifest we just shipped so a malformed edit fails the build,
+// not the Chrome Web Store review. (Full store-compliance checks come in Phase 6.)
+const manifest = JSON.parse(readFileSync(path.join(outdir, 'manifest.json'), 'utf8'));
+for (const key of ['manifest_version', 'name', 'version', 'background']) {
+  if (manifest[key] == null) throw new Error(`manifest.json is missing required key: ${key}`);
+}
+if (manifest.manifest_version !== 3) throw new Error(`expected manifest_version 3, got ${manifest.manifest_version}`);
+
+console.log(`extension built → ${outdir}/ (${prod ? 'production, minified' : 'dev, source maps'}) — load unpacked`);
