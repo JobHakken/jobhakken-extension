@@ -1,0 +1,5 @@
+# Defaults for `act` (run the GitHub Actions CI locally).
+# Medium image carries node/npm the `verify`/`build` job needs.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+# Apple Silicon: runner images are amd64 — run them under emulation.
+--container-architecture linux/amd64
