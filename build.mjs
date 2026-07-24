@@ -64,6 +64,13 @@ for (const key of ['manifest_version', 'name', 'version', 'background']) {
 }
 if (manifest.manifest_version !== 3) throw new Error(`expected manifest_version 3, got ${manifest.manifest_version}`);
 
+// Version sync: manifest.version must equal package.json version (CWS rejects mismatches).
+const pkgVersion = JSON.parse(readFileSync('package.json', 'utf8')).version;
+if (manifest.version !== pkgVersion)
+  throw new Error(
+    `version mismatch: manifest.json ${manifest.version} vs package.json ${pkgVersion} — keep them in sync`,
+  );
+
 // No-remote-code guarantee: the CSP for extension pages must be present and must not weaken
 // script-src (no unsafe-eval / unsafe-inline / remote hosts). esbuild bundles everything locally,
 // so the only way remote/eval'd code sneaks in is a loosened CSP — fail the build if so.
