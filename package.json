@@ -21,7 +21,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run typecheck && npm run lint && npm run build && npm test"
+    "verify": "npm run typecheck && npm run lint && npm run check:permissions && npm run build && npm test",
+    "check:permissions": "node scripts/check-permissions.mjs"
   },
   "dependencies": {
     "@jobhakken/autofill": "0.1.0",

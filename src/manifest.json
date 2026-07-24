@@ -9,7 +9,10 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "background": { "service_worker": "background/serviceWorker.js", "type": "module" },
+  "background": {
+    "service_worker": "background/serviceWorker.js",
+    "type": "module"
+  },
   "options_page": "options/options.html",
   "action": {
     "default_title": "JobHakken",
@@ -75,10 +78,16 @@
   ],
   "commands": {
     "autofill": {
-      "suggested_key": { "default": "Ctrl+Shift+2", "mac": "MacCtrl+2" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+2",
+        "mac": "MacCtrl+2"
+      },
       "description": "Autofill this application"
     }
   },
   "permissions": ["storage", "unlimitedStorage"],
-  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }
