@@ -1,0 +1,25 @@
+# Dependabot: grouped dependency updates (not one PR per package). Security updates
+# are also enabled at the repo level. Targets main (the default + integration branch).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ['*']
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ['*']

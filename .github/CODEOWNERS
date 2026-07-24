@@ -1,0 +1,22 @@
+# CODEOWNERS — auto-requests review from the listed owners when matching paths change.
+# Requires branch protection with "Require review from Code Owners" to be enforced.
+# Replace @jobhakken-maintainer with the real GitHub username / team (e.g. @JobHakken/maintainers).
+
+# Default owner for everything
+*                          @jobhakken-maintainer
+
+# --- Sensitive: always maintainer-reviewed ---
+# Manifest = the extension's permission/host surface (permission creep is the top risk)
+/src/manifest.json         @jobhakken-maintainer
+# Background service worker + content script (page-DOM trust, messaging)
+/src/background/           @jobhakken-maintainer
+/src/content/              @jobhakken-maintainer
+# The localhost desktop bridge (token + content handoff)
+/src/lib/bridgeClient.ts   @jobhakken-maintainer
+# Build / packaging
+/build.mjs                 @jobhakken-maintainer
+
+# --- Repo governance ---
+/.github/                  @jobhakken-maintainer
+/LICENSE                   @jobhakken-maintainer
+/CLAUDE.md                 @jobhakken-maintainer
