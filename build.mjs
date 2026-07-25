@@ -9,7 +9,16 @@ const outdir = 'dist';
 // Prod (packaging / release): minify, no source maps. Dev (default): source maps for
 // debugging, no minify. `npm run package` sets NODE_ENV=production.
 const prod = process.env.NODE_ENV === 'production' || process.argv.includes('--prod');
-const shared = { bundle: true, target: 'es2020', logLevel: 'info', minify: prod, sourcemap: prod ? false : 'linked' };
+// GA_API_SECRET is injected at build time (from the repo secret in CI/publish). Absent in dev/CI
+// test builds → the GA telemetry sink stays inert (nothing is sent). The measurement id is public.
+const shared = {
+  bundle: true,
+  target: 'es2020',
+  logLevel: 'info',
+  minify: prod,
+  sourcemap: prod ? false : 'linked',
+  define: { __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET || '') },
+};
 rmSync(outdir, { recursive: true, force: true });
 
 // Service worker (module) + options + popup pages → ESM.
@@ -63,5 +72,20 @@ for (const key of ['manifest_version', 'name', 'version', 'background']) {
   if (manifest[key] == null) throw new Error(`manifest.json is missing required key: ${key}`);
 }
 if (manifest.manifest_version !== 3) throw new Error(`expected manifest_version 3, got ${manifest.manifest_version}`);
+
+// Version sync: manifest.version must equal package.json version (CWS rejects mismatches).
+const pkgVersion = JSON.parse(readFileSync('package.json', 'utf8')).version;
+if (manifest.version !== pkgVersion)
+  throw new Error(
+    `version mismatch: manifest.json ${manifest.version} vs package.json ${pkgVersion} — keep them in sync`,
+  );
+
+// No-remote-code guarantee: the CSP for extension pages must be present and must not weaken
+// script-src (no unsafe-eval / unsafe-inline / remote hosts). esbuild bundles everything locally,
+// so the only way remote/eval'd code sneaks in is a loosened CSP — fail the build if so.
+const csp = manifest.content_security_policy?.extension_pages ?? '';
+if (!/script-src[^;]*'self'/.test(csp)) throw new Error("manifest CSP must set script-src 'self'");
+if (/unsafe-eval|unsafe-inline|https?:/.test(csp))
+  throw new Error(`manifest CSP weakens script-src (no eval/inline/remote): "${csp}"`);
 
 console.log(`extension built → ${outdir}/ (${prod ? 'production, minified' : 'dev, source maps'}) — load unpacked`);

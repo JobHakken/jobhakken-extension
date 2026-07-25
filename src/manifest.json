@@ -9,7 +9,10 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "background": { "service_worker": "background/serviceWorker.js", "type": "module" },
+  "background": {
+    "service_worker": "background/serviceWorker.js",
+    "type": "module"
+  },
   "options_page": "options/options.html",
   "action": {
     "default_title": "JobHakken",
@@ -64,9 +67,7 @@
         "*://*.phenompeople.com/*",
         "*://*.eightfold.ai/*",
         "*://*.gr8people.com/*",
-        "*://*.paycomonline.com/*",
-        "*://127.0.0.1/*",
-        "*://localhost/*"
+        "*://*.paycomonline.com/*"
       ],
       "js": ["content/content.js"],
       "run_at": "document_idle",
@@ -75,10 +76,16 @@
   ],
   "commands": {
     "autofill": {
-      "suggested_key": { "default": "Ctrl+Shift+2", "mac": "MacCtrl+2" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+2",
+        "mac": "MacCtrl+2"
+      },
       "description": "Autofill this application"
     }
   },
   "permissions": ["storage", "unlimitedStorage"],
-  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"]
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*", "https://www.google-analytics.com/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }

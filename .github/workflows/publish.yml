@@ -1,0 +1,55 @@
+name: Publish (Chrome Web Store)
+
+# Auto-deploy on a release tag. Builds the production zip and uploads + publishes it to the
+# Chrome Web Store via the Web Store API. Tag-gated so it never runs on normal pushes.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   CWS_CLIENT_ID, CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN  — OAuth for the Web Store API
+#   CWS_EXTENSION_ID                                     — the item id
+# See docs/store-listing.md for how to generate these.
+on:
+  push:
+    tags:
+      - 'ext-v*'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish after upload (false = upload draft only)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  packages: read # to install @jobhakken/* from GitHub Packages
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@jobhakken'
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm ci --no-audit --no-fund
+      - name: Package (production zip)
+        env:
+          GA_API_SECRET: ${{ secrets.GA_API_SECRET }} # embed the GA MP secret in the release build
+        run: npm run package # → jobhakken-extension.zip (minified prod build + manifest/version asserts)
+      - name: Upload + publish to the Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: jobhakken-extension.zip
+          extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          client-id: ${{ secrets.CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: ${{ github.event_name == 'push' || inputs.publish }}
