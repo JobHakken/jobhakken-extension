@@ -29,22 +29,66 @@ in the manifest is the technical source of supported sites — it does not belon
 
 ## Detailed description (keyword-spam-free)
 
+> Rule: NO enumerated ATS/job-board brand names anywhere (that was the rejection cause). Describe the
+> capability generically ("major job boards and 40+ applicant tracking systems"). CWS renders plain
+> text — the emoji + divider lines below display as-is.
+
 ```
-JobHakken's Apply Copilot fills out job applications for you and helps you decide which roles are
-worth your time — right in your browser, working with the JobHakken desktop app.
+🚀 JobHakken — AI Job Copilot for Faster, Smarter Applications
 
-As you browse a job posting, it:
-• Autofills the application form from your saved profile, so you stop retyping the same details.
-• Shows how well your résumé matches the posting, so you focus on roles that actually fit.
-• Surfaces visa-relevant signals (H-1B in the US, work-visa in the UK) when they apply to you.
-• Tailors your résumé to the posting, so each application reads like it was written for that role.
+Land more interviews with less effort.
 
-It works across major job boards and applicant tracking systems — no per-site setup.
+JobHakken is the privacy-first AI job copilot for international professionals —
+and anyone who wants to apply faster with higher-quality applications. It works
+right on the sites you already use, automating the repetitive parts so you can
+focus on the roles that actually fit.
 
-Privacy: your résumé and application data stay on your device and are exchanged only with your local
-JobHakken desktop app. The extension does not send your content to our servers.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ APPLY IN MINUTES, NOT HOURS
+• One-click autofill across major job boards and 40+ applicant tracking systems.
+• Handles the tricky fields other tools miss — custom dropdowns, comboboxes,
+  and date pickers.
 
-Requires the JobHakken desktop app.
+🎯 KNOW IF A JOB IS WORTH IT — BEFORE YOU APPLY
+• Résumé Match Analysis shows how well your résumé fits each posting: keyword
+  coverage and the skills you're missing.
+• Real, practical insight — not a made-up ATS score.
+
+🌍 BUILT FOR INTERNATIONAL PROFESSIONALS
+• Spot US H-1B sponsoring employers and UK licensed visa sponsors right on the
+  posting.
+• Stop wasting time on roles that won't sponsor.
+
+✍️ TAILOR EVERY APPLICATION
+• Generate a role-specific résumé by reordering and rewriting your real
+  experience — never inventing anything.
+• Draft a personalized cover letter in seconds.
+
+📌 SAVE JOBS WITH ONE CLICK
+• Send interesting roles straight to the JobHakken desktop app to organize,
+  track, and manage your search.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔒 PRIVACY FIRST. ALWAYS.
+Unlike most AI tools, JobHakken keeps your data under your control.
+• Local-first — your résumé and profile stay on your own computer.
+• The extension talks only to the JobHakken desktop app on your machine
+  (localhost). Nothing is uploaded to our servers.
+• AI is 100% opt-in — bring your own AI key or use a managed plan.
+• We never train AI models on your data and never sell your personal information.
+• Sensitive EEO fields (gender, race, veteran status, disability) are disabled
+  by default and filled only if you turn them on.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💼 WORKS WITH THE FREE JOBHAKKEN DESKTOP APP
+Unlock more: Application Tracker · AI Résumé Studio · Job Scanner ·
+Saved Jobs Feed · Career Workspace.
+Download free at jobhakken.com.
+
+✅ Apply faster   ✅ Higher-quality applications   ✅ Better job matching
+✅ Visa sponsorship insights   ✅ Privacy-first by design
+
+Questions? contact@jobhakken.com
 ```
 
 ---
