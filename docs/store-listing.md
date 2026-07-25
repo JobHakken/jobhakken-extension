@@ -72,3 +72,26 @@ Requires the JobHakken desktop app.
 
 Keep this file, `manifest.json` `description`, and `package.json`/`manifest.json` `version` in sync.
 Update this file in the same PR as any user-facing listing change.
+
+---
+
+## Publishing (Chrome Web Store API — automated)
+
+`.github/workflows/publish.yml` auto-deploys on an `ext-vX.Y.Z` tag: it builds the production zip and
+uploads + publishes via the Web Store API. To enable it, add these repo secrets once:
+
+| Secret                               | How to get it                                                                                                                                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET` | Google Cloud Console → enable **Chrome Web Store API** → **Credentials → OAuth client ID** (Desktop app).                                                                                                     |
+| `CWS_REFRESH_TOKEN`                  | One-time OAuth with scope `https://www.googleapis.com/auth/chromewebstore` — easiest via `npx chrome-webstore-upload-keys`. Add yourself as a Test user (or publish the consent screen) so it doesn't expire. |
+| `CWS_EXTENSION_ID`                   | `lochgcghpahlooibepjlmmcdjgicncil`                                                                                                                                                                            |
+
+Then release with:
+
+```bash
+# bump version in package.json AND manifest.json (build asserts they match), update CHANGELOG.md, then:
+git tag ext-v0.11.0 && git push origin ext-v0.11.0
+```
+
+The tag push runs the publish job. `workflow_dispatch` with `publish:false` uploads a **draft** only
+(no publish) for a dry run.
