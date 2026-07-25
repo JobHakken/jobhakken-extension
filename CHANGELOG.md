@@ -4,6 +4,17 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.11.0
+- **Anonymous, opt-out usage analytics.** A new **Settings** toggle (on by default) lets the
+  extension share **metadata-only** usage stats — which features you use, success/failure, the
+  extension version, and browser/OS — to help improve the product. It **never** sends your résumé,
+  job postings, form values, or personal data, and you can turn it off anytime.
+- **Tighter permissions & safety.** The copilot no longer injects into non-job local pages (removed
+  the broad `localhost` content-script match), an explicit content-security policy is enforced, and
+  connection/status text is HTML-escaped.
+- **Fix: Cancel during autofill.** A completing run could wipe a newer run's abort controller and
+  break its Cancel — now a completing run only clears its own, so Cancel always stops the active run.
+
 ## 0.10.0
 - **Save a job to the desktop feed.** The popup's **Save job** button now adds the open role to
   the desktop app's tracker (the New column) over the local bridge — deduped by URL, so
