@@ -17,6 +17,7 @@ import {
 } from '@jobhakken/autofill';
 
 import { type BridgeConnection } from '../lib/bridgeClient.js';
+import { bucket, report } from '../lib/telemetryClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import {
@@ -696,7 +697,9 @@ async function init() {
         case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run
           const ctrl = (autofillAbort = new AbortController());
-          sendResponse(await runAutofill(msg.params?.mode ?? 'default', ctrl.signal));
+          const r = await runAutofill(msg.params?.mode ?? 'default', ctrl.signal);
+          report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
+          sendResponse(r);
           // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
           // and break its Cancel.
           if (autofillAbort === ctrl) autofillAbort = null;
@@ -706,9 +709,12 @@ async function init() {
           autofillAbort?.abort();
           sendResponse({ ok: true });
           break;
-        case 'analyze':
-          sendResponse(await analyzeJob());
+        case 'analyze': {
+          const res = await analyzeJob();
+          report('match_scored', { ok: res?.ats != null });
+          sendResponse(res);
           break;
+        }
         case 'draft':
           sendResponse(await draftAnswer());
           break;
