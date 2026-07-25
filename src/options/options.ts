@@ -10,6 +10,7 @@ import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { escapeHtml } from '../lib/html.js';
+import { report } from '../lib/telemetryClient.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { getTelemetryEnabled, setTelemetryEnabled } from '../lib/telemetry.js';
 import { initThemeToggle } from '../lib/theme.js';
@@ -212,7 +213,9 @@ async function onConnect() {
     const conn = await connect(token);
     await saveConnection(conn);
     renderConn(true, conn.profile.basics?.name, conn.port);
+    report('bridge_connected', { ok: true });
   } catch (e) {
+    report('bridge_failed', { ok: false });
     $('connStatus').innerHTML =
       `<span class="err">${escapeHtml(e instanceof Error ? e.message : 'Failed to connect')}</span>`;
     renderConn(false);
