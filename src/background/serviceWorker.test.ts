@@ -44,6 +44,7 @@ beforeAll(async () => {
   (globalThis as unknown as { chrome: unknown }).chrome = {
     runtime: {
       onMessage: { addListener: (fn: Listener) => messageListeners.push(fn) },
+      onInstalled: { addListener: () => {} },
       getURL: (p: string) => `chrome-extension://test/${p}`,
     },
     tabs: { onRemoved: { addListener: () => {} }, query: async () => [] },

@@ -130,6 +130,11 @@ export async function track(event: string, params: TelemetryParams = {}): Promis
   }
 }
 
+/** Read the opt-out preference (Settings UI). Default on. */
+export async function getTelemetryEnabled(): Promise<boolean> {
+  return isEnabled();
+}
+
 /** Set the opt-out preference (Settings UI). */
 export async function setTelemetryEnabled(enabled: boolean): Promise<void> {
   await chrome.storage.local.set({ [STORE_ENABLED]: enabled });

@@ -11,6 +11,21 @@ import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
+import { initGaSink } from '../lib/gaSink.js';
+import { track } from '../lib/telemetry.js';
+
+// ── Telemetry (metadata-only; opt-out; content can never pass the allowlist) ──────
+// GA sink is active only in release builds (API secret injected at build time). Content
+// scripts / options forward events here via a `jh-telemetry` message so a single sink runs.
+initGaSink();
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') void track('extension_installed', {});
+});
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
+    void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped
+  }
+});
 
 // ── H-1B sponsor lookup (bundled, standalone) ──────────────────────────────
 // Loaded once from the packaged compact list (normalizedName \t approvals, sorted). Matching
