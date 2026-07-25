@@ -9,7 +9,16 @@ const outdir = 'dist';
 // Prod (packaging / release): minify, no source maps. Dev (default): source maps for
 // debugging, no minify. `npm run package` sets NODE_ENV=production.
 const prod = process.env.NODE_ENV === 'production' || process.argv.includes('--prod');
-const shared = { bundle: true, target: 'es2020', logLevel: 'info', minify: prod, sourcemap: prod ? false : 'linked' };
+// GA_API_SECRET is injected at build time (from the repo secret in CI/publish). Absent in dev/CI
+// test builds → the GA telemetry sink stays inert (nothing is sent). The measurement id is public.
+const shared = {
+  bundle: true,
+  target: 'es2020',
+  logLevel: 'info',
+  minify: prod,
+  sourcemap: prod ? false : 'linked',
+  define: { __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET || '') },
+};
 rmSync(outdir, { recursive: true, force: true });
 
 // Service worker (module) + options + popup pages → ESM.

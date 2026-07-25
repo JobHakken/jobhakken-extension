@@ -10,6 +10,7 @@ import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
+import { getTelemetryEnabled, setTelemetryEnabled } from '../lib/telemetry.js';
 import { initThemeToggle } from '../lib/theme.js';
 import {
   ADDITIONAL_FIELDS,
@@ -328,6 +329,10 @@ function renderAll() {
   const captureToggle = $('captureMode') as HTMLInputElement;
   captureToggle.checked = await loadCaptureMode();
   captureToggle.addEventListener('change', () => void saveCaptureMode(captureToggle.checked));
+  // anonymous usage analytics (opt-out)
+  const telemetryToggle = $('telemetryToggle') as HTMLInputElement;
+  telemetryToggle.checked = await getTelemetryEnabled();
+  telemetryToggle.addEventListener('change', () => void setTelemetryEnabled(telemetryToggle.checked));
   // auto-capture corpus
   const autoToggle = $('autoCapture') as HTMLInputElement;
   autoToggle.checked = await loadAutoCapture();

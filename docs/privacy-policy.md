@@ -23,15 +23,25 @@ beyond the job postings you actively use it on.
 
 ## Where your data goes
 
-- **Your data stays on your device.** The extension exchanges it **only** with your **local JobHakken
-  desktop app** over a loopback connection (`127.0.0.1`) on your own machine.
-- We do **not** send your résumé, profile, or application content to JobHakken servers.
-- We do **not** sell or rent your data, and we do **not** share it with third parties.
+- **Your résumé/application content stays on your device.** The extension exchanges it **only** with
+  your **local JobHakken desktop app** over a loopback connection (`127.0.0.1`) on your own machine.
+- We do **not** send your résumé, profile, or application **content** to JobHakken servers.
+- We do **not** sell or rent your data.
 - We do **not** use your data for advertising, creditworthiness, or any purpose unrelated to the
   extension's single purpose (helping you apply to jobs).
 
-If the extension ever reports diagnostics, it is **metadata only** (e.g. feature used, counts) — never
-your résumé, job, or personal content — and is disclosed separately.
+## Anonymous usage analytics
+
+To improve the product, the extension collects **anonymous, metadata-only usage analytics** — for
+example: which features you used (autofill, résumé match, cover letter), success/failure, coarse
+counts, your extension version, and browser/OS. Each install gets a **random, pseudonymous id** (not
+tied to your identity).
+
+- We **never** send your résumé, profile, job postings, form values, email, names, company names, page
+  URLs, or precise location through analytics — an allowlist strips anything but the fields above.
+- This data is sent to **Google Analytics** (a third-party analytics processor) and to our own
+  first-party endpoint. It is used only to understand feature usage and reliability.
+- **You can turn analytics off** anytime in the extension's Settings — it's opt-out.
 
 ## Permissions and why they're needed
 
@@ -41,6 +51,8 @@ your résumé, job, or personal content — and is disclosed separately.
   machine. No external servers are contacted.
 - **Access to job-board / applicant-tracking sites** — detect postings and fill application forms on
   the pages where you apply.
+- **Access to `www.google-analytics.com`** — send the anonymous, opt-out usage analytics described
+  above (never your content).
 
 ## Data retention & control
 

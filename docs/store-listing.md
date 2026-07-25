@@ -71,10 +71,13 @@ focus on the roles that actually fit.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔒 PRIVACY FIRST. ALWAYS.
 Unlike most AI tools, JobHakken keeps your data under your control.
-• Local-first — your résumé and profile stay on your own computer.
-• The extension talks only to the JobHakken desktop app on your machine
-  (localhost). Nothing is uploaded to our servers.
+• Local-first — your résumé and application content stay on your own computer,
+  exchanged only with the JobHakken desktop app (localhost). Your content is
+  never uploaded to our servers.
 • AI is 100% opt-in — bring your own AI key or use a managed plan.
+• Anonymous, opt-out usage analytics only (which features are used, success/
+  fail, version) — never your résumé, job, or personal content. Turn it off in
+  Settings anytime.
 • We never train AI models on your data and never sell your personal information.
 • Sensitive EEO fields (gender, race, veteran status, disability) are disabled
   by default and filled only if you turn them on.
@@ -95,22 +98,25 @@ Questions? contact@jobhakken.com
 
 ## Permission justifications (CWS "Privacy practices" → per-permission)
 
-| Permission                                                     | Justification                                                                                              |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `storage`                                                      | Save the user's autofill profile and preferences locally in the browser.                                   |
-| `unlimitedStorage`                                             | Cache the bundled H-1B sponsor dataset and captured form data without hitting the default storage quota.   |
-| `host_permissions`: `http://127.0.0.1/*`, `http://localhost/*` | Communicate with the user's own JobHakken desktop app over the local loopback bridge. No external servers. |
-| Content scripts (job-board / ATS hosts)                        | Detect job postings and autofill application forms on the sites where the user applies.                    |
+| Permission                                                     | Justification                                                                                                 |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `storage`                                                      | Save the user's autofill profile and preferences locally in the browser.                                      |
+| `unlimitedStorage`                                             | Cache the bundled H-1B sponsor dataset and captured form data without hitting the default storage quota.      |
+| `host_permissions`: `http://127.0.0.1/*`, `http://localhost/*` | Communicate with the user's own JobHakken desktop app over the local loopback bridge.                         |
+| `host_permissions`: `https://www.google-analytics.com/*`       | Send anonymous, metadata-only usage analytics (opt-out) via the GA Measurement Protocol — never user content. |
+| Content scripts (job-board / ATS hosts)                        | Detect job postings and autofill application forms on the sites where the user applies.                       |
 
 ## Data use disclosure (CWS "Privacy practices" → data collected)
 
 - **Personally identifiable information** (name, contact details, résumé content): handled **only** to
   provide the core autofill/match features. Exchanged with the user's **local desktop app**; **not**
   sent to JobHakken servers, **not** sold, **not** used for unrelated purposes.
-- No web-browsing history, no analytics of page content. (Any future telemetry is metadata-only and
-  disclosed separately — see the app's privacy model.)
-- Certifications: does **not** sell/transfer user data to third parties; does **not** use data for
-  purposes unrelated to the single purpose; does **not** use data for creditworthiness/lending.
+- **Anonymous usage analytics** (declare under "User activity"): metadata only — feature-used,
+  success/fail, coarse counts, extension version, browser/OS, and a random pseudonymous install id.
+  **No content, no page URLs, no precise location** (an allowlist enforces this). Sent to **Google
+  Analytics** (third-party) + our first-party endpoint. **Opt-out** in Settings.
+- Certifications: does **not** sell/transfer user data to third parties for advertising; does **not**
+  use data for purposes unrelated to the single purpose; does **not** use data for creditworthiness.
 
 ## Versioning
 
