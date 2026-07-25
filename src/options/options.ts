@@ -9,6 +9,7 @@ import {
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
+import { escapeHtml } from '../lib/html.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { getTelemetryEnabled, setTelemetryEnabled } from '../lib/telemetry.js';
 import { initThemeToggle } from '../lib/theme.js';
@@ -185,8 +186,9 @@ async function onSave() {
 function renderConn(connected: boolean, name?: string, port?: number) {
   // In test mode, never surface the real cached identity — show a neutral test label.
   const shownName = testModeOn ? '🧪 Demo mode' : name;
+  // shownName is résumé-derived (untrusted) → escape before inserting into HTML.
   $('connStatus').innerHTML = connected
-    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${shownName ? ` · <b>${shownName}</b>` : ''}`
+    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${shownName ? ` · <b>${escapeHtml(shownName)}</b>` : ''}`
     : '';
   ($('disconnect') as HTMLButtonElement).hidden = !connected;
   ($('connect') as HTMLButtonElement).textContent = connected ? 'Reconnect' : 'Connect';
@@ -211,7 +213,8 @@ async function onConnect() {
     await saveConnection(conn);
     renderConn(true, conn.profile.basics?.name, conn.port);
   } catch (e) {
-    $('connStatus').innerHTML = `<span class="err">${e instanceof Error ? e.message : 'Failed to connect'}</span>`;
+    $('connStatus').innerHTML =
+      `<span class="err">${escapeHtml(e instanceof Error ? e.message : 'Failed to connect')}</span>`;
     renderConn(false);
   } finally {
     btn.disabled = false;
@@ -270,7 +273,8 @@ async function onImport() {
     $('profileStatus').innerHTML =
       `<span class="ok">✓ Imported ${fp.experience?.length ?? 0} role(s), ${fp.education?.length ?? 0} school(s)</span>`;
   } catch (e) {
-    $('profileStatus').innerHTML = `<span class="err">${e instanceof Error ? e.message : 'Import failed'}</span>`;
+    $('profileStatus').innerHTML =
+      `<span class="err">${escapeHtml(e instanceof Error ? e.message : 'Import failed')}</span>`;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Import';

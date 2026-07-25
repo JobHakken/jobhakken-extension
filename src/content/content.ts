@@ -91,8 +91,7 @@ async function checkBridge(): Promise<void> {
  */
 async function bridgeRpc<T>(method: string, params: unknown = {}): Promise<T> {
   const res = (await chrome.runtime.sendMessage({ type: 'f2a-bridge', method, params })) as
-    | { result?: T; error?: string }
-    | undefined;
+    { result?: T; error?: string } | undefined;
   if (!res || res.error) throw new Error(res?.error || 'bridge error');
   return res.result as T;
 }
@@ -694,12 +693,15 @@ async function init() {
         case 'getState':
           sendResponse(getState());
           break;
-        case 'autofill':
+        case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run
-          autofillAbort = new AbortController();
-          sendResponse(await runAutofill(msg.params?.mode ?? 'default', autofillAbort.signal));
-          autofillAbort = null;
+          const ctrl = (autofillAbort = new AbortController());
+          sendResponse(await runAutofill(msg.params?.mode ?? 'default', ctrl.signal));
+          // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
+          // and break its Cancel.
+          if (autofillAbort === ctrl) autofillAbort = null;
           break;
+        }
         case 'cancelAutofill':
           autofillAbort?.abort();
           sendResponse({ ok: true });
