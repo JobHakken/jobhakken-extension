@@ -328,10 +328,16 @@ test('Workday: autofills the real My Information page (text fields fill)', async
       { timeout: 8000 },
     )
     .toBe('Jordan');
-  // more text fields stuck (address / city), and the fill tagged several fields
+  // more text fields stuck (address / city), and several fields actually took a value.
+  // NB: assert on real filled values, not a DOM fill-marker — provenance now lives in a WeakMap
+  // (review #12) so it never leaks into the page DOM; count the inputs that genuinely filled.
   await expect(page.locator('#name--legalName--lastName')).toHaveValue('Rivera');
   await expect(page.locator('#address--city')).not.toHaveValue('');
-  expect(await page.locator('[data-f2a-filled="1"]').count()).toBeGreaterThanOrEqual(4);
+  const filledCount = await page.$$eval(
+    'input[type="text"], input:not([type])',
+    (els) => els.filter((e) => (e as HTMLInputElement).value.trim() !== '').length,
+  );
+  expect(filledCount).toBeGreaterThanOrEqual(4);
   await testInfo.attach('workday-after.png', {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',

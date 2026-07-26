@@ -53,6 +53,9 @@ let needsSponsorship = false; // "I need visa sponsorship" → mark/hide roles t
 let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
 let fieldCount = 0;
 let autofillAbort: AbortController | null = null; // lets the popup cancel a running autofill
+// What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
+// can distinguish autofill from manual entry without leaking the values to the page (#12).
+const filledValues = new WeakMap<Element, string>();
 
 /**
  * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
@@ -258,13 +261,16 @@ async function runAutofill(
   };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
-  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes
+  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes.
+  // NB: fill runs against the whole document — scoping to formRegion() was tried (#13) but broke
+  // Workday, whose fields span wider than the detected-field common ancestor. The engine gates the
+  // actual field mapping, so this isn't a mis-fill in practice.
   const report = autofillForm({ root: document, ...common });
-  // tag what WE filled, so a later capture can tell autofill from manual entry
+  // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
+  // so a later capture can tell autofill from manual entry without exposing the values to the page.
   for (const r of report.results) {
     if (r.status === 'filled' && r.field.el instanceof HTMLElement) {
-      r.field.el.dataset.f2aFilled = '1';
-      r.field.el.dataset.f2aValue = String(r.value);
+      filledValues.set(r.field.el, String(r.value));
     }
   }
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
@@ -491,7 +497,9 @@ async function captureFlow(): Promise<void> {
     const fields: CaptureField[] = detected.map((f) => {
       const el = f.el as HTMLElement;
       const val = fieldCurrentValue(f);
-      const tagged = el.dataset?.f2aFilled === '1' && el.dataset?.f2aValue === val;
+      // We filled it iff the current value still equals what we wrote (WeakMap, not page-readable) —
+      // if the user edited it, they differ → manual (#12).
+      const tagged = filledValues.get(el) === val;
       const filledBy: CaptureField['filledBy'] = !val ? 'empty' : tagged ? 'autofill' : 'manual';
       if (filledBy === 'autofill') filledByAutofill++;
       else if (filledBy === 'manual') filledManually++;
