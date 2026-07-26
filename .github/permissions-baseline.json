@@ -1,6 +1,8 @@
 {
   "permissions": ["storage", "unlimitedStorage"],
+  "optional_permissions": [],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*", "https://www.google-analytics.com/*"],
+  "optional_host_permissions": [],
   "content_scripts_matches": [
     "*://*.applytojob.com/*",
     "*://*.ashbyhq.com/*",
@@ -43,5 +45,8 @@
     "*://*.workable.com/*",
     "*://*.workingnomads.com/*",
     "*://*.ziprecruiter.com/*"
-  ]
+  ],
+  "content_scripts_all_frames": true,
+  "web_accessible_resources": "[]",
+  "externally_connectable": "null"
 }
