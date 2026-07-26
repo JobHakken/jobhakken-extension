@@ -7,7 +7,9 @@
 /** Fire-and-forget: forward a metadata-only event to the service worker's telemetry sink. */
 export function report(event: string, params: Record<string, string | number | boolean> = {}): void {
   try {
-    void chrome.runtime.sendMessage({ type: 'jh-telemetry', event, params });
+    // .catch handles the async "receiving end does not exist" rejection (SW momentarily absent),
+    // the try/catch the synchronous "context invalidated" throw — telemetry must never surface either.
+    void chrome.runtime.sendMessage({ type: 'jh-telemetry', event, params }).catch(() => {});
   } catch {
     /* telemetry must never break the UI */
   }

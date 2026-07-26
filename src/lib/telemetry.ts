@@ -88,15 +88,20 @@ async function isEnabled(): Promise<boolean> {
   return r[STORE_ENABLED] !== false;
 }
 
-/** Stable random per-install id (pseudonymous — not derived from anything personal). */
-async function clientId(): Promise<string> {
-  const r = await chrome.storage.local.get(STORE_CLIENT_ID);
-  let id = r[STORE_CLIENT_ID] as string | undefined;
-  if (!id) {
-    id = crypto.randomUUID();
+/**
+ * Stable random per-install id (pseudonymous — not derived from anything personal). The generation is
+ * cached as a single promise so two concurrent track() calls can't each mint a different id (#1).
+ */
+let clientIdPromise: Promise<string> | undefined;
+function clientId(): Promise<string> {
+  return (clientIdPromise ??= (async () => {
+    const r = await chrome.storage.local.get(STORE_CLIENT_ID);
+    const existing = r[STORE_CLIENT_ID] as string | undefined;
+    if (existing) return existing;
+    const id = crypto.randomUUID();
     await chrome.storage.local.set({ [STORE_CLIENT_ID]: id });
-  }
-  return id;
+    return id;
+  })());
 }
 
 function extVersion(): string {
@@ -112,21 +117,25 @@ function extVersion(): string {
  * disallowed events/params are dropped, sink errors are swallowed.
  */
 export async function track(event: string, params: TelemetryParams = {}): Promise<void> {
-  const clean = sanitize(event, params);
-  if (!clean) return;
-  if (!(await isEnabled())) return;
-  const payload: TelemetryPayload = {
-    ...clean,
-    client_id: await clientId(),
-    ext_version: extVersion(),
-    ts: Date.now(),
-  };
-  for (const sink of sinks) {
-    try {
-      await sink(payload);
-    } catch {
-      /* telemetry must never break the extension */
+  try {
+    const clean = sanitize(event, params);
+    if (!clean) return;
+    if (!(await isEnabled())) return;
+    const payload: TelemetryPayload = {
+      ...clean,
+      client_id: await clientId(),
+      ext_version: extVersion(),
+      ts: Date.now(),
+    };
+    for (const sink of sinks) {
+      try {
+        await sink(payload);
+      } catch {
+        /* one sink failing must not stop the others */
+      }
     }
+  } catch {
+    /* storage/unexpected failure — track() must never throw to the caller (#3) */
   }
 }
 
