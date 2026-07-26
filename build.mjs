@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { cpSync, mkdirSync, readFileSync, rmSync } from 'fs';
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
@@ -61,6 +61,17 @@ for (const size of [16, 32, 48, 128]) {
 }
 
 cpSync('src/manifest.json', path.join(outdir, 'manifest.json'));
+
+// E2E ONLY: the Playwright suite serves ATS fixtures on 127.0.0.1, but production deliberately does
+// NOT match localhost in content_scripts (finding #2 — don't inject into every local app). Patch the
+// dist manifest for tests so the content script injects on the fixtures. Never in a package/prod build.
+if (process.env.E2E) {
+  const mPath = path.join(outdir, 'manifest.json');
+  const m = JSON.parse(readFileSync(mPath, 'utf8'));
+  m.content_scripts[0].matches = [...new Set([...m.content_scripts[0].matches, '*://127.0.0.1/*', '*://localhost/*'])];
+  writeFileSync(mPath, JSON.stringify(m, null, 2));
+  console.log('  [E2E] added localhost content-script matches to dist/manifest.json (test-only)');
+}
 cpSync('src/data/h1b-sponsors.txt', path.join(outdir, 'data', 'h1b-sponsors.txt')); // bundled H-1B list
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
 cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
