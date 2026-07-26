@@ -58,7 +58,10 @@ describe('telemetry.track', () => {
     await track('match_scored', { ok: true, resume: 'SECRET' } as Record<string, string | number | boolean>);
     expect(seen).toHaveLength(1);
     expect(seen[0].event).toBe('match_scored');
-    expect(seen[0].params).toEqual({ ok: true }); // resume stripped
+    expect(seen[0].params).toMatchObject({ ok: true }); // ok kept
+    expect(seen[0].params).not.toHaveProperty('resume'); // content stripped
+    expect(seen[0].params).toHaveProperty('browser_major'); // disclosed metadata added
+    expect(seen[0].params).toHaveProperty('os');
     expect(seen[0].ext_version).toBe('9.9.9');
     expect(typeof seen[0].client_id).toBe('string');
     expect(seen[0].client_id.length).toBeGreaterThan(0);

@@ -112,7 +112,10 @@ async function render() {
   if (state.eligibility?.blocked) {
     elig.classList.add('on');
     elig.textContent = "🛂 Won't sponsor";
-    elig.title = `Likely won't sponsor — this role requires ${state.eligibility.categories.map((c) => ELIG_LABELS[c]).join(', ')}.`;
+    elig.title = `Likely won't sponsor — this role requires ${state.eligibility.categories
+      .map((c) => ELIG_LABELS[c])
+      .filter(Boolean)
+      .join(', ')}.`;
   } else elig.classList.remove('on');
 
   // H-1B sponsor (company-level) — green chip; hover explains the caveat

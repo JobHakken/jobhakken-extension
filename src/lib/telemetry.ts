@@ -112,6 +112,26 @@ function extVersion(): string {
   }
 }
 
+/** Coarse browser major + OS (disclosed metadata) — no fine-grained fingerprint (#4). */
+function browserOs(): { browser_major: string; os: string } {
+  try {
+    const ua = navigator.userAgent;
+    const major = ua.match(/Chrome\/(\d+)/)?.[1] ?? '0';
+    const os = /Windows/.test(ua)
+      ? 'Windows'
+      : /Mac OS X/.test(ua)
+        ? 'macOS'
+        : /CrOS/.test(ua)
+          ? 'ChromeOS'
+          : /Linux/.test(ua)
+            ? 'Linux'
+            : 'other';
+    return { browser_major: major, os };
+  } catch {
+    return { browser_major: '0', os: 'other' };
+  }
+}
+
 /**
  * Record a metadata-only event. Never throws to the caller and never blocks the extension —
  * disallowed events/params are dropped, sink errors are swallowed.
@@ -123,6 +143,7 @@ export async function track(event: string, params: TelemetryParams = {}): Promis
     if (!(await isEnabled())) return;
     const payload: TelemetryPayload = {
       ...clean,
+      params: { ...clean.params, ...browserOs() }, // disclosed coarse browser/OS metadata
       client_id: await clientId(),
       ext_version: extVersion(),
       ts: Date.now(),
