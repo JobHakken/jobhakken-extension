@@ -52,8 +52,10 @@ function jdContainer(): HTMLElement | null {
 function jobIdFrom(jd: HTMLElement): string | null {
   const fromId = jd.id.match(/(\d{6,})/);
   if (fromId) return fromId[1];
+  // `currentJobId` is page/URL-controlled and later goes into a querySelector; restrict it to a safe,
+  // plausible id charset so a payload like `"]` can't throw a SyntaxError that aborts init (finding #9).
   const q = new URLSearchParams(location.search).get('currentJobId');
-  if (q) return q;
+  if (q && /^[\w-]{1,64}$/.test(q)) return q;
   const p = location.pathname.match(/\/jobs\/view\/(\d+)/);
   return p ? p[1] : null;
 }
