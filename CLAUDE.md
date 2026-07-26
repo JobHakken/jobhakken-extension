@@ -98,7 +98,23 @@ CONTRIBUTING/SECURITY, dependabot, permission-diff guard, automated CWS publish.
 fold in any relevant open finding (#1 bridge trust, #2 localhost content-script scope, #3 nits) and
 reference it in the commit.
 
+## Cross-surface coordination (app · extension · website)
+
+Three surfaces, three agents, three chats — **agents don't share memory** (see monorepo ADR-0007).
+Sync lives in the repos, not the chats:
+
+- **Start each session:** `git pull`; read this file; check the monorepo `COORDINATION.md` + issues
+  here labeled `needs:extension` / `cross-surface`.
+- **End each session:** anything another surface must know → **file an issue in the right repo** (route
+  with `needs:app|backend|extension|web` + `cross-surface`; put the interface contract IN the issue) ·
+  a shared decision → an **ADR** in `JobHakken/JobHakken` `docs/decisions/` · a data-shape change →
+  **bump `@jobhakken/core`**. Never leave cross-surface state only in the chat.
+- Live board + contracts: `JobHakken/JobHakken` → `COORDINATION.md`.
+- Open extension↔other-surface items: **#1** (bridge handshake ← app #283), **#43/#278** (telemetry
+  first-party sink ← backend #278), résumé `schemaVersion` validation (ADR-0005).
+
 ## Pointers
 
 - Onboarding & commands: `README.md` · Changelog: `CHANGELOG.md`
 - Shared libs live in `JobHakken/JobHakken` (`libraries/core`, `libraries/autofill`) — don't fork them here.
+- Cross-surface model: monorepo `docs/decisions/0007-*` + `COORDINATION.md`.
