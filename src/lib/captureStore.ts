@@ -14,7 +14,7 @@ export type CaptureField = {
   key?: string; // resolved profile key, if any
   kind: string;
   filledBy: 'autofill' | 'manual' | 'empty';
-  value?: string; // PII-safe: known details scrubbed, emails/phones/long-text → shapes
+  value?: string; // best-effort scrubbed: emails/phones/dates + known profile values → shapes; multi-word free text → [text N]
 };
 
 export type CaptureRecord = {
@@ -60,26 +60,39 @@ export async function captureCount(): Promise<number> {
  * then manual edits), so we replace the prior snapshot for that URL with the latest rather
  * than appending duplicates. Returns whether anything was written.
  */
-export async function upsertCapture(rec: CaptureRecord): Promise<boolean> {
-  const index = await getIndex();
-  const entry = {
-    ts: rec.ts,
-    url: rec.url,
-    host: rec.host,
-    total: rec.total,
-    resolved: rec.resolved,
-    unresolved: rec.unresolved,
-    filledManually: rec.filledManually,
-  };
-  const existing = index.find((e) => e.url === rec.url);
-  const key = existing?.key ?? REC(rec.ts);
-  if (existing) Object.assign(existing, entry, { key });
-  else index.push({ key, ...entry });
-  const evict: string[] = [];
-  while (index.length > MAX) evict.push(index.shift()!.key);
-  await chrome.storage.local.set({ [key]: rec, [INDEX]: index });
-  if (evict.length) await chrome.storage.local.remove(evict);
-  return true;
+// Serialize writes: upsertCapture is a read-modify-write on the shared index, and the content script
+// runs in all_frames so calls can overlap and clobber each other's index (losing captures + orphaning
+// record blobs). Chain every write through a single tail promise so they run one at a time (#14).
+let writeChain: Promise<unknown> = Promise.resolve();
+function serialize<T>(fn: () => Promise<T>): Promise<T> {
+  const run = writeChain.then(fn, fn);
+  writeChain = run.catch(() => {});
+  return run;
+}
+
+export function upsertCapture(rec: CaptureRecord): Promise<boolean> {
+  return serialize(async () => {
+    const index = await getIndex();
+    const entry = {
+      ts: rec.ts,
+      url: rec.url,
+      host: rec.host,
+      total: rec.total,
+      resolved: rec.resolved,
+      unresolved: rec.unresolved,
+      filledManually: rec.filledManually,
+    };
+    const existing = index.find((e) => e.url === rec.url);
+    // Unique key even for same-millisecond captures of different URLs (#18) — never collides.
+    const key = existing?.key ?? `${REC(rec.ts)}:${crypto.randomUUID().slice(0, 8)}`;
+    if (existing) Object.assign(existing, entry, { key });
+    else index.push({ key, ...entry });
+    const evict: string[] = [];
+    while (index.length > MAX) evict.push(index.shift()!.key);
+    await chrome.storage.local.set({ [key]: rec, [INDEX]: index });
+    if (evict.length) await chrome.storage.local.remove(evict);
+    return true;
+  });
 }
 
 /** All full capture records (loads HTML — used for export). */
@@ -91,8 +104,11 @@ export async function getCaptures(): Promise<CaptureRecord[]> {
 }
 
 export async function clearCaptures(): Promise<void> {
-  const index = await getIndex();
-  await chrome.storage.local.remove([INDEX, ...index.map((e) => e.key)]);
+  // Sweep ALL record blobs (indexed + any orphaned by a past race), not just indexed keys, so "Clear"
+  // leaves no residual scrubbed HTML behind (#17).
+  const all = await chrome.storage.local.get(null);
+  const capKeys = Object.keys(all).filter((k) => k === INDEX || k.startsWith('f2a_cap:'));
+  await chrome.storage.local.remove(capKeys);
 }
 
 // ── where auto-capture is allowed ────────────────────────────

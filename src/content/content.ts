@@ -457,12 +457,16 @@ async function scrubValues(): Promise<string[]> {
 /** Make a field value safe to store: scrub known PII, reduce emails/phones/long text to shapes. */
 function safeValue(raw: string, scrub: string[]): string {
   if (!raw) return '';
-  if (/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(raw)) return '[email]';
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length >= 7 && /^[\d+()\-.\s]+$/.test(raw)) return '[phone]';
   let v = raw;
+  // Redact embedded PII as SUBSTRINGS (not just whole-string), so PII inside a free-text answer
+  // ("call John at 555-867-5309", "DOB 01/15/1990") is caught too (#11).
+  v = v.replace(/[^@\s]+@[^@\s]+\.[a-z]{2,}/gi, '[email]');
+  v = v.replace(/\+?\d[\d\-.\s()]{5,}\d/g, '[phone]');
+  v = v.replace(/\b\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}\b/g, '[date]');
   for (const s of scrub) if (s && s.length >= 3) v = v.replace(new RegExp(reEscape(s), 'gi'), '[redacted]');
-  if (v.length > 60) return `[text ${v.length} chars]`;
+  // Multi-word free text can still carry third-party PII (references, "referred by …") we can't
+  // enumerate → keep only its shape. Single-token answers ("Yes", "LinkedIn", "USA") are kept.
+  if (v.trim().split(/\s+/).length >= 3 || v.length > 60) return `[text ${v.length} chars]`;
   return v;
 }
 
