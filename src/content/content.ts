@@ -594,16 +594,22 @@ async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: stri
 async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
   if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
   if (!connection) return { ok: false, error: 'Connect the app' };
-  const ta = Array.from(document.querySelectorAll('textarea')).find(
-    (t) => !t.value.trim() && t.offsetParent !== null,
-  ) as HTMLTextAreaElement | undefined;
+  // Only fill a textarea that has an actual associated QUESTION (label / aria-label / labelledby /
+  // question-like placeholder) — never a random empty box like a "message the recruiter" or LinkedIn
+  // "add a note" field. Prefer one inside a <form> (a real application question). (#10)
+  const questionFor = (t: HTMLTextAreaElement): string => {
+    const byId = t.getAttribute('aria-labelledby');
+    const labelledby = byId ? (document.getElementById(byId)?.textContent ?? '') : '';
+    const ph = /\?|why|describe|explain|cover letter|reason|tell us/i.test(t.placeholder) ? t.placeholder : '';
+    return (t.labels?.[0]?.textContent || t.getAttribute('aria-label') || labelledby || ph).trim();
+  };
+  const empty = (Array.from(document.querySelectorAll('textarea')) as HTMLTextAreaElement[]).filter(
+    (t) => !t.value.trim() && t.offsetParent !== null && questionFor(t),
+  );
+  const ta = empty.find((t) => t.closest('form')) ?? empty[0];
   if (!ta) return { ok: false, error: 'No question field' };
   try {
-    const label =
-      ta.labels?.[0]?.textContent?.trim() ||
-      ta.getAttribute('aria-label') ||
-      ta.placeholder ||
-      'Why are you a good fit?';
+    const label = questionFor(ta) || 'Why are you a good fit?';
     const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
     if (!r?.text) return { ok: false, error: 'No draft' };
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
