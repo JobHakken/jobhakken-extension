@@ -261,11 +261,11 @@ async function runAutofill(
   };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
-  // Scope fill to the region containing the detected fields (their common ancestor), not the whole
-  // document — so a login/search/newsletter form elsewhere on the page is never touched (#13).
-  const region = formRegion();
-  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes
-  const report = autofillForm({ root: region, ...common });
+  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes.
+  // NB: fill runs against the whole document — scoping to formRegion() was tried (#13) but broke
+  // Workday, whose fields span wider than the detected-field common ancestor. The engine gates the
+  // actual field mapping, so this isn't a mis-fill in practice.
+  const report = autofillForm({ root: document, ...common });
   // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
   // so a later capture can tell autofill from manual entry without exposing the values to the page.
   for (const r of report.results) {
@@ -282,7 +282,7 @@ async function runAutofill(
   try {
     extra = await withTimeout(
       (async () => {
-        const live = await autofillInteractive({ root: region, ...common });
+        const live = await autofillInteractive({ root: document, ...common });
         const uploaded = await uploadDocuments(mode);
         return live.comboboxes + live.dates + uploaded;
       })(),
