@@ -64,8 +64,11 @@ cpSync('src/manifest.json', path.join(outdir, 'manifest.json'));
 
 // E2E ONLY: the Playwright suite serves ATS fixtures on 127.0.0.1, but production deliberately does
 // NOT match localhost in content_scripts (finding #2 — don't inject into every local app). Patch the
-// dist manifest for tests so the content script injects on the fixtures. Never in a package/prod build.
-if (process.env.E2E) {
+// dist manifest for tests so the content script injects on the fixtures. Gated on EXACTLY E2E=1 AND
+// non-prod (a stray "0"/"false" must NOT fire it); a safety assert below fails any other build that
+// somehow carries localhost.
+const e2eBuild = process.env.E2E === '1' && !prod;
+if (e2eBuild) {
   const mPath = path.join(outdir, 'manifest.json');
   const m = JSON.parse(readFileSync(mPath, 'utf8'));
   m.content_scripts[0].matches = [...new Set([...m.content_scripts[0].matches, '*://127.0.0.1/*', '*://localhost/*'])];
@@ -84,6 +87,18 @@ for (const key of ['manifest_version', 'name', 'version', 'background']) {
 }
 if (manifest.manifest_version !== 3) throw new Error(`expected manifest_version 3, got ${manifest.manifest_version}`);
 
+// Safety net (finding #20): ONLY an explicit E2E dev build may carry localhost content-script matches.
+// Any other build — especially prod/package — must not, else finding #2 (inject into every local app)
+// is re-introduced. The permission-diff guard reads src/manifest.json and can't see a dist patch, so
+// this closes that gap at the built artifact.
+if (!e2eBuild) {
+  const localhostMatches = (manifest.content_scripts ?? [])
+    .flatMap((c) => c.matches ?? [])
+    .filter((m) => /localhost|127\.0\.0\.1/.test(m));
+  if (localhostMatches.length)
+    throw new Error(`non-E2E build must not match localhost in content_scripts: ${localhostMatches.join(', ')}`);
+}
+
 // Version sync: manifest.version must equal package.json version (CWS rejects mismatches).
 const pkgVersion = JSON.parse(readFileSync('package.json', 'utf8')).version;
 if (manifest.version !== pkgVersion)
@@ -91,12 +106,28 @@ if (manifest.version !== pkgVersion)
     `version mismatch: manifest.json ${manifest.version} vs package.json ${pkgVersion} — keep them in sync`,
   );
 
-// No-remote-code guarantee: the CSP for extension pages must be present and must not weaken
-// script-src (no unsafe-eval / unsafe-inline / remote hosts). esbuild bundles everything locally,
-// so the only way remote/eval'd code sneaks in is a loosened CSP — fail the build if so.
+// No-remote-code guarantee via an ALLOWLIST, not a blocklist (finding #22): parse the extension-pages
+// CSP and require every script-src/object-src token to be 'self' or 'none'. This rejects `*`, bare
+// hosts, data:/blob:, unsafe-eval/inline, wasm-unsafe-eval, nonces, etc. — a loosened CSP a blocklist
+// regex would have missed. esbuild bundles locally, so this keeps the pages unable to load/eval remote.
 const csp = manifest.content_security_policy?.extension_pages ?? '';
-if (!/script-src[^;]*'self'/.test(csp)) throw new Error("manifest CSP must set script-src 'self'");
-if (/unsafe-eval|unsafe-inline|https?:/.test(csp))
-  throw new Error(`manifest CSP weakens script-src (no eval/inline/remote): "${csp}"`);
+const cspDirectives = Object.fromEntries(
+  csp
+    .split(';')
+    .map((d) => d.trim())
+    .filter(Boolean)
+    .map((d) => {
+      const [name, ...sources] = d.split(/\s+/);
+      return [name.toLowerCase(), sources];
+    }),
+);
+const ALLOWED_CSP_SOURCES = new Set(["'self'", "'none'"]);
+for (const key of ['script-src', 'object-src']) {
+  const sources = cspDirectives[key];
+  if (!sources || sources.length === 0) throw new Error(`manifest CSP must set ${key}`);
+  const bad = sources.filter((s) => !ALLOWED_CSP_SOURCES.has(s));
+  if (bad.length)
+    throw new Error(`manifest CSP ${key} allows disallowed source(s): ${bad.join(' ')} (only 'self' / 'none')`);
+}
 
 console.log(`extension built → ${outdir}/ (${prod ? 'production, minified' : 'dev, source maps'}) — load unpacked`);
