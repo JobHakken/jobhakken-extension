@@ -7,10 +7,18 @@ import { readFileSync, writeFileSync } from 'fs';
 const MANIFEST = 'src/manifest.json';
 const BASELINE = '.github/permissions-baseline.json';
 
+// The full exposure surface — not just permissions. web_accessible_resources, optional_*,
+// externally_connectable, and content-script all_frames are all real fingerprinting / attack
+// surfaces (finding #23), so a change to any of them must be a reviewed, re-baselined act.
 const surface = (m) => ({
   permissions: [...(m.permissions ?? [])].sort(),
+  optional_permissions: [...(m.optional_permissions ?? [])].sort(),
   host_permissions: [...(m.host_permissions ?? [])].sort(),
+  optional_host_permissions: [...(m.optional_host_permissions ?? [])].sort(),
   content_scripts_matches: [...new Set((m.content_scripts ?? []).flatMap((c) => c.matches ?? []))].sort(),
+  content_scripts_all_frames: (m.content_scripts ?? []).some((c) => c.all_frames === true),
+  web_accessible_resources: JSON.stringify(m.web_accessible_resources ?? []),
+  externally_connectable: JSON.stringify(m.externally_connectable ?? null),
 });
 
 const current = surface(JSON.parse(readFileSync(MANIFEST, 'utf8')));
