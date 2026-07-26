@@ -160,6 +160,19 @@ function isRelevantPage(): boolean {
   return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
 }
 
+/**
+ * Inject the eligibility + H-1B badges. Reads the (untrusted) page DOM, so it must NEVER throw out to
+ * callers — a hostile/odd DOM must not abort init() (which wires the RPC handler) or the mutation loop.
+ */
+function applyBadges(): void {
+  try {
+    applyEligibilityFilter(needsSponsorship, hideUnsponsored);
+    void applyH1bBadges(needsSponsorship);
+  } catch {
+    /* hostile/odd page DOM — skip badges, keep the rest of the extension working */
+  }
+}
+
 function updateBadge(): void {
   const fields = detectFields(document);
   fieldCount = fields.length;
@@ -620,14 +633,12 @@ async function init() {
     if ('f2a_hide_unsponsored' in changes) hideUnsponsored = !!changes['f2a_hide_unsponsored'].newValue;
     if ('f2a_needs_sponsorship' in changes) {
       needsSponsorship = !!changes['f2a_needs_sponsorship'].newValue;
-      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // reflect immediately
-      void applyH1bBadges(needsSponsorship);
+      applyBadges(); // reflect immediately
     }
   });
 
   updateBadge(); // toolbar-icon field count
-  applyEligibilityFilter(needsSponsorship, hideUnsponsored); // mark/hide won't-sponsor tiles
-  void applyH1bBadges(needsSponsorship); // green H-1B sponsor badge per company
+  applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -635,8 +646,7 @@ async function init() {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       updateBadge();
-      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // re-run as you switch jobs
-      void applyH1bBadges(needsSponsorship);
+      applyBadges(); // re-run as you switch jobs
       void captureFlow();
     }, 800);
   };

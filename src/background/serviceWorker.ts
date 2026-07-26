@@ -120,8 +120,29 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 });
 
 // Bridge proxy: content script → SW → 127.0.0.1 (no per-site local-access prompt).
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+// The ONLY bridge methods the extension proxies. An allow-list here means a content-script XSS on a
+// matched page can't reach arbitrary desktop RPC (e.g. exfiltrate the full profile) — only the calls
+// the extension already makes. (finding #6)
+const ALLOWED_BRIDGE_METHODS = new Set([
+  'status',
+  'keywords',
+  'visa',
+  'saveJob',
+  'answer',
+  'resumeFile',
+  'tailoredResumeFile',
+]);
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'f2a-bridge') return;
+  // Only our own extension's contexts may proxy to the bridge (belt-and-suspenders — there's no
+  // externally_connectable), and only allow-listed methods.
+  if (sender.id !== chrome.runtime.id) return;
+  const method = String(msg.method);
+  if (!ALLOWED_BRIDGE_METHODS.has(method)) {
+    sendResponse({ error: `bridge method not allowed: ${method}` });
+    return true;
+  }
   (async () => {
     try {
       const conn = await loadConnection();
@@ -129,7 +150,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         sendResponse({ error: 'not-connected' });
         return;
       }
-      const result = await rpc(conn.port, conn.token, String(msg.method), msg.params ?? {});
+      const result = await rpc(conn.port, conn.token, method, msg.params ?? {});
       sendResponse({ result });
     } catch (e) {
       sendResponse({ error: e instanceof Error ? e.message : 'bridge error' });

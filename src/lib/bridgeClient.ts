@@ -59,6 +59,12 @@ export async function rpc<T = unknown>(
   opts: Opts = {},
 ): Promise<T> {
   const f = opts.fetchImpl ?? fetch;
+  // Validate the port before interpolating it into the URL — a poisoned stored value like
+  // "1@evil.com" would otherwise parse as userinfo@host and send the Bearer token off-loopback
+  // (finding #7). Restrict to a real port; the bridge only ever binds CANDIDATE_PORTS.
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`invalid bridge port: ${String(port)}`);
+  }
   let res: Response;
   try {
     res = await fetchWithTimeout(
