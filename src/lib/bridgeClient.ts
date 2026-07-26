@@ -9,6 +9,15 @@
 // Must match the candidate list the desktop bridge binds (extensionBridge.ts).
 export const CANDIDATE_PORTS = [41573, 41574, 41575, 41576, 41577];
 
+// Cap bridge responses so a rogue/buggy local server can't OOM/stall the worker with a huge body (#8).
+// Résumé PDFs (base64) are a few MB; /health is tiny.
+const MAX_RPC_BYTES = 50 * 1024 * 1024;
+const MAX_HEALTH_BYTES = 64 * 1024;
+function assertBodySize(res: Response, max: number): void {
+  const len = Number(res.headers?.get?.('content-length'));
+  if (Number.isFinite(len) && len > max) throw new Error(`bridge response too large: ${len} bytes`);
+}
+
 export type BridgeProfile = {
   hasResume: boolean;
   basics?: { name?: string; email?: string; phone?: string; location?: string };
@@ -37,6 +46,7 @@ export async function discoverBridge(opts: Opts = {}): Promise<{ port: number } 
     try {
       const res = await fetchWithTimeout(f, `http://127.0.0.1:${port}/health`, {}, opts.timeoutMs ?? 1500);
       if (!res.ok) continue;
+      assertBodySize(res, MAX_HEALTH_BYTES);
       const body = (await res.json()) as { name?: string };
       if (body?.name === 'jobhakken') return { port };
     } catch {
@@ -59,6 +69,12 @@ export async function rpc<T = unknown>(
   opts: Opts = {},
 ): Promise<T> {
   const f = opts.fetchImpl ?? fetch;
+  // Validate the port before interpolating it into the URL — a poisoned stored value like
+  // "1@evil.com" would otherwise parse as userinfo@host and send the Bearer token off-loopback
+  // (finding #7). Restrict to a real port; the bridge only ever binds CANDIDATE_PORTS.
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`invalid bridge port: ${String(port)}`);
+  }
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -76,6 +92,7 @@ export async function rpc<T = unknown>(
       throw new Error(`RPC ${method} timed out — is the desktop app responding?`);
     throw e;
   }
+  assertBodySize(res, MAX_RPC_BYTES);
   const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string };
   if (!res.ok) throw new Error(body?.error || `RPC ${method} failed (${res.status})`);
   return body.result as T;

@@ -53,6 +53,9 @@ let needsSponsorship = false; // "I need visa sponsorship" → mark/hide roles t
 let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
 let fieldCount = 0;
 let autofillAbort: AbortController | null = null; // lets the popup cancel a running autofill
+// What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
+// can distinguish autofill from manual entry without leaking the values to the page (#12).
+const filledValues = new WeakMap<Element, string>();
 
 /**
  * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
@@ -160,6 +163,19 @@ function isRelevantPage(): boolean {
   return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
 }
 
+/**
+ * Inject the eligibility + H-1B badges. Reads the (untrusted) page DOM, so it must NEVER throw out to
+ * callers — a hostile/odd DOM must not abort init() (which wires the RPC handler) or the mutation loop.
+ */
+function applyBadges(): void {
+  try {
+    applyEligibilityFilter(needsSponsorship, hideUnsponsored);
+    void applyH1bBadges(needsSponsorship);
+  } catch {
+    /* hostile/odd page DOM — skip badges, keep the rest of the extension working */
+  }
+}
+
 function updateBadge(): void {
   const fields = detectFields(document);
   fieldCount = fields.length;
@@ -245,13 +261,16 @@ async function runAutofill(
   };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
-  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes
+  // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes.
+  // NB: fill runs against the whole document — scoping to formRegion() was tried (#13) but broke
+  // Workday, whose fields span wider than the detected-field common ancestor. The engine gates the
+  // actual field mapping, so this isn't a mis-fill in practice.
   const report = autofillForm({ root: document, ...common });
-  // tag what WE filled, so a later capture can tell autofill from manual entry
+  // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
+  // so a later capture can tell autofill from manual entry without exposing the values to the page.
   for (const r of report.results) {
     if (r.status === 'filled' && r.field.el instanceof HTMLElement) {
-      r.field.el.dataset.f2aFilled = '1';
-      r.field.el.dataset.f2aValue = String(r.value);
+      filledValues.set(r.field.el, String(r.value));
     }
   }
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
@@ -444,12 +463,16 @@ async function scrubValues(): Promise<string[]> {
 /** Make a field value safe to store: scrub known PII, reduce emails/phones/long text to shapes. */
 function safeValue(raw: string, scrub: string[]): string {
   if (!raw) return '';
-  if (/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(raw)) return '[email]';
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length >= 7 && /^[\d+()\-.\s]+$/.test(raw)) return '[phone]';
   let v = raw;
+  // Redact embedded PII as SUBSTRINGS (not just whole-string), so PII inside a free-text answer
+  // ("call John at 555-867-5309", "DOB 01/15/1990") is caught too (#11).
+  v = v.replace(/[^@\s]+@[^@\s]+\.[a-z]{2,}/gi, '[email]');
+  v = v.replace(/\+?\d[\d\-.\s()]{5,}\d/g, '[phone]');
+  v = v.replace(/\b\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}\b/g, '[date]');
   for (const s of scrub) if (s && s.length >= 3) v = v.replace(new RegExp(reEscape(s), 'gi'), '[redacted]');
-  if (v.length > 60) return `[text ${v.length} chars]`;
+  // Multi-word free text can still carry third-party PII (references, "referred by …") we can't
+  // enumerate → keep only its shape. Single-token answers ("Yes", "LinkedIn", "USA") are kept.
+  if (v.trim().split(/\s+/).length >= 3 || v.length > 60) return `[text ${v.length} chars]`;
   return v;
 }
 
@@ -474,7 +497,9 @@ async function captureFlow(): Promise<void> {
     const fields: CaptureField[] = detected.map((f) => {
       const el = f.el as HTMLElement;
       const val = fieldCurrentValue(f);
-      const tagged = el.dataset?.f2aFilled === '1' && el.dataset?.f2aValue === val;
+      // We filled it iff the current value still equals what we wrote (WeakMap, not page-readable) —
+      // if the user edited it, they differ → manual (#12).
+      const tagged = filledValues.get(el) === val;
       const filledBy: CaptureField['filledBy'] = !val ? 'empty' : tagged ? 'autofill' : 'manual';
       if (filledBy === 'autofill') filledByAutofill++;
       else if (filledBy === 'manual') filledManually++;
@@ -577,16 +602,22 @@ async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: stri
 async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
   if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
   if (!connection) return { ok: false, error: 'Connect the app' };
-  const ta = Array.from(document.querySelectorAll('textarea')).find(
-    (t) => !t.value.trim() && t.offsetParent !== null,
-  ) as HTMLTextAreaElement | undefined;
+  // Only fill a textarea that has an actual associated QUESTION (label / aria-label / labelledby /
+  // question-like placeholder) — never a random empty box like a "message the recruiter" or LinkedIn
+  // "add a note" field. Prefer one inside a <form> (a real application question). (#10)
+  const questionFor = (t: HTMLTextAreaElement): string => {
+    const byId = t.getAttribute('aria-labelledby');
+    const labelledby = byId ? (document.getElementById(byId)?.textContent ?? '') : '';
+    const ph = /\?|why|describe|explain|cover letter|reason|tell us/i.test(t.placeholder) ? t.placeholder : '';
+    return (t.labels?.[0]?.textContent || t.getAttribute('aria-label') || labelledby || ph).trim();
+  };
+  const empty = (Array.from(document.querySelectorAll('textarea')) as HTMLTextAreaElement[]).filter(
+    (t) => !t.value.trim() && t.offsetParent !== null && questionFor(t),
+  );
+  const ta = empty.find((t) => t.closest('form')) ?? empty[0];
   if (!ta) return { ok: false, error: 'No question field' };
   try {
-    const label =
-      ta.labels?.[0]?.textContent?.trim() ||
-      ta.getAttribute('aria-label') ||
-      ta.placeholder ||
-      'Why are you a good fit?';
+    const label = questionFor(ta) || 'Why are you a good fit?';
     const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
     if (!r?.text) return { ok: false, error: 'No draft' };
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
@@ -620,14 +651,12 @@ async function init() {
     if ('f2a_hide_unsponsored' in changes) hideUnsponsored = !!changes['f2a_hide_unsponsored'].newValue;
     if ('f2a_needs_sponsorship' in changes) {
       needsSponsorship = !!changes['f2a_needs_sponsorship'].newValue;
-      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // reflect immediately
-      void applyH1bBadges(needsSponsorship);
+      applyBadges(); // reflect immediately
     }
   });
 
   updateBadge(); // toolbar-icon field count
-  applyEligibilityFilter(needsSponsorship, hideUnsponsored); // mark/hide won't-sponsor tiles
-  void applyH1bBadges(needsSponsorship); // green H-1B sponsor badge per company
+  applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -635,8 +664,7 @@ async function init() {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       updateBadge();
-      applyEligibilityFilter(needsSponsorship, hideUnsponsored); // re-run as you switch jobs
-      void applyH1bBadges(needsSponsorship);
+      applyBadges(); // re-run as you switch jobs
       void captureFlow();
     }, 800);
   };

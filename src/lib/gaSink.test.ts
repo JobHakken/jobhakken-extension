@@ -4,7 +4,7 @@
  * GA Measurement Protocol sink — asserts the POST shape and that content never reaches GA.
  */
 import { describe, expect, it, jest } from '@jest/globals';
-import { makeGaSink } from './gaSink';
+import { initGaSink, makeGaSink } from './gaSink';
 import type { TelemetryPayload } from './telemetry';
 
 const payload: TelemetryPayload = {
@@ -14,6 +14,13 @@ const payload: TelemetryPayload = {
   ext_version: '9.9.9',
   ts: 1,
 };
+
+describe('initGaSink', () => {
+  it('stays inert (registers no sink, returns false) when the API secret is not injected', () => {
+    // In jest, __GA_API_SECRET__ is never defined → the sink must not register (dev/CI: nothing leaves).
+    expect(initGaSink()).toBe(false);
+  });
+});
 
 describe('makeGaSink', () => {
   it('POSTs to the MP endpoint with measurement_id + api_secret and the right body', async () => {

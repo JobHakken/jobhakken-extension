@@ -40,12 +40,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm ci --no-audit --no-fund
+      - name: Guard (permission surface + typecheck)
+        run: npm run check:permissions && npm run typecheck
       - name: Package (production zip)
         env:
           GA_API_SECRET: ${{ secrets.GA_API_SECRET }} # embed the GA MP secret in the release build
         run: npm run package # → jobhakken-extension.zip (minified prod build + manifest/version asserts)
       - name: Upload + publish to the Chrome Web Store
-        uses: mnao305/chrome-extension-upload@v5.0.0
+        uses: mnao305/chrome-extension-upload@4008e29e13c144d0f6725462cbd49b7c291b4928 # v5.0.0 (SHA-pinned)
         with:
           file-path: jobhakken-extension.zip
           extension-id: ${{ secrets.CWS_EXTENSION_ID }}

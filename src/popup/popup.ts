@@ -1,5 +1,6 @@
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
+import { escapeHtml } from '../lib/html.js';
 import { loadTestMode } from '../lib/profileStore.js';
 import { initThemeToggle } from '../lib/theme.js';
 
@@ -58,7 +59,8 @@ async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
   }
 }
 
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+// Use the shared escaper (also escapes ') so all dynamic-HTML sinks share one correct guarantee (#15).
+const esc = escapeHtml;
 
 // Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
 const REPO = 'https://github.com/pranav083/cautious-octo-spork';
@@ -110,7 +112,10 @@ async function render() {
   if (state.eligibility?.blocked) {
     elig.classList.add('on');
     elig.textContent = "🛂 Won't sponsor";
-    elig.title = `Likely won't sponsor — this role requires ${state.eligibility.categories.map((c) => ELIG_LABELS[c]).join(', ')}.`;
+    elig.title = `Likely won't sponsor — this role requires ${state.eligibility.categories
+      .map((c) => ELIG_LABELS[c])
+      .filter(Boolean)
+      .join(', ')}.`;
   } else elig.classList.remove('on');
 
   // H-1B sponsor (company-level) — green chip; hover explains the caveat
@@ -215,10 +220,13 @@ insights.addEventListener('toggle', async () => {
     $('insPeek').innerHTML = `<span class="chip ok">${r.ats}%</span>`;
   }
   if (r.visa) parts.push(`<div><span class="visa">🛂 ${esc(r.visa)}</span></div>`);
-  if (r.keywords && (r.keywords.have.length || r.keywords.gap.length)) {
+  // Guard the (content-script-derived) shape so a malformed response can't throw and wedge the panel (#16).
+  const have = Array.isArray(r.keywords?.have) ? r.keywords.have : [];
+  const gap = Array.isArray(r.keywords?.gap) ? r.keywords.gap : [];
+  if (have.length || gap.length) {
     const chips = [
-      ...r.keywords.have.slice(0, 6).map((k) => `<span class="have">${esc(k)}</span>`),
-      ...r.keywords.gap.slice(0, 6).map((k) => `<span class="gap">${esc(k)}</span>`),
+      ...have.slice(0, 6).map((k) => `<span class="have">${esc(String(k))}</span>`),
+      ...gap.slice(0, 6).map((k) => `<span class="gap">${esc(String(k))}</span>`),
     ].join('');
     parts.push(
       `<div><div style="font-weight:700;margin-bottom:6px;color:var(--fg)">🎯 Keywords</div><div class="kw">${chips}</div></div>`,
