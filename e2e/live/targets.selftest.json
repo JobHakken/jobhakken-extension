@@ -1,0 +1,5 @@
+{
+  "_note": "Self-test targets — point at the LOCAL committed fixture (served on 127.0.0.1:8787 by the e2e webServer) so the live-smoke runner can be validated OFFLINE, with no real network. Run: LIVE=1 LIVE_TARGETS=e2e/live/targets.selftest.json npm run test:live",
+  "coverageThreshold": 0.4,
+  "targets": [{ "ats": "greenhouse-fixture", "url": "http://127.0.0.1:8787/greenhouse.samsung.html" }]
+}

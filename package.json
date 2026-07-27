@@ -15,6 +15,7 @@
     "test:e2e:headed": "E2E=1 npm run build && PWHEAD=1 playwright test",
     "test:e2e:ui": "E2E=1 npm run build && playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "test:live": "E2E=1 npm run build && LIVE=1 playwright test e2e/live/smoke.spec.ts",
     "gen:h1b": "node scripts/gen-h1b-data.mjs",
     "prepare": "husky",
     "lint": "eslint .",

@@ -1,0 +1,14 @@
+{
+  "_note": "Live-smoke robustness targets. Each is opened in DEMO MODE (dummy data: Jordan Rivera / example.com) and autofilled FILL-ONLY — never submitted. This suite is DISCOVERY: it reports coverage and flags fragile sites; it never gates CI. Live URLs rot, so replace <company>/<job-id> with a CURRENT public posting before running. Ordered by ATS popularity + the gap between what the manifest claims and what has a committed fixture/test (Lever/Ashby/SmartRecruiters/Workable are claimed but untested today).",
+  "coverageThreshold": 0.6,
+  "targets": [
+    { "ats": "lever", "url": "https://jobs.lever.co/<company>/<job-id>/apply" },
+    { "ats": "ashby", "url": "https://jobs.ashbyhq.com/<company>/<job-id>/application" },
+    { "ats": "smartrecruiters", "url": "https://jobs.smartrecruiters.com/<company>/<job-id>" },
+    { "ats": "workable", "url": "https://apply.workable.com/<company>/j/<job-id>/apply/" },
+    { "ats": "greenhouse", "url": "https://boards.greenhouse.io/<company>/jobs/<job-id>" },
+    { "ats": "recruitee", "url": "https://<company>.recruitee.com/o/<job>/c/new" },
+    { "ats": "teamtailor", "url": "https://<company>.teamtailor.com/jobs/<job-id>" },
+    { "ats": "breezy", "url": "https://<company>.breezy.hr/p/<job-id>/apply" }
+  ]
+}
