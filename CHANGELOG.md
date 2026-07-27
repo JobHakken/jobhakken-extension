@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.11.4
+- **Plainer language throughout.** Replaced insider jargon with words anyone can follow:
+  "Standalone" → "App not connected", "No profile" → "Profile not set up", the visa badges now
+  read "Sponsors visas ✓" / "Won't sponsor visa" (instead of "H‑1B sponsor" / "No sponsorship"),
+  the résumé-tailoring button drops "ATS", the match score reads "Résumé match", and the connected
+  status no longer shows a raw IP address.
+
 ## 0.11.3
 - **Fix: clearer results for "Draft answer" and "Save job".** Both buttons now show a full,
   plain-language outcome (success or a helpful reason) beneath them instead of a cut-off error

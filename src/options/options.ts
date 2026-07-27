@@ -184,12 +184,12 @@ async function onSave() {
 }
 
 // ── desktop connection + import ──────────────────────────────
-function renderConn(connected: boolean, name?: string, port?: number) {
+function renderConn(connected: boolean, name?: string) {
   // In test mode, never surface the real cached identity — show a neutral test label.
   const shownName = testModeOn ? '🧪 Demo mode' : name;
   // shownName is résumé-derived (untrusted) → escape before inserting into HTML.
   $('connStatus').innerHTML = connected
-    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${shownName ? ` · <b>${escapeHtml(shownName)}</b>` : ''}`
+    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> to the JobHakken app${shownName ? ` · <b>${escapeHtml(shownName)}</b>` : ''}`
     : '';
   ($('disconnect') as HTMLButtonElement).hidden = !connected;
   ($('connect') as HTMLButtonElement).textContent = connected ? 'Reconnect' : 'Connect';
@@ -212,7 +212,7 @@ async function onConnect() {
   try {
     const conn = await connect(token);
     await saveConnection(conn);
-    renderConn(true, conn.profile.basics?.name, conn.port);
+    renderConn(true, conn.profile.basics?.name);
     report('bridge_connected', { ok: true });
   } catch (e) {
     report('bridge_failed', { ok: false });
@@ -320,7 +320,7 @@ function renderAll() {
       ? '<span class="ok">🧪 Demo mode on — autofilling anonymous sample data</span>'
       : '';
     // re-render the connection line so the identity masks/unmasks immediately
-    void loadConnection().then((c) => (c ? renderConn(true, c.profile?.basics?.name, c.port) : renderConn(false)));
+    void loadConnection().then((c) => (c ? renderConn(true, c.profile?.basics?.name) : renderConn(false)));
   });
   const sponsorToggle = $('needsSponsorship') as HTMLInputElement;
   const hideToggle = $('hideUnsponsored') as HTMLInputElement;
@@ -418,7 +418,7 @@ function renderAll() {
   const conn = await loadConnection();
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;
-    renderConn(true, conn.profile?.basics?.name, conn.port);
+    renderConn(true, conn.profile?.basics?.name);
   } else {
     renderConn(false); // still enables Import when test mode is on (imports dummy)
   }

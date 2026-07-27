@@ -94,8 +94,8 @@ async function render() {
       ? '🧪 Demo mode'
       : (conn?.profile?.basics?.name ?? 'Connected')
     : state.mode === 'standalone'
-      ? 'Standalone'
-      : 'No profile';
+      ? 'App not connected'
+      : 'Profile not set up';
 
   $('testbar').classList.toggle('on', testOn);
 
@@ -122,7 +122,7 @@ async function render() {
   const h1b = $('h1b');
   if (state.h1b && state.h1b.approvals > 0) {
     h1b.classList.add('on');
-    h1b.textContent = `✓ H-1B sponsor${state.h1b.approvals >= 5 ? ` · ${state.h1b.approvals.toLocaleString()}` : ''}`;
+    h1b.textContent = `✓ Sponsors visas${state.h1b.approvals >= 5 ? ` · ${state.h1b.approvals.toLocaleString()}` : ''}`;
     h1b.title = `${state.h1b.company} has ${state.h1b.approvals.toLocaleString()} H-1B approval(s) on record. Company-level signal — a specific role may still not sponsor.`;
   } else h1b.classList.remove('on');
 
@@ -148,7 +148,7 @@ async function render() {
   $('foot').innerHTML = connected
     ? 'Never auto-submits — you review first. AI runs through your desktop app.'
     : state.mode === 'standalone'
-      ? 'Connect the desktop app (Settings) for ATS match, visa signal &amp; a tailored résumé.'
+      ? 'Connect the desktop app (Settings) for a résumé match, visa signal &amp; a tailored résumé.'
       : 'Add your profile in Settings to autofill. Connect the app for AI + résumé.';
 }
 
@@ -216,7 +216,7 @@ insights.addEventListener('toggle', async () => {
   }
   const parts: string[] = [];
   if (typeof r.ats === 'number') {
-    parts.push(`<div><b style="color:var(--fg)">ATS match: ${r.ats}%</b> — recomputed for this posting</div>`);
+    parts.push(`<div><b style="color:var(--fg)">Résumé match: ${r.ats}%</b> for this job</div>`);
     $('insPeek').innerHTML = `<span class="chip ok">${r.ats}%</span>`;
   }
   if (r.visa) parts.push(`<div><span class="visa">🛂 ${esc(r.visa)}</span></div>`);
