@@ -235,17 +235,48 @@ insights.addEventListener('toggle', async () => {
   body.innerHTML = parts.length ? parts.join('') : 'No signal for this page.';
 });
 
+// Turn a terse internal error into plain guidance the user can act on. Falls back to the raw
+// message (never truncated) rather than swallowing it. Keyed on substrings the content script /
+// bridge return (e.g. "off in test mode", "No question field", "Open the JobHakken app…").
+function friendlyError(raw: string | undefined, fallback: string): string {
+  const e = (raw ?? '').toLowerCase();
+  if (!raw) return fallback;
+  if (e.includes('test mode') || e.includes('demo')) return 'Turn off Demo mode to use this on real data.';
+  if (e.includes('question field') || e.includes('no question'))
+    return "Couldn't find a question to answer on this page.";
+  if (e.includes('connect') || e.includes('app') || e.includes('bridge') || e.includes('unreachable'))
+    return 'Open the JobHakken desktop app first, then try again.';
+  if (e.includes('profile')) return 'Set up your profile in Settings first.';
+  return raw; // unknown — show the real message in full, don't chop it
+}
+
+// Show a result under the draft/save row, then reset the button label after a beat so the button
+// never gets stuck in an error/"…" state (the old code left truncated errors on the button forever).
+function showMiniResult(ok: boolean, msg: string): void {
+  $('miniResult').innerHTML = `<span class="chip ${ok ? 'ok' : 'rev'}">${ok ? '✓' : '⚠'} ${esc(msg)}</span>`;
+}
+
 ($('draft') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
+  const label = b.textContent ?? '✍️ Draft answer';
+  b.disabled = true;
   b.textContent = 'Drafting…';
   const r = await rpc<{ ok: boolean; error?: string } | null>('draft');
-  b.textContent = r?.ok ? '✓ Drafted' : r?.error ? '⚠ ' + r.error.slice(0, 16) : '✍️ Draft answer';
+  if (r?.ok) showMiniResult(true, 'Answer drafted — review it on the page.');
+  else showMiniResult(false, friendlyError(r?.error, 'Could not draft an answer here.'));
+  b.textContent = label;
+  b.disabled = false;
 });
 ($('save') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
+  const label = b.textContent ?? '📌 Save job';
+  b.disabled = true;
   b.textContent = 'Saving…';
   const r = await rpc<{ ok: boolean; error?: string } | null>('save');
-  b.textContent = r?.ok ? '✓ Saved' : '📌 Save job';
+  if (r?.ok) showMiniResult(true, 'Saved to your JobHakken app.');
+  else showMiniResult(false, friendlyError(r?.error, 'Could not save this job.'));
+  b.textContent = label;
+  b.disabled = false;
 });
 ($('capture') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
