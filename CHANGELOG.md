@@ -4,6 +4,19 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.11.1
+- **Stronger privacy while autofilling.** Autofilled values are no longer written into page DOM
+  attributes where the site's own scripts could read them back — the extension now tracks what it
+  filled entirely in memory.
+- **Hardened desktop-app connection.** The localhost bridge to the desktop app now only accepts a
+  fixed set of methods, verifies the caller, validates the port, and caps response sizes — so a
+  misbehaving local program can't stall or overload the extension.
+- **Safer question autofill.** Free-text question fields are only filled when there's a clear label
+  match, and the extension prefers the field inside the form you're on.
+- **Reliability & polish.** Capture writes are serialized (no lost/duplicated saves), stored PII is
+  redacted more thoroughly, popup text is fully HTML-escaped, and analytics only ever report a
+  coarse browser/OS and never throw.
+
 ## 0.11.0
 - **Anonymous, opt-out usage analytics.** A new **Settings** toggle (on by default) lets the
   extension share **metadata-only** usage stats — which features you use, success/failure, the
