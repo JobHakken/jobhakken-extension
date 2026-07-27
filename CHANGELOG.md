@@ -10,9 +10,10 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   what to do. Dismissible once you’re set up.
 - **The popup guides you when there’s nothing to fill.** Instead of a dead-end message, it now shows
   a **“Set up your profile →”** button (and again on a job page if your profile isn’t set up yet).
-- **Clearer “Connect the app” setup.** The old “Desktop” tab is now **“Connect the app”**, explains
-  what connecting unlocks, links to the download, and drops the technical wording — “connection
-  code” instead of “token”, no raw IP address, no “beta”.
+- **Clearer setup.** The old “Desktop” tab is now **“Settings”**, with a **“Connect the app”**
+  section moved to the top so it’s the first thing you see (not buried under other options). It
+  explains what connecting unlocks, links to the download, and drops the technical wording —
+  “connection code” instead of “token”, no raw IP address, no “beta”.
 - **Fix:** on a page with nothing to fill, the **Autofill** button is now correctly disabled (a
   latent error previously left the empty-state half-rendered).
 
