@@ -95,7 +95,7 @@ function anchorFor(id: string | null): Anchor | null {
 function pill(cats: EligibilityCategory[]): HTMLElement {
   const p = document.createElement('span');
   p.className = 'f2a-elig-mark';
-  p.textContent = '🛂 No sponsorship';
+  p.textContent = "🛂 Won't sponsor visa";
   // small by design; hover reveals the reason (people learn what it means over time)
   p.title = `Likely won't sponsor — this role requires ${cats.map((c) => LABELS[c]).join(', ')}.`;
   Object.assign(p.style, {

@@ -248,10 +248,10 @@ test('sponsorship filter: marks a blocked LinkedIn job TILE when the toggle is o
   const page = await context.newPage();
   await page.goto('/e2e/linkedin-job.html?currentJobId=12345');
 
-  // the open job's TILE (matched by its /jobs/view/12345 link) gets a red "No sponsorship" mark
+  // the open job's TILE (matched by its /jobs/view/12345 link) gets a red "Won't sponsor visa" mark
   const card = page.locator('.job-card-container', { has: page.locator('a[href*="/jobs/view/12345"]') });
   await expect(card.locator('.f2a-elig-mark')).toBeVisible({ timeout: 5000 });
-  await expect(card.locator('.f2a-elig-mark')).toContainText(/no sponsorship/i);
+  await expect(card.locator('.f2a-elig-mark')).toContainText(/won't sponsor/i);
   await testInfo.attach('sponsorship-tile-mark.png', {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',
@@ -294,7 +294,7 @@ test('H-1B badge: flags a known sponsor company inline (bundled data, no app)', 
   // the service worker loads the bundled list on first query, then a green badge appears
   const badge = page.locator('.f2a-h1b-badge');
   await expect(badge).toBeVisible({ timeout: 8000 });
-  await expect(badge).toContainText(/H-1B sponsor/i);
+  await expect(badge).toContainText(/sponsors visas/i);
   // it sits next to the company link, not the JD
   await expect(page.locator('a[href="/company/google/"] + .f2a-h1b-badge')).toHaveCount(1);
   await testInfo.attach('h1b-badge.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
