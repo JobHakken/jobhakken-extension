@@ -4,6 +4,18 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.12.0
+- **A real first-run experience.** Installing the extension now opens a setup page with a short
+  “Getting started — three steps” guide, so you’re never staring at a cold toolbar icon wondering
+  what to do. Dismissible once you’re set up.
+- **The popup guides you when there’s nothing to fill.** Instead of a dead-end message, it now shows
+  a **“Set up your profile →”** button (and again on a job page if your profile isn’t set up yet).
+- **Clearer “Connect the app” setup.** The old “Desktop” tab is now **“Connect the app”**, explains
+  what connecting unlocks, links to the download, and drops the technical wording — “connection
+  code” instead of “token”, no raw IP address, no “beta”.
+- **Fix:** on a page with nothing to fill, the **Autofill** button is now correctly disabled (a
+  latent error previously left the empty-state half-rendered).
+
 ## 0.11.4
 - **Plainer language throughout.** Replaced insider jargon with words anyone can follow:
   "Standalone" → "App not connected", "No profile" → "Profile not set up", the visa badges now

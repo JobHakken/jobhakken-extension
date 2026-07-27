@@ -440,3 +440,16 @@ $('saveProfile').addEventListener('click', onSave);
 $('connect').addEventListener('click', onConnect);
 $('disconnect').addEventListener('click', onDisconnect);
 $('importBtn').addEventListener('click', onImport);
+
+// ── first-run "Getting started" strip ────────────────────────
+// Shown until the user dismisses it (persisted). onInstalled opens this page on first install,
+// so this is the first thing a new user reads (onboarding dead-end #1).
+const ONBOARDING_KEY = 'jh_onboarding_dismissed';
+void (async () => {
+  const r = await chrome.storage.local.get(ONBOARDING_KEY);
+  if (r[ONBOARDING_KEY] !== true) ($('getstarted') as HTMLElement).hidden = false;
+})();
+$('gsDismiss').addEventListener('click', () => {
+  ($('getstarted') as HTMLElement).hidden = true;
+  void chrome.storage.local.set({ [ONBOARDING_KEY]: true });
+});

@@ -126,6 +126,49 @@
         border-radius: 12px;
         margin-bottom: 16px;
       }
+      .getstarted {
+        position: relative;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+        border-radius: 12px;
+      }
+      .getstarted .gs-h {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      .getstarted .gs-steps {
+        margin: 0 0 8px;
+        padding-left: 20px;
+        display: grid;
+        gap: 4px;
+      }
+      .getstarted .gs-steps li {
+        font-size: 13.5px;
+      }
+      .getstarted .gs-note {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .getstarted .gs-x {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 6px;
+      }
+      .getstarted .gs-x:hover {
+        background: color-mix(in srgb, var(--fg) 10%, transparent);
+      }
       .import .ic {
         font-size: 20px;
       }
@@ -366,13 +409,26 @@
       résumé + unlock AI). <span id="ver" style="color: var(--muted); font-size: 11px"></span>
     </p>
 
+    <div class="getstarted" id="getstarted" hidden>
+      <button class="gs-x" id="gsDismiss" title="Dismiss" aria-label="Dismiss getting started">×</button>
+      <b class="gs-h">👋 Getting started — three steps</b>
+      <ol class="gs-steps">
+        <li><b>Add your info</b> below (or Import it from the app).</li>
+        <li><b>Open a job application</b> in your browser.</li>
+        <li>Click <b>Autofill</b> in the JobHakken toolbar popup.</li>
+      </ol>
+      <p class="gs-note">
+        Nothing is ever submitted for you — you review everything first. Your data stays on your computer.
+      </p>
+    </div>
+
     <div class="import">
       <span class="ic">✨</span>
       <div class="t">
         <b>Import from my résumé</b>
         <div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div>
       </div>
-      <button id="importBtn" disabled title="Connect the desktop app first (Desktop tab)">Import</button>
+      <button id="importBtn" disabled title="Connect the app first (see the ‘Connect the app’ tab)">Import</button>
     </div>
 
     <div class="tabs" id="tabs">
@@ -381,7 +437,7 @@
       <button class="tab" data-t="education">Education</button>
       <button class="tab" data-t="work">Work Experience</button>
       <button class="tab" data-t="custom">Custom Fields</button>
-      <button class="tab" data-t="desktop">Desktop</button>
+      <button class="tab" data-t="desktop">Connect the app</button>
     </div>
 
     <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
@@ -490,15 +546,20 @@
         <button id="siteAdd" class="secondary">Add</button>
       </div>
       <p class="note">
-        Connect to the running JobHakken desktop app for AI (ATS match, visa signal, tailored résumé) and one-click
-        résumé import.
+        Connecting the JobHakken desktop app lets you import your résumé and unlock AI features (résumé match, visa
+        signal, tailored résumé). It’s optional — you can fill in your details by hand instead.
+      </p>
+      <p class="note">
+        <b>Don’t have the app yet?</b>
+        <a href="https://jobhakken.com/download" target="_blank" rel="noopener">Download it here</a>, open it, then come
+        back to this tab.
       </p>
       <div class="f">
-        <label for="token">Connection token</label
+        <label for="token">Connection code</label
         ><input
           id="token"
           type="password"
-          placeholder="Paste from the app → Settings → Browser extension"
+          placeholder="Paste the code from the app (Settings → Browser extension)"
           autocomplete="off"
         />
       </div>
@@ -508,8 +569,8 @@
         <span class="status" id="connStatus"></span>
       </div>
       <p class="note">
-        In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on
-        <code class="inline">127.0.0.1</code>.
+        In the app, open <b>Settings → Browser extension</b>, turn it on, and copy the code here. Your data never leaves
+        your computer.
       </p>
     </div>
 

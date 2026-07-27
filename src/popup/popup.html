@@ -151,6 +151,25 @@
         flex-direction: column;
         gap: 11px;
       }
+      .setup-cta {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent-fg);
+        background: var(--accent);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .setup-cta:hover {
+        filter: brightness(1.05);
+      }
+      .setup-cta.hidden {
+        display: none;
+      }
       .jobline {
         display: none;
         align-items: center;
@@ -487,11 +506,12 @@
           <circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8" /></svg></span
       ><span class="nm">JobHakken</span><span class="ver" id="ver"></span>
       <span class="conn" id="conn"><span class="d"></span><span id="connLabel">Checking…</span></span>
-      <button class="gear" id="theme" title="Theme">🖥</button>
-      <button class="gear" id="gear" title="Profile &amp; settings">⚙</button>
+      <button class="gear" id="theme" title="Theme" aria-label="Theme">🖥</button>
+      <button class="gear" id="gear" title="Profile &amp; settings" aria-label="Profile &amp; settings">⚙</button>
     </div>
     <div class="testbar" id="testbar"><span>🧪</span> DEMO DATA — filling anonymous sample values</div>
     <div class="bd">
+      <button class="setup-cta hidden" id="setupCta">⚙ Set up your profile →</button>
       <div class="jobline" id="jobline"></div>
       <div class="sigrow" id="sigrow"><span class="elig" id="elig"></span><span class="h1b" id="h1b"></span></div>
       <div class="count"><span class="pulse"></span><b id="fieldCount">0</b> fillable fields</div>
