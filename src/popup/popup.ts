@@ -63,7 +63,7 @@ async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
 const esc = escapeHtml;
 
 // Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
-const REPO = 'https://github.com/pranav083/cautious-octo-spork';
+const REPO = 'https://github.com/JobHakken/JobHakken-issues';
 let lastState: State | null = null;
 
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
