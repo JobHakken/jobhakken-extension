@@ -19,7 +19,12 @@ import { track } from '../lib/telemetry.js';
 // scripts / options forward events here via a `jh-telemetry` message so a single sink runs.
 initGaSink();
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') void track('extension_installed', {});
+  if (details.reason === 'install') {
+    void track('extension_installed', {});
+    // First run: land the user on the setup page instead of a cold toolbar icon they have to
+    // discover. The Options page carries the "Getting started" strip (onboarding dead-end #1).
+    void chrome.runtime.openOptionsPage();
+  }
 });
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {

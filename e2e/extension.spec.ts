@@ -507,3 +507,32 @@ test('uploads a résumé and picks a lazy dropdown in a real browser', async ({ 
     )
     .toBeGreaterThan(0);
 });
+
+test('onboarding: Options shows a dismissible getting-started strip; popup offers a setup CTA', async ({
+  context,
+  extensionId,
+}) => {
+  // Options: the getting-started strip is shown on a fresh install and persists its dismissal.
+  const opt = await context.newPage();
+  await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
+  const strip = opt.locator('#getstarted');
+  await expect(strip).toBeVisible();
+  await expect(strip).toContainText(/getting started/i);
+  await opt.locator('#gsDismiss').click();
+  await expect(strip).toBeHidden();
+  const dismissed = await opt.evaluate(
+    async () => (await chrome.storage.local.get('jh_onboarding_dismissed'))['jh_onboarding_dismissed'],
+  );
+  expect(dismissed).toBe(true);
+  await opt.reload();
+  await expect(opt.locator('#getstarted')).toBeHidden(); // stays dismissed
+  // the connect tab is now labelled for humans, not "Desktop"
+  await expect(opt.locator('.tab[data-t="desktop"]')).toHaveText(/connect the app/i);
+  await opt.close();
+
+  // Popup with no active job tab → empty state offers the "Set up your profile" CTA (not a dead end).
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+  await expect(popup.locator('#connLabel')).toHaveText(/open a job page/i);
+  await expect(popup.locator('#setupCta')).toBeVisible();
+});

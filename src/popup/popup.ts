@@ -68,6 +68,7 @@ let lastState: State | null = null;
 
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
+$('setupCta').addEventListener('click', () => chrome.runtime.openOptionsPage());
 void initThemeToggle($('theme'));
 
 async function render() {
@@ -77,12 +78,19 @@ async function render() {
   if (!state) {
     $('connLabel').textContent = 'Open a job page';
     $('foot').innerHTML =
-      'JobHakken works on application pages and job boards. Open one to autofill or check sponsorship.';
-    (['fill2', 'insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
+      'First time? <b>Set up your profile</b>, then open any job application and click Autofill. JobHakken works on job boards and application pages.';
+    // NB: these are real element ids (an earlier list included a phantom "fill2" — a class, not an
+    // id — so $('fill2') was null and this whole branch threw before disabling Autofill / showing
+    // the CTA; the empty state only looked right thanks to default CSS).
+    (['insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
+    $('setupCta').classList.remove('hidden'); // give first-run / off-a-job-page users a way forward
     $('siteHint').classList.remove('on');
     ($('autofill') as HTMLButtonElement).disabled = true;
     return; // the ⚑ Report block stays available (this is the "not detected" case)
   }
+
+  // On a job page but no profile yet → still surface the setup CTA (dead-end #2). Otherwise hide it.
+  $('setupCta').classList.toggle('hidden', state.mode !== 'none');
 
   const connected = state.mode === 'connected';
   const testOn = !!state.testMode || testMode;
