@@ -16,6 +16,10 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   “connection code” instead of “token”, no raw IP address, no “beta”.
 - **Fix:** on a page with nothing to fill, the **Autofill** button is now correctly disabled (a
   latent error previously left the empty-state half-rendered).
+- **Less clutter on the settings page.** Rewrote the dense, developer-flavoured text in plain
+  language and tucked the power-user / engineering controls (custom sites, “help improve autofill”,
+  developer capture, rule operators) behind a collapsed **Advanced** section, so a first-time user
+  only sees what matters to them.
 
 ## 0.11.4
 - **Plainer language throughout.** Replaced insider jargon with words anyone can follow:

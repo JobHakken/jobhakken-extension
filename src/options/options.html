@@ -181,6 +181,34 @@
         font-size: 12px;
         color: var(--muted);
       }
+      details.adv {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+        padding: 0 14px;
+      }
+      details.adv > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 11px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      details.adv > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.adv > summary::before {
+        content: '▸ ';
+        color: var(--muted);
+      }
+      details.adv[open] > summary::before {
+        content: '▾ ';
+      }
+      details.adv[open] {
+        padding-bottom: 12px;
+      }
       .import .ic {
         font-size: 20px;
       }
@@ -478,15 +506,18 @@
     </div>
     <div class="panel" data-p="custom">
       <p class="note">
-        Your own rules for anything the auto-mapper misses. A condition matches a field's <b>label</b>; the value fills
-        it. These always win.
+        Optional — set your own answers for questions autofill doesn’t already handle. When a field’s label matches your
+        rule, JobHakken fills your answer. For example: if the field says <b>“Notice period”</b>, fill <b>“2 weeks”</b>.
       </p>
       <div id="ruleList"></div>
       <span class="add" id="addRule">+ Add rule</span>
-      <div class="ops">
-        Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and
-        · <code>||</code> or · <code>( )</code> group
-      </div>
+      <details class="adv">
+        <summary>Advanced: matching operators</summary>
+        <div class="ops">
+          <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and ·
+          <code>||</code> or · <code>( )</code> group
+        </div>
+      </details>
     </div>
     <div class="panel" data-p="desktop">
       <h3 class="sec-h" style="margin-top: 0">🔗 Connect the JobHakken app <span class="opt">— optional</span></h3>
@@ -522,17 +553,11 @@
       <p class="note">
         <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label
         ><br />
-        On job pages (LinkedIn, career sites), flags roles whose description explicitly rules out sponsorship — those
-        requiring U.S. citizenship, a security clearance, “no sponsorship,” or export-control (ITAR/EAR) eligibility.
-        Runs entirely on your machine (no AI). Off by default.
+        Marks jobs that say they won’t sponsor a visa (for example, ones that require U.S. citizenship). Runs on your
+        device. Off by default.
         <br />
         <label style="display: inline-block; margin-top: 8px; margin-left: 22px"
-          ><input type="checkbox" id="hideUnsponsored" /> <b>Hide these jobs</b> instead of marking them</label
-        ><br />
-        <span style="margin-left: 22px; color: var(--muted)"
-          >When off, a red “No sponsorship” mark is added to the job’s tile. When on, the job’s tile is hidden from the
-          list. (LinkedIn shows the full description only once a job is opened, so a job is judged when you open it; the
-          desktop app hides them upfront.)</span
+          ><input type="checkbox" id="hideUnsponsored" /> <b>Hide those jobs</b> instead of just marking them</label
         >
       </p>
       <p class="note warn">
@@ -551,44 +576,40 @@
         your extension version, and browser/OS — <b>never</b> your résumé, job postings, form values, URLs, or personal
         data. Untick to turn it off.
       </p>
-      <p class="note">
-        <label
-          ><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — off by
-          default; opt in below</label
-        ><br />
-        <b>This is off unless you turn it on.</b> When enabled, as you apply it takes a passive
-        <b>snapshot of each application page’s HTML</b> and records the <b>whole flow</b> — which fields autofill
-        handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced
-        to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter
-        over time. Only on job-application pages you visit (built-in ATS list + your own sites) — never touches the
-        form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis. By
-        ticking the box you consent to this local capture; untick any time to stop.
-        <span id="capCount" style="color: var(--muted)"></span>
-        <br />
-        <button id="exportCorpus" class="secondary" style="margin-top: 8px">Export corpus</button>
-        <button id="clearCorpus" class="secondary" style="margin-top: 8px">Clear</button>
-      </p>
-      <p class="note">
-        <label><input type="checkbox" id="captureMode" /> <b>📸 Fixture capture (developer)</b></label
-        ><br />
-        Separate one-off tool: adds a <b>Capture fixture</b> button to the panel that <b>downloads</b> a scrubbed HTML
-        snapshot + coverage report for engineering. Not needed for normal use — the auto-capture above is the corpus.
-      </p>
-      <p class="note">
-        <b>🌐 My sites</b> — where JobHakken is always active (opens the panel + auto-captures), in addition to the
-        built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this
-        site” toggle in the on-page panel.
-      </p>
-      <div id="siteList" style="display: flex; flex-direction: column; gap: 6px"></div>
-      <div style="display: flex; gap: 6px; margin-top: 8px">
-        <input
-          id="siteInput"
-          type="text"
-          placeholder="careers.company.com"
-          style="flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px"
-        />
-        <button id="siteAdd" class="secondary">Add</button>
-      </div>
+      <details class="adv">
+        <summary>Advanced</summary>
+
+        <p class="note" style="margin-top: 14px">
+          <b>🌐 Run on another site.</b> JobHakken already works on the big job boards and application systems. Add a
+          company’s careers website here if you want it to run there too.
+        </p>
+        <div id="siteList" style="display: flex; flex-direction: column; gap: 6px"></div>
+        <div style="display: flex; gap: 6px; margin-top: 8px">
+          <input
+            id="siteInput"
+            type="text"
+            placeholder="careers.company.com"
+            style="flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px"
+          />
+          <button id="siteAdd" class="secondary">Add</button>
+        </div>
+
+        <p class="note" style="margin-top: 16px">
+          <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Help improve autofill</b></label
+          ><br />
+          Off by default. When on, JobHakken keeps a private, on-device record of the forms you fill — with your
+          personal details removed — so autofill gets better over time. It never leaves your computer; untick any time
+          to stop. <span id="capCount" style="color: var(--muted)"></span><br />
+          <button id="exportCorpus" class="secondary" style="margin-top: 8px">Export</button>
+          <button id="clearCorpus" class="secondary" style="margin-top: 8px">Clear</button>
+        </p>
+
+        <p class="note">
+          <label><input type="checkbox" id="captureMode" /> <b>🛠️ Developer capture</b></label
+          ><br />
+          For engineering only — adds a button to save a technical snapshot of a page. Not needed for normal use.
+        </p>
+      </details>
     </div>
 
     <div class="bar">
