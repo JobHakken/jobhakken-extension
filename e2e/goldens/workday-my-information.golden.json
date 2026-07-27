@@ -1,0 +1,14 @@
+{
+  "fixture": "workday/02-my-information.html",
+  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "_note": "Workday 'My Information'. gate:true = proven-stable core fields (regression guard). gate:false = reported coverage/gaps.",
+  "fields": [
+    { "selector": "#name--legalName--firstName", "expect": "Jordan", "gate": true },
+    { "selector": "#name--legalName--lastName", "expect": "Rivera", "gate": true },
+    { "selector": "#name--legalName--middleName", "expect": "Alex", "gate": false },
+    { "selector": "#address--addressLine1", "expect": "128 Maple Street", "gate": false },
+    { "selector": "#address--city", "expect": "Austin", "gate": false },
+    { "selector": "#address--postalCode", "expect": "78701", "gate": false },
+    { "selector": "#phoneNumber--phoneNumber", "expect": "555", "match": "contains", "gate": false }
+  ]
+}
