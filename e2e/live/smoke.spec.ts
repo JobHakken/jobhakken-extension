@@ -26,7 +26,15 @@ const TARGETS_PATH = path.resolve(process.cwd(), process.env.LIVE_TARGETS ?? 'e2
 
 type Target = { ats: string; url: string };
 type Config = { coverageThreshold?: number; targets: Target[] };
-type Row = { ats: string; url: string; detected: number; filled: number; coverage: number | null; note: string };
+type Row = {
+  ats: string;
+  url: string;
+  pageInputs: number;
+  detected: number;
+  filled: number;
+  coverage: number | null;
+  note: string;
+};
 
 // `chrome` is a browser-context global on extension pages / in the service worker.
 declare const chrome: {
@@ -93,26 +101,38 @@ test.describe('live robustness smoke', () => {
       try {
         await page.goto(t.url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
         await page.waitForTimeout(2500); // let the SPA render + content script attach
+        // Ground truth INDEPENDENT of the extension: does the page itself actually have a form?
+        // This separates "expired/blocked page, no form" from "form present but the extension saw nothing".
+        const pageInputs = await page
+          .$$eval(
+            'input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=search]), select, textarea',
+            (els) => els.length,
+          )
+          .catch(() => 0);
         const state = await rpc<{ fields: number; relevant: boolean }>(context, 'getState');
         const fill = await rpc<{ filled: number; review: number; total: number }>(context, 'autofill', {
           mode: 'default',
         });
         const detected = state?.fields ?? 0;
         const filled = fill?.filled ?? 0;
-        const total = fill?.total ?? detected;
-        const coverage = total > 0 ? Math.round((filled / total) * 100) / 100 : null;
-        rows.push({
-          ats: t.ats,
-          url: t.url,
-          detected,
-          filled,
-          coverage,
-          note: coverage == null ? 'no fillable fields detected' : coverage < threshold ? '⚠ FIXTURE CANDIDATE' : 'ok',
-        });
+        // Denominator = the most complete field count we have (getState vs the autofill pass can differ,
+        // and multi-row fills can push `filled` above a single count) — clamp so coverage never exceeds 100%.
+        const denom = Math.max(detected, fill?.total ?? 0, filled);
+        const coverage = denom > 0 ? Math.min(1, Math.round((filled / denom) * 100) / 100) : null;
+        const note =
+          pageInputs < 3
+            ? 'no form on page (expired / blocked?)'
+            : detected === 0
+              ? '⚠ DETECTION GAP — form present, extension saw nothing'
+              : coverage != null && coverage < threshold
+                ? '⚠ FIXTURE CANDIDATE'
+                : 'ok';
+        rows.push({ ats: t.ats, url: t.url, pageInputs, detected, filled, coverage, note });
       } catch (e) {
         rows.push({
           ats: t.ats,
           url: t.url,
+          pageInputs: 0,
           detected: 0,
           filled: 0,
           coverage: null,
@@ -125,11 +145,20 @@ test.describe('live robustness smoke', () => {
 
     // Report — the deliverable. Never fails on a live result.
     console.table(
-      rows.map((r) => ({ ats: r.ats, detected: r.detected, filled: r.filled, coverage: r.coverage, note: r.note })),
+      rows.map((r) => ({
+        ats: r.ats,
+        pageInputs: r.pageInputs,
+        detected: r.detected,
+        filled: r.filled,
+        coverage: r.coverage,
+        note: r.note,
+      })),
     );
+    // A candidate = the page really has a form but the extension underperforms (gap or low coverage) —
+    // NOT expired/blocked pages, so we don't chase dead URLs.
     const candidates = rows
-      .filter((r) => r.note.includes('FIXTURE CANDIDATE'))
-      .map((r) => ({ ats: r.ats, url: r.url }));
+      .filter((r) => r.note.includes('DETECTION GAP') || r.note.includes('FIXTURE CANDIDATE'))
+      .map((r) => ({ ats: r.ats, url: r.url, detected: r.detected, filled: r.filled, coverage: r.coverage }));
     const outDir = path.resolve(process.cwd(), 'test-results');
     mkdirSync(outDir, { recursive: true });
     writeFileSync(path.join(outDir, 'live-coverage.json'), JSON.stringify({ threshold, rows, candidates }, null, 2));
