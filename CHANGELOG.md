@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.11.2
+- **Fix: "⚑ Report this page" now files to our real tracker.** Feedback was pointing at a
+  placeholder repo; it now opens an issue on the public
+  [JobHakken-issues](https://github.com/JobHakken/JobHakken-issues) tracker (tagged
+  `extension-feedback`), so reports actually reach us.
+
 ## 0.11.1
 - **Stronger privacy while autofilling.** Autofilled values are no longer written into page DOM
   attributes where the site's own scripts could read them back — the extension now tracks what it
