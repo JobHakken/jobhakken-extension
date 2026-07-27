@@ -609,6 +609,17 @@
           ><br />
           For engineering only — adds a button to save a technical snapshot of a page. Not needed for normal use.
         </p>
+
+        <p class="note">
+          <label><input type="checkbox" id="devCorrection" /> <b>🧪 Correction report (dev)</b></label
+          ><br />
+          Engineering only. With this on <b>and Demo mode on</b>, export a ranked list of the fields autofill keeps
+          missing (from your local dummy-data captures) — the signal that prioritises which ATS to harden. Uses dummy
+          data only; never runs for a real user.
+          <br />
+          <button id="correctionReport" class="secondary" style="margin-top: 8px">Export correction report</button>
+          <span id="correctionNote" style="margin-left: 8px; color: var(--muted)"></span>
+        </p>
       </details>
     </div>
 

@@ -9,6 +9,7 @@ import {
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
+import { aggregateCorrections, correctionCaptureEnabled } from '../lib/correctionSignal.js';
 import { escapeHtml } from '../lib/html.js';
 import { report } from '../lib/telemetryClient.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
@@ -364,6 +365,32 @@ function renderAll() {
     if (!confirm('Clear all captured applications?')) return;
     await clearCaptures();
     await refreshCount();
+  });
+
+  // §6 dev correction report — gated behind a dev flag AND Demo mode (dummy identity); never a real user.
+  const DEV_CORR = 'jh_dev_correction';
+  void chrome.storage.local.get(DEV_CORR).then((r) => {
+    ($('devCorrection') as HTMLInputElement).checked = r[DEV_CORR] === true;
+  });
+  $('devCorrection').addEventListener('change', (e) => {
+    void chrome.storage.local.set({ [DEV_CORR]: (e.currentTarget as HTMLInputElement).checked });
+  });
+  $('correctionReport').addEventListener('click', async () => {
+    const note = $('correctionNote');
+    if (!(await correctionCaptureEnabled())) {
+      note.textContent = 'Turn on this checkbox AND Demo mode first.';
+      return;
+    }
+    const ranked = aggregateCorrections(await getCaptures());
+    if (!ranked.length) return void (note.textContent = 'No captures yet.');
+    const blob = new Blob([JSON.stringify(ranked, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jobhakken-corrections-${ranked.length}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    note.textContent = `${ranked.length} field signatures ranked (worst gaps first).`;
   });
   // My sites — user-managed hosts where the extension is always active
   const normHost = (v: string): string => {
