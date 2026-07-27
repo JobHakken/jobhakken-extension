@@ -38,10 +38,13 @@ type Row = {
 
 // `chrome` is a browser-context global on extension pages / in the service worker.
 declare const chrome: {
-  storage: { local: { set(items: Record<string, unknown>): Promise<void> } };
+  storage: {
+    local: { set(items: Record<string, unknown>): Promise<void> };
+    session: { get(key: string): Promise<Record<string, unknown>> };
+  };
   tabs: {
     query(q: object): Promise<Array<{ id?: number }>>;
-    sendMessage(id: number, msg: unknown): Promise<unknown>;
+    sendMessage(id: number, msg: unknown, opts?: object): Promise<unknown>;
   };
 };
 
@@ -61,7 +64,13 @@ const test = base.extend<{ context: BrowserContext; extensionId: string }>({
   },
 });
 
-/** Ask the active tab's content script for a value (getState / autofill), via the service worker. */
+/**
+ * Ask the active tab's content script for a value (getState / autofill), via the service worker.
+ * Targets the FRAME that actually holds the form (most detected fields) — the content script runs
+ * in all_frames, so a bare sendMessage lands in every frame and the empty top frame's reply can win.
+ * This mirrors the popup's frameStore targeting; without it, coverage on iframed ATS (iCIMS/Taleo)
+ * is measured against the wrong frame and is meaningless.
+ */
 async function rpc<T>(context: BrowserContext, method: string, params: unknown = {}): Promise<T | null> {
   let [sw] = context.serviceWorkers();
   if (!sw) sw = await context.waitForEvent('serviceworker');
@@ -69,8 +78,25 @@ async function rpc<T>(context: BrowserContext, method: string, params: unknown =
     async ({ method, params }) => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return null;
+      // Pick the form frame the same way frameStore does: highest fillable-field count for this tab.
+      let frameId: number | undefined;
       try {
-        return await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method, params });
+        const key = `f2a_frames:${tab.id}`;
+        // eslint-disable-next-line security/detect-object-injection -- key is a code-built storage key, not user input
+        const counts = ((await chrome.storage.session.get(key))[key] ?? {}) as Record<string, number>;
+        let best = 0;
+        for (const [fid, c] of Object.entries(counts)) {
+          if (c > best) {
+            best = c;
+            frameId = Number(fid);
+          }
+        }
+      } catch {
+        /* no recorded frames yet — fall back to broadcast */
+      }
+      try {
+        const opts = frameId != null ? { frameId } : {};
+        return await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method, params }, opts);
       } catch {
         return null; // no content script on this page (e.g. it didn't match / didn't load)
       }
