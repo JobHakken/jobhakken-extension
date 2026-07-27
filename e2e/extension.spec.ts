@@ -526,8 +526,10 @@ test('onboarding: Options shows a dismissible getting-started strip; popup offer
   expect(dismissed).toBe(true);
   await opt.reload();
   await expect(opt.locator('#getstarted')).toBeHidden(); // stays dismissed
-  // the connect tab is now labelled for humans, not "Desktop"
-  await expect(opt.locator('.tab[data-t="desktop"]')).toHaveText(/connect the app/i);
+  // the last tab is now "Settings"; opening it surfaces the "Connect the app" section at the top
+  await expect(opt.locator('.tab[data-t="desktop"]')).toHaveText(/settings/i);
+  await opt.locator('.tab[data-t="desktop"]').click();
+  await expect(opt.locator('.panel[data-p="desktop"] .sec-h').first()).toContainText(/connect the jobhakken app/i);
   await opt.close();
 
   // Popup with no active job tab → empty state offers the "Set up your profile" CTA (not a dead end).

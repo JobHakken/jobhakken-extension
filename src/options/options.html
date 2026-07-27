@@ -169,6 +169,18 @@
       .getstarted .gs-x:hover {
         background: color-mix(in srgb, var(--fg) 10%, transparent);
       }
+      .sec-h {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 22px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sec-h .opt {
+        font-weight: 400;
+        font-size: 12px;
+        color: var(--muted);
+      }
       .import .ic {
         font-size: 20px;
       }
@@ -428,7 +440,9 @@
         <b>Import from my résumé</b>
         <div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div>
       </div>
-      <button id="importBtn" disabled title="Connect the app first (see the ‘Connect the app’ tab)">Import</button>
+      <button id="importBtn" disabled title="Connect the app first (Settings tab → Connect the JobHakken app)">
+        Import
+      </button>
     </div>
 
     <div class="tabs" id="tabs">
@@ -437,7 +451,7 @@
       <button class="tab" data-t="education">Education</button>
       <button class="tab" data-t="work">Work Experience</button>
       <button class="tab" data-t="custom">Custom Fields</button>
-      <button class="tab" data-t="desktop">Connect the app</button>
+      <button class="tab" data-t="desktop">Settings</button>
     </div>
 
     <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
@@ -475,6 +489,36 @@
       </div>
     </div>
     <div class="panel" data-p="desktop">
+      <h3 class="sec-h" style="margin-top: 0">🔗 Connect the JobHakken app <span class="opt">— optional</span></h3>
+      <p class="note">
+        Connecting the JobHakken desktop app lets you import your résumé and unlock AI features (résumé match, visa
+        signal, tailored résumé). It’s optional — you can fill in your details by hand instead.
+      </p>
+      <p class="note">
+        <b>Don’t have the app yet?</b>
+        <a href="https://jobhakken.com/download" target="_blank" rel="noopener">Download it here</a>, open it, then come
+        back to this tab.
+      </p>
+      <div class="f">
+        <label for="token">Connection code</label
+        ><input
+          id="token"
+          type="password"
+          placeholder="Paste the code from the app (Settings → Browser extension)"
+          autocomplete="off"
+        />
+      </div>
+      <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
+        <button class="save" id="connect">Connect</button>
+        <button class="secondary" id="disconnect" hidden>Disconnect</button>
+        <span class="status" id="connStatus"></span>
+      </div>
+      <p class="note">
+        In the app, open <b>Settings → Browser extension</b>, turn it on, and copy the code here. Your data never leaves
+        your computer.
+      </p>
+
+      <h3 class="sec-h">⚙️ Preferences</h3>
       <p class="note">
         <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label
         ><br />
@@ -545,33 +589,6 @@
         />
         <button id="siteAdd" class="secondary">Add</button>
       </div>
-      <p class="note">
-        Connecting the JobHakken desktop app lets you import your résumé and unlock AI features (résumé match, visa
-        signal, tailored résumé). It’s optional — you can fill in your details by hand instead.
-      </p>
-      <p class="note">
-        <b>Don’t have the app yet?</b>
-        <a href="https://jobhakken.com/download" target="_blank" rel="noopener">Download it here</a>, open it, then come
-        back to this tab.
-      </p>
-      <div class="f">
-        <label for="token">Connection code</label
-        ><input
-          id="token"
-          type="password"
-          placeholder="Paste the code from the app (Settings → Browser extension)"
-          autocomplete="off"
-        />
-      </div>
-      <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
-        <button class="save" id="connect">Connect</button>
-        <button class="secondary" id="disconnect" hidden>Disconnect</button>
-        <span class="status" id="connStatus"></span>
-      </div>
-      <p class="note">
-        In the app, open <b>Settings → Browser extension</b>, turn it on, and copy the code here. Your data never leaves
-        your computer.
-      </p>
     </div>
 
     <div class="bar">
