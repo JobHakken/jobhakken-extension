@@ -20,8 +20,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXT_DIR = path.resolve(__dirname, '../dist');
 const GOLDEN_DIR = path.resolve(__dirname, 'goldens');
 
-type Field = { selector: string; expect: string; match?: 'exact' | 'contains'; gate?: boolean; note?: string };
+// A field is located by a CSS `selector` OR (more robustly, for sites with volatile ids like
+// SuccessFactors) by `label` — a case-insensitive regex matched against the field's label/ARIA name.
+type Field = {
+  selector?: string;
+  label?: string;
+  expect: string;
+  match?: 'exact' | 'contains';
+  gate?: boolean;
+  note?: string;
+};
 type Golden = { fixture: string; profile?: string; fields: Field[] };
+
+function fieldKey(f: Field): string {
+  return f.selector ?? `label:${f.label}`;
+}
+function fieldLocator(page: import('@playwright/test').Page, f: Field) {
+  // eslint-disable-next-line security/detect-non-literal-regexp -- label comes from a committed golden fixture, not user input
+  return f.label ? page.getByLabel(new RegExp(f.label, 'i')).first() : page.locator(f.selector as string);
+}
 
 declare const chrome: {
   storage: {
@@ -106,8 +123,7 @@ for (const g of goldens) {
       .poll(
         async () => {
           await autofill(context);
-          return page
-            .locator(anchor.selector)
+          return fieldLocator(page, anchor)
             .inputValue()
             .catch(() => '');
         },
@@ -118,11 +134,10 @@ for (const g of goldens) {
     // Score every golden field.
     let correct = 0;
     let filled = 0;
-    const gaps: Array<{ selector: string; expected: string; got: string; note?: string }> = [];
+    const gaps: Array<{ field: string; expected: string; got: string; note?: string }> = [];
     for (const f of g.fields) {
       const val = (
-        await page
-          .locator(f.selector)
+        await fieldLocator(page, f)
           .inputValue()
           .catch(() => '')
       ).trim();
@@ -130,12 +145,12 @@ for (const g of goldens) {
       const ok = f.match === 'contains' ? val.includes(f.expect) : val === f.expect;
       if (isFilled) filled++;
       if (ok) correct++;
-      else if (!f.gate) gaps.push({ selector: f.selector, expected: f.expect, got: val || '(empty)', note: f.note });
+      else if (!f.gate) gaps.push({ field: fieldKey(f), expected: f.expect, got: val || '(empty)', note: f.note });
 
       // Hard gate: core fields must be exactly right, or the build fails (regression guard).
       if (f.gate) {
-        if (f.match === 'contains') expect(val, `gated ${f.selector}`).toContain(f.expect);
-        else expect(val, `gated ${f.selector}`).toBe(f.expect);
+        if (f.match === 'contains') expect(val, `gated ${fieldKey(f)}`).toContain(f.expect);
+        else expect(val, `gated ${fieldKey(f)}`).toBe(f.expect);
       }
     }
 
