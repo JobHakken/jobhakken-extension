@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.11.3
+- **Fix: clearer results for "Draft answer" and "Save job".** Both buttons now show a full,
+  plain-language outcome (success or a helpful reason) beneath them instead of a cut-off error
+  stuck on the button — e.g. "Turn off Demo mode to use this on real data." or "Open the
+  JobHakken desktop app first, then try again."
+
 ## 0.11.2
 - **Fix: "⚑ Report this page" now files to our real tracker.** Feedback was pointing at a
   placeholder repo; it now opens an issue on the public
