@@ -1,5 +1,6 @@
 {
   "fixture": "workday/02-my-information.html",
+  "minRecall": 1,
   "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
   "_note": "Workday 'My Information'. gate:true = proven-stable core fields (regression guard). gate:false = reported coverage/gaps.",
   "fields": [
