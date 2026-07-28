@@ -29,11 +29,24 @@ type Field = {
   match?: 'exact' | 'contains';
   gate?: boolean;
   note?: string;
+  // How to read the field's filled value: 'value' (default, inputValue), 'file' (files[0].name for
+  // uploads), or 'attr:NAME' (an attribute, e.g. a react-select combobox that stores its selection
+  // in data-value). `poll: true` waits for slow interactive fills (comboboxes/uploads) to complete.
+  read?: string;
+  poll?: boolean;
 };
 // `minRecall` is the coverage FLOOR: the build fails if overall recall drops below it. This makes a
 // coverage *regression* (e.g. a lib change that stops filling a non-gated field) redden the gate,
 // not just print a note — the gap the rationalization/Workday-phone regression slipped through.
-type Golden = { fixture: string; profile?: string; minRecall?: number; fields: Field[] };
+// `storage` sets extra chrome.storage.local flags for fixtures that need them (e.g. sensitive-field
+// fill for EEO/Gender, or auto-capture). f2a_test_mode is always set.
+type Golden = {
+  fixture: string;
+  profile?: string;
+  minRecall?: number;
+  storage?: Record<string, unknown>;
+  fields: Field[];
+};
 
 function fieldKey(f: Field): string {
   return f.selector ?? `label:${f.label}`;
@@ -41,6 +54,21 @@ function fieldKey(f: Field): string {
 function fieldLocator(page: import('@playwright/test').Page, f: Field) {
   // eslint-disable-next-line security/detect-non-literal-regexp -- label comes from a committed golden fixture, not user input
   return f.label ? page.getByLabel(new RegExp(f.label, 'i')).first() : page.locator(f.selector as string);
+}
+
+/** Read a field's filled value per its `read` strategy (value | file | attr:NAME). */
+async function readField(page: import('@playwright/test').Page, f: Field): Promise<string> {
+  const loc = fieldLocator(page, f);
+  try {
+    if (f.read === 'file') return (await loc.evaluate((el) => (el as HTMLInputElement).files?.[0]?.name ?? '')) || '';
+    if (f.read?.startsWith('attr:')) {
+      const name = f.read.slice(5);
+      return (await loc.evaluate((el, n) => el.getAttribute(n) ?? '', name)) || '';
+    }
+    return (await loc.inputValue().catch(() => '')) || '';
+  } catch {
+    return '';
+  }
 }
 
 declare const chrome: {
@@ -111,10 +139,10 @@ const goldens: Golden[] = readdirSync(GOLDEN_DIR)
 
 for (const g of goldens) {
   test(`golden coverage: ${g.fixture}`, async ({ context, extensionId }) => {
-    // Enable Demo mode from an extension page → dummy identity, so no real data is ever entered.
+    // Enable Demo mode (dummy identity) + any fixture-specific flags (e.g. sensitive-field fill).
     const cfg = await context.newPage();
     await cfg.goto(`chrome-extension://${extensionId}/options/options.html`);
-    await cfg.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true }));
+    await cfg.evaluate((extra) => chrome.storage.local.set({ f2a_test_mode: true, ...extra }), g.storage ?? {});
     await cfg.close();
 
     const page = await context.newPage();
@@ -126,24 +154,28 @@ for (const g of goldens) {
       .poll(
         async () => {
           await autofill(context);
-          return fieldLocator(page, anchor)
-            .inputValue()
-            .catch(() => '');
+          return readField(page, anchor);
         },
         { timeout: 25_000 },
       )
       .not.toBe('');
+
+    // Interactive fields (comboboxes / uploads) fill LATE — give each `poll` field time to land
+    // (non-throwing; if it never fills it just scores as a miss/gap below).
+    for (const f of g.fields.filter((x) => x.poll)) {
+      const deadline = Date.now() + 30_000;
+      while (Date.now() < deadline) {
+        if ((await readField(page, f)) !== '') break;
+        await page.waitForTimeout(500);
+      }
+    }
 
     // Score every golden field.
     let correct = 0;
     let filled = 0;
     const gaps: Array<{ field: string; expected: string; got: string; note?: string }> = [];
     for (const f of g.fields) {
-      const val = (
-        await fieldLocator(page, f)
-          .inputValue()
-          .catch(() => '')
-      ).trim();
+      const val = (await readField(page, f)).trim();
       const isFilled = val !== '';
       const ok = f.match === 'contains' ? val.includes(f.expect) : val === f.expect;
       if (isFilled) filled++;
