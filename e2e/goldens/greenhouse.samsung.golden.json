@@ -1,11 +1,24 @@
 {
   "fixture": "greenhouse.samsung.html",
+  "minRecall": 1,
   "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
   "_note": "Human-authored expectation of what SHOULD fill (never auto-derived from current behaviour). gate:true fields fail the build if wrong (regression guard on core PII). gate:false fields are reported as coverage/gaps but don't fail — they track work to hand upstream to @jobhakken/autofill. match defaults to exact; 'contains' for values a site may reformat (e.g. phone).",
   "fields": [
-    { "selector": "#first_name", "expect": "Jordan", "gate": true },
-    { "selector": "#last_name", "expect": "Rivera", "gate": true },
-    { "selector": "#email", "expect": "jordan.rivera@example.com", "gate": true },
+    {
+      "selector": "#first_name",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#last_name",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
     {
       "selector": "#phone",
       "expect": "555",

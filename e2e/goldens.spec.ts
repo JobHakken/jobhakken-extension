@@ -30,7 +30,10 @@ type Field = {
   gate?: boolean;
   note?: string;
 };
-type Golden = { fixture: string; profile?: string; fields: Field[] };
+// `minRecall` is the coverage FLOOR: the build fails if overall recall drops below it. This makes a
+// coverage *regression* (e.g. a lib change that stops filling a non-gated field) redden the gate,
+// not just print a note — the gap the rationalization/Workday-phone regression slipped through.
+type Golden = { fixture: string; profile?: string; minRecall?: number; fields: Field[] };
 
 function fieldKey(f: Field): string {
   return f.selector ?? `label:${f.label}`;
@@ -160,5 +163,13 @@ for (const g of goldens) {
       `\n[golden] ${g.fixture} — precision ${precision} · recall ${recall} · correct ${correct}/${g.fields.length}`,
     );
     if (gaps.length) console.log(`[golden] ${gaps.length} non-gated gap(s) → upstream @jobhakken/autofill:`, gaps);
+
+    // Coverage floor: fail the gate if overall recall regresses below the committed baseline.
+    if (g.minRecall != null) {
+      expect(
+        recall,
+        `${g.fixture} recall floor (a coverage regression) — gaps: ${JSON.stringify(gaps)}`,
+      ).toBeGreaterThanOrEqual(g.minRecall);
+    }
   });
 }
