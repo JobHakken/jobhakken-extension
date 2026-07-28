@@ -19,6 +19,8 @@ import { fileURLToPath } from 'url';
 
 import { chromium, test } from '@playwright/test';
 
+import { installNoSubmit } from '../support/noSubmit';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXT_DIR = path.resolve(__dirname, '../../dist');
 const HAR_DIR = path.resolve(__dirname, '../har');
@@ -38,6 +40,7 @@ test('capture a HAR', async () => {
     recordHar: { path: harPath, mode: 'minimal', content: 'embed' },
   });
   try {
+    await installNoSubmit(ctx); // mechanical: capture is fill/browse-only, never submit
     const page = await ctx.newPage();
     await page.goto(url as string, { waitUntil: 'domcontentloaded', timeout: 45_000 });
     await page.waitForTimeout(3500); // let the SPA settle so its subresources land in the HAR

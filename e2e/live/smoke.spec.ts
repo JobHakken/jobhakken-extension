@@ -20,6 +20,8 @@ import { fileURLToPath } from 'url';
 
 import { BrowserContext, chromium, test as base } from '@playwright/test';
 
+import { installNoSubmit } from '../support/noSubmit';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXT_DIR = path.resolve(__dirname, '../../dist');
 const TARGETS_PATH = path.resolve(process.cwd(), process.env.LIVE_TARGETS ?? 'e2e/live/targets.json');
@@ -120,6 +122,9 @@ test.describe('live robustness smoke', () => {
     await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
     await opt.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true }));
     await opt.close();
+
+    // Mechanical guard: fill-only, never submit an application to a real employer.
+    await installNoSubmit(context);
 
     const rows: Row[] = [];
     for (const t of targets) {
