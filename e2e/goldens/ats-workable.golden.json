@@ -1,0 +1,11 @@
+{
+  "fixture": "ats-workable.html",
+  "profile": "TEST_PROFILE — Jordan Rivera",
+  "minRecall": 1,
+  "_note": "Workable (apply.workable.com) SPA form, captured live.",
+  "fields": [
+    { "selector": "#firstname", "expect": "Jordan", "gate": true },
+    { "selector": "#lastname", "expect": "Rivera", "gate": true },
+    { "selector": "#email", "expect": "jordan.rivera@example.com", "gate": true }
+  ]
+}
