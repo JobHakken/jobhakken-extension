@@ -34,11 +34,45 @@ test('capture a static form fixture', async () => {
     await installNoSubmit(ctx);
     const page = await ctx.newPage();
     await page.goto(url as string, { waitUntil: 'domcontentloaded', timeout: 45_000 });
-    await page.waitForTimeout(3500); // let the SPA render the form
+
+    // SPAs render the form client-side — wait for a real field, not a fixed sleep.
+    const FIELD = 'input:not([type=hidden]):not([type=submit]):not([type=button]), select, textarea';
+    await page.waitForSelector(FIELD, { timeout: 20_000 }).catch(() => {});
+    // Some ATS gate the form behind an "Apply" / "I'm interested" button — click it, then wait again.
+    if (
+      (await page
+        .locator(FIELD)
+        .count()
+        .catch(() => 0)) < 3
+    ) {
+      const apply = page
+        .getByRole('button', { name: /apply|i'?m interested|start application/i })
+        .or(page.getByRole('link', { name: /apply/i }))
+        .first();
+      if (await apply.count().catch(() => 0)) {
+        await apply.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForSelector(FIELD, { timeout: 15_000 }).catch(() => {});
+      }
+    }
+    await page.waitForTimeout(1500);
+
+    // The form may be in the main frame OR an iframe (e.g. BambooHR) — pick the frame with the most fields.
+    let target = page.mainFrame();
+    let bestFrameCount = -1;
+    for (const fr of page.frames()) {
+      const n = await fr
+        .locator(FIELD)
+        .count()
+        .catch(() => 0);
+      if (n > bestFrameCount) {
+        bestFrameCount = n;
+        target = fr;
+      }
+    }
 
     // Extract the subtree containing the most fillable fields (the application form), minified into a
     // standalone doc. Strips scripts. Keeps structure/labels/inputs the content script detects.
-    const html: string = await page.evaluate(() => {
+    const html: string = await target.evaluate(() => {
       const candidates = Array.from(document.querySelectorAll('form, section, div, main'));
       let best: Element | null = null;
       let bestCount = 0;
