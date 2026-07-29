@@ -29,11 +29,19 @@ declare const chrome: {
   };
 };
 
+// PWHEAD=1 → a REAL visible window (watch the extension fill in slow-mo); else new-headless.
+const HEADED = process.env.PWHEAD === '1';
+
 const test = base.extend<{ context: BrowserContext; extensionId: string }>({
   context: async ({}, use) => {
     const c = await chromium.launchPersistentContext('', {
       headless: false,
-      args: ['--headless=new', `--disable-extensions-except=${EXT_DIR}`, `--load-extension=${EXT_DIR}`],
+      slowMo: HEADED ? 300 : 0,
+      args: [
+        ...(HEADED ? [] : ['--headless=new']),
+        `--disable-extensions-except=${EXT_DIR}`,
+        `--load-extension=${EXT_DIR}`,
+      ],
     });
     await use(c);
     await c.close();
@@ -178,9 +186,18 @@ test('verify live coverage', async ({ context, extensionId }) => {
     return out;
   });
 
+  // Visual proof — screenshot the filled form so the run can be eyeballed (not just counted).
+  const shot = path.resolve(
+    process.cwd(),
+    'test-results',
+    `verify-${(url as string).replace(/[^a-z0-9]+/gi, '-').slice(0, 60)}.png`,
+  );
+  await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
+
   const fillable = rows.filter((r) => r.type !== 'choice');
   const filled = fillable.filter((r) => r.filled).length;
   console.log(`\n=== ${url}`);
+  console.log(`screenshot → ${shot}`);
   console.table(rows.map((r) => ({ label: r.label, type: r.type, filled: r.filled ? '✓' : '—', value: r.value })));
   console.log(
     `\nFULL-FORM COVERAGE: ${filled}/${fillable.length} fillable controls filled (${Math.round((filled / Math.max(1, fillable.length)) * 100)}%)`,
