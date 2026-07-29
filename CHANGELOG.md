@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.12.1
+- **Autofill now fills every field by default — including work authorization, visa sponsorship,
+  salary, and EEO/demographic questions.** It's your own data and nothing is ever submitted for you
+  (you review first), so the copilot no longer leaves these common, required questions blank. You can
+  still turn off "Autofill sensitive fields" in Settings if you'd rather fill those by hand.
+
 ## 0.12.0
 - **A real first-run experience.** Installing the extension now opens a setup page with a short
   “Getting started — three steps” guide, so you’re never staring at a cold toolbar icon wondering

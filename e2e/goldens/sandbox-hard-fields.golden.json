@@ -1,8 +1,7 @@
 {
   "fixture": "e2e/sandbox.html",
   "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
-  "_note": "The HARD fields autofill actually struggles with: a lazy react-select combobox (value in data-value) and file uploads (files[0].name). These fill LATE via the interactive pass → poll:true. Sensitive-field fill is on for the EEO/Gender combobox.",
-  "storage": { "f2a_fill_sensitive": true },
+  "_note": "The HARD fields autofill actually struggles with: a lazy react-select combobox (value in data-value) and file uploads (files[0].name). These fill LATE via the interactive pass → poll:true. NB: no fill_sensitive override — the EEO/Gender combobox must fill on the DEFAULT (fill-all), so this also guards that default.",
   "fields": [
     { "label": "First Name", "expect": "Jordan", "gate": true },
     {
