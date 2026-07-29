@@ -1,0 +1,11 @@
+{
+  "fixture": "ats-recruitee.html",
+  "profile": "TEST_PROFILE — Jordan Rivera",
+  "minRecall": 1,
+  "_note": "Recruitee public application form (captured live).",
+  "fields": [
+    { "selector": "[name=\"candidate.name\"]", "expect": "Jordan", "match": "contains", "gate": true },
+    { "selector": "[name=\"candidate.email\"]", "expect": "jordan.rivera@example.com", "gate": true },
+    { "selector": "[name=\"candidate.phone\"]", "expect": "555", "match": "contains", "gate": false }
+  ]
+}
