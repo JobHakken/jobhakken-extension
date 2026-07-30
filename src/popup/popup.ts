@@ -266,12 +266,14 @@ function showMiniResult(ok: boolean, msg: string): void {
 
 ($('draft') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
-  const label = b.textContent ?? '✍️ Draft answer';
+  const label = b.textContent ?? '✍️ Draft answers';
   b.disabled = true;
   b.textContent = 'Drafting…';
-  const r = await rpc<{ ok: boolean; error?: string } | null>('draft');
-  if (r?.ok) showMiniResult(true, 'Answer drafted — review it on the page.');
-  else showMiniResult(false, friendlyError(r?.error, 'Could not draft an answer here.'));
+  const r = await rpc<{ ok: boolean; filled?: number; error?: string } | null>('draft');
+  if (r?.ok) {
+    const n = r.filled ?? 1;
+    showMiniResult(true, `Drafted ${n} answer${n === 1 ? '' : 's'} — review on the page before submitting.`);
+  } else showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
   b.textContent = label;
   b.disabled = false;
 });

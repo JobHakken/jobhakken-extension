@@ -12,6 +12,7 @@ import {
   readLazyOptions,
   resolveField,
   setInputFile,
+  unmappedQuestions,
   type CoverageReport,
   type FullProfile,
   type MappingStore,
@@ -767,35 +768,50 @@ async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: stri
 }
 
 /** Draft an answer for the first empty long-text (screening) field via the desktop AI. */
-async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
-  if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
-  if (!connection) return { ok: false, error: 'Connect the app' };
-  // Only fill a textarea that has an actual associated QUESTION (label / aria-label / labelledby /
-  // question-like placeholder) — never a random empty box like a "message the recruiter" or LinkedIn
-  // "add a note" field. Prefer one inside a <form> (a real application question). (#10)
-  const questionFor = (t: HTMLTextAreaElement): string => {
-    const byId = t.getAttribute('aria-labelledby');
-    const labelledby = byId ? (document.getElementById(byId)?.textContent ?? '') : '';
-    const ph = /\?|why|describe|explain|cover letter|reason|tell us/i.test(t.placeholder) ? t.placeholder : '';
-    return (t.labels?.[0]?.textContent || t.getAttribute('aria-label') || labelledby || ph).trim();
-  };
-  const empty = (Array.from(document.querySelectorAll('textarea')) as HTMLTextAreaElement[]).filter(
-    (t) => !t.value.trim() && t.offsetParent !== null && questionFor(t),
-  );
-  const ta = empty.find((t) => t.closest('form')) ?? empty[0];
-  if (!ta) return { ok: false, error: 'No question field' };
-  try {
-    const label = questionFor(ta) || 'Why are you a good fit?';
-    const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
-    if (!r?.text) return { ok: false, error: 'No draft' };
-    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
-    setter?.call(ta, r.text);
-    ta.dispatchEvent(new Event('input', { bubbles: true }));
-    ta.dispatchEvent(new Event('change', { bubbles: true }));
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+/** A deterministic placeholder answer for Demo/test mode — no real résumé or LLM involved. */
+function draftDummyAnswer(question: string, profile: Profile): string {
+  const title = profile.currentTitle || 'software engineer';
+  const company = profile.currentCompany ? ` at ${profile.currentCompany}` : '';
+  return `As a ${title}${company}, I'm genuinely excited about this opportunity and believe my background is a strong match. [Demo answer for "${question.slice(0, 60)}" — with a résumé connected, JobHakken drafts a tailored response here for you to review.]`;
+}
+
+/**
+ * AI-fill: draft answers for the custom free-text questions the profile/answer-bank can't cover — the
+ * recurring "filled X of Y" gap. Review-first, NEVER auto-submitted. Real answers come from the metered
+ * AI proxy over the desktop bridge (per ADR-0003/0009: stateless, content transits per request, never
+ * persisted); Demo mode uses a deterministic placeholder so the wiring is testable without a résumé.
+ */
+async function draftAnswer(): Promise<{ ok: boolean; filled?: number; error?: string } | null> {
+  const fp = await getFullProfile();
+  if (!fp || Object.keys(fp.profile).length === 0) return { ok: false, error: 'No profile' };
+  const test = await isTestActive();
+  if (!test && !connection) return { ok: false, error: 'Connect the app' }; // real AI needs the bridge (BYOK path TBD)
+  const store = await answerStore();
+  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: fp.rules, store });
+  if (!questions.length) return { ok: false, error: 'No question field' };
+  const job = pageJob();
+  let filled = 0;
+  for (const q of questions.slice(0, 6)) {
+    // cap: don't spam the metered proxy on a form with many essays
+    let answer = '';
+    if (test) {
+      answer = draftDummyAnswer(q.label, fp.profile);
+    } else {
+      try {
+        answer = (await bridgeRpc<{ text?: string }>('answer', { ...job, question: q.label }))?.text ?? '';
+      } catch {
+        /* one question failing shouldn't block the rest */
+      }
+    }
+    if (!answer) continue;
+    const el = q.el as HTMLInputElement | HTMLTextAreaElement;
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, answer);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    filled++;
   }
+  return filled ? { ok: true, filled } : { ok: false, error: 'No draft' };
 }
 
 async function init() {
