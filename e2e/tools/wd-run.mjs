@@ -275,6 +275,49 @@ const r = await sw.evaluate(
 console.log('WIZARD RESULT:', JSON.stringify(r));
 await p.waitForTimeout(2500);
 console.log('end step:', await step());
+if (process.env.PROBE_DEGREE === '1') {
+  // Open the first Degree listbox and dump its options (why isn't "Masters" matching?).
+  const res = await p.evaluate(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const btn = document.querySelector('[data-automation-id="formField-degree"] button[aria-haspopup="listbox"]');
+    if (!btn) return { err: 'no degree button' };
+    const before = btn.textContent.trim();
+    for (const t of ['mousedown', 'mouseup', 'click']) btn.dispatchEvent(new MouseEvent(t, { bubbles: true }));
+    btn.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
+    let opts = [];
+    for (let i = 0; i < 30; i++) {
+      opts = [...document.querySelectorAll('[role="option"]')];
+      if (opts.length) break;
+      await sleep(120);
+    }
+    return { before, options: opts.slice(0, 12).map((o) => o.textContent.trim()) };
+  });
+  console.log('DEGREE PROBE:', JSON.stringify(res, null, 1));
+  await ctx.close();
+  process.exit(0);
+}
+if (process.env.PROBE_SCHOOL_REAL === '1') {
+  // Real keystrokes (Playwright), to see if Workday's debounced remote institution search returns
+  // matches that synthetic value-set does not.
+  const input = p.locator('[data-automation-id="formField-school"] input').first();
+  console.log('school input count:', await input.count());
+  await input.scrollIntoViewIfNeeded().catch(() => {});
+  await input.click({ force: true, timeout: 6000 }).catch((e) => console.log('click err', e.message.slice(0, 40)));
+  await p.waitForTimeout(600);
+  for (const q of ['University of Texas at Austin', 'Texas']) {
+    await input.fill('').catch(() => {});
+    await p.keyboard.type(q, { delay: 90 });
+    await p.waitForTimeout(3500);
+    const opts = await p.evaluate(() =>
+      [...document.querySelectorAll('[data-automation-id="promptOption"]')]
+        .map((o) => o.textContent.trim())
+        .slice(0, 8),
+    );
+    console.log(`SCHOOL(real) "${q}" →`, JSON.stringify(opts));
+  }
+  await ctx.close();
+  process.exit(0);
+}
 if (process.env.PROBE_SCHOOL === '1') {
   const res = await p.evaluate(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

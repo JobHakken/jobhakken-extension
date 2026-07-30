@@ -56,34 +56,40 @@ await p
 await p.waitForTimeout(800);
 // Email-auth gate
 if (await p.locator('#primary-email-0, input[name="primary-email"]').count()) {
-  await p
-    .locator('#primary-email-0, input[name="primary-email"]')
-    .first()
-    .fill(EMAIL)
+  const emailLoc = p.locator('#primary-email-0, input[name="primary-email"]').first();
+  await emailLoc.fill(EMAIL).catch(() => {});
+  // Knockout `value` bindings update on the change/blur event, not on input — blur so the email
+  // observable is populated before validation, else Next sees it empty and refuses.
+  await emailLoc.blur().catch(() => {});
+  await emailLoc
+    .evaluate((el) => {
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new Event('blur', { bubbles: true }));
+    })
     .catch(() => {});
-  // OJET styled checkbox: the real input is off-viewport; drive it with a full pointer sequence on
-  // its nearest clickable ancestor (the same technique that toggles Workday's styled checkboxes).
-  await p.evaluate(() => {
-    const box = document.querySelector('#legal-disclaimer-checkbox');
-    if (!box) return;
-    const target = box.closest('label, oj-checkboxset, .oj-checkboxset, [role="checkbox"], span, div') || box;
-    for (const t of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) {
-      const Ev = t.startsWith('pointer') && window.PointerEvent ? PointerEvent : MouseEvent;
-      target.dispatchEvent(new Ev(t, { bubbles: true, cancelable: true }));
-    }
-    if (!box.checked) {
-      box.checked = true;
-      box.dispatchEvent(new Event('input', { bubbles: true }));
-      box.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
+  await p.waitForTimeout(500);
+  // The terms checkbox is a Knockout-bound hidden <input> (data-bind="checked: ...isAccepted"). It
+  // updates its observable on the click/change EVENT — a direct `.checked = true` is ignored. A native
+  // programmatic input.click() toggles it AND fires the event Knockout needs (works though hidden).
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const checked = await p
+      .evaluate(() => {
+        const box = document.querySelector('#legal-disclaimer-checkbox');
+        if (box && !box.checked) box.click();
+        return document.querySelector('#legal-disclaimer-checkbox')?.checked;
+      })
+      .catch(() => null);
+    if (checked) break;
+    await p.waitForTimeout(500);
+  }
   await p.waitForTimeout(600);
   await p
     .getByRole('button', { name: /^(Next|Continue|Submit)$/i })
     .first()
     .click({ timeout: 8000, force: true })
     .catch((e) => console.log('gate-next err', e.message.slice(0, 40)));
-  await p.waitForTimeout(9000);
+  await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+  await p.waitForTimeout(6000);
 }
 const afterGate = (await txt()).replace(/\s+/g, ' ').slice(0, 160);
 console.log('after gate:', afterGate);

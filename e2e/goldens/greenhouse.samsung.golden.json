@@ -28,9 +28,10 @@
     },
     {
       "selector": "#question_31130471003",
-      "expect": "https://linkedin.com/in/jordan-rivera",
+      "expect": "linkedin.com/in/jordan-rivera",
+      "match": "contains",
       "gate": false,
-      "note": "LinkedIn Profile free-text question"
+      "note": "LinkedIn Profile free-text question (contains — robust to www/no-www)"
     },
     {
       "selector": "#question_31130472003",
