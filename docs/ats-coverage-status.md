@@ -85,3 +85,10 @@ Raw captures kept out of the repo (may embed session tokens); scrub before promo
 - **Dayforce — fully automated end-to-end.** `df-run.mjs`: Apply → **"Apply without an Account"** (no account, no captcha) → form → fills **34/80** fields (name, email, mobile phone, consent). 2nd fully-automated enterprise ATS after Workday. Backlog: Confirm-Email mirror + address comboboxes.
 - Fresh live URLs sourced for Taleo (Textron/Starbucks/Zions), Oracle (JPMC/Akamai), iCIMS (GD/DMI/Getty), BrassRing (Lockheed Martin) — see `more-lisiting.md`. Taleo (server-rendered) is the next golden target.
 - Roadmap for scaling + robustness: `docs/autofill-roadmap.md`.
+- **Taleo — gate + reach-form automated.** `taleo-run.mjs`: Apply Online → I Accept → New User → register (username/password/email; no captcha, no verification) → advances past the resume step → reaches the **43-field personal-info form**. Fill then blocked by Taleo's **JSF server-side partial postbacks** (they re-render the DOM mid-fill and close the content-script channel) — same last-mile class as BrassRing's Angular re-render.
+
+### Gate-automation scorecard (enterprise ATS)
+
+- **Fully automated (gate + fill):** Workday, Dayforce.
+- **Gate + reach-form automated, fill blocked by framework re-render:** BrassRing (Angular accordion), Taleo (JSF postbacks). Common next-step: make the fill resilient to SPA/postback re-renders (re-detect + resume after a re-render).
+- **Human-gate (captcha/SPA), fill confirmed:** iCIMS, Oracle, SmartRecruiters.
