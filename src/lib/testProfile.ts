@@ -28,7 +28,7 @@ export const TEST_PROFILE: FullProfile = {
     zipCode: '78701',
     country: 'United States',
     location: 'Austin, TX',
-    linkedin: 'https://linkedin.com/in/jordan-rivera',
+    linkedin: 'https://www.linkedin.com/in/jordan-rivera',
     github: 'https://github.com/jordan-rivera',
     website: 'https://jordanrivera.dev',
     currentCompany: 'Globex Corp',
