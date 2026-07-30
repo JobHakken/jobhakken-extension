@@ -79,3 +79,9 @@ Ran `capture-run.mjs` (headed) with a human clearing each gate, then autofilled 
 - **SmartRecruiters** — in a REAL browser the one-click form loads with **no captcha to reach it** (captcha only guards final submit; the earlier block was headless bot-detection) → engine fills 6/13. Effectively works for real users.
 
 Raw captures kept out of the repo (may embed session tokens); scrub before promoting to golden fixtures.
+
+## Phase A update (2026-07-30)
+
+- **Dayforce — fully automated end-to-end.** `df-run.mjs`: Apply → **"Apply without an Account"** (no account, no captcha) → form → fills **34/80** fields (name, email, mobile phone, consent). 2nd fully-automated enterprise ATS after Workday. Backlog: Confirm-Email mirror + address comboboxes.
+- Fresh live URLs sourced for Taleo (Textron/Starbucks/Zions), Oracle (JPMC/Akamai), iCIMS (GD/DMI/Getty), BrassRing (Lockheed Martin) — see `more-lisiting.md`. Taleo (server-rendered) is the next golden target.
+- Roadmap for scaling + robustness: `docs/autofill-roadmap.md`.
