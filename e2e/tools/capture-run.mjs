@@ -71,6 +71,25 @@ if (NAME === 'icims') {
   console.log('  2) Click the submit/continue button');
   console.log(`Waiting up to ${WAIT_MIN} min for the application form to load…`);
   console.log('===============================================\n');
+} else if (NAME === 'smartrec') {
+  // SmartRecruiters: the apply form (with its captcha) is behind an "I'm interested" click.
+  await p
+    .getByText(/I'?m interested/i)
+    .first()
+    .click({ timeout: 6000 })
+    .catch(() => {});
+  await p.waitForTimeout(6000);
+  await p
+    .locator('#email, input[type="email"], input[name*="mail" i]')
+    .first()
+    .fill(CAP_EMAIL)
+    .catch(() => {});
+  console.log('\n================ ACTION NEEDED ================');
+  console.log('A browser window is open on the SmartRecruiters apply page.');
+  console.log(`Email attempted: ${CAP_EMAIL} (type it if the field is empty).`);
+  console.log('Please: fill any name/email fields shown, SOLVE THE CAPTCHA, and continue to the form.');
+  console.log(`Waiting up to ${WAIT_MIN} min for the application form to load…`);
+  console.log('===============================================\n');
 } else if (NAME === 'oracle') {
   console.log('\n================ ACTION NEEDED ================');
   console.log('A browser window is open on the Oracle apply page. Please:');
