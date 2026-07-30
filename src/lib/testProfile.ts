@@ -83,15 +83,15 @@ export const TEST_PROFILE: FullProfile = {
       school: 'The University of Texas at Austin',
       degree: 'Masters',
       fieldOfStudy: 'Computer Science',
-      period: '2022 - 2024',
+      period: 'Sep 2022 - May 2024',
     },
     {
       school: 'Texas State University',
       degree: 'Bachelors',
       fieldOfStudy: 'Electrical Engineering',
-      period: '2016 - 2020',
+      period: 'Sep 2016 - May 2020',
     },
-    { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: '2012 - 2016' },
+    { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: 'Sep 2012 - May 2016' },
   ],
   rules: [{ condition: '(how did you hear)', value: 'LinkedIn' }],
 };
