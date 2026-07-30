@@ -146,11 +146,7 @@ for (const g of goldens) {
     await cfg.close();
 
     const page = await context.newPage();
-    // domcontentloaded, not the default 'load': a captured fixture may reference an external CDN
-    // asset (e.g. a logo <img>) that never resolves offline, stalling 'load' indefinitely. The
-    // content script injects at document_idle (DOM-ready, not asset-complete), so waiting for the
-    // full load event is both unnecessary and flaky.
-    await page.goto(`/${g.fixture}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/${g.fixture}`);
 
     // Poll autofill until a gated field takes a value (the sync pass is fast; AI passes are slower).
     const anchor = g.fields.find((f) => f.gate) ?? g.fields[0];
