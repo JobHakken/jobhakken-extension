@@ -57,11 +57,43 @@ const has = async (sel) =>
     .locator(sel)
     .count()
     .catch(() => 0)) > 0;
+const CREATE = process.env.WD_CREATE === '1';
 const signInIfNeeded = async () => {
   // The account step shows EITHER a Create-Account form (email+password+verifyPassword) or a Sign-In
   // form. If we're on Create Account, switch to Sign In via its link; then fill creds and submit.
   const onAccountStep = (await has('[data-automation-id="email"]')) && (await has('[data-automation-id="password"]'));
   if (!onAccountStep) return;
+  // CREATE mode: register a fresh account on the Create-Account form (clean state, no draft clutter).
+  if (CREATE && (await has('[data-automation-id="verifyPassword"]'))) {
+    await p
+      .locator('input[data-automation-id="email"]')
+      .first()
+      .fill(EMAIL)
+      .catch(() => {});
+    await p
+      .locator('input[data-automation-id="password"]')
+      .first()
+      .fill(PW)
+      .catch(() => {});
+    await p
+      .locator('input[data-automation-id="verifyPassword"]')
+      .first()
+      .fill(PW)
+      .catch(() => {});
+    await p
+      .locator('input[data-automation-id="createAccountCheckbox"]')
+      .first()
+      .check()
+      .catch(() => {});
+    await p
+      .locator('[data-automation-id="createAccountSubmitButton"]')
+      .first()
+      .click({ force: true, timeout: 8000 })
+      .catch((e) => console.log('  [create] submit err', e.message.slice(0, 40)));
+    await p.waitForTimeout(7000);
+    console.log(`  [create] after submit → step: ${await step()} | ${(await txt()).replace(/\s+/g, ' ').slice(0, 80)}`);
+    return;
+  }
   const hasSignInLink = await has('[data-automation-id="signInLink"]');
   const hasVerify = await has('[data-automation-id="verifyPassword"]');
   console.log(`  [signIn] account step: signInLink=${hasSignInLink} verifyPassword=${hasVerify}`);
@@ -243,6 +275,43 @@ const r = await sw.evaluate(
 console.log('WIZARD RESULT:', JSON.stringify(r));
 await p.waitForTimeout(2500);
 console.log('end step:', await step());
+if (process.env.PROBE_SCHOOL === '1') {
+  const res = await p.evaluate(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const input = document.querySelector('[data-automation-id="formField-school"] input');
+    if (!input) return { err: 'no school input' };
+    const container = input.closest('[data-automation-id="multiselectInputContainer"]') || input;
+    input.focus();
+    for (const t of ['pointerdown', 'mousedown', 'mouseup', 'click']) {
+      const Ev = t.startsWith('pointer') && window.PointerEvent ? PointerEvent : MouseEvent;
+      container.dispatchEvent(new Ev(t, { bubbles: true, cancelable: true }));
+    }
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+    const results = {};
+    for (const q of ['The University of Texas at Austin', 'University of Texas', 'Texas']) {
+      setter?.call(input, q);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 's' }));
+      let opts = [];
+      for (let i = 0; i < 40; i++) {
+        opts = [...document.querySelectorAll('[data-automation-id="promptOption"]')];
+        if (opts.length) break;
+        await sleep(150);
+      }
+      results[q] = opts.slice(0, 6).map((o) => o.textContent.trim());
+    }
+    return results;
+  });
+  console.log('SCHOOL SEARCH RESULTS:', JSON.stringify(res, null, 1));
+  await ctx.close();
+  process.exit(0);
+}
+if (process.env.CAPTURE_AFTER) {
+  const { writeFileSync } = await import('fs');
+  const html = await p.evaluate(() => document.documentElement.outerHTML);
+  writeFileSync(process.env.CAPTURE_AFTER, html);
+  console.log('captured post-advance', html.length, 'bytes →', process.env.CAPTURE_AFTER);
+}
 const dbg = await p
   .evaluate(() => ({
     fields: localStorage.getItem('jh_dbg_fields'),
