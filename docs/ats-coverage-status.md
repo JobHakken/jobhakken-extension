@@ -19,8 +19,10 @@ extension's ability to fill — once a human is past the gate, the same engine f
 ## Tier 1 — single-page forms (DONE, golden-verified)
 
 Greenhouse (classic + React job-boards), Lever, Ashby, Workable, JazzHR, Jobvite, Recruitee,
-BambooHR, Teamtailor, SmartRecruiters, Breezy + SuccessFactors + a synthetic combobox/upload fixture.
+BambooHR + SuccessFactors + a synthetic combobox/upload fixture (10 golden fixtures).
 Gate: `npm run smoke` (12 goldens). These fill 100% of the mapped fields offline and deterministically.
+
+**Teamtailor** — live-verified 2026-07-30: reaching the form needs an "Apply for this job" click, then the engine fills 7/9 (name, email, phone, salary, Yes/No radios; the 2 gaps are custom essay questions). Golden capture pending. **SmartRecruiters** — its one-click apply form is CAPTCHA-gated across companies (Axiado, Aczet), so it moves to the manual-intervention group below.
 
 ## Tier 2 — enterprise, login/gated multi-step
 
