@@ -413,6 +413,9 @@ async function autofillWholeApplication(
       stopped = 'cancelled';
       break;
     }
+    // Two passes per step: a step can have more lazy comboboxes than one interactive-pass budget
+    // reaches; the 2nd pass skips the already-filled ones fast and catches the stragglers.
+    await runAutofill(mode, signal);
     const r = await runAutofill(mode, signal);
     if (r) {
       filled += r.filled;
