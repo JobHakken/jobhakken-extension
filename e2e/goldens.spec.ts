@@ -88,6 +88,16 @@ const test = base.extend<{ context: BrowserContext; extensionId: string }>({
       headless: false,
       args: ['--headless=new', `--disable-extensions-except=${EXT_DIR}`, `--load-extension=${EXT_DIR}`],
     });
+    // Captured fixtures may reference external CDN assets (e.g. a logo <img> from greenhouse.io) that
+    // never resolve offline — the request hangs, stalling the page's 'load' event and the whole run.
+    // Abort every non-local request so those assets fail INSTANTLY; local fixtures + the extension
+    // still load. (This keeps the default 'load' navigation, so PII-config propagation timing for
+    // other fixtures like SuccessFactors is unaffected.)
+    await context.route('**/*', (route) => {
+      const url = route.request().url();
+      if (/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(url)) return route.continue();
+      return route.abort();
+    });
     await use(context);
     await context.close();
   },
