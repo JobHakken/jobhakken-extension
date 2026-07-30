@@ -69,3 +69,13 @@ Workday My Information + SuccessFactors goldens already do.
 - `wd-run.mjs` — Workday full-wizard runner (temp-email account, whole-application autofill, per-step report).
 - `oracle-run.mjs` — Oracle email-gate scaffold (WIP).
 - All use mail.tm temp inboxes; Demo mode (dummy Jordan Rivera profile); never submit.
+
+## Live gate-capture results (2026-07-30, human-in-the-loop)
+
+Ran `capture-run.mjs` (headed) with a human clearing each gate, then autofilled the reached form:
+
+- **iCIMS** — human solved hCaptcha → 34-field form (in `#icims_content_iframe`) → engine fills 7 standard fields.
+- **Oracle** — human did email+terms+Next → 35-field form captured → engine fills name/email/phone/country/job-title/current-job; the **address block resists** (Knockout inputs need a `change`/blur event — targeted fix pending).
+- **SmartRecruiters** — in a REAL browser the one-click form loads with **no captcha to reach it** (captcha only guards final submit; the earlier block was headless bot-detection) → engine fills 6/13. Effectively works for real users.
+
+Raw captures kept out of the repo (may embed session tokens); scrub before promoting to golden fixtures.
