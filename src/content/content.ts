@@ -335,6 +335,114 @@ async function runAutofill(
   return { filled: report.filled + extra, review: report.review, total: report.total, partial };
 }
 
+// ── multi-step wizard orchestration ─────────────────────────────────────────────
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** A string that identifies the current wizard step (heading + path + active-step label), so we can
+ * tell when a "Continue" actually advanced us vs. was blocked by validation. */
+function stepSignature(): string {
+  const heading = document.querySelector('h1,h2,[role="heading"]')?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  const active =
+    document
+      .querySelector(
+        '[aria-current="step"], [data-automation-id*="progressBarActive" i], [class*="active" i][class*="step" i]',
+      )
+      ?.textContent?.trim() ?? '';
+  return `${location.pathname}|${heading}|${active}`.slice(0, 200);
+}
+
+/** Is this a multi-step application (a wizard with a step/progress indicator)? Only then do we
+ * auto-advance — a single-page form has no "next" to click. */
+function isWizardForm(): boolean {
+  if (/\bstep\s+\d+\s+of\s+\d+\b/i.test(document.body.innerText || '')) return true;
+  if (document.querySelector('[data-automation-id*="progressBar" i]')) return true;
+  const steps = document.querySelectorAll(
+    '[role="navigation"] [aria-current], nav [class*="step" i], [class*="progress" i] [class*="step" i]',
+  );
+  return steps.length >= 2;
+}
+
+const ADVANCE_RE =
+  /^(save and continue|save & continue|save and go to next|save and proceed|next|continue|save and continue to next|next step|save & next|proceed)$/i;
+const SUBMIT_RE = /submit|send application|finish|complete application|review your application|apply now/i;
+
+/** The control that ADVANCES to the next step — never a Submit/Send/Finish (those are a hard stop,
+ * so we hand off to the user at Review). Returns the clickable element, or null to stop. */
+function findAdvanceControl(): HTMLElement | null {
+  const cands = Array.from(
+    document.querySelectorAll('button, [role="button"], input[type="submit"], a[href="#"]'),
+  ) as HTMLElement[];
+  for (const el of cands) {
+    if (isComputedHiddenLike(el) || (el as HTMLButtonElement).disabled) continue;
+    const name = (el.textContent || el.getAttribute('aria-label') || (el as HTMLInputElement).value || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!name || SUBMIT_RE.test(name) || /\b(back|previous|cancel|save as draft|save draft|autofill)\b/i.test(name))
+      continue;
+    if (ADVANCE_RE.test(name)) return el;
+  }
+  return null; // no advance control (single-page, or the only forward action is Submit → stop)
+}
+
+/** cheap visibility check (avoids importing the engine's internal one) */
+function isComputedHiddenLike(el: HTMLElement): boolean {
+  const s = getComputedStyle(el);
+  if (s.display === 'none' || s.visibility === 'hidden' || parseFloat(s.opacity) <= 0.01) return true;
+  const r = el.getBoundingClientRect();
+  return r.width < 2 && r.height < 2;
+}
+
+/**
+ * Fill an ENTIRE application in one click: fill the current step, click Continue (never Submit),
+ * wait for the next step, repeat — until Review / a Submit-only step / a validation stall / the cap.
+ * A single-page form just fills once (no advance control). The user always reviews + submits.
+ */
+async function autofillWholeApplication(
+  mode: 'default' | 'ats',
+  signal?: AbortSignal,
+): Promise<{ filled: number; review: number; total: number; partial?: boolean; steps: number; stopped: string }> {
+  let filled = 0;
+  let review = 0;
+  let total = 0;
+  let steps = 0;
+  let stopped = 'done';
+  for (let i = 0; i < 12; i++) {
+    if (signal?.aborted) {
+      stopped = 'cancelled';
+      break;
+    }
+    const r = await runAutofill(mode, signal);
+    if (r) {
+      filled += r.filled;
+      review += r.review;
+      total += r.total;
+    }
+    steps++;
+    if (!isWizardForm()) {
+      stopped = 'single-page';
+      break;
+    }
+    const sig = stepSignature();
+    const adv = findAdvanceControl();
+    if (!adv) {
+      stopped = 'reached-review-or-submit';
+      break;
+    } // hand to the user to review + submit
+    adv.click();
+    // wait for the step to actually change; if it doesn't, validation blocked us → stop + report
+    let changed = false;
+    for (let w = 0; w < 24 && !changed; w++) {
+      await sleep(300);
+      changed = stepSignature() !== sig;
+    }
+    if (!changed) {
+      stopped = 'validation-stall';
+      break;
+    }
+  }
+  return { filled, review, total, steps, stopped };
+}
+
 /**
  * Attach the résumé / cover letter to the page's file inputs. Test mode uses bundled
  * dummy PDFs; otherwise the connected desktop app's résumé — the default one, or (ATS
@@ -764,7 +872,9 @@ async function init() {
         case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run
           const ctrl = (autofillAbort = new AbortController());
-          const r = await runAutofill(msg.params?.mode ?? 'default', ctrl.signal);
+          // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
+          // step by step, never submitting; single-page forms just fill once.
+          const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
           report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
           sendResponse(r);
           // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
