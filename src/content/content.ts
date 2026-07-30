@@ -8,14 +8,17 @@ import {
   detectFields,
   expandRepeatingSections,
   isAtsPage,
+  learnableAnswers,
   readLazyOptions,
   resolveField,
   setInputFile,
   type CoverageReport,
   type FullProfile,
+  type MappingStore,
   type Profile,
 } from '@jobhakken/autofill';
 
+import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
@@ -56,6 +59,38 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
+
+// Answer bank: learned field→key mappings + remembered answers to unmapped questions, persisted
+// locally so autofill improves with use. One store instance per page, reused by autofill + capture.
+let answerStoreP: Promise<MappingStore> | null = null;
+const answerStore = () => (answerStoreP ??= loadAnswerStore());
+
+/** Remember answers the user typed into questions the profile couldn't fill (auto-capture). */
+function captureLearnable(fp: FullProfile, store: MappingStore): void {
+  try {
+    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: fp.rules, store })) {
+      // reuse-at-review confidence; a user rule/profile value always outranks it
+      store.put(a.signature, { value: a.value, source: 'user', confidence: 0.7 });
+    }
+  } catch {
+    /* capture is best-effort; never block the page */
+  }
+}
+
+// Live auto-capture: when the user edits a field, remember answers to unmapped questions so the
+// SAME/similar question autofills next time. Debounced; skips our own fills (they resolve → excluded).
+let captureTimer: ReturnType<typeof setTimeout> | undefined;
+document.addEventListener(
+  'change',
+  () => {
+    clearTimeout(captureTimer);
+    captureTimer = setTimeout(async () => {
+      const fp = await getFullProfile();
+      if (fp) captureLearnable(fp, await answerStore());
+    }, 1200);
+  },
+  true,
+);
 
 /**
  * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
@@ -252,12 +287,16 @@ async function runAutofill(
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   const fillSensitive = await loadFillSensitive();
+  const store = await answerStore();
+  // learn any answers the user typed into unmapped questions since last time, then reuse them below
+  captureLearnable(fp, store);
   const common = {
     profile: fp.profile,
     experience: fp.experience,
     education: fp.education,
     userRules: fp.rules,
     fillSensitive,
+    store,
   };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
