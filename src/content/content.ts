@@ -433,12 +433,18 @@ async function autofillWholeApplication(
       stopped = 'reached-review-or-submit';
       break;
     } // hand to the user to review + submit
-    adv.click();
-    // wait for the step to actually change; if it doesn't, validation blocked us → stop + report
+    // Let the just-filled async widgets (Workday multiselect prompts, comboboxes) settle their
+    // validation state before advancing — clicking Save-and-Continue too early makes Workday
+    // validate against not-yet-committed values and refuse to move.
+    await sleep(600);
+    // wait for the step to actually change; if it doesn't, RE-CLICK once (the first click can race a
+    // still-open prompt / pending validation), then keep waiting before declaring a real stall.
     let changed = false;
-    for (let w = 0; w < 24 && !changed; w++) {
+    adv.click();
+    for (let w = 0; w < 30 && !changed; w++) {
       await sleep(300);
       changed = stepSignature() !== sig;
+      if (!changed && w === 10) findAdvanceControl()?.click(); // one retry after ~3s
     }
     if (!changed) {
       stopped = 'validation-stall';

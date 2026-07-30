@@ -15,7 +15,10 @@ export const TEST_PROFILE: FullProfile = {
     fullName: 'Jordan Alex Rivera',
     preferredName: 'Jordan',
     email: 'jordan.rivera@example.com',
-    phone: '(555) 010-0134',
+    // A libphonenumber-valid US example ((201) 555-0123 → +12015550123). The old (555) 010-0134 was
+    // rejected by real region validators (Workday): 555 is not a valid area code and an exchange
+    // starting with 0 is illegal, so the number blocked the wizard's Save-and-Continue.
+    phone: '(201) 555-0123',
     nationality: 'United States',
     addressLine1: '128 Maple Street',
     addressLine2: 'Apt 4B',

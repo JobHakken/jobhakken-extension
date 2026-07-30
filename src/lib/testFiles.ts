@@ -9,7 +9,7 @@ export function dummyResumeFile(): File {
   return textToPdfFile(
     [
       'Jordan Rivera — Senior Engineer',
-      'jordan.rivera@example.com | (555) 010-0134',
+      'jordan.rivera@example.com | (201) 555-0123',
       '',
       'TEST DATA — do not submit.',
     ].join('\n'),
