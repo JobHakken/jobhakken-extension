@@ -348,7 +348,9 @@ function stepSignature(): string {
         '[aria-current="step"], [data-automation-id*="progressBarActive" i], [class*="active" i][class*="step" i]',
       )
       ?.textContent?.trim() ?? '';
-  return `${location.pathname}|${heading}|${active}`.slice(0, 200);
+  // "step 2 of 6" is the most reliable change signal on wizards whose URL/heading don't change.
+  const stepNum = (document.body.innerText || '').match(/step\s+(\d+)\s+of\s+\d+/i)?.[1] ?? '';
+  return `${location.pathname}|${heading}|${active}|${stepNum}`.slice(0, 200);
 }
 
 /** Is this a multi-step application (a wizard with a step/progress indicator)? Only then do we
