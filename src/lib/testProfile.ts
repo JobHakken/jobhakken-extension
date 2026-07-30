@@ -48,7 +48,10 @@ export const TEST_PROFILE: FullProfile = {
     hispanicLatino: 'No',
     veteranStatus: 'I am not a protected veteran',
     disabilityStatus: 'No, I do not have a disability',
-    school: 'State University',
+    // A real, searchable institution: Workday's School field is a prompt backed by a real
+    // institution database, so a generic "State University" never matches. Real ATS use needs the
+    // user's actual school; the dummy profile uses a real name so demo/tests exercise the match.
+    school: 'The University of Texas at Austin',
     degree: 'Masters',
     fieldOfStudy: 'Computer Science',
   },
@@ -76,8 +79,18 @@ export const TEST_PROFILE: FullProfile = {
     },
   ],
   education: [
-    { school: 'State University', degree: 'Masters', fieldOfStudy: 'Computer Science', period: '2022 - 2024' },
-    { school: 'City College', degree: 'Bachelors', fieldOfStudy: 'Electrical Engineering', period: '2016 - 2020' },
+    {
+      school: 'The University of Texas at Austin',
+      degree: 'Masters',
+      fieldOfStudy: 'Computer Science',
+      period: '2022 - 2024',
+    },
+    {
+      school: 'Texas State University',
+      degree: 'Bachelors',
+      fieldOfStudy: 'Electrical Engineering',
+      period: '2016 - 2020',
+    },
     { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: '2012 - 2016' },
   ],
   rules: [{ condition: '(how did you hear)', value: 'LinkedIn' }],
