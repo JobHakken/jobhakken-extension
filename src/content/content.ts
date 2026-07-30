@@ -413,10 +413,20 @@ async function autofillWholeApplication(
       stopped = 'cancelled';
       break;
     }
-    // Two passes per step: a step can have more lazy comboboxes than one interactive-pass budget
-    // reaches; the 2nd pass skips the already-filled ones fast and catches the stragglers.
-    await runAutofill(mode, signal);
-    const r = await runAutofill(mode, signal);
+    // Two re-detecting passes per step: a step can have more lazy comboboxes than one interactive
+    // budget reaches, and framework re-renders (Taleo JSF partial postbacks, BrassRing/Oracle
+    // Angular/Knockout) mutate the DOM mid-fill — which can THROW on stale element refs. Each pass
+    // re-detects (runAutofill calls detectFields fresh) and refills; wrapping each pass so a mid-fill
+    // re-render never aborts the whole run means the 2nd pass simply re-detects and completes.
+    let r: Awaited<ReturnType<typeof runAutofill>> = null;
+    for (let pass = 0; pass < 2; pass++) {
+      if (signal?.aborted) break;
+      try {
+        r = await runAutofill(mode, signal);
+      } catch {
+        await sleep(400); // DOM re-rendered mid-pass — let it settle; the next pass re-detects
+      }
+    }
     if (r) {
       filled += r.filled;
       review += r.review;
@@ -876,50 +886,61 @@ async function init() {
     }
     if (msg?.type !== 'f2a-rpc') return;
     (async () => {
-      switch (msg.method) {
-        case 'getState':
-          sendResponse(getState());
-          break;
-        case 'autofill': {
-          autofillAbort?.abort(); // supersede any in-flight run
-          const ctrl = (autofillAbort = new AbortController());
-          // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
-          // step by step, never submitting; single-page forms just fill once.
-          const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
-          report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
-          sendResponse(r);
-          // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
-          // and break its Cancel.
-          if (autofillAbort === ctrl) autofillAbort = null;
-          break;
+      // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
+      // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
+      // result. Wrap the whole dispatch so the channel always resolves.
+      try {
+        switch (msg.method) {
+          case 'getState':
+            sendResponse(getState());
+            break;
+          case 'autofill': {
+            autofillAbort?.abort(); // supersede any in-flight run
+            const ctrl = (autofillAbort = new AbortController());
+            // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
+            // step by step, never submitting; single-page forms just fill once.
+            const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
+            report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
+            sendResponse(r);
+            // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
+            // and break its Cancel.
+            if (autofillAbort === ctrl) autofillAbort = null;
+            break;
+          }
+          case 'cancelAutofill':
+            autofillAbort?.abort();
+            sendResponse({ ok: true });
+            break;
+          case 'analyze': {
+            const res = await analyzeJob();
+            report('match_scored', { ok: res?.ats != null });
+            sendResponse(res);
+            break;
+          }
+          case 'draft':
+            sendResponse(await draftAnswer());
+            break;
+          case 'save':
+            sendResponse(await saveJob());
+            break;
+          case 'capture':
+            sendResponse(await capturePage());
+            break;
+          case 'toggleSite':
+            siteOptedIn = !!msg.params?.on;
+            await setSiteOptIn(location.hostname, siteOptedIn);
+            if (siteOptedIn) void captureFlow();
+            sendResponse({ ok: true });
+            break;
+          default:
+            sendResponse({ error: 'unknown method' });
         }
-        case 'cancelAutofill':
-          autofillAbort?.abort();
-          sendResponse({ ok: true });
-          break;
-        case 'analyze': {
-          const res = await analyzeJob();
-          report('match_scored', { ok: res?.ats != null });
-          sendResponse(res);
-          break;
+      } catch (e) {
+        try {
+          sendResponse({ error: e instanceof Error ? e.message : String(e) });
+        } catch {
+          /* channel already closed by the caller — nothing to do */
         }
-        case 'draft':
-          sendResponse(await draftAnswer());
-          break;
-        case 'save':
-          sendResponse(await saveJob());
-          break;
-        case 'capture':
-          sendResponse(await capturePage());
-          break;
-        case 'toggleSite':
-          siteOptedIn = !!msg.params?.on;
-          await setSiteOptIn(location.hostname, siteOptedIn);
-          if (siteOptedIn) void captureFlow();
-          sendResponse({ ok: true });
-          break;
-        default:
-          sendResponse({ error: 'unknown method' });
       }
     })();
     return true; // async sendResponse
