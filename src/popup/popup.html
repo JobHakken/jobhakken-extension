@@ -211,6 +211,39 @@
       .aiusage.hidden {
         display: none;
       }
+      .reviewbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: 9px;
+        background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      }
+      .reviewbar span {
+        flex: 1;
+      }
+      .reviewbar a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .reviewbar a:hover {
+        text-decoration: underline;
+      }
+      .reviewbar button {
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 2px;
+      }
+      .reviewbar.hidden {
+        display: none;
+      }
       .count b {
         color: var(--fg);
         font-size: 13.5px;
@@ -541,6 +574,11 @@
         </button>
       </div>
       <div class="result" id="fillResult"></div>
+
+      <div class="reviewbar hidden" id="reviewBar">
+        <span>★ Enjoying JobHakken? <a id="reviewLink" href="#">Leave a quick review →</a></span>
+        <button id="reviewDismiss" title="Dismiss" aria-label="Dismiss">×</button>
+      </div>
 
       <details class="ins hidden" id="insights">
         <summary>

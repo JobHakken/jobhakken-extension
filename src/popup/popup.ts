@@ -1,5 +1,6 @@
 import { hasAiKey } from '../lib/aiKeyStore.js';
 import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
+import { markReviewShown, recordMeaningfulFill, REVIEW_URL, shouldPromptReview } from '../lib/reviewStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
 import { escapeHtml } from '../lib/html.js';
@@ -210,7 +211,25 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
   $('fillResult').innerHTML = r
     ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<span class="chip rev">${r.review} to review</span>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}`
     : 'Set up your profile in Settings first.';
+
+  // Organic review prompt: after a couple of meaningful fills, offer a review once (ever).
+  if (r && typeof r !== 'string' && r.filled >= 8 && !r.partial) {
+    await recordMeaningfulFill();
+    if (await shouldPromptReview()) {
+      await markReviewShown();
+      $('reviewBar').classList.remove('hidden');
+    }
+  }
 }
+// Review banner: open the Web Store reviews page, or dismiss — either way it never returns
+// (markReviewShown was already called when it appeared).
+$('reviewLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  void chrome.tabs.create({ url: REVIEW_URL });
+  $('reviewBar').classList.add('hidden');
+});
+$('reviewDismiss').addEventListener('click', () => $('reviewBar').classList.add('hidden'));
+
 ($('autofill') as HTMLButtonElement).addEventListener('click', (e) =>
   runFill(e.currentTarget as HTMLButtonElement, 'default'),
 );
