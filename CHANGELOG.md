@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.12.2
+- **Screening questions on Lever-style applications now fill.** Custom dropdown questions whose label
+  sits next to the field (common on Lever and similar forms) were being skipped; the copilot now reads
+  those side-labels and answers them. Bumps the autofill engine to 0.2.1.
+
 ## 0.12.1
 - **Autofill now fills every field by default — including work authorization, visa sponsorship,
   salary, and EEO/demographic questions.** It's your own data and nothing is ever submitted for you
