@@ -530,6 +530,32 @@
         <a href="https://jobhakken.com/download" target="_blank" rel="noopener">Download it here</a>, open it, then come
         back to this tab.
       </p>
+      <h3 class="sec-h">🤖 AI drafting (your own key)</h3>
+      <p class="note">
+        Add your own AI key to draft answers for open-ended application questions — works
+        <b>without the desktop app</b>, on any plan, at no cost to us. Get a key at
+        <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> (or use OpenAI). Your
+        key is kept in memory for this browser session only, never sent to JobHakken.
+      </p>
+      <div class="f">
+        <label for="aiKey">AI API key</label
+        ><input id="aiKey" type="password" placeholder="sk-or-… (OpenRouter) or sk-… (OpenAI)" autocomplete="off" />
+      </div>
+      <div class="f">
+        <label for="aiModel">Model (optional)</label
+        ><input id="aiModel" type="text" placeholder="openai/gpt-4o-mini (default)" autocomplete="off" />
+      </div>
+      <div class="f">
+        <label for="aiBase">Base URL (optional)</label
+        ><input id="aiBase" type="text" placeholder="https://openrouter.ai/api/v1 (default)" autocomplete="off" />
+      </div>
+      <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
+        <button class="save" id="aiSave">Save key</button>
+        <button class="secondary" id="aiClear" hidden>Remove key</button>
+        <span class="status" id="aiStatus"></span>
+      </div>
+
+      <h3 class="sec-h">🖥 Desktop app (optional)</h3>
       <div class="f">
         <label for="token">Connection code</label
         ><input

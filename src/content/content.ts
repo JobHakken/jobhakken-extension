@@ -23,6 +23,7 @@ import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
+import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import {
   loadAutoCapture,
@@ -781,37 +782,79 @@ function draftDummyAnswer(question: string, profile: Profile): string {
  * AI proxy over the desktop bridge (per ADR-0003/0009: stateless, content transits per request, never
  * persisted); Demo mode uses a deterministic placeholder so the wiring is testable without a résumé.
  */
-async function draftAnswer(): Promise<{ ok: boolean; filled?: number; error?: string } | null> {
+type AiUsage = { promptTokens: number; completionTokens: number };
+
+/** BYO-key AI over the SW (the key lives in the SW, never here). Batched: one call for all questions. */
+async function aiAnswers(
+  context: string,
+  job: unknown,
+  questions: string[],
+): Promise<{ answers?: string[]; usage?: AiUsage | null; error?: string }> {
+  const res = (await chrome.runtime.sendMessage({
+    type: 'f2a-ai',
+    method: 'answers',
+    params: { context, job, questions },
+  })) as { result?: { answers?: string[]; usage?: AiUsage | null }; error?: string } | undefined;
+  if (res?.error) return { error: res.error };
+  return { answers: res?.result?.answers ?? [], usage: res?.result?.usage ?? null };
+}
+
+async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: AiUsage | null; error?: string } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return { ok: false, error: 'No profile' };
   const test = await isTestActive();
-  if (!test && !connection) return { ok: false, error: 'Connect the app' }; // real AI needs the bridge (BYOK path TBD)
   const store = await answerStore();
   const questions = unmappedQuestions(document, { profile: fp.profile, userRules: fp.rules, store });
   if (!questions.length) return { ok: false, error: 'No question field' };
   const job = pageJob();
-  let filled = 0;
-  for (const q of questions.slice(0, 6)) {
-    // cap: don't spam the metered proxy on a form with many essays
-    let answer = '';
-    if (test) {
-      answer = draftDummyAnswer(q.label, fp.profile);
-    } else {
-      try {
-        answer = (await bridgeRpc<{ text?: string }>('answer', { ...job, question: q.label }))?.text ?? '';
-      } catch {
-        /* one question failing shouldn't block the rest */
+  const qs = questions.slice(0, 6); // cap: don't spam a form with many essays
+
+  // Resolution ladder (ADR-0009 §B): Demo stub · BYO key → direct (standalone, no desktop) ·
+  // desktop connected → delegate · else prompt to add a key. BYO + delegate never touch each other.
+  let answers: string[] = [];
+  let usage: AiUsage | null = null;
+  if (test) {
+    answers = qs.map((q) => draftDummyAnswer(q.label, fp.profile));
+  } else {
+    const context = buildCandidateContext(
+      fp.profile as Record<string, unknown>,
+      fp.experience ?? [],
+      fp.education ?? [],
+    );
+    const byo = await aiAnswers(
+      context,
+      job,
+      qs.map((q) => q.label),
+    );
+    if (byo.answers && byo.answers.length) {
+      answers = byo.answers;
+      usage = byo.usage ?? null;
+    } else if (byo.error === 'no-key') {
+      if (!connection) return { ok: false, error: 'Add your AI key in Options, or connect the app' };
+      for (const q of qs) {
+        try {
+          answers.push((await bridgeRpc<{ text?: string }>('answer', { ...job, question: q.label }))?.text ?? '');
+        } catch {
+          answers.push(''); // one question failing shouldn't block the rest
+        }
       }
+    } else {
+      return { ok: false, error: byo.error || 'AI draft failed' };
     }
-    if (!answer) continue;
+  }
+
+  let filled = 0;
+  qs.forEach((q, i) => {
+    const answer = answers[i];
+    if (!answer) return;
     const el = q.el as HTMLInputElement | HTMLTextAreaElement;
     const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, answer);
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     filled++;
-  }
-  return filled ? { ok: true, filled } : { ok: false, error: 'No draft' };
+  });
+  return filled ? { ok: true, filled, usage } : { ok: false, error: 'No draft' };
 }
 
 async function init() {

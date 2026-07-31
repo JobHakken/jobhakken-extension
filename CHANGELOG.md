@@ -4,6 +4,15 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.13.0
+- **Draft answers with your own AI key — no desktop app needed.** Open-ended application questions
+  ("What excites you about this role?", "Describe a project you're proud of") can now be drafted right
+  in the extension. Add your own AI key (OpenRouter, OpenAI, or any compatible provider) under
+  **Settings → AI drafting** and it works on any plan, at no cost to us. Everything else — name,
+  contact, work authorization, EEO, dropdowns — still fills with **no key and no AI**; the key only
+  drafts the essay questions rules can't answer. Answers are always shown for you to review, never
+  submitted. Your key is kept in memory for the browser session only and never sent to JobHakken.
+
 ## 0.12.1
 - **Autofill now fills every field by default — including work authorization, visa sponsorship,
   salary, and EEO/demographic questions.** It's your own data and nothing is ever submitted for you

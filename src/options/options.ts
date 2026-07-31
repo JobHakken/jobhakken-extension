@@ -7,6 +7,7 @@ import {
 } from '@jobhakken/autofill';
 
 import { connect, rpc } from '../lib/bridgeClient.js';
+import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { aggregateCorrections, correctionCaptureEnabled } from '../lib/correctionSignal.js';
@@ -467,6 +468,34 @@ $('saveProfile').addEventListener('click', onSave);
 $('connect').addEventListener('click', onConnect);
 $('disconnect').addEventListener('click', onDisconnect);
 $('importBtn').addEventListener('click', onImport);
+
+// ── BYO AI key (standalone AI, no desktop) ───────────────────
+async function refreshAi(): Promise<void> {
+  const m = await getAiConfigMeta();
+  ($('aiModel') as HTMLInputElement).value = m.model;
+  ($('aiBase') as HTMLInputElement).value = m.baseUrl;
+  ($('aiStatus') as HTMLElement).textContent = m.hasKey ? '✓ Key active this session' : '';
+  ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
+}
+$('aiSave').addEventListener('click', async () => {
+  const apiKey = ($('aiKey') as HTMLInputElement).value.trim();
+  const model = ($('aiModel') as HTMLInputElement).value.trim();
+  const baseUrl = ($('aiBase') as HTMLInputElement).value.trim();
+  if (!apiKey) {
+    ($('aiStatus') as HTMLElement).textContent = 'Enter a key first';
+    return;
+  }
+  await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined });
+  ($('aiKey') as HTMLInputElement).value = '';
+  await refreshAi();
+});
+$('aiClear').addEventListener('click', async () => {
+  await clearAiConfig();
+  ($('aiModel') as HTMLInputElement).value = '';
+  ($('aiBase') as HTMLInputElement).value = '';
+  await refreshAi();
+});
+void refreshAi();
 
 // ── first-run "Getting started" strip ────────────────────────
 // Shown until the user dismisses it (persisted). onInstalled opens this page on first install,

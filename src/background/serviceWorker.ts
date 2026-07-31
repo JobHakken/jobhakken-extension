@@ -8,6 +8,8 @@
  */
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
+import { draftAnswers } from '../lib/aiClient.js';
+import { getAiConfig } from '../lib/aiKeyStore.js';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
@@ -159,6 +161,30 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ result });
     } catch (e) {
       sendResponse({ error: e instanceof Error ? e.message : 'bridge error' });
+    }
+  })();
+  return true; // async response
+});
+
+// Standalone AI (BYO key): the content script sends a candidate brief + job + questions; WE hold the
+// key (session storage) and call the provider directly, so no desktop app is needed and the key never
+// enters the page/content world. Zero telemetry on this path (ADR-0009). Only our own contexts.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-ai' || msg.method !== 'answers') return;
+  if (sender.id !== chrome.runtime.id) return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg) {
+        sendResponse({ error: 'no-key' });
+        return;
+      }
+      const params = (msg.params ?? {}) as { context?: string; job?: Record<string, string>; questions?: string[] };
+      const questions = Array.isArray(params.questions) ? params.questions.map(String).slice(0, 8) : [];
+      const { answers, usage } = await draftAnswers(cfg, String(params.context ?? ''), params.job ?? {}, questions);
+      sendResponse({ result: { answers, usage } });
+    } catch (e) {
+      sendResponse({ error: e instanceof Error ? e.message : 'ai error' });
     }
   })();
   return true; // async response
