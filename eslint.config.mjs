@@ -13,6 +13,9 @@ export default tseslint.config(
       'dist/',
       'node_modules/',
       'e2e/fixtures/',
+      // Playwright dev harnesses: they embed browser code inside page.evaluate() callbacks (document,
+      // window, …) that ESLint's Node parse can't reason about. Not shipped code — exclude from lint.
+      'e2e/tools/',
       'full_website/',
       'playwright-report/',
       'test-results/',
