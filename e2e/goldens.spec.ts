@@ -215,3 +215,62 @@ for (const g of goldens) {
     }
   });
 }
+
+// ── "form accepts fill" gate (validate-probe, deterministic) ─────────────────────────────────────
+// After autofill, every required field the engine is SUPPOSED to fill (a standard profile field —
+// name/email/phone/address/EEO/…) must not be left empty. `:invalid` reflects required-emptiness live.
+// This guards against the blind spot behind the EEO miss: a common field silently stopping filling.
+// Custom application questions (essays, "open question" IDs) are excluded — no deterministic engine
+// fills those. Whitelist-by-label so it's stable across fixtures.
+// Only the UNAMBIGUOUS identity fields — these never appear inside a custom application question the
+// way "degree"/"school"/"gender" can, so the gate stays stable. It's a catastrophic-regression guard
+// ("core fields stopped filling / the form rejects our value"), complementing the per-value goldens.
+const STANDARD_FIELD =
+  /first ?name|last ?name|full name|^name$|e-?mail|^phone|phone number|mobile( number| phone)?|linkedin/i;
+for (const fixture of [
+  'ats-lever.html',
+  'ats-recruitee.html',
+  'ats-workable.html',
+  'ats-ashby.html',
+  'ats-bamboohr.html',
+]) {
+  test(`form accepts fill (standard fields): ${fixture}`, async ({ context, extensionId }) => {
+    const cfg = await context.newPage();
+    await cfg.goto(`chrome-extension://${extensionId}/options/options.html`);
+    await cfg.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true }));
+    await cfg.close();
+
+    const page = await context.newPage();
+    await page.goto(`/${fixture}`);
+    await expect
+      .poll(
+        async () => {
+          await autofill(context);
+          return page
+            .locator('input:not([type=hidden]):not([type=file])')
+            .evaluateAll((els) => els.filter((e) => (e as HTMLInputElement).value).length)
+            .catch(() => 0);
+        },
+        { timeout: 25_000 },
+      )
+      .toBeGreaterThan(0);
+    await page.waitForTimeout(1200);
+
+    // A required, still-empty field whose label/name reads like a STANDARD profile field = a real gap.
+    const flagged = await page.evaluate((reSrc: string) => {
+      const std = new RegExp(reSrc, 'i');
+      const out: string[] = [];
+      document.querySelectorAll('input,select,textarea').forEach((el) => {
+        const e = el as HTMLInputElement;
+        if (e.type === 'hidden' || e.type === 'file' || !e.matches(':invalid')) return;
+        const lab = (e.labels?.[0]?.textContent || e.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+        if (std.test(lab) || std.test(e.name || '')) out.push(lab || e.name || '(unnamed)');
+      });
+      return [...new Set(out)];
+    }, STANDARD_FIELD.source);
+
+    expect(flagged, `${fixture}: standard required field(s) left empty after autofill → ${flagged.join(', ')}`).toEqual(
+      [],
+    );
+  });
+}
