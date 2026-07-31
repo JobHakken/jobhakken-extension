@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.16.0
+- **Upload a PDF résumé (not just paste).** The "Parse a résumé" panel now takes a PDF — the extension
+  reads the text on-device and drops it into the box for you to review, then parse with AI. Works for
+  normal text-based PDFs; a scanned/image-only PDF can't be read, so you'll be asked to paste instead.
+
 ## 0.15.1
 - A gentle, one-time "enjoying JobHakken? leave a review" note appears in the popup after a couple of
   good autofills — dismissible, shown at most once ever, counted only on your device.

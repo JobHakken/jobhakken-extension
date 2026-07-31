@@ -296,6 +296,29 @@ function renderAll() {
 }
 
 // ── AI résumé-input: paste text → parse to profile via the BYO key (no desktop) ──
+// Upload PDF → extract text (dependency-free) into the textarea for review, then Parse.
+$('resumePdf').addEventListener('change', async (e) => {
+  const file = (e.currentTarget as HTMLInputElement).files?.[0];
+  if (!file) return;
+  const status = $('resumeStatus');
+  status.innerHTML = '<span class="note">Reading PDF…</span>';
+  try {
+    const { extractPdfText } = await import('../lib/pdfText.js');
+    const text = await extractPdfText(new Uint8Array(await file.arrayBuffer()));
+    if (text.length < 40) {
+      status.innerHTML =
+        '<span class="warn">Couldn’t read text from this PDF (it may be scanned). Paste the text instead.</span>';
+      return;
+    }
+    ($('resumeText') as HTMLTextAreaElement).value = text;
+    status.innerHTML = `<span class="ok">Read ${text.length.toLocaleString()} characters — review, then Parse with AI.</span>`;
+  } catch {
+    status.innerHTML = '<span class="warn">Couldn’t read this PDF. Paste the text instead.</span>';
+  } finally {
+    (e.currentTarget as HTMLInputElement).value = ''; // allow re-selecting the same file
+  }
+});
+
 $('resumeParse').addEventListener('click', async () => {
   const text = ($('resumeText') as HTMLTextAreaElement).value.trim();
   const status = $('resumeStatus');

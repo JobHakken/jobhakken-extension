@@ -498,8 +498,11 @@
         to JobHakken.
       </p>
       <textarea id="resumeText" rows="7" placeholder="Paste your résumé text here…"></textarea>
-      <div class="bar" style="position: static; border: none; margin-top: 8px; padding: 0">
+      <div class="bar" style="position: static; border: none; margin-top: 8px; padding: 0; gap: 10px">
         <button class="save" id="resumeParse">Parse with AI</button>
+        <label class="secondary" id="resumePdfLabel" style="cursor: pointer">
+          Upload PDF<input id="resumePdf" type="file" accept="application/pdf,.pdf" hidden />
+        </label>
         <span class="status" id="resumeStatus"></span>
       </div>
     </details>
