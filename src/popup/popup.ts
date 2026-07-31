@@ -1,3 +1,4 @@
+import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
 import { escapeHtml } from '../lib/html.js';
@@ -264,15 +265,39 @@ function showMiniResult(ok: boolean, msg: string): void {
   $('miniResult').innerHTML = `<span class="chip ${ok ? 'ok' : 'rev'}">${ok ? '✓' : '⚠'} ${esc(msg)}</span>`;
 }
 
+// Render this month's AI-draft usage under the mini row (on-device only; hidden until there's any).
+async function renderAiUsage(): Promise<void> {
+  const el = $('aiUsage');
+  const m = await getMonthUsage();
+  if (!m.drafts) {
+    el.classList.add('hidden');
+    return;
+  }
+  const tokens = totalTokens(m);
+  const cost = fmtCost(estCostUsd(m.promptTokens, m.completionTokens));
+  const parts = [`<b>${m.drafts}</b> draft${m.drafts === 1 ? '' : 's'} this month`];
+  if (tokens) parts.push(`<b>${fmtTokens(tokens)}</b> tokens`, `≈ <b>${cost}</b>`);
+  el.innerHTML = `🤖 ${parts.join(' · ')}`;
+  el.classList.remove('hidden');
+}
+
 ($('draft') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
   const label = b.textContent ?? '✍️ Draft answers';
   b.disabled = true;
   b.textContent = 'Drafting…';
-  const r = await rpc<{ ok: boolean; filled?: number; error?: string } | null>('draft');
+  const r = await rpc<{
+    ok: boolean;
+    filled?: number;
+    usage?: { promptTokens: number; completionTokens: number } | null;
+    error?: string;
+  } | null>('draft');
   if (r?.ok) {
     const n = r.filled ?? 1;
-    showMiniResult(true, `Drafted ${n} answer${n === 1 ? '' : 's'} — review on the page before submitting.`);
+    await recordDraft(n, r.usage?.promptTokens ?? 0, r.usage?.completionTokens ?? 0);
+    const tok = r.usage ? ` · ~${fmtTokens(totalTokens(r.usage))} tokens` : '';
+    showMiniResult(true, `Drafted ${n} answer${n === 1 ? '' : 's'}${tok} — review before submitting.`);
+    await renderAiUsage();
   } else showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
   b.textContent = label;
   b.disabled = false;
@@ -361,3 +386,4 @@ document
   .forEach((b) => b.addEventListener('click', () => void openReport(b.dataset.r ?? 'other')));
 
 void render();
+void renderAiUsage();

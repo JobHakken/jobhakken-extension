@@ -195,6 +195,22 @@
         align-items: center;
         gap: 7px;
       }
+      .aiusage {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: default;
+      }
+      .aiusage b {
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .aiusage.hidden {
+        display: none;
+      }
       .count b {
         color: var(--fg);
         font-size: 13.5px;
@@ -539,6 +555,11 @@
         <button id="save">📌 Save job</button>
       </div>
       <div class="result" id="miniResult"></div>
+      <div
+        class="aiusage hidden"
+        id="aiUsage"
+        title="Counted on your device only — never sent to JobHakken. Cost is an estimate at gpt-4o-mini rates."
+      ></div>
 
       <label class="sitecap" id="siteCapRow"
         ><input type="checkbox" id="siteCap" /> <span id="siteCapLabel"></span

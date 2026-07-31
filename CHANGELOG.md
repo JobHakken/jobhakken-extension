@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.13.1
+- **See your AI usage in the popup.** After drafting answers, the popup shows a running "N drafts this
+  month · X tokens · ≈ cost" line so you always know what the AI has used. It's counted on your device
+  only and never sent to JobHakken; the cost is an estimate at gpt-4o-mini rates (your actual rate
+  depends on the model you choose).
+
 ## 0.13.0
 - **Draft answers with your own AI key — no desktop app needed.** Open-ended application questions
   ("What excites you about this role?", "Describe a project you're proud of") can now be drafted right
