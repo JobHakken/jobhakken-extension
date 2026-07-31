@@ -62,6 +62,48 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
 
+// Visually flag the fields the user should review (filled at review-confidence, or AI-drafted) so
+// "N to review" is actionable — an amber outline + hover hint, cleared on the next fill. Tracking
+// lives in the isolated world (a WeakSet + array), never a page-readable value (#12); only the
+// outline/title are visible, which is the point.
+const REVIEW_HINT = 'JobHakken filled this — please review before submitting';
+const reviewMarked = new WeakSet<HTMLElement>();
+let reviewedEls: HTMLElement[] = [];
+/** The most-visible box to outline — the control itself, or (for a styled/hidden radio) its label. */
+function reviewTarget(el: HTMLElement): HTMLElement {
+  if (el.offsetWidth > 0 && el.offsetHeight > 0) return el;
+  const scope = el.getRootNode() as ParentNode;
+  const forLabel = el.id
+    ? (Array.from(scope.querySelectorAll('label')).find((l) => (l as HTMLLabelElement).htmlFor === el.id) as
+        HTMLElement | undefined)
+    : undefined;
+  const box =
+    (el.closest('label') as HTMLElement | null) ??
+    forLabel ??
+    (el.closest('[class*="question"],[class*="field"],fieldset,li') as HTMLElement | null) ??
+    el.parentElement ??
+    el;
+  return box.offsetWidth > 0 ? box : el;
+}
+function clearReviewMarks(): void {
+  for (const el of reviewedEls) {
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+    if (el.getAttribute('title') === REVIEW_HINT) el.removeAttribute('title');
+    reviewMarked.delete(el);
+  }
+  reviewedEls = [];
+}
+function markReview(el: HTMLElement): void {
+  const t = reviewTarget(el);
+  if (reviewMarked.has(t)) return;
+  t.style.outline = '2px solid #e0a53f';
+  t.style.outlineOffset = '1px';
+  if (!t.getAttribute('title')) t.setAttribute('title', REVIEW_HINT);
+  reviewMarked.add(t);
+  reviewedEls.push(t);
+}
+
 // Answer bank: learned field→key mappings + remembered answers to unmapped questions, persisted
 // locally so autofill improves with use. One store instance per page, reused by autofill + capture.
 let answerStoreP: Promise<MappingStore> | null = null;
@@ -309,9 +351,11 @@ async function runAutofill(
   const report = autofillForm({ root: document, ...common });
   // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
   // so a later capture can tell autofill from manual entry without exposing the values to the page.
+  clearReviewMarks(); // fresh run → drop last run's outlines
   for (const r of report.results) {
-    if (r.status === 'filled' && r.field.el instanceof HTMLElement) {
-      filledValues.set(r.field.el, String(r.value));
+    if (r.field.el instanceof HTMLElement) {
+      if (r.status === 'filled') filledValues.set(r.field.el, String(r.value));
+      else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
     }
   }
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
@@ -852,6 +896,7 @@ async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: Ai
     Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, answer);
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
+    markReview(el); // AI drafts always need a look before submitting
     filled++;
   });
   return filled ? { ok: true, filled, usage } : { ok: false, error: 'No draft' };
@@ -979,6 +1024,12 @@ async function init() {
           case 'draft':
             sendResponse(await draftAnswer());
             break;
+          case 'scrollToReview': {
+            const first = reviewedEls.find((el) => el.isConnected);
+            first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
+            break;
+          }
           case 'save':
             sendResponse(await saveJob());
             break;

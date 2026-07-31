@@ -139,8 +139,8 @@ async function render() {
 
   $('fieldCount').textContent = String(state.fields);
 
-  // connected-only surfaces
-  $('autofillAts').classList.toggle('hidden', !connected);
+  // "Autofill + AI" is always available (BYO key or desktop); it just drafts the open-ended answers
+  // after filling. connected-only surfaces:
   $('insights').classList.toggle('hidden', !connected);
   // The Draft-answers row shows when the desktop is connected OR a BYO AI key is set (standalone AI) —
   // otherwise the key would be unreachable from the UI. "Save job" is desktop-only, so hide it alone.
@@ -181,7 +181,7 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
     return;
   }
   filling = true;
-  const other = (mode === 'ats' ? $('autofill') : $('autofillAts')) as HTMLButtonElement;
+  const other = (btn.id === 'autofill' ? $('autofillAi') : $('autofill')) as HTMLButtonElement;
   other.disabled = true;
   const big = btn.querySelector('.big') as HTMLElement;
   const sm = btn.querySelector('.sm') as HTMLElement;
@@ -209,7 +209,7 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
     return;
   }
   $('fillResult').innerHTML = r
-    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<span class="chip rev">${r.review} to review</span>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}`
+    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip rev jump" title="Scroll to the amber-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in amber on the page.</div>' : ''}`
     : 'Set up your profile in Settings first.';
 
   // Organic review prompt: after a couple of meaningful fills, offer a review once (ever).
@@ -230,12 +230,20 @@ $('reviewLink').addEventListener('click', (e) => {
 });
 $('reviewDismiss').addEventListener('click', () => $('reviewBar').classList.add('hidden'));
 
+// Autofill — plain deterministic fill (tailored résumé too when the desktop app is connected).
 ($('autofill') as HTMLButtonElement).addEventListener('click', (e) =>
-  runFill(e.currentTarget as HTMLButtonElement, 'default'),
+  runFill(e.currentTarget as HTMLButtonElement, lastState?.mode === 'connected' ? 'ats' : 'default'),
 );
-($('autofillAts') as HTMLButtonElement).addEventListener('click', (e) =>
-  runFill(e.currentTarget as HTMLButtonElement, 'ats'),
-);
+// Autofill + AI — fill, then draft the open-ended answers in one action.
+($('autofillAi') as HTMLButtonElement).addEventListener('click', async (e) => {
+  const btn = e.currentTarget as HTMLButtonElement;
+  await runFill(btn, lastState?.mode === 'connected' ? 'ats' : 'default');
+  await doDraft(null); // draft the essays too; shows its own status if there's a key/desktop
+});
+// Jump to the fields that need review (outlined in amber on the page).
+$('fillResult').addEventListener('click', (e) => {
+  if ((e.target as HTMLElement).closest('.jump')) void rpc('scrollToReview');
+});
 
 const insights = $('insights') as HTMLDetailsElement;
 let analyzed = false;
@@ -307,11 +315,14 @@ async function renderAiUsage(): Promise<void> {
   el.classList.remove('hidden');
 }
 
-($('draft') as HTMLButtonElement).addEventListener('click', async (e) => {
-  const b = e.currentTarget as HTMLButtonElement;
-  const label = b.textContent ?? '✍️ Draft answers';
-  b.disabled = true;
-  b.textContent = 'Drafting…';
+// Draft the open-ended answers. Reused by the "Draft answers" button and "Autofill + AI"; when called
+// from the combined action (btn=null) a "no questions here" result is silent, not an error.
+async function doDraft(btn: HTMLButtonElement | null): Promise<void> {
+  const label = btn?.textContent ?? '✍️ Draft answers';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Drafting…';
+  }
   const r = await rpc<{
     ok: boolean;
     filled?: number;
@@ -324,10 +335,15 @@ async function renderAiUsage(): Promise<void> {
     const tok = r.usage ? ` · ~${fmtTokens(totalTokens(r.usage))} tokens` : '';
     showMiniResult(true, `Drafted ${n} answer${n === 1 ? '' : 's'}${tok} — review before submitting.`);
     await renderAiUsage();
-  } else showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
-  b.textContent = label;
-  b.disabled = false;
-});
+  } else if (!(btn === null && /no question/i.test(r?.error ?? ''))) {
+    showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
+  }
+  if (btn) {
+    btn.textContent = label;
+    btn.disabled = false;
+  }
+}
+($('draft') as HTMLButtonElement).addEventListener('click', (e) => void doDraft(e.currentTarget as HTMLButtonElement));
 ($('save') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
   const label = b.textContent ?? '📌 Save job';

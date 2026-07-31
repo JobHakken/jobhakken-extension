@@ -362,6 +362,20 @@
         background: color-mix(in srgb, var(--amber) 16%, transparent);
         color: var(--amber);
       }
+      button.chip.jump {
+        border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button.chip.jump:hover {
+        background: color-mix(in srgb, var(--amber) 26%, transparent);
+      }
+      .result .hint {
+        margin-top: 5px;
+        font-size: 10.5px;
+        color: var(--muted);
+        font-weight: 400;
+      }
       details.ins {
         border: 1px solid var(--line);
         border-radius: 11px;
@@ -567,10 +581,10 @@
 
       <div class="fill2">
         <button class="fill p" id="autofill">
-          <span class="big">Autofill</span><span class="sm">+ my résumé</span>
+          <span class="big">Autofill</span><span class="sm">fill the form</span>
         </button>
-        <button class="fill a hidden" id="autofillAts">
-          <span class="big">✨ Autofill</span><span class="sm">+ tailored résumé</span>
+        <button class="fill a" id="autofillAi">
+          <span class="big">✨ Autofill + AI</span><span class="sm">fill + draft answers</span>
         </button>
       </div>
       <div class="result" id="fillResult"></div>

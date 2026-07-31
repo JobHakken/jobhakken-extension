@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.17.0
+- **Two clear buttons: "Autofill" and "Autofill + AI".** "Autofill" fills the form; "Autofill + AI"
+  fills *and* drafts the open-ended answers in one click.
+- **You can now see exactly what to review.** Fields JobHakken fills but that you should double-check
+  (defaults, AI drafts) are **outlined in amber on the page**, and the popup's "N to review" is a button
+  that scrolls straight to them — no more guessing what "to review" means.
+
 ## 0.16.0
 - **Upload a PDF résumé (not just paste).** The "Parse a résumé" panel now takes a PDF — the extension
   reads the text on-device and drops it into the box for you to review, then parse with AI. Works for
