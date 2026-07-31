@@ -506,6 +506,35 @@
         border-radius: 4px;
         font-family: monospace;
       }
+      ul.opex {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      ul.opex li {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        font-size: 11.5px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      ul.opex code {
+        flex: none;
+        background: var(--soft);
+        color: var(--accent);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        white-space: nowrap;
+      }
+      ul.opex b {
+        color: var(--fg);
+        font-weight: 600;
+      }
       .bar {
         position: sticky;
         bottom: 0;
@@ -692,6 +721,31 @@
           <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and ·
           <code>||</code> or · <code>( )</code> group
         </div>
+        <p class="ops" style="margin-top: 8px">
+          The condition is matched against the field’s <b>label</b> (case-insensitive). With no operator your phrase
+          just has to be <b>contained</b> in the label — the operators are for the trickier cases:
+        </p>
+        <ul class="opex">
+          <li><code>notice period</code><span>label contains it — “What is your notice period?”</span></li>
+          <li>
+            <code>^salary</code
+            ><span>label <b>starts with</b> “salary” — matches “Salary expectations”, not “Desired base salary”</span>
+          </li>
+          <li>
+            <code>=gpa</code><span>label is <b>exactly</b> “GPA” — skips “What’s your GPA and major?”</span>
+          </li>
+          <li>
+            <code>salary &amp;&amp; !current</code
+            ><span>has “salary” but <b>not</b> “current” — fills “Expected salary”, skips “Current salary”</span>
+          </li>
+          <li>
+            <code>sponsor || visa</code><span>has “sponsor” <b>or</b> “visa” — one rule covers both phrasings</span>
+          </li>
+          <li>
+            <code>(relocate || relocation) &amp;&amp; !remote</code
+            ><span><b>grouped</b> — a relocation question that isn’t about remote work</span>
+          </li>
+        </ul>
       </details>
     </div>
     <div class="panel" data-p="desktop">

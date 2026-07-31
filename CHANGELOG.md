@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.20.3
+- **Custom Fields → “Advanced: matching operators” now shows worked examples.** It was just a legend of
+  symbols; now it shows what each one does on a real field label (e.g. `^salary` starts-with, `salary &&
+  !current`, `sponsor || visa`, `=gpa` exact), so targeting tricky questions is clear.
+
 ## 0.20.2
 - **Screening questions on Lever-style applications now fill.** Custom dropdown questions whose label
   sits next to the field (common on Lever and similar forms) were being skipped; the copilot now reads
