@@ -110,6 +110,41 @@ function markReview(el: HTMLElement): void {
   reviewedEls.push(t);
 }
 
+/**
+ * Reveal a form hidden behind a pre-step — but ONLY when the step commits nothing and we can satisfy
+ * it from a KNOWN fact (never auto-consenting or guessing for the user). Jobvite hides its application
+ * behind a "Location of Residence and Language" <select name=jv-country-select>; choosing the user's
+ * OWN residence just renders the form (the actual privacy consent is at submit, which we never do), so
+ * advance it only when the profile country clearly matches an option, else leave it for the user.
+ */
+async function advanceKnownGates(country: string | undefined): Promise<void> {
+  const sel = document.querySelector<HTMLSelectElement>('select#jv-country-select, select[name="jv-country-select"]');
+  if (!sel || sel.selectedIndex > 0 || !country) return;
+  const c = country.toLowerCase();
+  const wantUS = /united states|u\.?s\.?a?|america/.test(c);
+  const wantUK = /united kingdom|u\.?k\.?|britain|england/.test(c);
+  let idx = -1;
+  for (let i = 1; i < sel.options.length; i++) {
+    const t = sel.options[i].text.toLowerCase();
+    if (t.includes(c) || (wantUS && /\bus\b|united states/.test(t)) || (wantUK && /\buk\b|united kingdom/.test(t))) {
+      idx = i;
+      break;
+    }
+  }
+  if (idx < 0) return; // no confident match → don't choose a residence/policy on the user's behalf
+  const before = document.querySelectorAll('input:not([type=hidden]),select,textarea').length;
+  sel.selectedIndex = idx;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+  sel.dispatchEvent(new Event('input', { bubbles: true }));
+  // Wait for the revealed form to actually render (SPA) before the caller detects + fills — poll up to
+  // ~5s rather than a fixed guess, else a single Autofill click advances the gate but fills nothing.
+  for (let i = 0; i < 10; i++) {
+    await sleep(500);
+    if (document.querySelectorAll('input:not([type=hidden]),select,textarea').length > before) break;
+  }
+  await sleep(700); // small settle so the revealed inputs are hydrated before the caller fills them
+}
+
 // Answer bank: learned field→key mappings + remembered answers to unmapped questions, persisted
 // locally so autofill improves with use. One store instance per page, reused by autofill + capture.
 let answerStoreP: Promise<MappingStore> | null = null;
@@ -336,6 +371,7 @@ async function runAutofill(
 ): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
+  await advanceKnownGates(fp.profile.country); // reveal a form hidden behind a known-fact pre-step
   const fillSensitive = await loadFillSensitive();
   const store = await answerStore();
   // learn any answers the user typed into unmapped questions since last time, then reuse them below

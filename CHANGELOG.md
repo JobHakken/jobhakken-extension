@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.19.0
+- **Jobvite applications no longer get stuck at the "Location of Residence" step.** When your country
+  clearly matches an option, JobHakken selects it to reveal the form and fills it in the same click.
+  It only does this when it can match your *own* stated country — it never picks a residence/consent
+  option for you otherwise, and never submits.
+
 ## 0.18.1
 - **A reminder to set your EEO/demographic answers once.** A résumé never contains gender/race/veteran/
   disability, and JobHakken never guesses them — so the Additional tab now nudges you to set them once
