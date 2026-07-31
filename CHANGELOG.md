@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.13.2
+- **"Draft answers" now works with just your AI key.** Fixed: the button was only shown when the
+  desktop app was connected, so someone using only their own AI key couldn't reach it. It now appears
+  whenever a key is set (or the app is connected). "Save job" stays desktop-only.
+
 ## 0.13.1
 - **See your AI usage in the popup.** After drafting answers, the popup shows a running "N drafts this
   month · X tokens · ≈ cost" line so you always know what the AI has used. It's counted on your device

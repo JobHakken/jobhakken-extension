@@ -1,3 +1,4 @@
+import { hasAiKey } from '../lib/aiKeyStore.js';
 import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
@@ -140,7 +141,11 @@ async function render() {
   // connected-only surfaces
   $('autofillAts').classList.toggle('hidden', !connected);
   $('insights').classList.toggle('hidden', !connected);
-  $('mini').classList.toggle('hidden', !connected);
+  // The Draft-answers row shows when the desktop is connected OR a BYO AI key is set (standalone AI) —
+  // otherwise the key would be unreachable from the UI. "Save job" is desktop-only, so hide it alone.
+  const hasKey = await hasAiKey();
+  $('mini').classList.toggle('hidden', !(connected || hasKey));
+  $('save').classList.toggle('hidden', !connected);
 
   // "run on this site" — for job/career sites we don't auto-detect
   const cs = state.captureSite;
@@ -156,9 +161,11 @@ async function render() {
 
   $('foot').innerHTML = connected
     ? 'Never auto-submits — you review first. AI runs through your desktop app.'
-    : state.mode === 'standalone'
-      ? 'Connect the desktop app (Settings) for a résumé match, visa signal &amp; a tailored résumé.'
-      : 'Add your profile in Settings to autofill. Connect the app for AI + résumé.';
+    : hasKey
+      ? 'Draft answers uses your own AI key. Never auto-submits — you review first.'
+      : state.mode === 'standalone'
+        ? 'Connect the desktop app (Settings) for a résumé match, visa signal &amp; a tailored résumé.'
+        : 'Add your profile in Settings to autofill. Connect the app for AI + résumé.';
 }
 
 // ── actions ──────────────────────────────────────────────
