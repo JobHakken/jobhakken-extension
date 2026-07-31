@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.20.1
+- **Common questions, one click to add.** Custom Fields now has a row of the questions people hit most
+  (notice period, start date, relocate, sponsorship, references, GPA…) — click one to add it, pre-filled
+  with a sensible answer to edit. JobHakken can't put every possible field on the profile page, so this
+  makes the ones you run into quick to set up.
+
 ## 0.20.0
 - **Don't like an AI answer? Refine it.** After drafting, the popup lets you pick a drafted question,
   tell the AI what to change (e.g. "make it shorter and mention my Python experience"), and redo just

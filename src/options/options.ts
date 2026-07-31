@@ -176,6 +176,51 @@ function renderRules() {
   });
 }
 
+// ── common custom questions (the "learnings") — one click adds a rule to fill in ──
+// Questions autofill can't put on the main profile page but people frequently hit. Clicking a chip
+// adds a rule (phrase pre-filled, a sensible suggested answer to edit).
+const COMMON_QUESTIONS: { label: string; condition: string; value: string }[] = [
+  { label: 'Notice period', condition: 'notice period', value: '2 weeks' },
+  { label: 'Earliest start date', condition: 'start date', value: 'Immediately' },
+  { label: 'Willing to relocate', condition: 'willing to relocate', value: 'Yes' },
+  { label: 'Willing to travel', condition: 'willing to travel', value: 'Yes' },
+  { label: 'How did you hear about us', condition: 'how did you hear', value: 'LinkedIn' },
+  { label: 'Desired salary', condition: 'desired salary', value: '' },
+  { label: 'Current salary', condition: 'current salary', value: '' },
+  { label: 'Authorized to work', condition: 'authorized to work', value: 'Yes' },
+  { label: 'Require sponsorship', condition: 'require sponsorship', value: 'No' },
+  { label: 'Over 18', condition: 'over 18', value: 'Yes' },
+  { label: 'Security clearance', condition: 'security clearance', value: 'No' },
+  { label: 'Worked here before', condition: 'worked here before', value: 'No' },
+  { label: 'Reference name', condition: 'reference name', value: '' },
+  { label: 'Reference email', condition: 'reference email', value: '' },
+  { label: 'Expected graduation', condition: 'graduation', value: '' },
+  { label: 'GPA', condition: 'gpa', value: '' },
+  { label: "Driver's license", condition: 'driver', value: 'Yes' },
+];
+function renderCommonQuestions(): void {
+  const box = $('commonQ');
+  box.innerHTML = '';
+  const existing = new Set((fp.rules ?? []).map((r) => (r.condition ?? '').toLowerCase().trim()));
+  for (const q of COMMON_QUESTIONS) {
+    const b = document.createElement('button');
+    b.textContent = q.label;
+    if (existing.has(q.condition.toLowerCase())) {
+      b.disabled = true;
+      b.title = 'Already added below';
+    } else {
+      b.addEventListener('click', () => {
+        (fp.rules ??= []).push({ condition: q.condition, value: q.value });
+        renderRules();
+        renderCommonQuestions();
+        const inputs = $('ruleList').querySelectorAll('input');
+        (inputs[inputs.length - 1] as HTMLInputElement | undefined)?.focus();
+      });
+    }
+    box.appendChild(b);
+  }
+}
+
 // ── save ─────────────────────────────────────────────────────
 function composeFullName() {
   const parts = [fp.profile.firstName, fp.profile.middleName, fp.profile.lastName].filter(Boolean);
@@ -309,6 +354,7 @@ function renderAll() {
   renderWork();
   renderEdu();
   renderRules();
+  renderCommonQuestions();
   renderEeoNudge();
 }
 // Hide the nudge live as the user fills an EEO field in the Additional grid.

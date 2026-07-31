@@ -224,6 +224,35 @@
         color: var(--fg);
         font-weight: 600;
       }
+      .commonq {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 0 0 16px;
+      }
+      .commonq button {
+        font: inherit;
+        font-size: 12px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .commonq button:hover {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+      }
+      .commonq button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .commonq button::before {
+        content: '+ ';
+        color: var(--accent);
+        font-weight: 700;
+      }
       .eeonudge {
         padding: 12px 14px;
         margin-bottom: 14px;
@@ -650,39 +679,11 @@
     </div>
     <div class="panel" data-p="custom">
       <p class="note">
-        Optional — set your own answers for questions autofill doesn’t already handle. When a field’s label matches your
-        rule, JobHakken fills your answer. Match on a word or phrase from the field’s label:
+        Set your own answers for questions autofill doesn’t already handle — JobHakken can’t list every field on this
+        page, so add the common ones you run into. When a field’s label contains your phrase, it fills your answer.
       </p>
-      <table class="examples">
-        <thead>
-          <tr>
-            <th>If the field’s label contains…</th>
-            <th>Fill…</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>notice period</td>
-            <td>2 weeks</td>
-          </tr>
-          <tr>
-            <td>desired start date</td>
-            <td>Immediately</td>
-          </tr>
-          <tr>
-            <td>how did you hear</td>
-            <td>LinkedIn</td>
-          </tr>
-          <tr>
-            <td>willing to relocate</td>
-            <td>Yes</td>
-          </tr>
-          <tr>
-            <td>desired salary</td>
-            <td>$120,000</td>
-          </tr>
-        </tbody>
-      </table>
+      <p class="note"><b>Common questions — click one to add it, then fill in your answer:</b></p>
+      <div class="commonq" id="commonQ"></div>
       <div id="ruleList"></div>
       <span class="add" id="addRule">+ Add rule</span>
       <details class="adv">
