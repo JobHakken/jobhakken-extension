@@ -25,6 +25,7 @@ import { bucket, report } from '../lib/telemetryClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
+import { getResumeFile } from '../lib/resumeFileStore.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
@@ -596,6 +597,13 @@ async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ res
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
     }
+  }
+  // Standalone / BYO (no desktop, or the desktop had no résumé): attach the résumé file the user
+  // uploaded in Options. This is what makes résumé upload work on real forms without the app.
+  if (!out.resume) {
+    const stored = await getResumeFile();
+    if (stored?.base64)
+      out.resume = base64ToFile(stored.base64, stored.fileName || 'resume.pdf', stored.mimeType || 'application/pdf');
   }
   // default cover letter comes from the user's saved profile text (local), rendered here
   const local = await loadFullProfile();

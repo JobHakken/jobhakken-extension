@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.19.1
+- **Résumé upload now attaches to applications — without the desktop app.** Uploading a PDF/Word résumé
+  in Settings now keeps the file and attaches it to application forms (it used to only work when the
+  desktop app was connected, so standalone users saw the résumé field left empty). Kept on your device.
+
 ## 0.19.0
 - **Jobvite applications no longer get stuck at the "Location of Residence" step.** When your country
   clearly matches an option, JobHakken selects it to reveal the form and fills it in the same click.

@@ -9,6 +9,7 @@ import {
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
 import { clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
+import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { aggregateCorrections, correctionCaptureEnabled } from '../lib/correctionSignal.js';
@@ -313,6 +314,25 @@ function renderAll() {
 // Hide the nudge live as the user fills an EEO field in the Additional grid.
 $('additionalGrid').addEventListener('input', renderEeoNudge);
 
+// Show the résumé file currently stored for attaching to applications (with a remove link).
+async function refreshResumeFile(): Promise<void> {
+  const el = $('resumeFileInfo');
+  const f = await getResumeFile();
+  if (f) {
+    el.innerHTML = `📎 Attached to applications: <b>${escapeHtml(f.fileName)}</b> <a href="#" id="resumeFileRemove">remove</a>`;
+    el.classList.remove('hidden');
+    $('resumeFileRemove').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await clearResumeFile();
+      await refreshResumeFile();
+    });
+  } else {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+  }
+}
+void refreshResumeFile();
+
 // ── AI résumé-input: paste text → parse to profile via the BYO key (no desktop) ──
 // Upload PDF → extract text (dependency-free) into the textarea for review, then Parse.
 $('resumePdf').addEventListener('change', async (e) => {
@@ -330,15 +350,24 @@ $('resumePdf').addEventListener('change', async (e) => {
   status.innerHTML = `<span class="note">Reading ${isDocx ? 'Word doc' : 'PDF'}…</span>`;
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
+    // Keep the file to ATTACH to applications — standalone/BYO users have no desktop app to provide it.
+    await setResumeFile({
+      base64: bytesToBase64(bytes),
+      fileName: file.name,
+      mimeType:
+        file.type ||
+        (isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf'),
+    });
+    await refreshResumeFile();
     const text = isDocx
       ? await (await import('../lib/docxText.js')).extractDocxText(bytes)
       : await (await import('../lib/pdfText.js')).extractPdfText(bytes);
     if (text.length < 40) {
-      status.innerHTML = `<span class="warn">Couldn’t read text from this ${isDocx ? 'document' : 'PDF (it may be scanned)'}. Paste the text instead.</span>`;
+      status.innerHTML = `<span class="warn">Saved to attach to applications, but couldn’t read its text (it may be scanned) — paste the text so AI can fill your profile.</span>`;
       return;
     }
     ($('resumeText') as HTMLTextAreaElement).value = text;
-    status.innerHTML = `<span class="ok">Read ${text.length.toLocaleString()} characters — review, then Parse with AI.</span>`;
+    status.innerHTML = `<span class="ok">Read ${text.length.toLocaleString()} characters · this file will be attached to applications — review, then Parse with AI.</span>`;
   } catch {
     status.innerHTML = '<span class="warn">Couldn’t read this file. Paste the text instead.</span>';
   } finally {
