@@ -10,6 +10,7 @@ import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
 import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
+import { clearIdentity, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
@@ -192,6 +193,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     } catch (e) {
       sendResponse({ error: e instanceof Error ? e.message : 'ai error' });
     }
+  })();
+  return true; // async response
+});
+
+// Sign-in bridge: the auth content script on app.jobhakken.com forwards the signed-in identity (or
+// null on sign-out). Only accept it from our own content script AND only from the web-app origin.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-auth') return;
+  if (sender.id !== chrome.runtime.id) return;
+  if (!sender.url || !sender.url.startsWith(WEB_APP_ORIGIN)) return; // must come from the web app
+  (async () => {
+    const id = msg.identity as Identity | null;
+    if (id && typeof id.email === 'string' && id.email) await saveIdentity(id);
+    else await clearIdentity();
+    sendResponse({ ok: true });
   })();
   return true; // async response
 });

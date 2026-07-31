@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.15.0
+- **Sign in with your JobHakken account.** Settings → "Sign in with JobHakken" opens the JobHakken
+  website (the same login you use everywhere — password, code, or Google); once you're in, the
+  extension picks up your account automatically. It's the groundwork for managed AI and syncing across
+  devices. Optional — the extension still works without an account, and free with your own AI key. Your
+  sign-in stays on your device; only your email/plan is kept (never your password or refresh token).
+
 ## 0.14.0
 - **Fill your profile from a résumé with AI — no desktop app.** In Settings → Profile, paste your
   résumé text and click "Parse with AI"; it extracts your name, contact, links, and work/education

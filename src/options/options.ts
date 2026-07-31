@@ -8,6 +8,7 @@ import {
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
 import { aggregateCorrections, correctionCaptureEnabled } from '../lib/correctionSignal.js';
@@ -514,6 +515,30 @@ $('saveProfile').addEventListener('click', onSave);
 $('connect').addEventListener('click', onConnect);
 $('disconnect').addEventListener('click', onDisconnect);
 $('importBtn').addEventListener('click', onImport);
+
+// ── Sign in (identity) — reuses the website's auth; the auth content script reports back ──
+async function refreshAuth(): Promise<void> {
+  const id = await loadIdentity();
+  ($('authStatus') as HTMLElement).innerHTML = id
+    ? `<span class="ok">✓ Signed in as ${escapeHtml(id.email)}${id.tier ? ` · ${escapeHtml(id.tier)}` : ''}</span>`
+    : '';
+  ($('signOut') as HTMLButtonElement).hidden = !id;
+  ($('signIn') as HTMLButtonElement).textContent = id ? 'Switch account' : 'Sign in with JobHakken';
+}
+$('signIn').addEventListener('click', () => {
+  void chrome.tabs.create({ url: LOGIN_URL });
+  ($('authStatus') as HTMLElement).innerHTML =
+    '<span class="note">Finish signing in on the JobHakken tab — this updates automatically.</span>';
+});
+$('signOut').addEventListener('click', async () => {
+  await clearIdentity();
+  await refreshAuth();
+});
+// Live-update when the auth content script writes the identity after the user logs in on the website.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && 'f2a_identity' in changes) void refreshAuth();
+});
+void refreshAuth();
 
 // ── BYO AI key (standalone AI, no desktop) ───────────────────
 async function refreshAi(): Promise<void> {

@@ -551,7 +551,19 @@
       </details>
     </div>
     <div class="panel" data-p="desktop">
-      <h3 class="sec-h" style="margin-top: 0">🔗 Connect the JobHakken app <span class="opt">— optional</span></h3>
+      <h3 class="sec-h" style="margin-top: 0">👤 Your JobHakken account</h3>
+      <p class="note">
+        Sign in with your JobHakken account for managed AI and to sync across devices. Signing in opens the JobHakken
+        website — the same login you use everywhere. Optional: the extension works without an account, and with your own
+        AI key it's fully free.
+      </p>
+      <div class="bar" style="position: static; border: none; margin: 4px 0 8px; padding: 0">
+        <button class="save" id="signIn">Sign in with JobHakken</button>
+        <button class="secondary" id="signOut" hidden>Sign out</button>
+        <span class="status" id="authStatus"></span>
+      </div>
+
+      <h3 class="sec-h">🔗 Connect the JobHakken app <span class="opt">— optional</span></h3>
       <p class="note">
         Connecting the JobHakken desktop app lets you import your résumé and unlock AI features (résumé match, visa
         signal, tailored résumé). It’s optional — you can fill in your details by hand instead.
