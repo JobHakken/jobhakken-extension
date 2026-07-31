@@ -358,6 +358,8 @@ async function doDraft(btn: HTMLButtonElement | null): Promise<number> {
       `Drafted ${drafted} answer${drafted === 1 ? '' : 's'}${tok} — the purple-outlined AI answers are on the page to review.`,
     );
     await renderAiUsage();
+    $('refineBox').classList.add('hidden'); // fresh draft → collapse any open refine box
+    $('refineToggle').classList.remove('hidden'); // offer per-field refine
   } else if (!(btn === null && /no question/i.test(r?.error ?? ''))) {
     showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
   }
@@ -368,6 +370,46 @@ async function doDraft(btn: HTMLButtonElement | null): Promise<number> {
   return drafted;
 }
 ($('draft') as HTMLButtonElement).addEventListener('click', (e) => void doDraft(e.currentTarget as HTMLButtonElement));
+
+// Per-field AI re-draft: pick a drafted question, tell the AI what to change, redo just that answer.
+let draftedLabels: string[] = [];
+$('refineToggle').addEventListener('click', async () => {
+  const res = await rpc<{ items?: { label: string }[] }>('draftedList');
+  draftedLabels = (res?.items ?? []).map((it) => it.label);
+  if (!draftedLabels.length) {
+    showMiniResult(false, 'Draft answers first, then refine.');
+    return;
+  }
+  ($('refinePick') as HTMLSelectElement).innerHTML = draftedLabels
+    .map((l, i) => `<option value="${i}">${esc(l.length > 60 ? l.slice(0, 57) + '…' : l)}</option>`)
+    .join('');
+  $('refineToggle').classList.add('hidden');
+  $('refineBox').classList.remove('hidden');
+});
+$('refineGo').addEventListener('click', async () => {
+  const label = draftedLabels[Number(($('refinePick') as HTMLSelectElement).value)] ?? '';
+  const instruction = ($('refineInstruction') as HTMLTextAreaElement).value.trim();
+  const status = $('refineStatus');
+  if (!instruction) {
+    status.textContent = 'Add an instruction first.';
+    return;
+  }
+  const btn = $('refineGo') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'Redoing…';
+  const r = await rpc<{
+    ok: boolean;
+    usage?: { promptTokens: number; completionTokens: number } | null;
+    error?: string;
+  }>('redraft', { label, instruction });
+  btn.disabled = false;
+  btn.textContent = 'Redo this answer';
+  if (r?.ok) {
+    if (r.usage) await recordDraft(1, r.usage.promptTokens, r.usage.completionTokens);
+    status.innerHTML = '<span class="chip ok">✓ Rewritten — check it on the page</span>';
+    await renderAiUsage();
+  } else status.innerHTML = `<span class="chip rev">${esc(r?.error ?? 'Could not refine')}</span>`;
+});
 ($('save') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
   const label = b.textContent ?? '📌 Save job';

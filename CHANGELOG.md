@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.20.0
+- **Don't like an AI answer? Refine it.** After drafting, the popup lets you pick a drafted question,
+  tell the AI what to change (e.g. "make it shorter and mention my Python experience"), and redo just
+  that one answer — using your own key, still review-first, never submitted.
+
 ## 0.19.2
 - **Clearer "Autofill" vs "Autofill + AI".** After "Autofill + AI" the popup now shows a distinct
   "✍️ N AI answers" chip, so you can see what the AI wrote versus what was filled from your profile —

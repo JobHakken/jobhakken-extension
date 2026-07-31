@@ -111,6 +111,18 @@ function markReview(el: HTMLElement): void {
   reviewedEls.push(t);
 }
 
+/** Set a field's value the way React/controlled inputs accept (native setter + input/change events). */
+function setFieldValue(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, value);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// The fields the AI drafted this run — so the popup can offer a per-field re-draft with a custom
+// instruction ("if you don't like the AI answer, tell it what to change").
+let draftedFields: { el: HTMLElement; label: string }[] = [];
+
 /**
  * Reveal a form hidden behind a pre-step — but ONLY when the step commits nothing and we can satisfy
  * it from a KNOWN fact (never auto-consenting or guessing for the user). Jobvite hides its application
@@ -938,18 +950,56 @@ async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: Ai
   }
 
   let filled = 0;
+  draftedFields = [];
   qs.forEach((q, i) => {
     const answer = answers[i];
     if (!answer) return;
-    const el = q.el as HTMLInputElement | HTMLTextAreaElement;
-    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, answer);
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    markReview(el); // AI drafts always need a look before submitting
+    setFieldValue(q.el as HTMLInputElement | HTMLTextAreaElement, answer);
+    markReview(q.el as HTMLElement); // AI drafts always need a look before submitting
+    draftedFields.push({ el: q.el as HTMLElement, label: q.label }); // enable per-field re-draft
     filled++;
   });
   return filled ? { ok: true, filled, usage } : { ok: false, error: 'No draft' };
+}
+
+/** Re-draft ONE previously-drafted field, steered by the user's own instruction, and replace its value. */
+async function redraftField(
+  label: string,
+  instruction: string,
+): Promise<{ ok: boolean; text?: string; usage?: AiUsage | null; error?: string }> {
+  const target = draftedFields.find((d) => d.label === label && d.el.isConnected);
+  if (!target) return { ok: false, error: 'Draft answers again first, then refine.' };
+  if (!instruction.trim()) return { ok: false, error: 'Add an instruction.' };
+  const fp = await getFullProfile();
+  if (!fp) return { ok: false, error: 'No profile' };
+  const job = pageJob();
+  const question = `${label}\n\nRewrite this answer following the candidate's instruction — keep it honest and grounded in the brief: ${instruction}`;
+  let text = '';
+  let usage: AiUsage | null = null;
+  if (await isTestActive()) {
+    text = draftDummyAnswer(`${label} (${instruction})`, fp.profile);
+  } else {
+    const context = buildCandidateContext(
+      fp.profile as Record<string, unknown>,
+      fp.experience ?? [],
+      fp.education ?? [],
+    );
+    const byo = await aiAnswers(context, job, [question]);
+    if (byo.answers?.length) {
+      text = byo.answers[0];
+      usage = byo.usage ?? null;
+    } else if (byo.error === 'no-key' && connection) {
+      try {
+        text = (await bridgeRpc<{ text?: string }>('answer', { ...job, question }))?.text ?? '';
+      } catch {
+        /* fall through */
+      }
+    } else if (byo.error) return { ok: false, error: byo.error };
+  }
+  if (!text) return { ok: false, error: 'No answer' };
+  setFieldValue(target.el as HTMLInputElement | HTMLTextAreaElement, text);
+  markReview(target.el);
+  return { ok: true, text, usage };
 }
 
 async function init() {
@@ -1074,6 +1124,14 @@ async function init() {
           case 'draft':
             sendResponse(await draftAnswer());
             break;
+          case 'draftedList':
+            sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
+            break;
+          case 'redraft': {
+            const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
+            sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
+            break;
+          }
           case 'scrollToReview': {
             const first = reviewedEls.find((el) => el.isConnected);
             first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
