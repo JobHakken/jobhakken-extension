@@ -10,7 +10,7 @@
  */
 
 export const WEB_APP_ORIGIN = 'https://app.jobhakken.com';
-export const LOGIN_URL = `${WEB_APP_ORIGIN}/login`;
+export const LOGIN_URL = `${WEB_APP_ORIGIN}/`; // the app root hosts sign-in
 export const ACCOUNT_URL = `${WEB_APP_ORIGIN}/account`;
 
 export type Identity = {

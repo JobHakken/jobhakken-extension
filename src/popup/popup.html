@@ -363,12 +363,19 @@
         color: var(--amber);
       }
       button.chip.jump {
-        border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+        background: color-mix(in srgb, #7c3aed 15%, transparent);
+        color: #7c3aed;
+        border: 1px solid color-mix(in srgb, #7c3aed 45%, transparent);
         cursor: pointer;
         font-family: inherit;
       }
       button.chip.jump:hover {
-        background: color-mix(in srgb, var(--amber) 26%, transparent);
+        background: color-mix(in srgb, #7c3aed 26%, transparent);
+      }
+      @media (prefers-color-scheme: dark) {
+        button.chip.jump {
+          color: #b79cf5;
+        }
       }
       .result .hint {
         margin-top: 5px;

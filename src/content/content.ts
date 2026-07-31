@@ -67,6 +67,8 @@ const filledValues = new WeakMap<Element, string>();
 // lives in the isolated world (a WeakSet + array), never a page-readable value (#12); only the
 // outline/title are visible, which is the point.
 const REVIEW_HINT = 'JobHakken filled this — please review before submitting';
+const REVIEW_COLOR = '#7c3aed'; // vivid violet — stands out, and unlike red/blue isn't confused with a
+// validation error or a focus ring
 const reviewMarked = new WeakSet<HTMLElement>();
 let reviewedEls: HTMLElement[] = [];
 /** The most-visible box to outline — the control itself, or (for a styled/hidden radio) its label. */
@@ -89,6 +91,8 @@ function clearReviewMarks(): void {
   for (const el of reviewedEls) {
     el.style.outline = '';
     el.style.outlineOffset = '';
+    el.style.boxShadow = '';
+    el.style.borderRadius = '';
     if (el.getAttribute('title') === REVIEW_HINT) el.removeAttribute('title');
     reviewMarked.delete(el);
   }
@@ -97,8 +101,10 @@ function clearReviewMarks(): void {
 function markReview(el: HTMLElement): void {
   const t = reviewTarget(el);
   if (reviewMarked.has(t)) return;
-  t.style.outline = '2px solid #e0a53f';
-  t.style.outlineOffset = '1px';
+  t.style.outline = `2.5px solid ${REVIEW_COLOR}`;
+  t.style.outlineOffset = '2px';
+  t.style.boxShadow = '0 0 0 4px rgba(124, 58, 237, 0.22)'; // soft violet glow for extra visibility
+  t.style.borderRadius = t.style.borderRadius || '4px';
   if (!t.getAttribute('title')) t.setAttribute('title', REVIEW_HINT);
   reviewMarked.add(t);
   reviewedEls.push(t);

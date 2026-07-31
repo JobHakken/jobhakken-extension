@@ -156,11 +156,11 @@ function renderRules() {
     const row = document.createElement('div');
     row.className = 'rule';
     const cond = document.createElement('input');
-    cond.placeholder = 'condition e.g. (notice period)';
+    cond.placeholder = 'if the field says… e.g. notice period';
     cond.value = rule.condition ?? '';
     cond.addEventListener('input', () => (rule.condition = cond.value));
     const val = document.createElement('input');
-    val.placeholder = 'value to fill';
+    val.placeholder = 'fill this… e.g. 2 weeks';
     val.value = rule.value ?? '';
     val.addEventListener('input', () => (rule.value = val.value));
     const rm = document.createElement('span');
@@ -301,19 +301,28 @@ $('resumePdf').addEventListener('change', async (e) => {
   const file = (e.currentTarget as HTMLInputElement).files?.[0];
   if (!file) return;
   const status = $('resumeStatus');
-  status.innerHTML = '<span class="note">Reading PDF…</span>';
+  const name = file.name.toLowerCase();
+  const isDocx = name.endsWith('.docx') || file.type.includes('wordprocessingml');
+  if (name.endsWith('.doc') && !isDocx) {
+    status.innerHTML =
+      '<span class="warn">The old .doc format isn’t supported — save it as PDF or .docx, or paste the text.</span>';
+    (e.currentTarget as HTMLInputElement).value = '';
+    return;
+  }
+  status.innerHTML = `<span class="note">Reading ${isDocx ? 'Word doc' : 'PDF'}…</span>`;
   try {
-    const { extractPdfText } = await import('../lib/pdfText.js');
-    const text = await extractPdfText(new Uint8Array(await file.arrayBuffer()));
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const text = isDocx
+      ? await (await import('../lib/docxText.js')).extractDocxText(bytes)
+      : await (await import('../lib/pdfText.js')).extractPdfText(bytes);
     if (text.length < 40) {
-      status.innerHTML =
-        '<span class="warn">Couldn’t read text from this PDF (it may be scanned). Paste the text instead.</span>';
+      status.innerHTML = `<span class="warn">Couldn’t read text from this ${isDocx ? 'document' : 'PDF (it may be scanned)'}. Paste the text instead.</span>`;
       return;
     }
     ($('resumeText') as HTMLTextAreaElement).value = text;
     status.innerHTML = `<span class="ok">Read ${text.length.toLocaleString()} characters — review, then Parse with AI.</span>`;
   } catch {
-    status.innerHTML = '<span class="warn">Couldn’t read this PDF. Paste the text instead.</span>';
+    status.innerHTML = '<span class="warn">Couldn’t read this file. Paste the text instead.</span>';
   } finally {
     (e.currentTarget as HTMLInputElement).value = ''; // allow re-selecting the same file
   }

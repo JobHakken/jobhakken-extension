@@ -209,7 +209,7 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
     return;
   }
   $('fillResult').innerHTML = r
-    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip rev jump" title="Scroll to the amber-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in amber on the page.</div>' : ''}`
+    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip jump" title="Scroll to the purple-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in purple on the page.</div>' : ''}`
     : 'Set up your profile in Settings first.';
 
   // Organic review prompt: after a couple of meaningful fills, offer a review once (ever).

@@ -141,7 +141,76 @@
       }
       .resumeai textarea {
         width: 100%;
-        margin-top: 10px;
+      }
+      .uploadbtn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 14px 16px;
+        border: 2px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .uploadbtn:hover {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+      }
+      .uploadbtn .up-ic {
+        font-size: 22px;
+      }
+      .uploadbtn b {
+        display: block;
+        font-size: 13.5px;
+        color: var(--accent);
+      }
+      .uploadbtn .up-sub {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .or-sep {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 4px;
+        color: var(--muted);
+        font-size: 11.5px;
+      }
+      .or-sep::before,
+      .or-sep::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      table.examples {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 4px 0 16px;
+        font-size: 12.5px;
+      }
+      table.examples th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 11.5px;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.examples td {
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.examples td:first-child {
+        color: var(--muted);
+      }
+      table.examples td:last-child {
+        color: var(--fg);
+        font-weight: 600;
       }
       .getstarted {
         position: relative;
@@ -491,18 +560,29 @@
     </div>
 
     <details class="resumeai" id="resumeAi">
-      <summary><span class="ic">🤖</span> <b>Paste a résumé — fill my profile with AI</b></summary>
+      <summary><span class="ic">🤖</span> <b>Upload or paste a résumé — fill my profile with AI</b></summary>
       <p class="note">
-        Paste your résumé text below and AI parses it into the fields — <b>no desktop app needed</b>. Uses your own AI
-        key (Settings → AI drafting). Only what's written is used; nothing is invented, and it never sends your résumé
-        to JobHakken.
+        AI reads your résumé and fills in the fields for you — <b>no desktop app needed</b>. Uses your own AI key
+        (Settings → AI drafting). Only what's written is used; nothing is invented, and it never sends your résumé to
+        JobHakken.
       </p>
-      <textarea id="resumeText" rows="7" placeholder="Paste your résumé text here…"></textarea>
+      <label class="uploadbtn" id="resumePdfLabel">
+        <span class="up-ic">📄</span>
+        <span>
+          <b>Upload a PDF or Word file</b>
+          <span class="up-sub">.pdf or .docx — read on your device</span>
+        </span>
+        <input
+          id="resumePdf"
+          type="file"
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          hidden
+        />
+      </label>
+      <div class="or-sep"><span>or paste the text</span></div>
+      <textarea id="resumeText" rows="6" placeholder="Paste your résumé text here…"></textarea>
       <div class="bar" style="position: static; border: none; margin-top: 8px; padding: 0; gap: 10px">
         <button class="save" id="resumeParse">Parse with AI</button>
-        <label class="secondary" id="resumePdfLabel" style="cursor: pointer">
-          Upload PDF<input id="resumePdf" type="file" accept="application/pdf,.pdf" hidden />
-        </label>
         <span class="status" id="resumeStatus"></span>
       </div>
     </details>
@@ -541,8 +621,38 @@
     <div class="panel" data-p="custom">
       <p class="note">
         Optional — set your own answers for questions autofill doesn’t already handle. When a field’s label matches your
-        rule, JobHakken fills your answer. For example: if the field says <b>“Notice period”</b>, fill <b>“2 weeks”</b>.
+        rule, JobHakken fills your answer. Match on a word or phrase from the field’s label:
       </p>
+      <table class="examples">
+        <thead>
+          <tr>
+            <th>If the field’s label contains…</th>
+            <th>Fill…</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>notice period</td>
+            <td>2 weeks</td>
+          </tr>
+          <tr>
+            <td>desired start date</td>
+            <td>Immediately</td>
+          </tr>
+          <tr>
+            <td>how did you hear</td>
+            <td>LinkedIn</td>
+          </tr>
+          <tr>
+            <td>willing to relocate</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>desired salary</td>
+            <td>$120,000</td>
+          </tr>
+        </tbody>
+      </table>
       <div id="ruleList"></div>
       <span class="add" id="addRule">+ Add rule</span>
       <details class="adv">

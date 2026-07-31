@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.18.0
+- **Upload a Word (.docx) résumé too, not just PDF** — and the upload is now a clear, prominent button
+  ("Upload a PDF or Word file"), no longer easy to miss.
+- **Review fields are now outlined in bright violet** (was a faint amber) — much easier to spot the
+  fields to check on the page.
+- **Custom Fields is easier to use** — an examples table (e.g. "notice period" → "2 weeks", "how did
+  you hear" → "LinkedIn") and clearer input hints.
+
 ## 0.17.0
 - **Two clear buttons: "Autofill" and "Autofill + AI".** "Autofill" fills the form; "Autofill + AI"
   fills *and* drafts the open-ended answers in one click.
