@@ -287,13 +287,31 @@ async function onImport() {
   }
 }
 
+// EEO/demographic keys — a résumé never carries these and we never guess them, so nudge the user to
+// set them once (else EEO questions stay blank on applications).
+const EEO_KEYS = [
+  'gender',
+  'pronouns',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+] as const;
+function renderEeoNudge(): void {
+  const anySet = EEO_KEYS.some((k) => (fp.profile as Record<string, string | undefined>)[k]);
+  $('eeoNudge').classList.toggle('hidden', anySet);
+}
+
 function renderAll() {
   renderFields('personalGrid', PERSONAL_FIELDS);
   renderFields('additionalGrid', ADDITIONAL_FIELDS);
   renderWork();
   renderEdu();
   renderRules();
+  renderEeoNudge();
 }
+// Hide the nudge live as the user fills an EEO field in the Additional grid.
+$('additionalGrid').addEventListener('input', renderEeoNudge);
 
 // ── AI résumé-input: paste text → parse to profile via the BYO key (no desktop) ──
 // Upload PDF → extract text (dependency-free) into the textarea for review, then Parse.
@@ -370,7 +388,11 @@ $('resumeParse').addEventListener('click', async () => {
   renderAll();
   await saveFullProfile(fp);
   const nF = Object.keys(parsed.profile ?? {}).length;
-  status.innerHTML = `<span class="ok">✓ Filled ${nF} field${nF === 1 ? '' : 's'}, ${parsed.experience?.length ?? 0} role(s), ${parsed.education?.length ?? 0} school(s) — review below.</span>`;
+  const eeoMissing = !EEO_KEYS.some((k) => (fp.profile as Record<string, string | undefined>)[k]);
+  const eeoNote = eeoMissing
+    ? ' A résumé has no demographic/EEO info — set those in the <b>Additional</b> tab so those questions autofill too (we never guess them).'
+    : '';
+  status.innerHTML = `<span class="ok">✓ Filled ${nF} field${nF === 1 ? '' : 's'}, ${parsed.experience?.length ?? 0} role(s), ${parsed.education?.length ?? 0} school(s) — review below.</span>${eeoNote}`;
 });
 
 // ── init ─────────────────────────────────────────────────────

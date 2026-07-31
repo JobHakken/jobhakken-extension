@@ -212,6 +212,18 @@
         color: var(--fg);
         font-weight: 600;
       }
+      .eeonudge {
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+      }
+      .eeonudge.hidden {
+        display: none;
+      }
       .getstarted {
         position: relative;
         padding: 16px 18px;
@@ -598,6 +610,11 @@
 
     <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
     <div class="panel" data-p="additional">
+      <div class="eeonudge hidden" id="eeoNudge">
+        💡 <b>Set your demographic / EEO answers once below</b> (gender, race, veteran, disability). JobHakken
+        <b>never guesses</b> these, and a résumé doesn’t contain them — so they stay blank on applications until you add
+        them here. Common choice: “Decline to self-identify”.
+      </div>
       <p class="note warn">
         <label
           ><input type="checkbox" id="fillSensitive" checked /> <b>Autofill sensitive fields</b> (EEO / demographic,
