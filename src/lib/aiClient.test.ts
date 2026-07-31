@@ -1,6 +1,13 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-import { buildAnswerMessages, buildCandidateContext, draftAnswers, parseAnswers } from './aiClient';
+import {
+  buildAnswerMessages,
+  buildCandidateContext,
+  draftAnswers,
+  parseAnswers,
+  parseResumeJson,
+  parseResumeToProfile,
+} from './aiClient';
 
 describe('buildCandidateContext', () => {
   it('summarizes the profile without inventing anything', () => {
@@ -81,6 +88,49 @@ describe('draftAnswers', () => {
     const fetchMock = jest.fn() as unknown as typeof fetch;
     const r = await draftAnswers(cfg, 'brief', job, [], fetchMock);
     expect(r.answers).toEqual([]);
+    expect((fetchMock as unknown as jest.Mock).mock.calls.length).toBe(0);
+  });
+});
+
+describe('parseResumeJson', () => {
+  it('extracts + whitelists profile fields and coerces the arrays', () => {
+    const r = parseResumeJson(
+      '```json\n{"profile":{"fullName":"Jordan Rivera","email":"j@example.com","currentTitle":"Engineer","salaryExpectation":"999999","ssn":"leak"},' +
+        '"experience":[{"position":"Engineer","company":"Globex"}],"education":[{"degree":"BS","school":"UT"}]}\n```',
+    );
+    expect(r.profile.fullName).toBe('Jordan Rivera');
+    expect(r.profile.email).toBe('j@example.com');
+    expect(r.profile.currentTitle).toBe('Engineer');
+    expect(r.profile.salaryExpectation).toBeUndefined(); // sensitive → never accepted from a résumé
+    expect((r.profile as Record<string, string>).ssn).toBeUndefined(); // unknown key dropped
+    expect(r.experience).toHaveLength(1);
+    expect(r.education[0].school).toBe('UT');
+  });
+
+  it('returns empty shape on non-JSON', () => {
+    expect(parseResumeJson('sorry')).toEqual({ profile: {}, experience: [], education: [] });
+  });
+});
+
+describe('parseResumeToProfile', () => {
+  it('makes one call and returns the parsed profile + usage', async () => {
+    const fetchMock = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: '{"profile":{"firstName":"Jordan"},"experience":[],"education":[]}' } }],
+        usage: { prompt_tokens: 900, completion_tokens: 120 },
+      }),
+    })) as unknown as typeof fetch;
+    const r = await parseResumeToProfile({ apiKey: 'k' }, 'Jordan Rivera — Senior Engineer at Globex…', fetchMock);
+    expect((fetchMock as unknown as jest.Mock).mock.calls.length).toBe(1);
+    expect(r.parsed.profile.firstName).toBe('Jordan');
+    expect(r.usage).toEqual({ promptTokens: 900, completionTokens: 120 });
+  });
+
+  it('empty text → no call', async () => {
+    const fetchMock = jest.fn() as unknown as typeof fetch;
+    const r = await parseResumeToProfile({ apiKey: 'k' }, '   ', fetchMock);
+    expect(r.parsed.profile).toEqual({});
     expect((fetchMock as unknown as jest.Mock).mock.calls.length).toBe(0);
   });
 });

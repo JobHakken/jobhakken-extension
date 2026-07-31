@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.14.0
+- **Fill your profile from a résumé with AI — no desktop app.** In Settings → Profile, paste your
+  résumé text and click "Parse with AI"; it extracts your name, contact, links, and work/education
+  history into the fields for you to review. Uses your own AI key (Settings → AI drafting), only uses
+  what's written (never invents details), and never sends your résumé to JobHakken. Sensitive fields
+  (salary, EEO, work authorization) are never guessed from a résumé.
+
 ## 0.13.2
 - **"Draft answers" now works with just your AI key.** Fixed: the button was only shown when the
   desktop app was connected, so someone using only their own AI key couldn't reach it. It now appears

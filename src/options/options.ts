@@ -294,6 +294,52 @@ function renderAll() {
   renderRules();
 }
 
+// ── AI résumé-input: paste text → parse to profile via the BYO key (no desktop) ──
+$('resumeParse').addEventListener('click', async () => {
+  const text = ($('resumeText') as HTMLTextAreaElement).value.trim();
+  const status = $('resumeStatus');
+  if (text.length < 40) {
+    status.innerHTML = '<span class="warn">Paste your résumé text first.</span>';
+    return;
+  }
+  const btn = $('resumeParse') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'Parsing…';
+  status.textContent = '';
+  const res = (await chrome.runtime.sendMessage({ type: 'f2a-ai', method: 'parseResume', params: { text } })) as
+    | {
+        result?: { parsed?: { profile?: Record<string, string>; experience?: unknown[]; education?: unknown[] } };
+        error?: string;
+      }
+    | undefined;
+  btn.disabled = false;
+  btn.textContent = 'Parse with AI';
+  if (res?.error) {
+    status.innerHTML =
+      res.error === 'no-key'
+        ? '<span class="warn">Add your AI key first (Settings → AI drafting).</span>'
+        : `<span class="warn">Couldn’t parse: ${escapeHtml(res.error)}</span>`;
+    return;
+  }
+  const parsed = res?.result?.parsed;
+  if (!parsed || (!Object.keys(parsed.profile ?? {}).length && !(parsed.experience ?? []).length)) {
+    status.innerHTML = '<span class="warn">Nothing extracted — check the pasted text.</span>';
+    return;
+  }
+  // Merge: parsed résumé fills/overrides the profile fields + experience/education; keep custom rules.
+  fp = {
+    profile: { ...fp.profile, ...(parsed.profile as FullProfile['profile']) },
+    experience: (parsed.experience?.length ? parsed.experience : fp.experience) as FullProfile['experience'],
+    education: (parsed.education?.length ? parsed.education : fp.education) as FullProfile['education'],
+    rules: fp.rules,
+  };
+  composeFullName();
+  renderAll();
+  await saveFullProfile(fp);
+  const nF = Object.keys(parsed.profile ?? {}).length;
+  status.innerHTML = `<span class="ok">✓ Filled ${nF} field${nF === 1 ? '' : 's'}, ${parsed.experience?.length ?? 0} role(s), ${parsed.education?.length ?? 0} school(s) — review below.</span>`;
+});
+
 // ── init ─────────────────────────────────────────────────────
 (async () => {
   fp = (await loadFullProfile()) ?? { profile: {}, experience: [], education: [], rules: [] };

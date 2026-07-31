@@ -8,7 +8,7 @@
  */
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
-import { draftAnswers } from '../lib/aiClient.js';
+import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -170,13 +170,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // key (session storage) and call the provider directly, so no desktop app is needed and the key never
 // enters the page/content world. Zero telemetry on this path (ADR-0009). Only our own contexts.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg?.type !== 'f2a-ai' || msg.method !== 'answers') return;
+  if (msg?.type !== 'f2a-ai' || (msg.method !== 'answers' && msg.method !== 'parseResume')) return;
   if (sender.id !== chrome.runtime.id) return;
   (async () => {
     try {
       const cfg = await getAiConfig();
       if (!cfg) {
         sendResponse({ error: 'no-key' });
+        return;
+      }
+      if (msg.method === 'parseResume') {
+        const p = (msg.params ?? {}) as { text?: string };
+        const { parsed, usage } = await parseResumeToProfile(cfg, String(p.text ?? '').slice(0, 20_000));
+        sendResponse({ result: { parsed, usage } });
         return;
       }
       const params = (msg.params ?? {}) as { context?: string; job?: Record<string, string>; questions?: string[] };

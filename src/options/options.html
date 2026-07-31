@@ -126,6 +126,23 @@
         border-radius: 12px;
         margin-bottom: 16px;
       }
+      .resumeai {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .resumeai > summary {
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .resumeai .ic {
+        margin-right: 6px;
+      }
+      .resumeai textarea {
+        width: 100%;
+        margin-top: 10px;
+      }
       .getstarted {
         position: relative;
         padding: 16px 18px;
@@ -472,6 +489,20 @@
         Import
       </button>
     </div>
+
+    <details class="resumeai" id="resumeAi">
+      <summary><span class="ic">🤖</span> <b>Paste a résumé — fill my profile with AI</b></summary>
+      <p class="note">
+        Paste your résumé text below and AI parses it into the fields — <b>no desktop app needed</b>. Uses your own AI
+        key (Settings → AI drafting). Only what's written is used; nothing is invented, and it never sends your résumé
+        to JobHakken.
+      </p>
+      <textarea id="resumeText" rows="7" placeholder="Paste your résumé text here…"></textarea>
+      <div class="bar" style="position: static; border: none; margin-top: 8px; padding: 0">
+        <button class="save" id="resumeParse">Parse with AI</button>
+        <span class="status" id="resumeStatus"></span>
+      </div>
+    </details>
 
     <div class="tabs" id="tabs">
       <button class="tab active" data-t="personal">Personal</button>
