@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.19.2
+- **Clearer "Autofill" vs "Autofill + AI".** After "Autofill + AI" the popup now shows a distinct
+  "✍️ N AI answers" chip, so you can see what the AI wrote versus what was filled from your profile —
+  and those AI answers are the purple-outlined ones on the page.
+
 ## 0.19.1
 - **Résumé upload now attaches to applications — without the desktop app.** Uploading a PDF/Word résumé
   in Settings now keeps the file and attaches it to application forms (it used to only work when the

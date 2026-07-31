@@ -246,11 +246,18 @@ $('reviewDismiss').addEventListener('click', () => $('reviewBar').classList.add(
 ($('autofill') as HTMLButtonElement).addEventListener('click', (e) =>
   runFill(e.currentTarget as HTMLButtonElement, lastState?.mode === 'connected' ? 'ats' : 'default'),
 );
-// Autofill + AI — fill, then draft the open-ended answers in one action.
+// Autofill + AI — fill, then draft the open-ended answers in one action. Adds a distinct "✍️ N AI
+// answers" chip so it's clear what this button did beyond a plain Autofill (those are the purple ones).
 ($('autofillAi') as HTMLButtonElement).addEventListener('click', async (e) => {
   const btn = e.currentTarget as HTMLButtonElement;
   await runFill(btn, lastState?.mode === 'connected' ? 'ats' : 'default');
-  await doDraft(null); // draft the essays too; shows its own status if there's a key/desktop
+  const drafted = await doDraft(null);
+  if (drafted > 0) {
+    $('fillResult').insertAdjacentHTML(
+      'beforeend',
+      `<span class="chip ai" title="Open-ended answers written by AI — outlined in purple to review">✍️ ${drafted} AI answer${drafted === 1 ? '' : 's'}</span>`,
+    );
+  }
 });
 // Jump to the fields that need review (outlined in amber on the page).
 $('fillResult').addEventListener('click', (e) => {
@@ -329,7 +336,7 @@ async function renderAiUsage(): Promise<void> {
 
 // Draft the open-ended answers. Reused by the "Draft answers" button and "Autofill + AI"; when called
 // from the combined action (btn=null) a "no questions here" result is silent, not an error.
-async function doDraft(btn: HTMLButtonElement | null): Promise<void> {
+async function doDraft(btn: HTMLButtonElement | null): Promise<number> {
   const label = btn?.textContent ?? '✍️ Draft answers';
   if (btn) {
     btn.disabled = true;
@@ -341,11 +348,15 @@ async function doDraft(btn: HTMLButtonElement | null): Promise<void> {
     usage?: { promptTokens: number; completionTokens: number } | null;
     error?: string;
   } | null>('draft');
+  let drafted = 0;
   if (r?.ok) {
-    const n = r.filled ?? 1;
-    await recordDraft(n, r.usage?.promptTokens ?? 0, r.usage?.completionTokens ?? 0);
+    drafted = r.filled ?? 1;
+    await recordDraft(drafted, r.usage?.promptTokens ?? 0, r.usage?.completionTokens ?? 0);
     const tok = r.usage ? ` · ~${fmtTokens(totalTokens(r.usage))} tokens` : '';
-    showMiniResult(true, `Drafted ${n} answer${n === 1 ? '' : 's'}${tok} — review before submitting.`);
+    showMiniResult(
+      true,
+      `Drafted ${drafted} answer${drafted === 1 ? '' : 's'}${tok} — the purple-outlined AI answers are on the page to review.`,
+    );
     await renderAiUsage();
   } else if (!(btn === null && /no question/i.test(r?.error ?? ''))) {
     showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
@@ -354,6 +365,7 @@ async function doDraft(btn: HTMLButtonElement | null): Promise<void> {
     btn.textContent = label;
     btn.disabled = false;
   }
+  return drafted;
 }
 ($('draft') as HTMLButtonElement).addEventListener('click', (e) => void doDraft(e.currentTarget as HTMLButtonElement));
 ($('save') as HTMLButtonElement).addEventListener('click', async (e) => {
