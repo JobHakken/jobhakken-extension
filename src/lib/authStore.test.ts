@@ -42,6 +42,15 @@ describe('parseSupabaseSession', () => {
     expect(JSON.stringify(id)).not.toContain('rt-SECRET'); // refresh token never stored
   });
 
+  it('IGNORES a forged tier in user_metadata (user-writable — only app_metadata is trusted)', () => {
+    const raw = JSON.stringify({
+      access_token: 'at',
+      user: { id: 'u1', email: 'jordan@example.com', user_metadata: { tier: 'pro' } },
+    });
+    // A user can set user_metadata.tier via updateUser(); it must NOT unlock premium.
+    expect(parseSupabaseSession(raw)?.tier).toBeUndefined();
+  });
+
   it('reads the v1 { currentSession } wrapper', () => {
     const raw = JSON.stringify({ currentSession: { access_token: 'at', user: { id: 'u2', email: 'a@b.com' } } });
     expect(parseSupabaseSession(raw)?.email).toBe('a@b.com');

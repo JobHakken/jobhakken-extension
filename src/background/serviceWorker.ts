@@ -165,8 +165,9 @@ function h1bSum(query: string): number {
   return sum;
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'f2a-h1b') return;
+  if (sender.id !== chrome.runtime.id) return; // only our own contexts (consistency with sibling handlers)
   (async () => {
     try {
       await ensureH1b();
@@ -227,8 +228,9 @@ async function ensureH1bRoles(): Promise<void> {
   await h1bRoleLoading;
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'f2a-h1b-detail') return;
+  if (sender.id !== chrome.runtime.id) return; // only our own contexts (consistency with sibling handlers)
   (async () => {
     try {
       await ensureH1bRoles();

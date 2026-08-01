@@ -84,7 +84,11 @@ export function parseSupabaseSession(raw: string): Identity | null {
     | { id?: string; email?: string; app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> }
     | undefined;
   if (!user?.email) return null;
-  const tier = (user.app_metadata?.tier ?? user.user_metadata?.tier) as string | undefined;
+  // SECURITY: read the tier ONLY from `app_metadata` (service-role-writable, server-controlled), never
+  // from `user_metadata` — that's user-writable (`supabase.auth.updateUser({ data })`), so trusting it
+  // would let anyone forge `tier: 'pro'` and unlock premium if the authoritative `fetchEntitlement`
+  // call is offline/blocked. This is only an optimistic hint anyway; the real gate is fetchEntitlement.
+  const tier = user.app_metadata?.tier as string | undefined;
   return {
     email: String(user.email),
     userId: String(user.id ?? ''),
