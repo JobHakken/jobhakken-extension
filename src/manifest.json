@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JobHakken — Apply Copilot",
-  "version": "0.22.3",
+  "version": "0.22.4",
   "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -89,6 +89,9 @@
     }
   },
   "permissions": ["storage", "unlimitedStorage"],
+  "externally_connectable": {
+    "matches": ["https://jobhakken.com/*", "https://www.jobhakken.com/*", "https://app.jobhakken.com/*"]
+  },
   "host_permissions": [
     "http://127.0.0.1/*",
     "http://localhost/*",
