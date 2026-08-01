@@ -5,6 +5,11 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.23.1
+- **Verified desktop-app connection.** When you connect the extension to the desktop app, the extension
+  now makes the local app **prove it holds your connection token** — a challenge/response handshake the
+  app answers — *before* sending the token or any data. A rogue program on your machine posing as
+  JobHakken is refused, and your token never reaches it. (Completes the #1 bridge-trust hardening now
+  that the desktop app ships the matching handshake; older apps still connect during rollout.)
 - **Pick your AI provider.** BYOK settings now have a provider picker (shared with the desktop app):
   OpenRouter, OpenAI, GLM/Zhipu, and local runtimes — **Ollama, LM Studio, Codex** (no key needed) —
   plus **Custom** for any OpenAI-compatible endpoint. Choosing one prefills its base URL + model and
