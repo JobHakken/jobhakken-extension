@@ -51,7 +51,10 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
       /* malformed sender.url — treat as no origin */
     }
   }
-  if (!JH_LINK_ORIGINS.has(origin)) return; // defense-in-depth on top of externally_connectable
+  // defense-in-depth on top of externally_connectable. DEMO (xsurface-localhost): also allow any
+  // localhost origin so the cross-surface handoff can be tested from a local `next dev`. Shipped
+  // builds keep only the jobhakken.com/www/app origins (this Set + the manifest both drop localhost).
+  if (!JH_LINK_ORIGINS.has(origin) && !/^http:\/\/localhost(:\d+)?$/.test(origin)) return;
   const m = msg as { type?: unknown; schema?: unknown; schemaVersion?: unknown; payload?: unknown };
 
   if (m?.type === 'JH_EXT_PING') {
