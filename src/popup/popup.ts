@@ -7,6 +7,9 @@ import { bestFrameId } from '../lib/frameStore.js';
 import type { H1bDetail } from '../lib/h1bTypes.js';
 import { escapeHtml } from '../lib/html.js';
 import { loadTestMode } from '../lib/profileStore.js';
+import { hostHash } from '../lib/siteDiscovery.js';
+import { getTelemetryEnabled } from '../lib/telemetry.js';
+import { report } from '../lib/telemetryClient.js';
 import { initThemeToggle } from '../lib/theme.js';
 
 /**
@@ -67,6 +70,94 @@ async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
 // Use the shared escaper (also escapes ') so all dynamic-HTML sinks share one correct guarantee (#15).
 const esc = escapeHtml;
 
+// ── Coverage Layer 2: discover unsupported ATS (#105/#278) ─────────────────────────────────────────
+// Salt injected at build time (release only); empty in dev/CI keeps discovery inert. Replaced by
+// esbuild `define`; `typeof` guard keeps it safe under jest.
+declare const __SITE_HASH_SALT__: string;
+const SITE_HASH_SALT = typeof __SITE_HASH_SALT__ !== 'undefined' ? __SITE_HASH_SALT__ : '';
+
+/**
+ * Injected into the active tab (activeTab, on the user's toolbar click) to decide whether the page is a
+ * job-application form + guess the ATS family. Self-contained — runs in the page world, no imports. It
+ * reads only structure/markers; the RETURN value is a boolean + a bounded enum string, never any page
+ * content, and nothing here is persisted or transmitted from the page.
+ */
+function jobFormHeuristic(): { isJobForm: boolean; atsGuess: string } {
+  const html = document.documentElement.outerHTML;
+  const txt = (document.body?.innerText || '').slice(0, 20000).toLowerCase();
+  let atsGuess = 'unknown';
+  const markers: [RegExp, string][] = [
+    [/data-automation-id|myworkdayjobs|workday/i, 'workday'],
+    [/grnhse|greenhouse\.io/i, 'greenhouse'],
+    [/jobs\.lever\.co|leverapp|\blever\b/i, 'lever'],
+    [/icims/i, 'icims'],
+    [/ashbyhq|\bashby\b/i, 'ashby'],
+    [/smartrecruiters/i, 'smartrecruiters'],
+    [/workable/i, 'workable'],
+    [/taleo/i, 'taleo'],
+    [/successfactors|sfsf/i, 'successfactors'],
+    [/bamboohr/i, 'bamboohr'],
+    [/jobvite/i, 'jobvite'],
+  ];
+  for (const [re, name] of markers) {
+    if (re.test(html)) {
+      atsGuess = name;
+      break;
+    }
+  }
+  const inputs = document.querySelectorAll('input, textarea, select').length;
+  const hasFile = !!document.querySelector('input[type="file"]');
+  const hasEmail = !!document.querySelector('input[type="email"]') || /\be-?mail\b/.test(txt);
+  const applyish = /(apply|application|resume|résumé|\bcv\b|cover letter|job|position|candidate|employment)/.test(txt);
+  const signals = [inputs >= 4, hasFile, hasEmail, applyish].filter(Boolean).length;
+  // Known-ATS markup is strong on its own; otherwise require several independent job-form signals.
+  const isJobForm = atsGuess !== 'unknown' ? inputs >= 2 : signals >= 3 && (hasFile || hasEmail);
+  return { isJobForm, atsGuess };
+}
+
+/**
+ * On an UNSUPPORTED page (no content script), when the user opens the popup, report a coverage
+ * candidate so we learn which ATS to support next — a SALTED HASH of the registrable domain + a coarse
+ * ATS guess, never the host/URL/company/content. Gated by: a build salt (release only), the analytics
+ * opt-out, an http(s) page, and a 7-day per-host dedupe so we don't re-emit. We only touch the page
+ * (inject the heuristic) AFTER those gates pass — so an opted-out user's page is never read.
+ */
+async function reportSiteCandidate(): Promise<void> {
+  try {
+    if (!SITE_HASH_SALT) return; // dev/CI build → inert
+    if (!(await getTelemetryEnabled())) return; // respect the analytics opt-out
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id || !tab.url) return;
+    let url: URL;
+    try {
+      url = new URL(tab.url);
+    } catch {
+      return;
+    }
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return; // skip chrome://, file://, extensions
+    const hash = await hostHash(url.hostname, SITE_HASH_SALT);
+    if (!hash) return;
+    // Dedupe: a given host is reported at most once per 7 days (don't re-emit on every popup open).
+    const SEEN = 'f2a_site_seen';
+    const store = ((await chrome.storage.local.get(SEEN))[SEEN] as Record<string, number>) ?? {};
+    const now = Date.now();
+    if (store[hash] && now - store[hash] < 7 * 864e5) return;
+    // Gates passed → NOW read the page (activeTab-scoped, one tab, this once).
+    const [res] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: jobFormHeuristic });
+    const out = res?.result as { isJobForm: boolean; atsGuess: string } | undefined;
+    if (!out?.isJobForm) return;
+    report('site_candidate', { host_hash: hash, ats_guess: out.atsGuess });
+    store[hash] = now;
+    // Cap the dedupe map so it can't grow unbounded (keep the 200 most-recent).
+    const kept = Object.entries(store)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 200);
+    await chrome.storage.local.set({ [SEEN]: Object.fromEntries(kept) });
+  } catch {
+    /* discovery is best-effort — never break the popup */
+  }
+}
+
 // Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
 const REPO = 'https://github.com/JobHakken/JobHakken-issues';
 let lastState: State | null = null;
@@ -102,6 +193,7 @@ async function render() {
     $('setupCta').classList.remove('hidden'); // give first-run / off-a-job-page users a way forward
     $('siteHint').classList.remove('on');
     ($('autofill') as HTMLButtonElement).disabled = true;
+    void reportSiteCandidate(); // learn about unsupported ATS the user actually visits (#105/#278)
     return; // the ⚑ Report block stays available (this is the "not detected" case)
   }
 

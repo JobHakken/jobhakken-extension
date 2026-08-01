@@ -15,6 +15,13 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   now also flow to our own PostHog project (the one the website uses), so product usage sits in one
   place. Cookieless (no person profile), routed through our own domain, and inert unless configured in a
   release build — no new permissions, no third-party scripts. (First-party sink #106.)
+- **Help us support more sites (privacy-preserving).** When you open the toolbar on a job application we
+  don't support yet, the extension can now note *that* an unsupported job form exists — as a **salted,
+  anonymized fingerprint of the site's domain** plus a coarse guess at which ATS it runs — so we know
+  which platforms to add next. It never sends the site address, the company, the page, or anything you
+  typed; it only looks at the current tab when *you* click the toolbar (the `activeTab` permission — no
+  always-on site access), and only if analytics are on. This is how we stay scoped instead of reading
+  every website like other autofill extensions. (Coverage Layer 2 #278.)
 
 ## 0.23.0
 - **Send your résumé straight from the website into the extension.** Build a résumé on jobhakken.com and

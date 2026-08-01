@@ -88,7 +88,7 @@
       "description": "Autofill this application"
     }
   },
-  "permissions": ["storage", "unlimitedStorage"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
   "externally_connectable": {
     "matches": ["https://jobhakken.com/*", "https://www.jobhakken.com/*", "https://app.jobhakken.com/*"]
   },
