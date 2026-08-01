@@ -5,5 +5,5 @@ export type H1bDetail = {
   wageMedian: number; // case-weighted "typical" annual wage, rounded to $1k (0 = unknown)
   wageMin: number;
   wageMax: number;
-  roles: { title: string; filings: number }[]; // top standardized roles by filings
+  roles: { title: string; filings: number; wageMedian: number }[]; // top standardized roles by filings
 };

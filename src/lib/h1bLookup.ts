@@ -21,12 +21,13 @@ export function mergeH1bRows(names: string[], rest: string[], query: string): H1
   let wCases = 0;
   let wMin = Infinity;
   let wMax = 0;
-  const roles = new Map<string, number>();
+  // per-role: filings + case-weighted wage, merged across the company's entities
+  const roles = new Map<string, { filings: number; wSum: number; wCases: number }>();
   for (let i = lo; i < names.length; i++) {
     const n = names[i];
     if (!n.startsWith(query)) break;
     if (n.length !== query.length && n[query.length] !== ' ') continue; // word boundary only
-    const cols = rest[i].split('\t'); // cases, median, wMin, wMax, "role:cases;role:cases"
+    const cols = rest[i].split('\t'); // cases, median, wMin, wMax, "title|cases|median;…"
     const cases = Number(cols[0]) || 0;
     const median = Number(cols[1]) || 0;
     const cMin = Number(cols[2]) || 0;
@@ -38,12 +39,19 @@ export function mergeH1bRows(names: string[], rest: string[], query: string): H1
     }
     if (cMin > 0) wMin = Math.min(wMin, cMin);
     if (cMax > 0) wMax = Math.max(wMax, cMax);
-    for (const pair of (cols[4] || '').split(';')) {
-      const c = pair.lastIndexOf(':');
-      if (c < 0) continue;
-      const title = pair.slice(0, c);
-      const rc = Number(pair.slice(c + 1)) || 0;
-      if (title && rc) roles.set(title, (roles.get(title) || 0) + rc);
+    for (const entry of (cols[4] || '').split(';')) {
+      const p = entry.split('|'); // title | cases | median
+      const title = p[0];
+      const rc = Number(p[1]) || 0;
+      const rm = Number(p[2]) || 0;
+      if (!title || !rc) continue;
+      const r = roles.get(title) ?? { filings: 0, wSum: 0, wCases: 0 };
+      r.filings += rc;
+      if (rm > 0) {
+        r.wSum += rm * rc;
+        r.wCases += rc;
+      }
+      roles.set(title, r);
     }
   }
   if (filings < 1) return null;
@@ -54,8 +62,12 @@ export function mergeH1bRows(names: string[], rest: string[], query: string): H1
     wageMin: Number.isFinite(wMin) ? wMin : 0,
     wageMax: wMax,
     roles: [...roles.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([title, f]) => ({ title, filings: f })),
+      .sort((a, b) => b[1].filings - a[1].filings)
+      .slice(0, 8)
+      .map(([title, r]) => ({
+        title,
+        filings: r.filings,
+        wageMedian: r.wCases ? Math.round(r.wSum / r.wCases / 1000) * 1000 : 0,
+      })),
   };
 }

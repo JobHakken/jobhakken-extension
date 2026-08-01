@@ -3,7 +3,7 @@
  * Output: src/data/h1b-roles.txt — one line per company, TAB-separated, SORTED by normalized name
  * (so the service worker can binary-search it just like h1b-sponsors.txt):
  *
- *   normalizedName \t totalCases \t wageMedian \t wageMin \t wageMax \t role1:cases1;role2:cases2;role3:cases3
+ *   normalizedName \t totalCases \t wageMedian \t wageMin \t wageMax \t role1|cases1|median1;role2|cases2|median2;… (top 8)
  *
  * Powers the collapsible "H-1B history" panel at the bottom of the toolbar popup (issue #92): for the
  * company on the current job page we show total filings, a typical wage + range, and the top roles.
@@ -66,7 +66,15 @@ for (let i = 1; i < lines.length; i++) {
   }
   if (wMin > 0) e.wMin = Math.min(e.wMin, wMin);
   if (wMax > 0) e.wMax = Math.max(e.wMax, wMax);
-  if (role) e.roles.set(role, (e.roles.get(role) || 0) + cases);
+  if (role) {
+    const r = e.roles.get(role) ?? { cases: 0, wSum: 0, wCases: 0 };
+    r.cases += cases;
+    if (median > 0 && cases > 0) {
+      r.wSum += median * cases; // per-role case-weighted wage
+      r.wCases += cases;
+    }
+    e.roles.set(role, r);
+  }
   byCo.set(norm, e);
 }
 
@@ -81,9 +89,9 @@ for (const [norm, e] of byCo) {
   const median = e.wCases ? Math.round(e.wSum / e.wCases / 1000) * 1000 : 0;
   const wMin = Number.isFinite(e.wMin) ? e.wMin : 0;
   const topRoles = [...e.roles.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([t, n]) => `${clean(t)}:${n}`)
+    .sort((a, b) => b[1].cases - a[1].cases)
+    .slice(0, 8) // top 8 roles → a scrollable table in the popup
+    .map(([t, r]) => `${clean(t)}|${r.cases}|${r.wCases ? Math.round(r.wSum / r.wCases / 1000) * 1000 : 0}`)
     .join(';');
   rows.push([norm, `${e.cases}\t${median}\t${wMin}\t${e.wMax}\t${topRoles}`]);
 }

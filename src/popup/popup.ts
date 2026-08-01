@@ -318,15 +318,19 @@ h1bPanelEl.addEventListener('toggle', async () => {
     return;
   }
   const wage = d.wageMedian
-    ? `<div><b style="color:var(--fg)">~${money(d.wageMedian)}</b> typical wage${d.wageMin && d.wageMax ? ` <span style="color:var(--muted)">(${money(d.wageMin)}–${money(d.wageMax)})</span>` : ''}</div>`
+    ? ` · <b style="color:var(--fg)">~${money(d.wageMedian)}</b> typical${d.wageMin && d.wageMax ? ` <span style="color:var(--muted)">(${money(d.wageMin)}–${money(d.wageMax)})</span>` : ''}`
     : '';
-  const roles = d.roles.length
-    ? `<div class="kw">${d.roles.map((r) => `<span class="have">${esc(r.title)} · ${r.filings.toLocaleString()}</span>`).join('')}</div>`
+  const table = d.roles.length
+    ? `<div class="h1btbl-wrap"><table class="h1btbl"><thead><tr><th>Sponsored role</th><th>Filings</th><th>Wage</th></tr></thead><tbody>${d.roles
+        .map(
+          (r) =>
+            `<tr><td title="${esc(r.title)}">${esc(r.title)}</td><td>${r.filings.toLocaleString()}</td><td>${r.wageMedian ? money(r.wageMedian) : '—'}</td></tr>`,
+        )
+        .join('')}</tbody></table></div>`
     : '';
   body.innerHTML =
-    `<div><b style="color:var(--fg)">${d.filings.toLocaleString()}</b> H-1B petition(s) on record for ${esc(h1bCompany)}</div>` +
-    wage +
-    roles +
+    `<div class="lead"><b style="color:var(--fg)">${d.filings.toLocaleString()}</b> H-1B petition(s) for ${esc(h1bCompany)}${wage}</div>` +
+    table +
     `<div style="font-size:10.5px;color:var(--muted)">Historical LCA filings across the company's entities — a company-level signal, not a guarantee for a specific role.</div>`;
   $('h1bPeek').innerHTML = `<span class="chip ok">${d.filings.toLocaleString()}</span>`;
 });
