@@ -5,6 +5,10 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.23.1
+- **Fixed "Send résumé to extension" from the website.** The website's résumé handoff was being rejected
+  because the two sides disagreed on how the résumé version is labeled — the site sends a numeric
+  version and the extension expected the old text tag. Now it accepts the numeric `schemaVersion` (5)
+  the site + desktop app use (ADR-0005), with the old tag still accepted during rollout. (#107)
 - **Fixed résumé PDF upload showing garbled text.** Uploading a PDF résumé could dump binary/glyph-code
   gibberish into the text box (reported by a user). The extractor now applies fonts' `/ToUnicode` maps
   (so Word/Google-Docs subset-font PDFs decode to real text), honors text layout (no split/glued

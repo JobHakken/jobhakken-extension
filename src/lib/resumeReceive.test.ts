@@ -1,6 +1,20 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { resumeDataToProfile } from './resumeReceive';
+import { acceptsResumeSchema, resumeDataToProfile } from './resumeReceive';
+
+describe('acceptsResumeSchema (#107 — contract is numeric schemaVersion, ADR-0005)', () => {
+  it('accepts the numeric schemaVersion 5 the site now sends', () => {
+    expect(acceptsResumeSchema({ schemaVersion: 5 })).toBe(true);
+  });
+  it('still accepts the legacy string tag during rollout', () => {
+    expect(acceptsResumeSchema({ schema: 'reactive-resume-v5' })).toBe(true);
+  });
+  it('rejects other/absent versions', () => {
+    expect(acceptsResumeSchema({ schemaVersion: 4 })).toBe(false);
+    expect(acceptsResumeSchema({ schemaVersion: '5' })).toBe(false); // must be numeric, not a string
+    expect(acceptsResumeSchema({})).toBe(false);
+  });
+});
 
 /** A minimal reactive-resume-v5 payload (anonymous data — Jordan Rivera / example.com). */
 const v5 = {

@@ -12,6 +12,19 @@
  */
 import type { FullProfile, Profile } from '@jobhakken/autofill';
 
+/** Résumé schema version this build understands (ADR-0005). Mirrors @jobhakken/core RESUME_SCHEMA_VERSION
+ *  — TODO import it once core ≥0.4.1 (which exports it) is published. */
+export const SUPPORTED_RESUME_SCHEMA = 5;
+
+/**
+ * Does an inbound JH_EXT_RESUME message declare a schema we accept? The site now sends a NUMERIC
+ * `schemaVersion` (= RESUME_SCHEMA_VERSION, the same field the desktop app stamps on the bridge); we
+ * also accept the legacy string tag `schema:'reactive-resume-v5'` so an older site build still works.
+ */
+export function acceptsResumeSchema(msg: { schemaVersion?: unknown; schema?: unknown }): boolean {
+  return msg.schemaVersion === SUPPORTED_RESUME_SCHEMA || msg.schema === 'reactive-resume-v5';
+}
+
 type V5Url = { url?: unknown; label?: unknown };
 type V5Basics = { name?: unknown; email?: unknown; phone?: unknown; location?: unknown; url?: V5Url };
 type V5ExpItem = { company?: unknown; position?: unknown; period?: unknown; description?: unknown };
