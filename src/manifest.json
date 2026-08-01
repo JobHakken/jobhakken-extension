@@ -96,9 +96,20 @@
     "http://127.0.0.1/*",
     "http://localhost/*",
     "https://www.google-analytics.com/*",
+    "https://app.jobhakken.com/*"
+  ],
+  "optional_host_permissions": [
     "https://openrouter.ai/*",
     "https://api.openai.com/*",
-    "https://app.jobhakken.com/*"
+    "https://api.groq.com/*",
+    "https://api.together.xyz/*",
+    "https://api.mistral.ai/*",
+    "https://api.deepseek.com/*",
+    "https://api.perplexity.ai/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.fireworks.ai/*",
+    "https://api.x.ai/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

@@ -6,8 +6,10 @@ import {
   type UserRule,
 } from '@jobhakken/autofill';
 
+import { DEFAULT_BASE } from '../lib/aiClient.js';
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { ensureAiHostPermission, hasAiHostPermission } from '../lib/hostPerms.js';
 import { ACCOUNT_URL, clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
@@ -746,7 +748,17 @@ async function refreshAi(): Promise<void> {
   const m = await getAiConfigMeta();
   ($('aiModel') as HTMLInputElement).value = m.model;
   ($('aiBase') as HTMLInputElement).value = m.baseUrl;
-  ($('aiStatus') as HTMLElement).textContent = m.hasKey ? '✓ Key active this session' : '';
+  const status = $('aiStatus') as HTMLElement;
+  if (m.hasKey) {
+    // BYOK provider hosts are optional permissions — if the grant is missing, AI calls will fail, so
+    // nudge the user to re-Save (which requests it). Local/managed need no grant.
+    const granted = await hasAiHostPermission(m.baseUrl || DEFAULT_BASE);
+    status.textContent = granted
+      ? '✓ Key active this session'
+      : '⚠ Key active — click Save to grant browser access to your AI provider.';
+  } else {
+    status.textContent = '';
+  }
   ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
 }
 $('aiSave').addEventListener('click', async () => {
@@ -759,7 +771,18 @@ $('aiSave').addEventListener('click', async () => {
   }
   await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined });
   ($('aiKey') as HTMLInputElement).value = '';
+  // Request browser access to the chosen provider now (BYOK hosts are OPTIONAL — kept out of the
+  // default install; see hostPerms.ts). This click is the user gesture Chrome needs to show the prompt.
+  const outcome = await ensureAiHostPermission(baseUrl || DEFAULT_BASE);
   await refreshAi();
+  const status = $('aiStatus') as HTMLElement;
+  if (outcome === 'denied') {
+    status.textContent =
+      '✓ Key saved — but browser access to the provider was denied. Click Save to grant it (AI needs it to reach your provider).';
+  } else if (outcome === 'unsupported') {
+    status.textContent =
+      '✓ Key saved. This endpoint isn’t on our provider allowlist — use a listed hosted provider or a local endpoint (127.0.0.1).';
+  }
 });
 $('aiClear').addEventListener('click', async () => {
   await clearAiConfig();
