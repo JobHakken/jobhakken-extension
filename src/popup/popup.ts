@@ -1,8 +1,10 @@
 import { hasAiKey } from '../lib/aiKeyStore.js';
 import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
 import { markReviewShown, recordMeaningfulFill, REVIEW_URL, shouldPromptReview } from '../lib/reviewStore.js';
+import { isPaidTier, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
+import type { H1bDetail } from '../lib/h1bTypes.js';
 import { escapeHtml } from '../lib/html.js';
 import { loadTestMode } from '../lib/profileStore.js';
 import { initThemeToggle } from '../lib/theme.js';
@@ -68,6 +70,10 @@ const esc = escapeHtml;
 // Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
 const REPO = 'https://github.com/JobHakken/JobHakken-issues';
 let lastState: State | null = null;
+// H-1B history panel (premium): company on the current page + whether this user may see the data.
+let h1bCompany = '';
+let h1bEntitled = false;
+let h1bLoadedFor = '';
 
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
@@ -75,7 +81,12 @@ $('setupCta').addEventListener('click', () => chrome.runtime.openOptionsPage());
 void initThemeToggle($('theme'));
 
 async function render() {
-  const [state, conn, testMode] = await Promise.all([rpc<State>('getState'), loadConnection(), loadTestMode()]);
+  const [state, conn, testMode, identity] = await Promise.all([
+    rpc<State>('getState'),
+    loadConnection(),
+    loadTestMode(),
+    loadIdentity(),
+  ]);
   lastState = state;
 
   if (!state) {
@@ -85,7 +96,9 @@ async function render() {
     // NB: these are real element ids (an earlier list included a phantom "fill2" — a class, not an
     // id — so $('fill2') was null and this whole branch threw before disabling Autofill / showing
     // the CTA; the empty state only looked right thanks to default CSS).
-    (['insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
+    (['insights', 'h1bPanel', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) =>
+      $(id).classList.add('hidden'),
+    );
     $('setupCta').classList.remove('hidden'); // give first-run / off-a-job-page users a way forward
     $('siteHint').classList.remove('on');
     ($('autofill') as HTMLButtonElement).disabled = true;
@@ -136,6 +149,29 @@ async function render() {
     h1b.textContent = `✓ Sponsors visas${state.h1b.approvals >= 5 ? ` · ${state.h1b.approvals.toLocaleString()}` : ''}`;
     h1b.title = `${state.h1b.company} has ${state.h1b.approvals.toLocaleString()} H-1B approval(s) on record. Company-level signal — a specific role may still not sponsor.`;
   } else h1b.classList.remove('on');
+
+  // H-1B history panel — PREMIUM: only paid/builder tier OR desktop-connected. Data lazy-loads on expand.
+  h1bCompany = state.job?.company || state.h1b?.company || '';
+  h1bEntitled = isPaidTier(identity?.tier) || connected;
+  const h1bPanel = $('h1bPanel');
+  if (!h1bCompany) {
+    h1bPanel.classList.add('hidden');
+  } else {
+    h1bPanel.classList.remove('hidden');
+    if (!h1bEntitled) {
+      $('h1bPeek').textContent = '🔒 Builder';
+      $('h1bBody').innerHTML =
+        `<div>See <b style="color:var(--fg)">H-1B salary &amp; filing history</b> for ${esc(h1bCompany)} — sponsored roles, typical wages, and how many petitions they've filed.</div>` +
+        `<div style="margin-top:8px"><a id="h1bUpsell" href="#" style="color:var(--accent);font-weight:600">Sign in with a builder account →</a> <span style="color:var(--muted)">or connect the desktop app</span></div>`;
+      $('h1bUpsell')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        void chrome.tabs.create({ url: LOGIN_URL });
+      });
+    } else if (h1bLoadedFor !== h1bCompany) {
+      $('h1bPeek').textContent = '';
+      $('h1bBody').textContent = 'Expand to see this company’s H-1B history.';
+    }
+  }
 
   $('fieldCount').textContent = String(state.fields);
 
@@ -262,6 +298,37 @@ $('reviewDismiss').addEventListener('click', () => $('reviewBar').classList.add(
 // Jump to the fields that need review (outlined in amber on the page).
 $('fillResult').addEventListener('click', (e) => {
   if ((e.target as HTMLElement).closest('.jump')) void rpc('scrollToReview');
+});
+
+// H-1B history panel: fetch the premium detail from the SW the first time it's expanded (per company).
+const h1bPanelEl = $('h1bPanel') as HTMLDetailsElement;
+const money = (n: number) => (n ? `$${Math.round(n / 1000)}k` : '—');
+h1bPanelEl.addEventListener('toggle', async () => {
+  if (!h1bPanelEl.open || !h1bEntitled || !h1bCompany || h1bLoadedFor === h1bCompany) return;
+  h1bLoadedFor = h1bCompany;
+  const body = $('h1bBody');
+  body.textContent = 'Looking up…';
+  const resp = (await chrome.runtime
+    .sendMessage({ type: 'f2a-h1b-detail', company: h1bCompany })
+    .catch(() => null)) as { detail?: H1bDetail | null } | null;
+  const d = resp?.detail ?? null;
+  if (!d) {
+    body.textContent = `No H-1B petitions on record for ${h1bCompany}.`;
+    h1bLoadedFor = ''; // allow a retry on re-open
+    return;
+  }
+  const wage = d.wageMedian
+    ? `<div><b style="color:var(--fg)">~${money(d.wageMedian)}</b> typical wage${d.wageMin && d.wageMax ? ` <span style="color:var(--muted)">(${money(d.wageMin)}–${money(d.wageMax)})</span>` : ''}</div>`
+    : '';
+  const roles = d.roles.length
+    ? `<div class="kw">${d.roles.map((r) => `<span class="have">${esc(r.title)} · ${r.filings.toLocaleString()}</span>`).join('')}</div>`
+    : '';
+  body.innerHTML =
+    `<div><b style="color:var(--fg)">${d.filings.toLocaleString()}</b> H-1B petition(s) on record for ${esc(h1bCompany)}</div>` +
+    wage +
+    roles +
+    `<div style="font-size:10.5px;color:var(--muted)">Historical LCA filings across the company's entities — a company-level signal, not a guarantee for a specific role.</div>`;
+  $('h1bPeek').innerHTML = `<span class="chip ok">${d.filings.toLocaleString()}</span>`;
 });
 
 const insights = $('insights') as HTMLDetailsElement;

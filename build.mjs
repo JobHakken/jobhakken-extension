@@ -77,6 +77,7 @@ if (e2eBuild) {
   console.log('  [E2E] added localhost content-script matches to dist/manifest.json (test-only)');
 }
 cpSync('src/data/h1b-sponsors.txt', path.join(outdir, 'data', 'h1b-sponsors.txt')); // bundled H-1B list
+cpSync('src/data/h1b-roles.txt', path.join(outdir, 'data', 'h1b-roles.txt')); // per-company H-1B insights (roles/wages/filings)
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
 cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
 
