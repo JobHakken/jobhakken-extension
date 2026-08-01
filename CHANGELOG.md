@@ -4,6 +4,11 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.22.1
+- **Sign-in is now always visible.** A persistent sign-in chip sits in the header of the Profile &
+  settings page — “Sign in” when signed out (click → JobHakken login), your account once you’re in — on
+  every section. Previously sign-in was reachable only inside the Account section.
+
 ## 0.22.0
 - **H-1B company insights, right in the popup.** For the company on the current job page, expand the new
   “🛂 H-1B history” panel to see how many H-1B petitions they’ve filed, the typical wage (and range), and

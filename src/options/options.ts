@@ -8,7 +8,7 @@ import {
 
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
-import { clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
+import { ACCOUNT_URL, clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
@@ -703,7 +703,19 @@ async function refreshAuth(): Promise<void> {
     : '';
   ($('signOut') as HTMLButtonElement).hidden = !id;
   ($('signIn') as HTMLButtonElement).textContent = id ? 'Switch account' : 'Sign in with JobHakken';
+  // Persistent masthead chip — reflects login on every section.
+  const chip = $('authChip');
+  chip.classList.toggle('in', !!id);
+  ($('authChipLabel') as HTMLElement).textContent = id ? id.email : 'Sign in';
+  chip.title = id
+    ? `Signed in as ${id.email}${id.tier ? ` · ${id.tier}` : ''} — manage account`
+    : 'Sign in to JobHakken (unlocks managed AI + H-1B insights)';
 }
+// Masthead chip: signed out → open login; signed in → open the account page.
+$('authChip').addEventListener('click', (e) => {
+  e.preventDefault();
+  void loadIdentity().then((id) => chrome.tabs.create({ url: id ? ACCOUNT_URL : LOGIN_URL }));
+});
 $('signIn').addEventListener('click', () => {
   void chrome.tabs.create({ url: LOGIN_URL });
   ($('authStatus') as HTMLElement).innerHTML =
