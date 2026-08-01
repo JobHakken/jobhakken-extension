@@ -90,7 +90,12 @@
   },
   "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
   "externally_connectable": {
-    "matches": ["https://jobhakken.com/*", "https://www.jobhakken.com/*", "https://app.jobhakken.com/*"]
+    "matches": [
+      "https://jobhakken.com/*",
+      "https://www.jobhakken.com/*",
+      "https://app.jobhakken.com/*",
+      "http://localhost/*"
+    ]
   },
   "host_permissions": [
     "http://127.0.0.1/*",
