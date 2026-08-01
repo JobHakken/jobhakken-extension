@@ -30,6 +30,17 @@ chrome.runtime.onInstalled.addListener((details) => {
     void chrome.runtime.openOptionsPage();
   }
 });
+
+// Cross-surface link (#358): let the JobHakken website detect the extension is installed, with no Chrome
+// Web Store round-trip. Only our own origins can reach this (see `externally_connectable` in the
+// manifest); still, treat the inbound message as untrusted and respond only to the exact known shape.
+chrome.runtime.onMessageExternal?.addListener((msg, _sender, sendResponse) => {
+  if (msg && typeof msg === 'object' && (msg as { type?: unknown }).type === 'JH_EXT_PING') {
+    sendResponse({ installed: true, version: chrome.runtime.getManifest().version });
+  }
+  // Synchronous response only — nothing to keep the message channel open for.
+});
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
     void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped

@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.22.4
+- **The website can now tell that you have the extension installed.** Adds `externally_connectable` for
+  jobhakken.com + app.jobhakken.com and a small ping handler, so the site can show a "Connected" state
+  (and later hand off your résumé) — without any data leaving your browser. Only JobHakken's own origins
+  can reach it, and inbound messages are validated. (Cross-surface link #358; the site UI follows.)
+
 ## 0.22.3
 - **Hardened the desktop-app connection against local impersonators.** Before sending your connection
   token to the local app, the extension now requires the server to prove it holds that token (an HMAC
