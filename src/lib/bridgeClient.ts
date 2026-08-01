@@ -18,9 +18,23 @@ function assertBodySize(res: Response, max: number): void {
   if (Number.isFinite(len) && len > max) throw new Error(`bridge response too large: ${len} bytes`);
 }
 
+// Mirrors the desktop app's `profile` RPC payload (source of truth:
+// apps/desktopProbe/src/server/extensionBridge.ts). It sends the WHOLE structured profile —
+// basics.{website,links} + experience[] + education[] — which `deriveFullProfile` maps into the autofill
+// FullProfile. Declare it all so a refactor can't silently drop experience/education (the code fed it
+// through a cast before, hiding the real shape). Fields are optional/defensive (older apps send less).
 export type BridgeProfile = {
   hasResume: boolean;
-  basics?: { name?: string; email?: string; phone?: string; location?: string };
+  basics?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    website?: string;
+    links?: { text?: string; url?: string }[];
+  };
+  experience?: { company?: string; title?: string; period?: string }[];
+  education?: { school?: string; degree?: string; field?: string; period?: string }[];
   resumeText?: string;
   /** ADR-0005 résumé payload version the app stamped (#283). Absent on older apps. */
   schemaVersion?: number;
