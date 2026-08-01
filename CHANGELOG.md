@@ -4,6 +4,21 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.22.1
+- **Sign-in is easier to find — and shows what you unlock.** A persistent sign-in chip now sits in the
+  Profile & settings header (“Sign in” signed out, your account once you’re in) on every section. And a
+  signed-out “Unlock 3 more features” card on Home teases what an account adds — AI answers, H-1B salary
+  insights, sync — with a hover tip on each chip and one-click sign-in. Dismissible, never nags once
+  you’re in, and autofill stays free.
+
+## 0.22.0
+- **H-1B company insights, right in the popup.** For the company on the current job page, expand the new
+  “🛂 H-1B history” panel to see how many H-1B petitions they’ve filed, the typical wage (and range), and
+  a scrollable **table of the top sponsored roles with per-role filings and wages** — all summed across
+  the company’s legal entities (e.g. Amazon’s ~17k filings, not the 2 you’d get from an exact-name match). It’s a **premium** feature: available on a paid/builder
+  account or when the desktop app is connected; everyone else sees a short prompt. Data is bundled and
+  looked up on-device — nothing about the page leaves your browser.
+
 ## 0.21.3
 - **Managed-AI subscribers now read their real plan.** When signed in, the extension fetches your tier
   from the webapp’s `/api/entitlement` (source of truth: `profiles.subscription_tier`) using your access

@@ -94,6 +94,194 @@
       .themebtn:hover {
         border-color: var(--accent);
       }
+      /* persistent sign-in chip in the masthead — always visible on every section */
+      .authchip {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--fg);
+        text-decoration: none;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 6px 13px;
+        cursor: pointer;
+        max-width: 240px;
+      }
+      .authchip:hover {
+        border-color: var(--accent);
+      }
+      .authchip .ad {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+        flex: none;
+      }
+      .authchip.in {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+      }
+      .authchip.in .ad {
+        background: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+      }
+      .authchip #authChipLabel {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mast .themebtn {
+        margin-left: 6px;
+      }
+      /* Signed-out "unlock" hero on Home — gradient shell + locked chips with hover tips */
+      .signin-hero {
+        position: relative;
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+        background: linear-gradient(
+          130deg,
+          color-mix(in srgb, var(--accent) 18%, var(--surface)),
+          color-mix(in srgb, var(--accent) 30%, var(--surface))
+        );
+        border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+      }
+      .signin-hero[hidden] {
+        display: none;
+      }
+      .signin-hero::after {
+        content: '✨';
+        position: absolute;
+        right: 14px;
+        top: 8px;
+        font-size: 38px;
+        opacity: 0.15;
+        pointer-events: none;
+      }
+      .sh-x {
+        position: absolute;
+        right: 9px;
+        top: 7px;
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 3;
+      }
+      .sh-eyebrow {
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 5px;
+      }
+      .sh-h {
+        margin: 0 0 12px;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+      }
+      .sh-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 13px;
+      }
+      .sh-chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--fg);
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
+        border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+        border-radius: 999px;
+        padding: 5px 11px;
+        cursor: default;
+      }
+      .sh-chip:hover,
+      .sh-chip:focus-visible {
+        border-color: var(--accent);
+        outline: none;
+      }
+      .sh-chip .lk {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .sh-tip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        width: 210px;
+        max-width: 66vw;
+        background: var(--fg);
+        color: var(--bg);
+        font-size: 11.5px;
+        font-weight: 500;
+        line-height: 1.45;
+        border-radius: 8px;
+        padding: 8px 10px;
+        text-align: left;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.14s,
+          transform 0.14s,
+          visibility 0.14s;
+        z-index: 5;
+        box-shadow: 0 6px 20px hsl(40 20% 20% / 0.25);
+      }
+      .sh-tip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: var(--fg);
+      }
+      .sh-chip:hover .sh-tip,
+      .sh-chip:focus-visible .sh-tip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+      .sh-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .sh-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: none;
+        border-radius: 10px;
+        padding: 9px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent-fg);
+        background: linear-gradient(120deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #06251a));
+        cursor: pointer;
+      }
+      .sh-cta:hover {
+        filter: brightness(1.07);
+      }
+      .sh-note {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
       .logo {
         width: 28px;
         height: 28px;
@@ -861,6 +1049,9 @@
           <circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8" /></svg
       ></span>
       <h1>JobHakken — Profile &amp; settings</h1>
+      <a class="authchip" id="authChip" href="#" title="Sign in to JobHakken">
+        <span class="ad"></span><span id="authChipLabel">Sign in</span>
+      </a>
       <button class="themebtn" id="theme" title="Theme">🖥</button>
     </div>
     <p class="sub">
@@ -900,6 +1091,32 @@
         <section class="acc" data-p="home">
           <div class="acc-h"><span class="ic">⌂</span><span class="tt">Home</span><span class="chev">▾</span></div>
           <div class="acc-b">
+            <div class="signin-hero" id="signinHero" hidden>
+              <button class="sh-x" id="signinHeroDismiss" title="Dismiss" aria-label="Dismiss">×</button>
+              <p class="sh-eyebrow">Free account</p>
+              <h3 class="sh-h">Unlock 3 more features</h3>
+              <div class="sh-chips">
+                <span class="sh-chip" tabindex="0"
+                  >🤖 AI answers <span class="lk">🔒</span>
+                  <span class="sh-tip">Draft open-ended application questions — no API key needed.</span></span
+                >
+                <span class="sh-chip" tabindex="0"
+                  >🛂 H-1B salary insights <span class="lk">🔒</span>
+                  <span class="sh-tip"
+                    >Per-company H-1B petitions, typical wages &amp; sponsored roles, right on the job page.</span
+                  ></span
+                >
+                <span class="sh-chip" tabindex="0"
+                  >☁️ Sync <span class="lk">🔒</span>
+                  <span class="sh-tip">Your profile, synced across every device you apply from.</span></span
+                >
+              </div>
+              <div class="sh-row">
+                <button class="sh-cta" id="signinHeroCta">✨ Sign in to unlock →</button>
+                <span class="sh-note">free · autofill stays free</span>
+              </div>
+            </div>
+
             <div class="getstarted" id="getstarted" hidden>
               <button class="gs-x" id="gsDismiss" title="Dismiss" aria-label="Dismiss getting started">×</button>
               <b class="gs-h">👋 Getting started — three steps</b>

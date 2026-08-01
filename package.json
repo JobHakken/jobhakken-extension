@@ -1,6 +1,6 @@
 {
   "name": "jobhakken-extension",
-  "version": "0.21.3",
+  "version": "0.22.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -28,7 +28,8 @@
     "verify": "npm run typecheck && npm run lint && npm run check:permissions && npm run build && npm test",
     "check:permissions": "node scripts/check-permissions.mjs",
     "capture:static": "E2E=1 npm run build && CAPTURE=1 playwright test e2e/tools/capture-static.spec.ts",
-    "verify:live": "E2E=1 npm run build && VERIFY=1 playwright test e2e/tools/verify-live.spec.ts"
+    "verify:live": "E2E=1 npm run build && VERIFY=1 playwright test e2e/tools/verify-live.spec.ts",
+    "gen:h1b-roles": "node scripts/gen-h1b-roles.mjs"
   },
   "dependencies": {
     "@jobhakken/autofill": "^0.2.1",

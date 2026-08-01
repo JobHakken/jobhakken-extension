@@ -4,8 +4,10 @@
  * model + base URL persist in `.local` for convenience. Readable only from the SW / extension pages
  * (session default access = TRUSTED_CONTEXTS), never from a content script or page.
  *
- * Persistence tradeoff: the key is re-entered after a browser restart until the E2EE snapshot-sync
- * (ADR-0009, deferred) can re-hydrate it from the desktop app. Everything else survives.
+ * Persistence tradeoff: a standalone BYO key is re-entered after a browser restart (by design — no
+ * secret at rest). We deliberately do NOT auto-hydrate it from an E2EE snapshot in the extension
+ * (that path is dropped — see #93): to avoid re-entry, connect the desktop app, which then drafts via
+ * its own key over the bridge (`answer`) so no key needs to live in the extension at all.
  */
 import type { AiConfig } from './aiClient.js';
 

@@ -500,6 +500,60 @@
         background: color-mix(in srgb, var(--amber) 16%, transparent);
         color: var(--amber);
       }
+      /* H-1B roles table — fixed height, scroll if more than a few roles */
+      .h1btbl-wrap {
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .h1btbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      .h1btbl th {
+        position: sticky;
+        top: 0;
+        background: var(--surf);
+        text-align: left;
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        font-weight: 700;
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .h1btbl td {
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--line);
+        color: var(--fg);
+      }
+      .h1btbl tr:last-child td {
+        border-bottom: none;
+      }
+      .h1btbl td:first-child {
+        max-width: 155px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .h1btbl th:nth-child(2),
+      .h1btbl th:nth-child(3),
+      .h1btbl td:nth-child(2),
+      .h1btbl td:nth-child(3) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .h1btbl td:nth-child(2) {
+        color: var(--muted);
+      }
+      .h1btbl td:nth-child(3) {
+        color: var(--green);
+        font-weight: 600;
+      }
       .mini {
         display: flex;
         gap: 8px;
@@ -681,6 +735,14 @@
         id="aiUsage"
         title="Counted on your device only — never sent to JobHakken. Cost is an estimate at gpt-4o-mini rates."
       ></div>
+
+      <details class="ins hidden" id="h1bPanel">
+        <summary>
+          <span class="car">▸</span> 🛂 H-1B history
+          <span id="h1bPeek" style="margin-left: auto; color: var(--muted); font-size: 11px"></span>
+        </summary>
+        <div class="body" id="h1bBody"></div>
+      </details>
 
       <label class="sitecap" id="siteCapRow"
         ><input type="checkbox" id="siteCap" /> <span id="siteCapLabel"></span
