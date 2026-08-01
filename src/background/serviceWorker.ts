@@ -14,6 +14,7 @@ import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Ide
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
+import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
 import { track } from '../lib/telemetry.js';
 
@@ -122,6 +123,64 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       sendResponse({ matches: out });
     } catch {
       sendResponse({ matches: {} });
+    }
+  })();
+  return true; // async response
+});
+
+// ── H-1B per-company insights (roles / wages / filings) — powers the popup's premium detail panel ──
+// Parallel compact list, prefix-summed the SAME way as h1bSum so a brand resolves across its legal
+// entities (e.g. "amazon" → "amazon com services" + "amazon web services" + …).
+let h1bRoleNames: string[] | null = null;
+let h1bRoleRest: string[] | null = null;
+let h1bRoleLoading: Promise<void> | null = null;
+const H1B_ROLES_CACHE = 'f2a_h1b_roles';
+
+async function ensureH1bRoles(): Promise<void> {
+  if (h1bRoleNames) return;
+  if (!h1bRoleLoading) {
+    h1bRoleLoading = (async () => {
+      try {
+        const got = await chrome.storage.session.get(H1B_ROLES_CACHE);
+        const cached = got[H1B_ROLES_CACHE] as { names?: string; rest?: string } | undefined;
+        if (cached?.names && cached.rest) {
+          h1bRoleNames = cached.names.split('\n');
+          h1bRoleRest = cached.rest.split('\n');
+          return;
+        }
+      } catch {
+        /* no cache — parse the bundled file below */
+      }
+      const txt = await (await fetch(chrome.runtime.getURL('data/h1b-roles.txt'))).text();
+      const names: string[] = [];
+      const rest: string[] = [];
+      for (const line of txt.split('\n')) {
+        const t = line.indexOf('\t');
+        if (t < 0) continue;
+        names.push(line.slice(0, t));
+        rest.push(line.slice(t + 1));
+      }
+      h1bRoleNames = names;
+      h1bRoleRest = rest;
+      try {
+        await chrome.storage.session.set({ [H1B_ROLES_CACHE]: { names: names.join('\n'), rest: rest.join('\n') } });
+      } catch {
+        /* over quota — held in memory for this SW lifetime */
+      }
+    })();
+  }
+  await h1bRoleLoading;
+}
+
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-h1b-detail') return;
+  (async () => {
+    try {
+      await ensureH1bRoles();
+      const q = normalizeCompanyName(String(msg.company ?? ''));
+      sendResponse({ detail: mergeH1bRows(h1bRoleNames ?? [], h1bRoleRest ?? [], q) });
+    } catch {
+      sendResponse({ detail: null });
     }
   })();
   return true; // async response

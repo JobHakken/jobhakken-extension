@@ -43,6 +43,13 @@ export type Identity = {
   expiresAt?: number; // unix seconds
 };
 
+/** Paid/entitled managed tiers — mirror of core `PAID_TIERS` (plus/pro/max/byo). Free/unknown = not paid. */
+export const PAID_TIERS = ['plus', 'pro', 'max', 'byo'] as const;
+/** True only for a recognized paid tier (whitelist — an unknown/corrupt tier fails closed to NOT paid). */
+export function isPaidTier(tier: string | null | undefined): boolean {
+  return !!tier && (PAID_TIERS as readonly string[]).includes(tier);
+}
+
 const KEY = 'f2a_identity';
 
 export async function saveIdentity(id: Identity): Promise<void> {
