@@ -1329,26 +1329,21 @@
                 >
               </h3>
               <div class="f">
-                <label for="aiKey">AI API key</label
-                ><input
-                  id="aiKey"
-                  type="password"
-                  placeholder="sk-or-… (OpenRouter) or sk-… (OpenAI)"
-                  autocomplete="off"
-                />
+                <label for="aiProvider">Provider</label
+                ><select id="aiProvider"></select>
+              </div>
+              <p id="aiHint" style="margin: -4px 0 10px; font-size: 12px; opacity: 0.75"></p>
+              <div class="f" id="aiKeyRow">
+                <label for="aiKey" id="aiKeyLabel">API key</label
+                ><input id="aiKey" type="password" placeholder="Paste your provider key" autocomplete="off" />
               </div>
               <div class="f">
                 <label for="aiModel">Model (optional)</label
-                ><input id="aiModel" type="text" placeholder="openai/gpt-4o-mini (default)" autocomplete="off" />
+                ><input id="aiModel" type="text" placeholder="default" autocomplete="off" />
               </div>
-              <div class="f">
-                <label for="aiBase">Base URL (optional)</label
-                ><input
-                  id="aiBase"
-                  type="text"
-                  placeholder="https://openrouter.ai/api/v1 (default)"
-                  autocomplete="off"
-                />
+              <div class="f" id="aiBaseRow" hidden>
+                <label for="aiBase">Base URL</label
+                ><input id="aiBase" type="text" placeholder="https://your-endpoint/v1" autocomplete="off" />
               </div>
               <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
                 <button class="save" id="aiSave">Save key</button>

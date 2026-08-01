@@ -16,6 +16,7 @@
 export const AI_PROVIDER_ORIGINS = [
   'https://openrouter.ai/*',
   'https://api.openai.com/*',
+  'https://open.bigmodel.cn/*', // GLM / Zhipu — a @jobhakken/core LLM_PROVIDERS preset (#115)
   'https://api.groq.com/*',
   'https://api.together.xyz/*',
   'https://api.mistral.ai/*',
