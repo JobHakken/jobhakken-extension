@@ -64,3 +64,68 @@ export function parseSupabaseSession(raw: string): Identity | null {
     expiresAt: typeof s.expires_at === 'number' ? (s.expires_at as number) : undefined,
   };
 }
+
+/** Decode a base64url (or standard base64) payload to a UTF-8 string. */
+function base64ToString(b64: string): string {
+  const std = b64.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = std + '='.repeat((4 - (std.length % 4)) % 4);
+  const bin = atob(padded);
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/**
+ * Parse the Supabase session out of a `document.cookie` string. The webapp uses `@supabase/ssr`, which
+ * keeps the session in cookies (NOT localStorage) and, for large sessions, CHUNKS the value across
+ * `sb-<ref>-auth-token.0`, `.1`, … with a `base64-` prefix. We reassemble the chunks in order and
+ * base64-decode before parsing — a single-cookie read silently fails for real (chunked) sessions.
+ * Cookies are not httpOnly (the webapp never sets it), so a same-origin content script can read them.
+ * Returns the identity, or null when signed out / unparseable.
+ */
+export function parseSupabaseCookies(cookieHeader: string): Identity | null {
+  if (!cookieHeader) return null;
+  const jar = new Map<string, string>();
+  for (const part of cookieHeader.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq < 0) continue;
+    const name = part.slice(0, eq).trim();
+    let value = part.slice(eq + 1).trim();
+    try {
+      value = decodeURIComponent(value);
+    } catch {
+      /* keep raw if not percent-encoded */
+    }
+    if (name) jar.set(name, value);
+  }
+  // Group `sb-<ref>-auth-token[.<n>]` cookies by base name.
+  const bases = new Map<string, { whole?: string; chunks: Map<number, string> }>();
+  for (const [name, value] of jar) {
+    const m = /^(sb-.+-auth-token)(?:\.(\d+))?$/.exec(name);
+    if (!m) continue;
+    const entry = bases.get(m[1]) ?? { chunks: new Map<number, string>() };
+    if (m[2] === undefined) entry.whole = value;
+    else entry.chunks.set(Number(m[2]), value);
+    bases.set(m[1], entry);
+  }
+  for (const { whole, chunks } of bases.values()) {
+    let raw = whole;
+    if (raw === undefined && chunks.size) {
+      raw = [...chunks.keys()]
+        .sort((a, b) => a - b)
+        .map((i) => chunks.get(i) ?? '')
+        .join('');
+    }
+    if (!raw) continue;
+    let json = raw;
+    if (raw.startsWith('base64-')) {
+      try {
+        json = base64ToString(raw.slice('base64-'.length));
+      } catch {
+        continue;
+      }
+    }
+    const id = parseSupabaseSession(json);
+    if (id) return id;
+  }
+  return null;
+}

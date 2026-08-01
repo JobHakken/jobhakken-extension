@@ -4,6 +4,17 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.2
+- Internal: bump the shared `@jobhakken/core` library 0.1.0 → 0.2.0 (cross-surface sync-consumer /
+  materialize groundwork, ADR-0009). No user-facing change; sponsor/eligibility classifiers unchanged.
+
+## 0.21.1
+- **Groundwork for signing in with your JobHakken account.** Fixed the auth handshake so the extension
+  can detect your website sign-in — it now reads the session from the app.jobhakken.com cookie (the app
+  moved to cookie-based sessions, including large chunked sessions) instead of localStorage where it no
+  longer lives. Using your own AI key is unaffected; managed AI for subscribers still needs a couple of
+  backend pieces before it’s live.
+
 ## 0.21.0
 - **Redesigned Profile & settings page.** The row of tabs is now a calm left sidebar with collapsible
   sections and a “you’re X% ready to apply” bar at the top, so it’s clear what’s set up and what’s left.

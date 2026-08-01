@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
-import { clearIdentity, loadIdentity, parseSupabaseSession, saveIdentity } from './authStore';
+import { clearIdentity, loadIdentity, parseSupabaseCookies, parseSupabaseSession, saveIdentity } from './authStore';
 
 const mem: Record<string, unknown> = {};
 beforeEach(() => {
@@ -54,5 +54,46 @@ describe('identity store', () => {
     expect((await loadIdentity())?.email).toBe('j@example.com');
     await clearIdentity();
     expect(await loadIdentity()).toBeNull();
+  });
+});
+
+describe('parseSupabaseCookies (@supabase/ssr session cookies)', () => {
+  const session = {
+    access_token: 'at-123',
+    refresh_token: 'rt-SECRET',
+    expires_at: 1893456000,
+    user: { id: 'u1', email: 'jordan@example.com', app_metadata: { tier: 'pro' } },
+  };
+  const b64 = 'base64-' + Buffer.from(JSON.stringify(session), 'utf8').toString('base64url');
+
+  it('reads a single (unchunked) base64 auth-token cookie', () => {
+    const id = parseSupabaseCookies(`sb-abcdef-auth-token=${b64}`);
+    expect(id).toMatchObject({ email: 'jordan@example.com', tier: 'pro', accessToken: 'at-123' });
+    expect(id).not.toHaveProperty('refresh_token');
+  });
+
+  it('reassembles CHUNKED cookies in order and base64-decodes', () => {
+    const mid = Math.floor(b64.length / 2);
+    const c0 = b64.slice(0, mid);
+    const c1 = b64.slice(mid);
+    // deliberately list .1 before .0 to prove ordering is by index, not cookie order
+    const cookie = `other=x; sb-abcdef-auth-token.1=${c1}; sb-abcdef-auth-token.0=${c0}`;
+    const id = parseSupabaseCookies(cookie);
+    expect(id).toMatchObject({ email: 'jordan@example.com', tier: 'pro', accessToken: 'at-123' });
+  });
+
+  it('handles legacy raw-JSON cookie value (no base64- prefix)', () => {
+    const raw = encodeURIComponent(JSON.stringify(session));
+    expect(parseSupabaseCookies(`sb-xyz-auth-token=${raw}`)).toMatchObject({ email: 'jordan@example.com' });
+  });
+
+  it('returns null when there is no auth-token cookie (signed out)', () => {
+    expect(parseSupabaseCookies('theme=dark; other=1')).toBeNull();
+    expect(parseSupabaseCookies('')).toBeNull();
+  });
+
+  it('ignores unrelated sb cookies and malformed values', () => {
+    expect(parseSupabaseCookies('sb-abcdef-auth-token=base64-not$$valid')).toBeNull();
+    expect(parseSupabaseCookies('sb-provider-token=whatever')).toBeNull();
   });
 });

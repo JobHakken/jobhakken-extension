@@ -1,14 +1,25 @@
 /**
  * Auth bridge — runs ONLY on app.jobhakken.com. The user signs in on the website (its existing
- * Supabase flow); this reads the resulting session from the page's localStorage and forwards the
- * identity to the service worker, so the extension knows who's signed in without reimplementing auth.
+ * Supabase flow); this reads the resulting session and forwards the identity to the service worker,
+ * so the extension knows who's signed in without reimplementing auth.
  *
- * Content scripts share the host page's same-origin localStorage, so `sb-<ref>-auth-token` is readable
- * here. We never touch the page's DOM or send anything off-device — just a runtime message to our SW.
+ * The webapp uses `@supabase/ssr`, which keeps the session in COOKIES (not localStorage) and chunks
+ * large sessions across `sb-<ref>-auth-token.0/.1/…`. Those cookies are not httpOnly, so this
+ * same-origin content script can read them via `document.cookie` (see parseSupabaseCookies). We keep a
+ * localStorage fallback for older/local-dev flows. We never touch the page's DOM or send anything
+ * off-device — just a runtime message to our SW.
  */
-import { parseSupabaseSession, type Identity } from '../lib/authStore.js';
+import { parseSupabaseCookies, parseSupabaseSession, type Identity } from '../lib/authStore.js';
 
 function readSession(): Identity | null {
+  // Primary: @supabase/ssr session cookies.
+  try {
+    const fromCookie = parseSupabaseCookies(document.cookie);
+    if (fromCookie) return fromCookie;
+  } catch {
+    /* cookie access blocked — fall through to localStorage */
+  }
+  // Fallback: older/local-dev flows that keep the session in localStorage.
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
