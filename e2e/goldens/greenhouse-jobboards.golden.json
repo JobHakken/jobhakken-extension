@@ -1,0 +1,30 @@
+{
+  "fixture": "greenhouse-jobboards.html",
+  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "_note": "The NEWER React job-boards.greenhouse.io variant (distinct from the classic boards.greenhouse.io fixture). Captured live via capture:static. Core PII gated; phone/upload reported.",
+  "fields": [
+    {
+      "selector": "#first_name",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#last_name",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#phone",
+      "expect": "555",
+      "match": "contains",
+      "gate": false,
+      "note": "phone"
+    }
+  ],
+  "minRecall": 1
+}

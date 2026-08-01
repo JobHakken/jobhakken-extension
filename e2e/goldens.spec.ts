@@ -1,0 +1,276 @@
+/**
+ * Golden coverage tests (plan §5) — the honest, DETERMINISTIC gate.
+ *
+ * The old signal ("N fields filled") measures fills, not CORRECT fills — a rule that puts your
+ * phone in the wrong box scores 100%. These tests compare each filled field to a human-authored
+ * expected VALUE (per e2e/goldens/*.golden.json), and report precision + recall separately
+ * (filling wrong is worse than not filling).
+ *
+ * Runs against the committed local fixtures in Demo mode (dummy data) — so it's fast, offline, and
+ * part of the normal `npm run test:e2e` gate. `gate:true` fields fail the build on regression;
+ * `gate:false` fields are reported as coverage/gaps (work to hand upstream to @jobhakken/autofill).
+ */
+import { readdirSync, readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import { BrowserContext, chromium, expect, test as base } from '@playwright/test';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const EXT_DIR = path.resolve(__dirname, '../dist');
+const GOLDEN_DIR = path.resolve(__dirname, 'goldens');
+
+// A field is located by a CSS `selector` OR (more robustly, for sites with volatile ids like
+// SuccessFactors) by `label` — a case-insensitive regex matched against the field's label/ARIA name.
+type Field = {
+  selector?: string;
+  label?: string;
+  expect: string;
+  match?: 'exact' | 'contains';
+  gate?: boolean;
+  note?: string;
+  // How to read the field's filled value: 'value' (default, inputValue), 'file' (files[0].name for
+  // uploads), or 'attr:NAME' (an attribute, e.g. a react-select combobox that stores its selection
+  // in data-value). `poll: true` waits for slow interactive fills (comboboxes/uploads) to complete.
+  read?: string;
+  poll?: boolean;
+};
+// `minRecall` is the coverage FLOOR: the build fails if overall recall drops below it. This makes a
+// coverage *regression* (e.g. a lib change that stops filling a non-gated field) redden the gate,
+// not just print a note — the gap the rationalization/Workday-phone regression slipped through.
+// `storage` sets extra chrome.storage.local flags for fixtures that need them (e.g. sensitive-field
+// fill for EEO/Gender, or auto-capture). f2a_test_mode is always set.
+type Golden = {
+  fixture: string;
+  profile?: string;
+  minRecall?: number;
+  storage?: Record<string, unknown>;
+  fields: Field[];
+};
+
+function fieldKey(f: Field): string {
+  return f.selector ?? `label:${f.label}`;
+}
+function fieldLocator(page: import('@playwright/test').Page, f: Field) {
+  // eslint-disable-next-line security/detect-non-literal-regexp -- label comes from a committed golden fixture, not user input
+  return f.label ? page.getByLabel(new RegExp(f.label, 'i')).first() : page.locator(f.selector as string);
+}
+
+/** Read a field's filled value per its `read` strategy (value | file | attr:NAME). */
+async function readField(page: import('@playwright/test').Page, f: Field): Promise<string> {
+  const loc = fieldLocator(page, f);
+  try {
+    if (f.read === 'file') return (await loc.evaluate((el) => (el as HTMLInputElement).files?.[0]?.name ?? '')) || '';
+    if (f.read?.startsWith('attr:')) {
+      const name = f.read.slice(5);
+      return (await loc.evaluate((el, n) => el.getAttribute(n) ?? '', name)) || '';
+    }
+    return (await loc.inputValue().catch(() => '')) || '';
+  } catch {
+    return '';
+  }
+}
+
+declare const chrome: {
+  storage: {
+    local: { set(items: Record<string, unknown>): Promise<void> };
+    session: { get(key: string): Promise<Record<string, unknown>> };
+  };
+  tabs: {
+    query(q: object): Promise<Array<{ id?: number }>>;
+    sendMessage(id: number, msg: unknown, opts?: object): Promise<unknown>;
+  };
+};
+
+const test = base.extend<{ context: BrowserContext; extensionId: string }>({
+  context: async ({}, use) => {
+    const context = await chromium.launchPersistentContext('', {
+      headless: false,
+      args: ['--headless=new', `--disable-extensions-except=${EXT_DIR}`, `--load-extension=${EXT_DIR}`],
+    });
+    // Captured fixtures may reference external CDN assets (e.g. a logo <img> from greenhouse.io) that
+    // never resolve offline — the request hangs, stalling the page's 'load' event and the whole run.
+    // Abort every non-local request so those assets fail INSTANTLY; local fixtures + the extension
+    // still load. (This keeps the default 'load' navigation, so PII-config propagation timing for
+    // other fixtures like SuccessFactors is unaffected.)
+    await context.route('**/*', (route) => {
+      const url = route.request().url();
+      if (/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(url)) return route.continue();
+      return route.abort();
+    });
+    await use(context);
+    await context.close();
+  },
+  extensionId: async ({ context }, use) => {
+    let [sw] = context.serviceWorkers();
+    if (!sw) sw = await context.waitForEvent('serviceworker');
+    await use(sw.url().split('/')[2]);
+  },
+});
+
+/** Trigger autofill on the active tab, targeting the form frame (all_frames → pick the busiest). */
+async function autofill(context: BrowserContext): Promise<void> {
+  let [sw] = context.serviceWorkers();
+  if (!sw) sw = await context.waitForEvent('serviceworker');
+  await sw.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) return;
+    let frameId: number | undefined;
+    try {
+      const key = `f2a_frames:${tab.id}`;
+      // eslint-disable-next-line security/detect-object-injection -- code-built storage key, not user input
+      const counts = ((await chrome.storage.session.get(key))[key] ?? {}) as Record<string, number>;
+      let best = 0;
+      for (const [fid, c] of Object.entries(counts)) {
+        if (c > best) {
+          best = c;
+          frameId = Number(fid);
+        }
+      }
+    } catch {
+      /* fall back to broadcast */
+    }
+    try {
+      await chrome.tabs.sendMessage(
+        tab.id,
+        { type: 'f2a-rpc', method: 'autofill', params: { mode: 'default' } },
+        frameId != null ? { frameId } : {},
+      );
+    } catch {
+      /* content script not ready — the poll retries */
+    }
+  });
+}
+
+const goldens: Golden[] = readdirSync(GOLDEN_DIR)
+  .filter((f) => f.endsWith('.golden.json'))
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- committed test fixtures under a fixed dir
+  .map((f) => JSON.parse(readFileSync(path.join(GOLDEN_DIR, f), 'utf8')) as Golden);
+
+for (const g of goldens) {
+  test(`golden coverage: ${g.fixture}`, async ({ context, extensionId }) => {
+    // Enable Demo mode (dummy identity) + any fixture-specific flags (e.g. sensitive-field fill).
+    const cfg = await context.newPage();
+    await cfg.goto(`chrome-extension://${extensionId}/options/options.html`);
+    await cfg.evaluate((extra) => chrome.storage.local.set({ f2a_test_mode: true, ...extra }), g.storage ?? {});
+    await cfg.close();
+
+    const page = await context.newPage();
+    await page.goto(`/${g.fixture}`);
+
+    // Poll autofill until a gated field takes a value (the sync pass is fast; AI passes are slower).
+    const anchor = g.fields.find((f) => f.gate) ?? g.fields[0];
+    await expect
+      .poll(
+        async () => {
+          await autofill(context);
+          return readField(page, anchor);
+        },
+        { timeout: 25_000 },
+      )
+      .not.toBe('');
+
+    // Interactive fields (comboboxes / uploads) fill LATE — give each `poll` field time to land
+    // (non-throwing; if it never fills it just scores as a miss/gap below).
+    for (const f of g.fields.filter((x) => x.poll)) {
+      const deadline = Date.now() + 30_000;
+      while (Date.now() < deadline) {
+        if ((await readField(page, f)) !== '') break;
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Score every golden field.
+    let correct = 0;
+    let filled = 0;
+    const gaps: Array<{ field: string; expected: string; got: string; note?: string }> = [];
+    for (const f of g.fields) {
+      const val = (await readField(page, f)).trim();
+      const isFilled = val !== '';
+      const ok = f.match === 'contains' ? val.includes(f.expect) : val === f.expect;
+      if (isFilled) filled++;
+      if (ok) correct++;
+      else if (!f.gate) gaps.push({ field: fieldKey(f), expected: f.expect, got: val || '(empty)', note: f.note });
+
+      // Hard gate: core fields must be exactly right, or the build fails (regression guard).
+      if (f.gate) {
+        if (f.match === 'contains') expect(val, `gated ${fieldKey(f)}`).toContain(f.expect);
+        else expect(val, `gated ${fieldKey(f)}`).toBe(f.expect);
+      }
+    }
+
+    const recall = Math.round((correct / g.fields.length) * 100) / 100;
+    const precision = filled ? Math.round((correct / filled) * 100) / 100 : 0;
+    console.log(
+      `\n[golden] ${g.fixture} — precision ${precision} · recall ${recall} · correct ${correct}/${g.fields.length}`,
+    );
+    if (gaps.length) console.log(`[golden] ${gaps.length} non-gated gap(s) → upstream @jobhakken/autofill:`, gaps);
+
+    // Coverage floor: fail the gate if overall recall regresses below the committed baseline.
+    if (g.minRecall != null) {
+      expect(
+        recall,
+        `${g.fixture} recall floor (a coverage regression) — gaps: ${JSON.stringify(gaps)}`,
+      ).toBeGreaterThanOrEqual(g.minRecall);
+    }
+  });
+}
+
+// ── "form accepts fill" gate (validate-probe, deterministic) ─────────────────────────────────────
+// After autofill, every required field the engine is SUPPOSED to fill (a standard profile field —
+// name/email/phone/address/EEO/…) must not be left empty. `:invalid` reflects required-emptiness live.
+// This guards against the blind spot behind the EEO miss: a common field silently stopping filling.
+// Custom application questions (essays, "open question" IDs) are excluded — no deterministic engine
+// fills those. Whitelist-by-label so it's stable across fixtures.
+// Only the UNAMBIGUOUS identity fields — these never appear inside a custom application question the
+// way "degree"/"school"/"gender" can, so the gate stays stable. It's a catastrophic-regression guard
+// ("core fields stopped filling / the form rejects our value"), complementing the per-value goldens.
+const STANDARD_FIELD =
+  /first ?name|last ?name|full name|^name$|e-?mail|^phone|phone number|mobile( number| phone)?|linkedin/i;
+for (const fixture of [
+  'ats-lever.html',
+  'ats-recruitee.html',
+  'ats-workable.html',
+  'ats-ashby.html',
+  'ats-bamboohr.html',
+]) {
+  test(`form accepts fill (standard fields): ${fixture}`, async ({ context, extensionId }) => {
+    const cfg = await context.newPage();
+    await cfg.goto(`chrome-extension://${extensionId}/options/options.html`);
+    await cfg.evaluate(() => chrome.storage.local.set({ f2a_test_mode: true }));
+    await cfg.close();
+
+    const page = await context.newPage();
+    await page.goto(`/${fixture}`);
+    await expect
+      .poll(
+        async () => {
+          await autofill(context);
+          return page
+            .locator('input:not([type=hidden]):not([type=file])')
+            .evaluateAll((els) => els.filter((e) => (e as HTMLInputElement).value).length)
+            .catch(() => 0);
+        },
+        { timeout: 25_000 },
+      )
+      .toBeGreaterThan(0);
+    await page.waitForTimeout(1200);
+
+    // A required, still-empty field whose label/name reads like a STANDARD profile field = a real gap.
+    const flagged = await page.evaluate((reSrc: string) => {
+      const std = new RegExp(reSrc, 'i');
+      const out: string[] = [];
+      document.querySelectorAll('input,select,textarea').forEach((el) => {
+        const e = el as HTMLInputElement;
+        if (e.type === 'hidden' || e.type === 'file' || !e.matches(':invalid')) return;
+        const lab = (e.labels?.[0]?.textContent || e.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+        if (std.test(lab) || std.test(e.name || '')) out.push(lab || e.name || '(unnamed)');
+      });
+      return [...new Set(out)];
+    }, STANDARD_FIELD.source);
+
+    expect(flagged, `${fixture}: standard required field(s) left empty after autofill → ${flagged.join(', ')}`).toEqual(
+      [],
+    );
+  });
+}

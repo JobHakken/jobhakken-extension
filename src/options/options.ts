@@ -7,8 +7,12 @@ import {
 } from '@jobhakken/autofill';
 
 import { connect, rpc } from '../lib/bridgeClient.js';
+import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
+import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
 import { clearCaptures, getCaptures, getOptInSites, setSiteOptIn } from '../lib/captureStore.js';
+import { aggregateCorrections, correctionCaptureEnabled } from '../lib/correctionSignal.js';
 import { escapeHtml } from '../lib/html.js';
 import { report } from '../lib/telemetryClient.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
@@ -41,16 +45,65 @@ let testModeOn = false; // extension test toggle (import brings dummy data when 
 
 void initThemeToggle($('theme')); // manual light/dark toggle (default: follow system)
 
-// ── tabs ─────────────────────────────────────────────────────
-$('tabs').addEventListener('click', (e) => {
-  const b = (e.target as HTMLElement).closest('.tab') as HTMLElement | null;
-  if (!b) return;
-  const key = b.dataset.t;
-  document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === b));
+// ── sidebar + accordion sections ─────────────────────────────
+function openSection(key: string | undefined, scroll = true): void {
+  if (!key) return;
   document
-    .querySelectorAll('.panel')
-    .forEach((p) => p.classList.toggle('active', (p as HTMLElement).dataset.p === key));
+    .querySelectorAll('.s-item')
+    .forEach((s) => s.classList.toggle('active', (s as HTMLElement).dataset.p === key));
+  document
+    .querySelectorAll('.acc')
+    .forEach((a) => a.classList.toggle('collapsed', (a as HTMLElement).dataset.p !== key));
+  if (scroll) document.querySelector(`.acc[data-p="${key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('side').addEventListener('click', (e) => {
+  const it = (e.target as HTMLElement).closest('.s-item') as HTMLElement | null;
+  if (it) openSection(it.dataset.p);
 });
+document.querySelectorAll('.acc-h').forEach((h) => {
+  h.addEventListener('click', () => {
+    const sec = h.closest('.acc') as HTMLElement;
+    if (sec.classList.contains('collapsed')) openSection(sec.dataset.p);
+    else sec.classList.add('collapsed'); // clicking the open header closes it
+  });
+});
+// ── ⓘ info tooltips (click toggles; hover handled by CSS) ─────
+document.querySelectorAll('.info').forEach((el) => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const was = el.classList.contains('open');
+    document.querySelectorAll('.info.open').forEach((o) => o.classList.remove('open'));
+    if (!was) el.classList.add('open');
+  });
+});
+document.addEventListener('click', () =>
+  document.querySelectorAll('.info.open').forEach((o) => o.classList.remove('open')),
+);
+
+// ── readiness header (honest: how many profile sections have data) ─
+function updateReadiness(): void {
+  const keys = ['personal', 'additional', 'education', 'work', 'custom'];
+  const segs = $('segbar').children;
+  let filled = 0;
+  keys.forEach((k, i) => {
+    const sec = document.querySelector(`.acc[data-p="${k}"]`);
+    let has = false;
+    sec?.querySelectorAll('input, textarea, select').forEach((el) => {
+      const inp = el as HTMLInputElement;
+      if (inp.type === 'checkbox' || inp.type === 'radio') return;
+      if (inp.value.trim()) has = true;
+    });
+    if (has) filled++;
+    const seg = segs[i] as HTMLElement | undefined;
+    if (seg) seg.className = has ? 'on' : '';
+  });
+  const pct = Math.round((filled / keys.length) * 100);
+  $('readyPct').textContent = filled === keys.length ? "You're all set — 100% ready" : `You're ${pct}% ready to apply`;
+  const count = $('readyCount');
+  count.textContent = `${filled} / ${keys.length}`;
+  count.className = 'pill ' + (filled > 0 ? 'ok' : 'todo');
+}
+document.addEventListener('input', updateReadiness);
 
 // ── personal / additional single fields ──────────────────────
 function renderFields(containerId: string, defs: typeof PERSONAL_FIELDS) {
@@ -153,11 +206,11 @@ function renderRules() {
     const row = document.createElement('div');
     row.className = 'rule';
     const cond = document.createElement('input');
-    cond.placeholder = 'condition e.g. (notice period)';
+    cond.placeholder = 'if the field says… e.g. notice period';
     cond.value = rule.condition ?? '';
     cond.addEventListener('input', () => (rule.condition = cond.value));
     const val = document.createElement('input');
-    val.placeholder = 'value to fill';
+    val.placeholder = 'fill this… e.g. 2 weeks';
     val.value = rule.value ?? '';
     val.addEventListener('input', () => (rule.value = val.value));
     const rm = document.createElement('span');
@@ -172,6 +225,51 @@ function renderRules() {
   });
 }
 
+// ── common custom questions (the "learnings") — one click adds a rule to fill in ──
+// Questions autofill can't put on the main profile page but people frequently hit. Clicking a chip
+// adds a rule (phrase pre-filled, a sensible suggested answer to edit).
+const COMMON_QUESTIONS: { label: string; condition: string; value: string }[] = [
+  { label: 'Notice period', condition: 'notice period', value: '2 weeks' },
+  { label: 'Earliest start date', condition: 'start date', value: 'Immediately' },
+  { label: 'Willing to relocate', condition: 'willing to relocate', value: 'Yes' },
+  { label: 'Willing to travel', condition: 'willing to travel', value: 'Yes' },
+  { label: 'How did you hear about us', condition: 'how did you hear', value: 'LinkedIn' },
+  { label: 'Desired salary', condition: 'desired salary', value: '' },
+  { label: 'Current salary', condition: 'current salary', value: '' },
+  { label: 'Authorized to work', condition: 'authorized to work', value: 'Yes' },
+  { label: 'Require sponsorship', condition: 'require sponsorship', value: 'No' },
+  { label: 'Over 18', condition: 'over 18', value: 'Yes' },
+  { label: 'Security clearance', condition: 'security clearance', value: 'No' },
+  { label: 'Worked here before', condition: 'worked here before', value: 'No' },
+  { label: 'Reference name', condition: 'reference name', value: '' },
+  { label: 'Reference email', condition: 'reference email', value: '' },
+  { label: 'Expected graduation', condition: 'graduation', value: '' },
+  { label: 'GPA', condition: 'gpa', value: '' },
+  { label: "Driver's license", condition: 'driver', value: 'Yes' },
+];
+function renderCommonQuestions(): void {
+  const box = $('commonQ');
+  box.innerHTML = '';
+  const existing = new Set((fp.rules ?? []).map((r) => (r.condition ?? '').toLowerCase().trim()));
+  for (const q of COMMON_QUESTIONS) {
+    const b = document.createElement('button');
+    b.textContent = q.label;
+    if (existing.has(q.condition.toLowerCase())) {
+      b.disabled = true;
+      b.title = 'Already added below';
+    } else {
+      b.addEventListener('click', () => {
+        (fp.rules ??= []).push({ condition: q.condition, value: q.value });
+        renderRules();
+        renderCommonQuestions();
+        const inputs = $('ruleList').querySelectorAll('input');
+        (inputs[inputs.length - 1] as HTMLInputElement | undefined)?.focus();
+      });
+    }
+    box.appendChild(b);
+  }
+}
+
 // ── save ─────────────────────────────────────────────────────
 function composeFullName() {
   const parts = [fp.profile.firstName, fp.profile.middleName, fp.profile.lastName].filter(Boolean);
@@ -184,12 +282,12 @@ async function onSave() {
 }
 
 // ── desktop connection + import ──────────────────────────────
-function renderConn(connected: boolean, name?: string, port?: number) {
+function renderConn(connected: boolean, name?: string) {
   // In test mode, never surface the real cached identity — show a neutral test label.
   const shownName = testModeOn ? '🧪 Demo mode' : name;
   // shownName is résumé-derived (untrusted) → escape before inserting into HTML.
   $('connStatus').innerHTML = connected
-    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> on 127.0.0.1:${port}${shownName ? ` · <b>${escapeHtml(shownName)}</b>` : ''}`
+    ? `<span class="dot" style="background:#0f9d6b"></span><span class="ok">Connected</span> to the JobHakken app${shownName ? ` · <b>${escapeHtml(shownName)}</b>` : ''}`
     : '';
   ($('disconnect') as HTMLButtonElement).hidden = !connected;
   ($('connect') as HTMLButtonElement).textContent = connected ? 'Reconnect' : 'Connect';
@@ -212,7 +310,7 @@ async function onConnect() {
   try {
     const conn = await connect(token);
     await saveConnection(conn);
-    renderConn(true, conn.profile.basics?.name, conn.port);
+    renderConn(true, conn.profile.basics?.name);
     report('bridge_connected', { ok: true });
   } catch (e) {
     report('bridge_failed', { ok: false });
@@ -284,13 +382,143 @@ async function onImport() {
   }
 }
 
+// EEO/demographic keys — a résumé never carries these and we never guess them, so nudge the user to
+// set them once (else EEO questions stay blank on applications).
+const EEO_KEYS = [
+  'gender',
+  'pronouns',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+] as const;
+function renderEeoNudge(): void {
+  const anySet = EEO_KEYS.some((k) => (fp.profile as Record<string, string | undefined>)[k]);
+  $('eeoNudge').classList.toggle('hidden', anySet);
+}
+
 function renderAll() {
   renderFields('personalGrid', PERSONAL_FIELDS);
   renderFields('additionalGrid', ADDITIONAL_FIELDS);
   renderWork();
   renderEdu();
   renderRules();
+  renderCommonQuestions();
+  renderEeoNudge();
+  updateReadiness();
 }
+// Hide the nudge live as the user fills an EEO field in the Additional grid.
+$('additionalGrid').addEventListener('input', renderEeoNudge);
+
+// Show the résumé file currently stored for attaching to applications (with a remove link).
+async function refreshResumeFile(): Promise<void> {
+  const el = $('resumeFileInfo');
+  const f = await getResumeFile();
+  if (f) {
+    el.innerHTML = `📎 Attached to applications: <b>${escapeHtml(f.fileName)}</b> <a href="#" id="resumeFileRemove">remove</a>`;
+    el.classList.remove('hidden');
+    $('resumeFileRemove').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await clearResumeFile();
+      await refreshResumeFile();
+    });
+  } else {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+  }
+}
+void refreshResumeFile();
+
+// ── AI résumé-input: paste text → parse to profile via the BYO key (no desktop) ──
+// Upload PDF → extract text (dependency-free) into the textarea for review, then Parse.
+$('resumePdf').addEventListener('change', async (e) => {
+  const file = (e.currentTarget as HTMLInputElement).files?.[0];
+  if (!file) return;
+  const status = $('resumeStatus');
+  const name = file.name.toLowerCase();
+  const isDocx = name.endsWith('.docx') || file.type.includes('wordprocessingml');
+  if (name.endsWith('.doc') && !isDocx) {
+    status.innerHTML =
+      '<span class="warn">The old .doc format isn’t supported — save it as PDF or .docx, or paste the text.</span>';
+    (e.currentTarget as HTMLInputElement).value = '';
+    return;
+  }
+  status.innerHTML = `<span class="note">Reading ${isDocx ? 'Word doc' : 'PDF'}…</span>`;
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    // Keep the file to ATTACH to applications — standalone/BYO users have no desktop app to provide it.
+    await setResumeFile({
+      base64: bytesToBase64(bytes),
+      fileName: file.name,
+      mimeType:
+        file.type ||
+        (isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf'),
+    });
+    await refreshResumeFile();
+    const text = isDocx
+      ? await (await import('../lib/docxText.js')).extractDocxText(bytes)
+      : await (await import('../lib/pdfText.js')).extractPdfText(bytes);
+    if (text.length < 40) {
+      status.innerHTML = `<span class="warn">Saved to attach to applications, but couldn’t read its text (it may be scanned) — paste the text so AI can fill your profile.</span>`;
+      return;
+    }
+    ($('resumeText') as HTMLTextAreaElement).value = text;
+    status.innerHTML = `<span class="ok">Read ${text.length.toLocaleString()} characters · this file will be attached to applications — review, then Parse with AI.</span>`;
+  } catch {
+    status.innerHTML = '<span class="warn">Couldn’t read this file. Paste the text instead.</span>';
+  } finally {
+    (e.currentTarget as HTMLInputElement).value = ''; // allow re-selecting the same file
+  }
+});
+
+$('resumeParse').addEventListener('click', async () => {
+  const text = ($('resumeText') as HTMLTextAreaElement).value.trim();
+  const status = $('resumeStatus');
+  if (text.length < 40) {
+    status.innerHTML = '<span class="warn">Paste your résumé text first.</span>';
+    return;
+  }
+  const btn = $('resumeParse') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'Parsing…';
+  status.textContent = '';
+  const res = (await chrome.runtime.sendMessage({ type: 'f2a-ai', method: 'parseResume', params: { text } })) as
+    | {
+        result?: { parsed?: { profile?: Record<string, string>; experience?: unknown[]; education?: unknown[] } };
+        error?: string;
+      }
+    | undefined;
+  btn.disabled = false;
+  btn.textContent = 'Parse with AI';
+  if (res?.error) {
+    status.innerHTML =
+      res.error === 'no-key'
+        ? '<span class="warn">Add your AI key first (Settings → AI drafting).</span>'
+        : `<span class="warn">Couldn’t parse: ${escapeHtml(res.error)}</span>`;
+    return;
+  }
+  const parsed = res?.result?.parsed;
+  if (!parsed || (!Object.keys(parsed.profile ?? {}).length && !(parsed.experience ?? []).length)) {
+    status.innerHTML = '<span class="warn">Nothing extracted — check the pasted text.</span>';
+    return;
+  }
+  // Merge: parsed résumé fills/overrides the profile fields + experience/education; keep custom rules.
+  fp = {
+    profile: { ...fp.profile, ...(parsed.profile as FullProfile['profile']) },
+    experience: (parsed.experience?.length ? parsed.experience : fp.experience) as FullProfile['experience'],
+    education: (parsed.education?.length ? parsed.education : fp.education) as FullProfile['education'],
+    rules: fp.rules,
+  };
+  composeFullName();
+  renderAll();
+  await saveFullProfile(fp);
+  const nF = Object.keys(parsed.profile ?? {}).length;
+  const eeoMissing = !EEO_KEYS.some((k) => (fp.profile as Record<string, string | undefined>)[k]);
+  const eeoNote = eeoMissing
+    ? ' A résumé has no demographic/EEO info — set those in the <b>Additional</b> tab so those questions autofill too (we never guess them).'
+    : '';
+  status.innerHTML = `<span class="ok">✓ Filled ${nF} field${nF === 1 ? '' : 's'}, ${parsed.experience?.length ?? 0} role(s), ${parsed.education?.length ?? 0} school(s) — review below.</span>${eeoNote}`;
+});
 
 // ── init ─────────────────────────────────────────────────────
 (async () => {
@@ -320,7 +548,7 @@ function renderAll() {
       ? '<span class="ok">🧪 Demo mode on — autofilling anonymous sample data</span>'
       : '';
     // re-render the connection line so the identity masks/unmasks immediately
-    void loadConnection().then((c) => (c ? renderConn(true, c.profile?.basics?.name, c.port) : renderConn(false)));
+    void loadConnection().then((c) => (c ? renderConn(true, c.profile?.basics?.name) : renderConn(false)));
   });
   const sponsorToggle = $('needsSponsorship') as HTMLInputElement;
   const hideToggle = $('hideUnsponsored') as HTMLInputElement;
@@ -364,6 +592,32 @@ function renderAll() {
     if (!confirm('Clear all captured applications?')) return;
     await clearCaptures();
     await refreshCount();
+  });
+
+  // §6 dev correction report — gated behind a dev flag AND Demo mode (dummy identity); never a real user.
+  const DEV_CORR = 'jh_dev_correction';
+  void chrome.storage.local.get(DEV_CORR).then((r) => {
+    ($('devCorrection') as HTMLInputElement).checked = r[DEV_CORR] === true;
+  });
+  $('devCorrection').addEventListener('change', (e) => {
+    void chrome.storage.local.set({ [DEV_CORR]: (e.currentTarget as HTMLInputElement).checked });
+  });
+  $('correctionReport').addEventListener('click', async () => {
+    const note = $('correctionNote');
+    if (!(await correctionCaptureEnabled())) {
+      note.textContent = 'Turn on this checkbox AND Demo mode first.';
+      return;
+    }
+    const ranked = aggregateCorrections(await getCaptures());
+    if (!ranked.length) return void (note.textContent = 'No captures yet.');
+    const blob = new Blob([JSON.stringify(ranked, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jobhakken-corrections-${ranked.length}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    note.textContent = `${ranked.length} field signatures ranked (worst gaps first).`;
   });
   // My sites — user-managed hosts where the extension is always active
   const normHost = (v: string): string => {
@@ -418,7 +672,7 @@ function renderAll() {
   const conn = await loadConnection();
   if (conn) {
     ($('token') as HTMLInputElement).value = conn.token;
-    renderConn(true, conn.profile?.basics?.name, conn.port);
+    renderConn(true, conn.profile?.basics?.name);
   } else {
     renderConn(false); // still enables Import when test mode is on (imports dummy)
   }
@@ -440,3 +694,68 @@ $('saveProfile').addEventListener('click', onSave);
 $('connect').addEventListener('click', onConnect);
 $('disconnect').addEventListener('click', onDisconnect);
 $('importBtn').addEventListener('click', onImport);
+
+// ── Sign in (identity) — reuses the website's auth; the auth content script reports back ──
+async function refreshAuth(): Promise<void> {
+  const id = await loadIdentity();
+  ($('authStatus') as HTMLElement).innerHTML = id
+    ? `<span class="ok">✓ Signed in as ${escapeHtml(id.email)}${id.tier ? ` · ${escapeHtml(id.tier)}` : ''}</span>`
+    : '';
+  ($('signOut') as HTMLButtonElement).hidden = !id;
+  ($('signIn') as HTMLButtonElement).textContent = id ? 'Switch account' : 'Sign in with JobHakken';
+}
+$('signIn').addEventListener('click', () => {
+  void chrome.tabs.create({ url: LOGIN_URL });
+  ($('authStatus') as HTMLElement).innerHTML =
+    '<span class="note">Finish signing in on the JobHakken tab — this updates automatically.</span>';
+});
+$('signOut').addEventListener('click', async () => {
+  await clearIdentity();
+  await refreshAuth();
+});
+// Live-update when the auth content script writes the identity after the user logs in on the website.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && 'f2a_identity' in changes) void refreshAuth();
+});
+void refreshAuth();
+
+// ── BYO AI key (standalone AI, no desktop) ───────────────────
+async function refreshAi(): Promise<void> {
+  const m = await getAiConfigMeta();
+  ($('aiModel') as HTMLInputElement).value = m.model;
+  ($('aiBase') as HTMLInputElement).value = m.baseUrl;
+  ($('aiStatus') as HTMLElement).textContent = m.hasKey ? '✓ Key active this session' : '';
+  ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
+}
+$('aiSave').addEventListener('click', async () => {
+  const apiKey = ($('aiKey') as HTMLInputElement).value.trim();
+  const model = ($('aiModel') as HTMLInputElement).value.trim();
+  const baseUrl = ($('aiBase') as HTMLInputElement).value.trim();
+  if (!apiKey) {
+    ($('aiStatus') as HTMLElement).textContent = 'Enter a key first';
+    return;
+  }
+  await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined });
+  ($('aiKey') as HTMLInputElement).value = '';
+  await refreshAi();
+});
+$('aiClear').addEventListener('click', async () => {
+  await clearAiConfig();
+  ($('aiModel') as HTMLInputElement).value = '';
+  ($('aiBase') as HTMLInputElement).value = '';
+  await refreshAi();
+});
+void refreshAi();
+
+// ── first-run "Getting started" strip ────────────────────────
+// Shown until the user dismisses it (persisted). onInstalled opens this page on first install,
+// so this is the first thing a new user reads (onboarding dead-end #1).
+const ONBOARDING_KEY = 'jh_onboarding_dismissed';
+void (async () => {
+  const r = await chrome.storage.local.get(ONBOARDING_KEY);
+  if (r[ONBOARDING_KEY] !== true) ($('getstarted') as HTMLElement).hidden = false;
+})();
+$('gsDismiss').addEventListener('click', () => {
+  ($('getstarted') as HTMLElement).hidden = true;
+  void chrome.storage.local.set({ [ONBOARDING_KEY]: true });
+});

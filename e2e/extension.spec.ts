@@ -248,10 +248,10 @@ test('sponsorship filter: marks a blocked LinkedIn job TILE when the toggle is o
   const page = await context.newPage();
   await page.goto('/e2e/linkedin-job.html?currentJobId=12345');
 
-  // the open job's TILE (matched by its /jobs/view/12345 link) gets a red "No sponsorship" mark
+  // the open job's TILE (matched by its /jobs/view/12345 link) gets a red "Won't sponsor visa" mark
   const card = page.locator('.job-card-container', { has: page.locator('a[href*="/jobs/view/12345"]') });
   await expect(card.locator('.f2a-elig-mark')).toBeVisible({ timeout: 5000 });
-  await expect(card.locator('.f2a-elig-mark')).toContainText(/no sponsorship/i);
+  await expect(card.locator('.f2a-elig-mark')).toContainText(/won't sponsor/i);
   await testInfo.attach('sponsorship-tile-mark.png', {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',
@@ -294,7 +294,7 @@ test('H-1B badge: flags a known sponsor company inline (bundled data, no app)', 
   // the service worker loads the bundled list on first query, then a green badge appears
   const badge = page.locator('.f2a-h1b-badge');
   await expect(badge).toBeVisible({ timeout: 8000 });
-  await expect(badge).toContainText(/H-1B sponsor/i);
+  await expect(badge).toContainText(/sponsors visas/i);
   // it sits next to the company link, not the JD
   await expect(page.locator('a[href="/company/google/"] + .f2a-h1b-badge')).toHaveCount(1);
   await testInfo.attach('h1b-badge.png', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
@@ -506,4 +506,35 @@ test('uploads a résumé and picks a lazy dropdown in a real browser', async ({ 
       ),
     )
     .toBeGreaterThan(0);
+});
+
+test('onboarding: Options shows a dismissible getting-started strip; popup offers a setup CTA', async ({
+  context,
+  extensionId,
+}) => {
+  // Options: the getting-started strip is shown on a fresh install and persists its dismissal.
+  const opt = await context.newPage();
+  await opt.goto(`chrome-extension://${extensionId}/options/options.html`);
+  const strip = opt.locator('#getstarted');
+  await expect(strip).toBeVisible();
+  await expect(strip).toContainText(/getting started/i);
+  await opt.locator('#gsDismiss').click();
+  await expect(strip).toBeHidden();
+  const dismissed = await opt.evaluate(
+    async () => (await chrome.storage.local.get('jh_onboarding_dismissed'))['jh_onboarding_dismissed'],
+  );
+  expect(dismissed).toBe(true);
+  await opt.reload();
+  await expect(opt.locator('#getstarted')).toBeHidden(); // stays dismissed
+  // the last tab is now "Settings"; opening it surfaces the "Connect the app" section at the top
+  await expect(opt.locator('.tab[data-t="desktop"]')).toHaveText(/settings/i);
+  await opt.locator('.tab[data-t="desktop"]').click();
+  await expect(opt.locator('.panel[data-p="desktop"] .sec-h').first()).toContainText(/connect the jobhakken app/i);
+  await opt.close();
+
+  // Popup with no active job tab → empty state offers the "Set up your profile" CTA (not a dead end).
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+  await expect(popup.locator('#connLabel')).toHaveText(/open a job page/i);
+  await expect(popup.locator('#setupCta')).toBeVisible();
 });

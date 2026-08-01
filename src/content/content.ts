@@ -8,18 +8,24 @@ import {
   detectFields,
   expandRepeatingSections,
   isAtsPage,
+  learnableAnswers,
   readLazyOptions,
   resolveField,
   setInputFile,
+  unmappedQuestions,
   type CoverageReport,
   type FullProfile,
+  type MappingStore,
   type Profile,
 } from '@jobhakken/autofill';
 
+import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
+import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
+import { getResumeFile } from '../lib/resumeFileStore.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
@@ -56,6 +62,133 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
+
+// Visually flag the fields the user should review (filled at review-confidence, or AI-drafted) so
+// "N to review" is actionable — an amber outline + hover hint, cleared on the next fill. Tracking
+// lives in the isolated world (a WeakSet + array), never a page-readable value (#12); only the
+// outline/title are visible, which is the point.
+const REVIEW_HINT = 'JobHakken filled this — please review before submitting';
+const REVIEW_COLOR = '#7c3aed'; // vivid violet — stands out, and unlike red/blue isn't confused with a
+// validation error or a focus ring
+const reviewMarked = new WeakSet<HTMLElement>();
+let reviewedEls: HTMLElement[] = [];
+/** The most-visible box to outline — the control itself, or (for a styled/hidden radio) its label. */
+function reviewTarget(el: HTMLElement): HTMLElement {
+  if (el.offsetWidth > 0 && el.offsetHeight > 0) return el;
+  const scope = el.getRootNode() as ParentNode;
+  const forLabel = el.id
+    ? (Array.from(scope.querySelectorAll('label')).find((l) => (l as HTMLLabelElement).htmlFor === el.id) as
+        HTMLElement | undefined)
+    : undefined;
+  const box =
+    (el.closest('label') as HTMLElement | null) ??
+    forLabel ??
+    (el.closest('[class*="question"],[class*="field"],fieldset,li') as HTMLElement | null) ??
+    el.parentElement ??
+    el;
+  return box.offsetWidth > 0 ? box : el;
+}
+function clearReviewMarks(): void {
+  for (const el of reviewedEls) {
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+    el.style.boxShadow = '';
+    el.style.borderRadius = '';
+    if (el.getAttribute('title') === REVIEW_HINT) el.removeAttribute('title');
+    reviewMarked.delete(el);
+  }
+  reviewedEls = [];
+}
+function markReview(el: HTMLElement): void {
+  const t = reviewTarget(el);
+  if (reviewMarked.has(t)) return;
+  t.style.outline = `2.5px solid ${REVIEW_COLOR}`;
+  t.style.outlineOffset = '2px';
+  t.style.boxShadow = '0 0 0 4px rgba(124, 58, 237, 0.22)'; // soft violet glow for extra visibility
+  t.style.borderRadius = t.style.borderRadius || '4px';
+  if (!t.getAttribute('title')) t.setAttribute('title', REVIEW_HINT);
+  reviewMarked.add(t);
+  reviewedEls.push(t);
+}
+
+/** Set a field's value the way React/controlled inputs accept (native setter + input/change events). */
+function setFieldValue(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, value);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// The fields the AI drafted this run — so the popup can offer a per-field re-draft with a custom
+// instruction ("if you don't like the AI answer, tell it what to change").
+let draftedFields: { el: HTMLElement; label: string }[] = [];
+
+/**
+ * Reveal a form hidden behind a pre-step — but ONLY when the step commits nothing and we can satisfy
+ * it from a KNOWN fact (never auto-consenting or guessing for the user). Jobvite hides its application
+ * behind a "Location of Residence and Language" <select name=jv-country-select>; choosing the user's
+ * OWN residence just renders the form (the actual privacy consent is at submit, which we never do), so
+ * advance it only when the profile country clearly matches an option, else leave it for the user.
+ */
+async function advanceKnownGates(country: string | undefined): Promise<void> {
+  const sel = document.querySelector<HTMLSelectElement>('select#jv-country-select, select[name="jv-country-select"]');
+  if (!sel || sel.selectedIndex > 0 || !country) return;
+  const c = country.toLowerCase();
+  const wantUS = /united states|u\.?s\.?a?|america/.test(c);
+  const wantUK = /united kingdom|u\.?k\.?|britain|england/.test(c);
+  let idx = -1;
+  for (let i = 1; i < sel.options.length; i++) {
+    const t = sel.options[i].text.toLowerCase();
+    if (t.includes(c) || (wantUS && /\bus\b|united states/.test(t)) || (wantUK && /\buk\b|united kingdom/.test(t))) {
+      idx = i;
+      break;
+    }
+  }
+  if (idx < 0) return; // no confident match → don't choose a residence/policy on the user's behalf
+  const before = document.querySelectorAll('input:not([type=hidden]),select,textarea').length;
+  sel.selectedIndex = idx;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+  sel.dispatchEvent(new Event('input', { bubbles: true }));
+  // Wait for the revealed form to actually render (SPA) before the caller detects + fills — poll up to
+  // ~5s rather than a fixed guess, else a single Autofill click advances the gate but fills nothing.
+  for (let i = 0; i < 10; i++) {
+    await sleep(500);
+    if (document.querySelectorAll('input:not([type=hidden]),select,textarea').length > before) break;
+  }
+  await sleep(700); // small settle so the revealed inputs are hydrated before the caller fills them
+}
+
+// Answer bank: learned field→key mappings + remembered answers to unmapped questions, persisted
+// locally so autofill improves with use. One store instance per page, reused by autofill + capture.
+let answerStoreP: Promise<MappingStore> | null = null;
+const answerStore = () => (answerStoreP ??= loadAnswerStore());
+
+/** Remember answers the user typed into questions the profile couldn't fill (auto-capture). */
+function captureLearnable(fp: FullProfile, store: MappingStore): void {
+  try {
+    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: fp.rules, store })) {
+      // reuse-at-review confidence; a user rule/profile value always outranks it
+      store.put(a.signature, { value: a.value, source: 'user', confidence: 0.7 });
+    }
+  } catch {
+    /* capture is best-effort; never block the page */
+  }
+}
+
+// Live auto-capture: when the user edits a field, remember answers to unmapped questions so the
+// SAME/similar question autofills next time. Debounced; skips our own fills (they resolve → excluded).
+let captureTimer: ReturnType<typeof setTimeout> | undefined;
+document.addEventListener(
+  'change',
+  () => {
+    clearTimeout(captureTimer);
+    captureTimer = setTimeout(async () => {
+      const fp = await getFullProfile();
+      if (fp) captureLearnable(fp, await answerStore());
+    }, 1200);
+  },
+  true,
+);
 
 /**
  * "connected" requires the bridge to be LIVE, not just cached credentials — so closing the
@@ -251,13 +384,18 @@ async function runAutofill(
 ): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
+  await advanceKnownGates(fp.profile.country); // reveal a form hidden behind a known-fact pre-step
   const fillSensitive = await loadFillSensitive();
+  const store = await answerStore();
+  // learn any answers the user typed into unmapped questions since last time, then reuse them below
+  captureLearnable(fp, store);
   const common = {
     profile: fp.profile,
     experience: fp.experience,
     education: fp.education,
     userRules: fp.rules,
     fillSensitive,
+    store,
   };
   // 1) grow repeated sections so there's a row per role/school ("Add another")
   await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
@@ -268,9 +406,11 @@ async function runAutofill(
   const report = autofillForm({ root: document, ...common });
   // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
   // so a later capture can tell autofill from manual entry without exposing the values to the page.
+  clearReviewMarks(); // fresh run → drop last run's outlines
   for (const r of report.results) {
-    if (r.status === 'filled' && r.field.el instanceof HTMLElement) {
-      filledValues.set(r.field.el, String(r.value));
+    if (r.field.el instanceof HTMLElement) {
+      if (r.status === 'filled') filledValues.set(r.field.el, String(r.value));
+      else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
     }
   }
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
@@ -294,6 +434,135 @@ async function runAutofill(
   }
   void captureFlow(); // record the autofilled state into the corpus
   return { filled: report.filled + extra, review: report.review, total: report.total, partial };
+}
+
+// ── multi-step wizard orchestration ─────────────────────────────────────────────
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** A string that identifies the current wizard step (heading + path + active-step label), so we can
+ * tell when a "Continue" actually advanced us vs. was blocked by validation. */
+function stepSignature(): string {
+  const heading = document.querySelector('h1,h2,[role="heading"]')?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  const active =
+    document
+      .querySelector(
+        '[aria-current="step"], [data-automation-id*="progressBarActive" i], [class*="active" i][class*="step" i]',
+      )
+      ?.textContent?.trim() ?? '';
+  // "step 2 of 6" is the most reliable change signal on wizards whose URL/heading don't change.
+  const stepNum = (document.body.innerText || '').match(/step\s+(\d+)\s+of\s+\d+/i)?.[1] ?? '';
+  return `${location.pathname}|${heading}|${active}|${stepNum}`.slice(0, 200);
+}
+
+/** Is this a multi-step application (a wizard with a step/progress indicator)? Only then do we
+ * auto-advance — a single-page form has no "next" to click. */
+function isWizardForm(): boolean {
+  if (/\bstep\s+\d+\s+of\s+\d+\b/i.test(document.body.innerText || '')) return true;
+  if (document.querySelector('[data-automation-id*="progressBar" i]')) return true;
+  const steps = document.querySelectorAll(
+    '[role="navigation"] [aria-current], nav [class*="step" i], [class*="progress" i] [class*="step" i]',
+  );
+  return steps.length >= 2;
+}
+
+const ADVANCE_RE =
+  /^(save and continue|save & continue|save and go to next|save and proceed|next|continue|save and continue to next|next step|save & next|proceed)$/i;
+const SUBMIT_RE = /submit|send application|finish|complete application|review your application|apply now/i;
+
+/** The control that ADVANCES to the next step — never a Submit/Send/Finish (those are a hard stop,
+ * so we hand off to the user at Review). Returns the clickable element, or null to stop. */
+function findAdvanceControl(): HTMLElement | null {
+  const cands = Array.from(
+    document.querySelectorAll('button, [role="button"], input[type="submit"], a[href="#"]'),
+  ) as HTMLElement[];
+  for (const el of cands) {
+    if (isComputedHiddenLike(el) || (el as HTMLButtonElement).disabled) continue;
+    const name = (el.textContent || el.getAttribute('aria-label') || (el as HTMLInputElement).value || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!name || SUBMIT_RE.test(name) || /\b(back|previous|cancel|save as draft|save draft|autofill)\b/i.test(name))
+      continue;
+    if (ADVANCE_RE.test(name)) return el;
+  }
+  return null; // no advance control (single-page, or the only forward action is Submit → stop)
+}
+
+/** cheap visibility check (avoids importing the engine's internal one) */
+function isComputedHiddenLike(el: HTMLElement): boolean {
+  const s = getComputedStyle(el);
+  if (s.display === 'none' || s.visibility === 'hidden' || parseFloat(s.opacity) <= 0.01) return true;
+  const r = el.getBoundingClientRect();
+  return r.width < 2 && r.height < 2;
+}
+
+/**
+ * Fill an ENTIRE application in one click: fill the current step, click Continue (never Submit),
+ * wait for the next step, repeat — until Review / a Submit-only step / a validation stall / the cap.
+ * A single-page form just fills once (no advance control). The user always reviews + submits.
+ */
+async function autofillWholeApplication(
+  mode: 'default' | 'ats',
+  signal?: AbortSignal,
+): Promise<{ filled: number; review: number; total: number; partial?: boolean; steps: number; stopped: string }> {
+  let filled = 0;
+  let review = 0;
+  let total = 0;
+  let steps = 0;
+  let stopped = 'done';
+  for (let i = 0; i < 12; i++) {
+    if (signal?.aborted) {
+      stopped = 'cancelled';
+      break;
+    }
+    // Two re-detecting passes per step: a step can have more lazy comboboxes than one interactive
+    // budget reaches, and framework re-renders (Taleo JSF partial postbacks, BrassRing/Oracle
+    // Angular/Knockout) mutate the DOM mid-fill — which can THROW on stale element refs. Each pass
+    // re-detects (runAutofill calls detectFields fresh) and refills; wrapping each pass so a mid-fill
+    // re-render never aborts the whole run means the 2nd pass simply re-detects and completes.
+    let r: Awaited<ReturnType<typeof runAutofill>> = null;
+    for (let pass = 0; pass < 2; pass++) {
+      if (signal?.aborted) break;
+      try {
+        r = await runAutofill(mode, signal);
+      } catch {
+        await sleep(400); // DOM re-rendered mid-pass — let it settle; the next pass re-detects
+      }
+    }
+    if (r) {
+      filled += r.filled;
+      review += r.review;
+      total += r.total;
+    }
+    steps++;
+    if (!isWizardForm()) {
+      stopped = 'single-page';
+      break;
+    }
+    const sig = stepSignature();
+    const adv = findAdvanceControl();
+    if (!adv) {
+      stopped = 'reached-review-or-submit';
+      break;
+    } // hand to the user to review + submit
+    // Let the just-filled async widgets (Workday multiselect prompts, comboboxes) settle their
+    // validation state before advancing — clicking Save-and-Continue too early makes Workday
+    // validate against not-yet-committed values and refuse to move.
+    await sleep(600);
+    // wait for the step to actually change; if it doesn't, RE-CLICK once (the first click can race a
+    // still-open prompt / pending validation), then keep waiting before declaring a real stall.
+    let changed = false;
+    adv.click();
+    for (let w = 0; w < 30 && !changed; w++) {
+      await sleep(300);
+      changed = stepSignature() !== sig;
+      if (!changed && w === 10) findAdvanceControl()?.click(); // one retry after ~3s
+    }
+    if (!changed) {
+      stopped = 'validation-stall';
+      break;
+    }
+  }
+  return { filled, review, total, steps, stopped };
 }
 
 /**
@@ -340,6 +609,13 @@ async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ res
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
     }
+  }
+  // Standalone / BYO (no desktop, or the desktop had no résumé): attach the résumé file the user
+  // uploaded in Options. This is what makes résumé upload work on real forms without the app.
+  if (!out.resume) {
+    const stored = await getResumeFile();
+    if (stored?.base64)
+      out.resume = base64ToFile(stored.base64, stored.fileName || 'resume.pdf', stored.mimeType || 'application/pdf');
   }
   // default cover letter comes from the user's saved profile text (local), rendered here
   const local = await loadFullProfile();
@@ -599,35 +875,131 @@ async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: stri
 }
 
 /** Draft an answer for the first empty long-text (screening) field via the desktop AI. */
-async function draftAnswer(): Promise<{ ok: boolean; error?: string } | null> {
-  if (await isTestActive()) return { ok: false, error: 'off in test mode' }; // would use the real résumé
-  if (!connection) return { ok: false, error: 'Connect the app' };
-  // Only fill a textarea that has an actual associated QUESTION (label / aria-label / labelledby /
-  // question-like placeholder) — never a random empty box like a "message the recruiter" or LinkedIn
-  // "add a note" field. Prefer one inside a <form> (a real application question). (#10)
-  const questionFor = (t: HTMLTextAreaElement): string => {
-    const byId = t.getAttribute('aria-labelledby');
-    const labelledby = byId ? (document.getElementById(byId)?.textContent ?? '') : '';
-    const ph = /\?|why|describe|explain|cover letter|reason|tell us/i.test(t.placeholder) ? t.placeholder : '';
-    return (t.labels?.[0]?.textContent || t.getAttribute('aria-label') || labelledby || ph).trim();
-  };
-  const empty = (Array.from(document.querySelectorAll('textarea')) as HTMLTextAreaElement[]).filter(
-    (t) => !t.value.trim() && t.offsetParent !== null && questionFor(t),
-  );
-  const ta = empty.find((t) => t.closest('form')) ?? empty[0];
-  if (!ta) return { ok: false, error: 'No question field' };
-  try {
-    const label = questionFor(ta) || 'Why are you a good fit?';
-    const r = await bridgeRpc<{ text?: string }>('answer', { ...pageJob(), question: label });
-    if (!r?.text) return { ok: false, error: 'No draft' };
-    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
-    setter?.call(ta, r.text);
-    ta.dispatchEvent(new Event('input', { bubbles: true }));
-    ta.dispatchEvent(new Event('change', { bubbles: true }));
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+/** A deterministic placeholder answer for Demo/test mode — no real résumé or LLM involved. */
+function draftDummyAnswer(question: string, profile: Profile): string {
+  const title = profile.currentTitle || 'software engineer';
+  const company = profile.currentCompany ? ` at ${profile.currentCompany}` : '';
+  return `As a ${title}${company}, I'm genuinely excited about this opportunity and believe my background is a strong match. [Demo answer for "${question.slice(0, 60)}" — with a résumé connected, JobHakken drafts a tailored response here for you to review.]`;
+}
+
+/**
+ * AI-fill: draft answers for the custom free-text questions the profile/answer-bank can't cover — the
+ * recurring "filled X of Y" gap. Review-first, NEVER auto-submitted. Real answers come from the metered
+ * AI proxy over the desktop bridge (per ADR-0003/0009: stateless, content transits per request, never
+ * persisted); Demo mode uses a deterministic placeholder so the wiring is testable without a résumé.
+ */
+type AiUsage = { promptTokens: number; completionTokens: number };
+
+/** BYO-key AI over the SW (the key lives in the SW, never here). Batched: one call for all questions. */
+async function aiAnswers(
+  context: string,
+  job: unknown,
+  questions: string[],
+): Promise<{ answers?: string[]; usage?: AiUsage | null; error?: string }> {
+  const res = (await chrome.runtime.sendMessage({
+    type: 'f2a-ai',
+    method: 'answers',
+    params: { context, job, questions },
+  })) as { result?: { answers?: string[]; usage?: AiUsage | null }; error?: string } | undefined;
+  if (res?.error) return { error: res.error };
+  return { answers: res?.result?.answers ?? [], usage: res?.result?.usage ?? null };
+}
+
+async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: AiUsage | null; error?: string } | null> {
+  const fp = await getFullProfile();
+  if (!fp || Object.keys(fp.profile).length === 0) return { ok: false, error: 'No profile' };
+  const test = await isTestActive();
+  const store = await answerStore();
+  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: fp.rules, store });
+  if (!questions.length) return { ok: false, error: 'No question field' };
+  const job = pageJob();
+  const qs = questions.slice(0, 6); // cap: don't spam a form with many essays
+
+  // Resolution ladder (ADR-0009 §B): Demo stub · BYO key → direct (standalone, no desktop) ·
+  // desktop connected → delegate · else prompt to add a key. BYO + delegate never touch each other.
+  let answers: string[] = [];
+  let usage: AiUsage | null = null;
+  if (test) {
+    answers = qs.map((q) => draftDummyAnswer(q.label, fp.profile));
+  } else {
+    const context = buildCandidateContext(
+      fp.profile as Record<string, unknown>,
+      fp.experience ?? [],
+      fp.education ?? [],
+    );
+    const byo = await aiAnswers(
+      context,
+      job,
+      qs.map((q) => q.label),
+    );
+    if (byo.answers && byo.answers.length) {
+      answers = byo.answers;
+      usage = byo.usage ?? null;
+    } else if (byo.error === 'no-key') {
+      if (!connection) return { ok: false, error: 'Add your AI key in Options, or connect the app' };
+      for (const q of qs) {
+        try {
+          answers.push((await bridgeRpc<{ text?: string }>('answer', { ...job, question: q.label }))?.text ?? '');
+        } catch {
+          answers.push(''); // one question failing shouldn't block the rest
+        }
+      }
+    } else {
+      return { ok: false, error: byo.error || 'AI draft failed' };
+    }
   }
+
+  let filled = 0;
+  draftedFields = [];
+  qs.forEach((q, i) => {
+    const answer = answers[i];
+    if (!answer) return;
+    setFieldValue(q.el as HTMLInputElement | HTMLTextAreaElement, answer);
+    markReview(q.el as HTMLElement); // AI drafts always need a look before submitting
+    draftedFields.push({ el: q.el as HTMLElement, label: q.label }); // enable per-field re-draft
+    filled++;
+  });
+  return filled ? { ok: true, filled, usage } : { ok: false, error: 'No draft' };
+}
+
+/** Re-draft ONE previously-drafted field, steered by the user's own instruction, and replace its value. */
+async function redraftField(
+  label: string,
+  instruction: string,
+): Promise<{ ok: boolean; text?: string; usage?: AiUsage | null; error?: string }> {
+  const target = draftedFields.find((d) => d.label === label && d.el.isConnected);
+  if (!target) return { ok: false, error: 'Draft answers again first, then refine.' };
+  if (!instruction.trim()) return { ok: false, error: 'Add an instruction.' };
+  const fp = await getFullProfile();
+  if (!fp) return { ok: false, error: 'No profile' };
+  const job = pageJob();
+  const question = `${label}\n\nRewrite this answer following the candidate's instruction — keep it honest and grounded in the brief: ${instruction}`;
+  let text = '';
+  let usage: AiUsage | null = null;
+  if (await isTestActive()) {
+    text = draftDummyAnswer(`${label} (${instruction})`, fp.profile);
+  } else {
+    const context = buildCandidateContext(
+      fp.profile as Record<string, unknown>,
+      fp.experience ?? [],
+      fp.education ?? [],
+    );
+    const byo = await aiAnswers(context, job, [question]);
+    if (byo.answers?.length) {
+      text = byo.answers[0];
+      usage = byo.usage ?? null;
+    } else if (byo.error === 'no-key' && connection) {
+      try {
+        text = (await bridgeRpc<{ text?: string }>('answer', { ...job, question }))?.text ?? '';
+      } catch {
+        /* fall through */
+      }
+    } else if (byo.error) return { ok: false, error: byo.error };
+  }
+  if (!text) return { ok: false, error: 'No answer' };
+  setFieldValue(target.el as HTMLInputElement | HTMLTextAreaElement, text);
+  markReview(target.el);
+  return { ok: true, text, usage };
 }
 
 async function init() {
@@ -718,48 +1090,75 @@ async function init() {
     }
     if (msg?.type !== 'f2a-rpc') return;
     (async () => {
-      switch (msg.method) {
-        case 'getState':
-          sendResponse(getState());
-          break;
-        case 'autofill': {
-          autofillAbort?.abort(); // supersede any in-flight run
-          const ctrl = (autofillAbort = new AbortController());
-          const r = await runAutofill(msg.params?.mode ?? 'default', ctrl.signal);
-          report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
-          sendResponse(r);
-          // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
-          // and break its Cancel.
-          if (autofillAbort === ctrl) autofillAbort = null;
-          break;
+      // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
+      // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
+      // result. Wrap the whole dispatch so the channel always resolves.
+      try {
+        switch (msg.method) {
+          case 'getState':
+            sendResponse(getState());
+            break;
+          case 'autofill': {
+            autofillAbort?.abort(); // supersede any in-flight run
+            const ctrl = (autofillAbort = new AbortController());
+            // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
+            // step by step, never submitting; single-page forms just fill once.
+            const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
+            report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
+            sendResponse(r);
+            // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
+            // and break its Cancel.
+            if (autofillAbort === ctrl) autofillAbort = null;
+            break;
+          }
+          case 'cancelAutofill':
+            autofillAbort?.abort();
+            sendResponse({ ok: true });
+            break;
+          case 'analyze': {
+            const res = await analyzeJob();
+            report('match_scored', { ok: res?.ats != null });
+            sendResponse(res);
+            break;
+          }
+          case 'draft':
+            sendResponse(await draftAnswer());
+            break;
+          case 'draftedList':
+            sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
+            break;
+          case 'redraft': {
+            const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
+            sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
+            break;
+          }
+          case 'scrollToReview': {
+            const first = reviewedEls.find((el) => el.isConnected);
+            first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
+            break;
+          }
+          case 'save':
+            sendResponse(await saveJob());
+            break;
+          case 'capture':
+            sendResponse(await capturePage());
+            break;
+          case 'toggleSite':
+            siteOptedIn = !!msg.params?.on;
+            await setSiteOptIn(location.hostname, siteOptedIn);
+            if (siteOptedIn) void captureFlow();
+            sendResponse({ ok: true });
+            break;
+          default:
+            sendResponse({ error: 'unknown method' });
         }
-        case 'cancelAutofill':
-          autofillAbort?.abort();
-          sendResponse({ ok: true });
-          break;
-        case 'analyze': {
-          const res = await analyzeJob();
-          report('match_scored', { ok: res?.ats != null });
-          sendResponse(res);
-          break;
+      } catch (e) {
+        try {
+          sendResponse({ error: e instanceof Error ? e.message : String(e) });
+        } catch {
+          /* channel already closed by the caller — nothing to do */
         }
-        case 'draft':
-          sendResponse(await draftAnswer());
-          break;
-        case 'save':
-          sendResponse(await saveJob());
-          break;
-        case 'capture':
-          sendResponse(await capturePage());
-          break;
-        case 'toggleSite':
-          siteOptedIn = !!msg.params?.on;
-          await setSiteOptIn(location.hostname, siteOptedIn);
-          if (siteOptedIn) void captureFlow();
-          sendResponse({ ok: true });
-          break;
-        default:
-          sendResponse({ error: 'unknown method' });
       }
     })();
     return true; // async sendResponse

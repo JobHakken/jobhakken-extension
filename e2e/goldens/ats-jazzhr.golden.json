@@ -1,0 +1,12 @@
+{
+  "fixture": "ats-jazzhr.html",
+  "profile": "TEST_PROFILE — Jordan Rivera",
+  "minRecall": 1,
+  "_note": "JazzHR (applytojob.com) public apply form (captured live).",
+  "fields": [
+    { "selector": "#resumator-firstname-value", "expect": "Jordan", "gate": true },
+    { "selector": "#resumator-lastname-value", "expect": "Rivera", "gate": true },
+    { "selector": "#resumator-email-value", "expect": "jordan.rivera@example.com", "gate": true },
+    { "selector": "#resumator-phone-value", "expect": "555", "match": "contains", "gate": false }
+  ]
+}

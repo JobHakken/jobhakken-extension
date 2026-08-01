@@ -151,6 +151,25 @@
         flex-direction: column;
         gap: 11px;
       }
+      .setup-cta {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent-fg);
+        background: var(--accent);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .setup-cta:hover {
+        filter: brightness(1.05);
+      }
+      .setup-cta.hidden {
+        display: none;
+      }
       .jobline {
         display: none;
         align-items: center;
@@ -175,6 +194,95 @@
         display: flex;
         align-items: center;
         gap: 7px;
+      }
+      .aiusage {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: default;
+      }
+      .aiusage b {
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .aiusage.hidden {
+        display: none;
+      }
+      .reviewbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: 9px;
+        background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      }
+      .reviewbar span {
+        flex: 1;
+      }
+      .reviewbar a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .reviewbar a:hover {
+        text-decoration: underline;
+      }
+      .reviewbar button {
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 2px;
+      }
+      .reviewbar.hidden {
+        display: none;
+      }
+      .refinetoggle {
+        border: none;
+        background: none;
+        color: #7c3aed;
+        font-family: inherit;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 0;
+        text-align: left;
+      }
+      @media (prefers-color-scheme: dark) {
+        .refinetoggle {
+          color: #b79cf5;
+        }
+      }
+      .refinebox {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        margin-top: 4px;
+        border: 1px solid color-mix(in srgb, #7c3aed 35%, var(--line));
+        border-radius: 9px;
+      }
+      .refinebox select,
+      .refinebox textarea {
+        width: 100%;
+        font: inherit;
+        font-size: 11.5px;
+        padding: 5px 6px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .refinetoggle.hidden,
+      .refinebox.hidden {
+        display: none;
       }
       .count b {
         color: var(--fg);
@@ -293,6 +401,36 @@
       .chip.rev {
         background: color-mix(in srgb, var(--amber) 16%, transparent);
         color: var(--amber);
+      }
+      .chip.ai {
+        background: color-mix(in srgb, #7c3aed 15%, transparent);
+        color: #7c3aed;
+      }
+      @media (prefers-color-scheme: dark) {
+        .chip.ai {
+          color: #b79cf5;
+        }
+      }
+      button.chip.jump {
+        background: color-mix(in srgb, #7c3aed 15%, transparent);
+        color: #7c3aed;
+        border: 1px solid color-mix(in srgb, #7c3aed 45%, transparent);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button.chip.jump:hover {
+        background: color-mix(in srgb, #7c3aed 26%, transparent);
+      }
+      @media (prefers-color-scheme: dark) {
+        button.chip.jump {
+          color: #b79cf5;
+        }
+      }
+      .result .hint {
+        margin-top: 5px;
+        font-size: 10.5px;
+        color: var(--muted);
+        font-weight: 400;
       }
       details.ins {
         border: 1px solid var(--line);
@@ -487,24 +625,30 @@
           <circle cx="31.7" cy="37" r="3.8" fill="#FCFBF8" /></svg></span
       ><span class="nm">JobHakken</span><span class="ver" id="ver"></span>
       <span class="conn" id="conn"><span class="d"></span><span id="connLabel">Checking…</span></span>
-      <button class="gear" id="theme" title="Theme">🖥</button>
-      <button class="gear" id="gear" title="Profile &amp; settings">⚙</button>
+      <button class="gear" id="theme" title="Theme" aria-label="Theme">🖥</button>
+      <button class="gear" id="gear" title="Profile &amp; settings" aria-label="Profile &amp; settings">⚙</button>
     </div>
     <div class="testbar" id="testbar"><span>🧪</span> DEMO DATA — filling anonymous sample values</div>
     <div class="bd">
+      <button class="setup-cta hidden" id="setupCta">⚙ Set up your profile →</button>
       <div class="jobline" id="jobline"></div>
       <div class="sigrow" id="sigrow"><span class="elig" id="elig"></span><span class="h1b" id="h1b"></span></div>
       <div class="count"><span class="pulse"></span><b id="fieldCount">0</b> fillable fields</div>
 
       <div class="fill2">
         <button class="fill p" id="autofill">
-          <span class="big">Autofill</span><span class="sm">+ my résumé</span>
+          <span class="big">Autofill</span><span class="sm">fill the form</span>
         </button>
-        <button class="fill a hidden" id="autofillAts">
-          <span class="big">✨ Autofill + ATS</span><span class="sm">tailored résumé</span>
+        <button class="fill a" id="autofillAi">
+          <span class="big">✨ Autofill + AI</span><span class="sm">fill + draft answers</span>
         </button>
       </div>
       <div class="result" id="fillResult"></div>
+
+      <div class="reviewbar hidden" id="reviewBar">
+        <span>★ Enjoying JobHakken? <a id="reviewLink" href="#">Leave a quick review →</a></span>
+        <button id="reviewDismiss" title="Dismiss" aria-label="Dismiss">×</button>
+      </div>
 
       <details class="ins hidden" id="insights">
         <summary>
@@ -515,9 +659,28 @@
       </details>
 
       <div class="mini hidden" id="mini">
-        <button id="draft">✍️ Draft answer</button>
+        <button id="draft">✍️ Draft answers</button>
         <button id="save">📌 Save job</button>
       </div>
+      <div class="result" id="miniResult"></div>
+      <button class="refinetoggle hidden" id="refineToggle">✨ Not happy with an AI answer? Refine it →</button>
+      <div class="refinebox hidden" id="refineBox">
+        <select id="refinePick"></select>
+        <textarea
+          id="refineInstruction"
+          rows="2"
+          placeholder="Tell the AI what to change — e.g. “make it shorter and mention my Python experience”"
+        ></textarea>
+        <div class="bar" style="position: static; border: none; margin: 0; padding: 0; gap: 8px">
+          <button class="save" id="refineGo">Redo this answer</button>
+          <span class="status" id="refineStatus"></span>
+        </div>
+      </div>
+      <div
+        class="aiusage hidden"
+        id="aiUsage"
+        title="Counted on your device only — never sent to JobHakken. Cost is an estimate at gpt-4o-mini rates."
+      ></div>
 
       <label class="sitecap" id="siteCapRow"
         ><input type="checkbox" id="siteCap" /> <span id="siteCapLabel"></span

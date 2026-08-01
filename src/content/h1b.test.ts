@@ -46,7 +46,7 @@ describe('applyH1bBadges (content-script H-1B sponsor matching)', () => {
     expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-h1b', companies: ['Acme Widgets'] }));
     const badge = document.querySelector('.f2a-h1b-badge');
     expect(badge).not.toBeNull();
-    expect(badge?.textContent).toMatch(/H-1B sponsor/);
+    expect(badge?.textContent).toMatch(/Sponsors visas/);
     expect(getH1bVerdict()).toEqual({ company: 'Acme Widgets', approvals: 1500 });
   });
 

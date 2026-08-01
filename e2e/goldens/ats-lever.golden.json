@@ -1,0 +1,11 @@
+{
+  "fixture": "ats-lever.html",
+  "profile": "TEST_PROFILE — Jordan Rivera",
+  "minRecall": 1,
+  "_note": "Lever public /apply form (captured live). Single full-name field.",
+  "fields": [
+    { "selector": "input[name=\"name\"]", "expect": "Jordan", "match": "contains", "gate": true },
+    { "selector": "input[name=\"email\"]", "expect": "jordan.rivera@example.com", "gate": true },
+    { "selector": "input[name=\"phone\"]", "expect": "555", "match": "contains", "gate": false }
+  ]
+}

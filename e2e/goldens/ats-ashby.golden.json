@@ -1,0 +1,10 @@
+{
+  "fixture": "ats-ashby.html",
+  "profile": "TEST_PROFILE — Jordan Rivera",
+  "minRecall": 1,
+  "_note": "Ashby (jobs.ashbyhq.com) SPA form, captured live via improved capture:static (wait-for-field).",
+  "fields": [
+    { "selector": "#_systemfield_name", "expect": "Jordan", "match": "contains", "gate": true },
+    { "selector": "#_systemfield_email", "expect": "jordan.rivera@example.com", "gate": true }
+  ]
+}

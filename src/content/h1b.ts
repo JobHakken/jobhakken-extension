@@ -99,7 +99,7 @@ function detailCompany(): { el: HTMLElement; company: string } | null {
 function badge(approvals: number): HTMLElement {
   const b = document.createElement('span');
   b.className = BADGE_CLASS;
-  b.textContent = `✓ H-1B sponsor${approvals >= 5 ? ` · ${approvals.toLocaleString()}` : ''}`;
+  b.textContent = `✓ Sponsors visas${approvals >= 5 ? ` · ${approvals.toLocaleString()}` : ''}`;
   b.title = `This employer has ${approvals.toLocaleString()} H-1B approval(s) on record (USCIS). Company-level signal — a specific role may still not sponsor (see any red flag).`;
   Object.assign(b.style, {
     display: 'inline-flex',
@@ -143,8 +143,7 @@ export async function applyH1bBadges(active: boolean): Promise<void> {
   if (unknown.length) {
     try {
       const res = (await chrome.runtime.sendMessage({ type: 'f2a-h1b', companies: unknown })) as
-        | { matches?: Record<string, number> }
-        | undefined;
+        { matches?: Record<string, number> } | undefined;
       const matches = res?.matches ?? {};
       for (const c of unknown) cache.set(c, matches[c] ?? 0);
     } catch {

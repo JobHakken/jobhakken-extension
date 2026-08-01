@@ -47,7 +47,7 @@ describe('applyEligibilityFilter (content-script "won\'t sponsor" matching)', ()
     // a small red pill is injected next to the detail-pane company link
     const pill = document.querySelector('.f2a-elig-mark');
     expect(pill).not.toBeNull();
-    expect(pill?.textContent).toMatch(/No sponsorship/i);
+    expect(pill?.textContent).toMatch(/Won't sponsor/i);
   });
 
   it('flags an explicit "unable to provide sponsorship" role', () => {

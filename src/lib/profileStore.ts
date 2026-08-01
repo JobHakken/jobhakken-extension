@@ -24,7 +24,10 @@ const SENSITIVE_KEY = 'f2a_fill_sensitive';
 export async function loadFillSensitive(): Promise<boolean> {
   const got = await chrome.storage.local.get(SENSITIVE_KEY);
   const v = got[SENSITIVE_KEY];
-  return v === undefined ? false : !!v;
+  // Default ON: it's the user's OWN data and nothing is ever auto-submitted (they review first), so
+  // fill everything — incl. work-authorization, visa-sponsorship, salary, EEO — and let the user
+  // decide/clear. Skipping these by default made the copilot look broken on near-universal questions.
+  return v === undefined ? true : !!v;
 }
 export async function saveFillSensitive(v: boolean): Promise<void> {
   await chrome.storage.local.set({ [SENSITIVE_KEY]: v });

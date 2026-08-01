@@ -1,0 +1,13 @@
+{
+  "fixture": "successfactors/01-application.html",
+  "minRecall": 1,
+  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "_note": "SuccessFactors uses volatile numeric ids (e.g. 274:_txtFld), so match by LABEL, not selector. Confirmed 5/5 fill; core PII gated, middle/phone reported.",
+  "fields": [
+    { "label": "First Name", "expect": "Jordan", "gate": true },
+    { "label": "Last Name", "expect": "Rivera", "gate": true },
+    { "label": "Email", "expect": "jordan.rivera@example.com", "gate": true },
+    { "label": "Middle Name", "expect": "Alex", "gate": false },
+    { "label": "Primary Phone", "expect": "555", "match": "contains", "gate": false }
+  ]
+}
