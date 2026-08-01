@@ -5,6 +5,12 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.23.1
+- **Fixed résumé PDF upload showing garbled text.** Uploading a PDF résumé could dump binary/glyph-code
+  gibberish into the text box (reported by a user). The extractor now applies fonts' `/ToUnicode` maps
+  (so Word/Google-Docs subset-font PDFs decode to real text), honors text layout (no split/glued
+  words), scrapes only page-content streams (never font/image binary), and — if it still can't read the
+  file (e.g. a scanned/image-only PDF) — leaves the box empty and tells you to paste the text instead,
+  rather than showing garbage.
 - **Résumé version check.** When connected to the desktop app, the extension now reads the résumé
   format version the app sends and, if the app is newer than the extension understands, tells you to
   update — instead of silently mis-filling. (ADR-0005 schema validation over the bridge.)
