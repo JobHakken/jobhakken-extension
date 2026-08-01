@@ -1,0 +1,46 @@
+name: Autofill goldens (smoke)
+
+# The "honest coverage gate": loads the built extension into real Chromium and asserts autofill fills
+# the RIGHT value in the RIGHT field across the captured ATS forms in e2e/goldens (precision/recall).
+# Heavier than unit CI, lighter than the full e2e — so it runs on a WEEKLY schedule (catch autofill
+# drift within a week), on MAIN pushes (release milestones, before an ext-v* tag), and on demand.
+# The full e2e (extension.spec + replay) still runs on ext-v* tags via e2e.yml. Locally: `npm run smoke`.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  goldens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@jobhakken'
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm ci --no-audit --no-fund
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Autofill goldens (npm run smoke)
+        run: npm run smoke
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: goldens-report
+          path: playwright-report/
+          retention-days: 7
