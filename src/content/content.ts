@@ -4,6 +4,7 @@ import {
   captureCoverage,
   cleanClone,
   deriveFullProfile,
+  detectAts,
   detectFileInputs,
   detectFields,
   expandRepeatingSections,
@@ -22,6 +23,7 @@ import {
 import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
+import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -381,7 +383,13 @@ function withTimeout<T>(p: Promise<T>, ms: number, signal?: AbortSignal): Promis
 async function runAutofill(
   mode: 'default' | 'ats' = 'default',
   signal?: AbortSignal,
-): Promise<{ filled: number; review: number; total: number; partial?: boolean } | null> {
+): Promise<{
+  filled: number;
+  review: number;
+  total: number;
+  partial?: boolean;
+  missedTypes: MissedFieldType[];
+} | null> {
   const fp = await getFullProfile();
   if (!fp || Object.keys(fp.profile).length === 0) return null;
   await advanceKnownGates(fp.profile.country); // reveal a form hidden behind a known-fact pre-step
@@ -433,7 +441,15 @@ async function runAutofill(
     partial = true; // timed out or cancelled — the synchronous fields are still filled
   }
   void captureFlow(); // record the autofilled state into the corpus
-  return { filled: report.filled + extra, review: report.review, total: report.total, partial };
+  // Coverage (Layer 1, #105): which TYPES of field we detected but couldn't fill — bounded enum only,
+  // no label text or values (see coverage.ts). Feeds "where is autofill weak?" telemetry.
+  return {
+    filled: report.filled + extra,
+    review: report.review,
+    total: report.total,
+    partial,
+    missedTypes: missedFieldTypes(report.results),
+  };
 }
 
 // ── multi-step wizard orchestration ─────────────────────────────────────────────
@@ -503,12 +519,21 @@ function isComputedHiddenLike(el: HTMLElement): boolean {
 async function autofillWholeApplication(
   mode: 'default' | 'ats',
   signal?: AbortSignal,
-): Promise<{ filled: number; review: number; total: number; partial?: boolean; steps: number; stopped: string }> {
+): Promise<{
+  filled: number;
+  review: number;
+  total: number;
+  partial?: boolean;
+  steps: number;
+  stopped: string;
+  missedTypes: MissedFieldType[];
+}> {
   let filled = 0;
   let review = 0;
   let total = 0;
   let steps = 0;
   let stopped = 'done';
+  const missed = new Set<MissedFieldType>(); // union of missed field types across all wizard steps
   for (let i = 0; i < 12; i++) {
     if (signal?.aborted) {
       stopped = 'cancelled';
@@ -532,6 +557,7 @@ async function autofillWholeApplication(
       filled += r.filled;
       review += r.review;
       total += r.total;
+      r.missedTypes.forEach((t) => missed.add(t));
     }
     steps++;
     if (!isWizardForm()) {
@@ -562,7 +588,7 @@ async function autofillWholeApplication(
       break;
     }
   }
-  return { filled, review, total, steps, stopped };
+  return { filled, review, total, steps, stopped, missedTypes: [...missed].sort() };
 }
 
 /**
@@ -1104,7 +1130,17 @@ async function init() {
             // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
             // step by step, never submitting; single-page forms just fill once.
             const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
-            report('autofill_run', { ok: !!r && r.filled > 0, fields_filled: bucket(r?.filled ?? 0) });
+            // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
+            // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
+            // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a
+            // sorted CSV of the bounded enum, capped so the emitted string stays low-cardinality.
+            report('autofill_run', {
+              ok: !!r && r.filled > 0,
+              fields_filled: bucket(r?.filled ?? 0),
+              fields_total: bucket(r?.total ?? 0),
+              ats_platform: detectAts(document) ?? 'generic',
+              missed_types: (r?.missedTypes ?? []).slice(0, 10).join(','),
+            });
             sendResponse(r);
             // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
             // and break its Cancel.

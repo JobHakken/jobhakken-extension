@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.23.1
+- **Better coverage insight (privacy-preserving).** Autofill now records — as anonymous, opt-out
+  metadata only — which ATS *family* a form runs on (Workday/Greenhouse/…, from the page fingerprint,
+  never the URL or company) and which *types* of field it detected but couldn't fill (e.g. work
+  authorization, salary, a custom dropdown — from a fixed vocabulary, never the label text or your
+  answers). This tells us where to improve autofill without reading your applications. Same opt-out
+  analytics toggle governs it; nothing about your specific job hunt is captured. (Coverage Layer 1 #105.)
+
 ## 0.23.0
 - **Send your résumé straight from the website into the extension.** Build a résumé on jobhakken.com and
   hand it off to the extension in one click — it lands in your autofill profile (name, contact, links,

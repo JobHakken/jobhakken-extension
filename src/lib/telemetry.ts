@@ -29,6 +29,9 @@ const ALLOWED_EVENTS = new Set<string>([
 const ALLOWED_PARAM_KEYS = new Set<string>([
   'ok', // boolean success
   'fields_filled', // coarse bucket string, e.g. "1-5" | "6-15" | "16+"
+  'fields_total', // coarse bucket string — total detected fields (with fields_filled → coarse fill rate)
+  'ats_platform', // bounded enum: which ATS family (workday|greenhouse|…|generic) — NOT the hostname
+  'missed_types', // CSV of the fixed MissedFieldType vocab (coverage.ts) — field TYPES only, never labels
   'area', // code region for an error, e.g. "autofill" | "bridge"
   'category', // error category (NEVER the message)
   'setting_key', // which setting changed (not its value)
