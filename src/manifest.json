@@ -101,6 +101,7 @@
   "optional_host_permissions": [
     "https://openrouter.ai/*",
     "https://api.openai.com/*",
+    "https://open.bigmodel.cn/*",
     "https://api.groq.com/*",
     "https://api.together.xyz/*",
     "https://api.mistral.ai/*",

@@ -18,6 +18,7 @@
     "https://api.together.xyz/*",
     "https://api.x.ai/*",
     "https://generativelanguage.googleapis.com/*",
+    "https://open.bigmodel.cn/*",
     "https://openrouter.ai/*"
   ],
   "content_scripts_matches": [

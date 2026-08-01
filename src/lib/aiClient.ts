@@ -18,6 +18,9 @@ export type AiConfig = {
   baseUrl?: string;
   /** Model id, e.g. openai/gpt-4o-mini (OpenRouter) or gpt-4o-mini (OpenAI). */
   model?: string;
+  /** `@jobhakken/core` `LLM_PROVIDERS` preset id the user picked (#115). Carried for the settings UI +
+   *  safe telemetry; the fetch path only needs apiKey/baseUrl/model. */
+  provider?: string;
 };
 
 export type AiUsage = { promptTokens: number; completionTokens: number };
