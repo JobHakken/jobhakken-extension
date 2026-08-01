@@ -19,6 +19,7 @@ const ALLOWED_EVENTS = new Set<string>([
   'match_scored',
   'cover_letter_generated',
   'resume_tailored',
+  'resume_received', // a résumé was handed off from the website (#358) — count only, no content
   'error',
   'settings_changed',
 ]);
@@ -31,6 +32,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'area', // code region for an error, e.g. "autofill" | "bridge"
   'category', // error category (NEVER the message)
   'setting_key', // which setting changed (not its value)
+  'source', // coarse origin enum for an event, e.g. "web" | "bridge" (never a URL/host)
   'ext_version',
   'browser_major',
   'os',

@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.23.0
+- **Send your résumé straight from the website into the extension.** Build a résumé on jobhakken.com and
+  hand it off to the extension in one click — it lands in your autofill profile (name, contact, links,
+  experience, education) ready to fill applications. Nothing leaves your browser: the résumé travels
+  website → extension locally, and the incoming data is validated and can never silently blank an
+  existing profile. The extension now advertises this to the site (`capabilities: ['resume-import']`) so
+  the "Send to extension" button appears only when this build supports it. (Cross-surface link #358 / #107.)
+
 ## 0.22.4
 - **The website can now tell that you have the extension installed.** Adds `externally_connectable` for
   jobhakken.com + app.jobhakken.com and a small ping handler, so the site can show a "Connected" state
