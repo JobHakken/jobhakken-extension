@@ -14,9 +14,10 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   JobHakken is refused, and your token never reaches it. (Completes the #1 bridge-trust hardening now
   that the desktop app ships the matching handshake; older apps still connect during rollout.)
 - **Pick your AI provider.** BYOK settings now have a provider picker (shared with the desktop app):
-  OpenRouter, OpenAI, GLM/Zhipu, and local runtimes — **Ollama, LM Studio, Codex** (no key needed) —
-  plus **Custom** for any OpenAI-compatible endpoint. Choosing one prefills its base URL + model and
-  requests only that provider's browser access. (Claude & Gemini native support are coming next.)
+  OpenRouter, OpenAI, **Claude (Anthropic)**, **Gemini (Google)**, GLM/Zhipu, and local runtimes —
+  **Ollama, LM Studio, Codex** (no key needed) — plus **Custom** for any OpenAI-compatible endpoint.
+  Choosing one prefills its base URL + model and requests only that provider's browser access. Claude
+  and Gemini connect natively (not routed through anyone else).
 - **Better coverage insight (privacy-preserving).** Autofill now records — as anonymous, opt-out
   metadata only — which ATS *family* a form runs on (Workday/Greenhouse/…, from the page fingerprint,
   never the URL or company) and which *types* of field it detected but couldn't fill (e.g. work

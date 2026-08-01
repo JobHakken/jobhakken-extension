@@ -751,11 +751,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 void refreshAuth();
 
 // ── BYO AI key (standalone AI, no desktop) — provider picker from @jobhakken/core (#115) ───────────
-// The registry is the single source of truth (shared with desktop); we render it, never fork it. Only
-// OpenAI-compatible providers work today (they reuse the existing aiClient); Anthropic/Gemini need
-// MV3-CORS work, so they appear disabled ("coming soon") until that follow-up lands.
-type Provider = (typeof LLM_PROVIDERS)[number];
-const isSupported = (p: Provider): boolean => p.adapter === 'openai';
+// The registry is the single source of truth (shared with desktop); we render it, never fork it. All
+// adapters are supported: OpenAI-compatible reuse the existing aiClient; Anthropic + Gemini route
+// through core's native clients (aiClient handles the MV3-CORS specifics — #115 phase 2).
+const KNOWN_PROVIDER_IDS = new Set(LLM_PROVIDERS.map((p) => p.id));
 /** apiKeyless local runtimes (Ollama/LM Studio/Codex) still need a non-empty apiKey for the config to
  *  be considered "active" (getAiConfig returns null on an empty key) — send a harmless sentinel the
  *  local server ignores. */
@@ -767,8 +766,7 @@ function populateProviders(): void {
   for (const p of LLM_PROVIDERS) {
     const o = document.createElement('option');
     o.value = p.id;
-    o.textContent = isSupported(p) ? p.label : `${p.label} — coming soon`;
-    o.disabled = !isSupported(p);
+    o.textContent = p.label;
     sel.appendChild(o);
   }
   sel.addEventListener('change', () => applyProvider(sel.value, true));
@@ -803,7 +801,7 @@ async function refreshAi(): Promise<void> {
   const m = await getAiConfigMeta();
   const sel = $('aiProvider') as HTMLSelectElement;
   const savedId = m.provider || DEFAULT_PROVIDER_ID;
-  sel.value = isSupported(getProvider(savedId)) ? savedId : DEFAULT_PROVIDER_ID;
+  sel.value = KNOWN_PROVIDER_IDS.has(savedId) ? savedId : DEFAULT_PROVIDER_ID;
   applyProvider(sel.value, false); // toggles + labels, but keep saved overrides below
   const p = getProvider(sel.value);
   ($('aiModel') as HTMLInputElement).value = m.model || p.defaultModel;

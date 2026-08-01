@@ -10,6 +10,9 @@
  * COST: all questions on a form are drafted in ONE call (résumé/job context sent once), not one call
  * per question — a 4–6× token reduction on multi-essay forms. Output is capped.
  */
+import { createLlmClient } from '@jobhakken/core/build/llm/createLlmClient.js';
+import { getProvider } from '@jobhakken/core/build/llm/providers.js';
+
 import { hasAiHostPermission } from './hostPerms.js';
 
 export type AiConfig = {
@@ -217,18 +220,56 @@ export function parseResumeJson(content: string): ParsedResume {
   return out;
 }
 
-/** One call: parse a résumé (paste/upload text) into a structured profile + token usage. */
-export async function parseResumeToProfile(
+/** Anthropic blocks browser `x-api-key` calls unless this header is present. Core's AnthropicLlmClient
+ *  omits it (built for the desktop main process, where CORS doesn't apply), so we inject it for the
+ *  extension's browser context. We only wrap the Anthropic path, so it never touches other hosts. */
+function withAnthropicBrowserHeader(f: typeof fetch): typeof fetch {
+  return ((url: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    headers.set('anthropic-dangerous-direct-browser-access', 'true');
+    return f(url, { ...init, headers });
+  }) as typeof fetch;
+}
+
+/**
+ * One adapter-aware completion (#115 phase 2). OpenAI-compatible providers use the chat-completions
+ * fetch exactly as before; Anthropic + Gemini (not OpenAI-compatible) route through @jobhakken/core's
+ * native, fetch-only clients — with the Anthropic browser-CORS header injected. Returns the raw text +
+ * token usage; callers parse it (unchanged). The provider is read from `cfg.provider` (the picker id);
+ * absent ⇒ OpenAI-compatible, so pre-#115 configs keep working.
+ */
+async function runChat(
   cfg: AiConfig,
-  resumeText: string,
-  fetchImpl: typeof fetch = fetch,
-): Promise<{ parsed: ParsedResume; usage: AiUsage | null }> {
-  if (!cfg.apiKey) throw new Error('No AI key');
-  if (!resumeText.trim()) return { parsed: { profile: {}, experience: [], education: [] }, usage: null };
-  const base = (cfg.baseUrl || DEFAULT_BASE).replace(/\/$/, '');
+  req: { system: string; user: string; maxTokens: number; temperature: number },
+  fetchImpl: typeof fetch,
+  timeoutMs: number,
+): Promise<{ content: string; usage: AiUsage | null }> {
+  const preset = cfg.provider ? getProvider(cfg.provider) : null;
+  const adapter = preset?.adapter ?? 'openai';
+  const base = (cfg.baseUrl || preset?.baseUrl || DEFAULT_BASE).replace(/\/$/, '');
   await ensureHostAllowed(base);
+
+  if (adapter === 'anthropic' || adapter === 'gemini') {
+    const client = createLlmClient(adapter, {
+      baseUrl: cfg.baseUrl || preset?.baseUrl,
+      defaultModel: cfg.model || preset?.defaultModel || DEFAULT_MODEL,
+      getApiKey: () => cfg.apiKey,
+      fetchImpl: adapter === 'anthropic' ? withAnthropicBrowserHeader(fetchImpl) : fetchImpl,
+      timeoutMs,
+    });
+    const r = await client.complete({
+      system: req.system,
+      user: req.user,
+      model: cfg.model || undefined,
+      maxTokens: req.maxTokens,
+      temperature: req.temperature,
+    });
+    return { content: r.text, usage: { promptTokens: r.usage.inputTokens, completionTokens: r.usage.outputTokens } };
+  }
+
+  // OpenAI-compatible (OpenRouter / OpenAI / GLM / Ollama / LM Studio / Codex / custom).
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45_000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetchImpl(`${base}/chat/completions`, {
       method: 'POST',
@@ -240,9 +281,12 @@ export async function parseResumeToProfile(
       },
       body: JSON.stringify({
         model: cfg.model || DEFAULT_MODEL,
-        messages: buildResumeParseMessages(resumeText),
-        max_tokens: 1600,
-        temperature: 0.1,
+        messages: [
+          { role: 'system', content: req.system },
+          { role: 'user', content: req.user },
+        ],
+        max_tokens: req.maxTokens,
+        temperature: req.temperature,
       }),
       signal: controller.signal,
     });
@@ -258,10 +302,28 @@ export async function parseResumeToProfile(
     const usage = json.usage
       ? { promptTokens: json.usage.prompt_tokens ?? 0, completionTokens: json.usage.completion_tokens ?? 0 }
       : null;
-    return { parsed: parseResumeJson(content), usage };
+    return { content, usage };
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** One call: parse a résumé (paste/upload text) into a structured profile + token usage. */
+export async function parseResumeToProfile(
+  cfg: AiConfig,
+  resumeText: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ parsed: ParsedResume; usage: AiUsage | null }> {
+  if (!cfg.apiKey) throw new Error('No AI key');
+  if (!resumeText.trim()) return { parsed: { profile: {}, experience: [], education: [] }, usage: null };
+  const [sys, usr] = buildResumeParseMessages(resumeText);
+  const { content, usage } = await runChat(
+    cfg,
+    { system: sys.content, user: usr.content, maxTokens: 1600, temperature: 0.1 },
+    fetchImpl,
+    45_000,
+  );
+  return { parsed: parseResumeJson(content), usage };
 }
 
 /** One batched call to the provider. Returns drafted answers aligned to `questions` + token usage. */
@@ -274,42 +336,17 @@ export async function draftAnswers(
 ): Promise<DraftResult> {
   if (!cfg.apiKey) throw new Error('No AI key');
   if (!questions.length) return { answers: [], usage: null };
-  const base = (cfg.baseUrl || DEFAULT_BASE).replace(/\/$/, '');
-  await ensureHostAllowed(base);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
-  try {
-    const res = await fetchImpl(`${base}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${cfg.apiKey}`,
-        // OpenRouter attribution headers (harmless elsewhere).
-        'HTTP-Referer': 'https://jobhakken.com',
-        'X-Title': 'JobHakken',
-      },
-      body: JSON.stringify({
-        model: cfg.model || DEFAULT_MODEL,
-        messages: buildAnswerMessages(context, job, questions),
-        max_tokens: Math.min(200 + questions.length * 220, 1600),
-        temperature: 0.4,
-      }),
-      signal: controller.signal,
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`AI ${res.status}: ${body.slice(0, 120)}`);
-    }
-    const json = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-      usage?: { prompt_tokens?: number; completion_tokens?: number };
-    };
-    const content = json.choices?.[0]?.message?.content ?? '';
-    const usage = json.usage
-      ? { promptTokens: json.usage.prompt_tokens ?? 0, completionTokens: json.usage.completion_tokens ?? 0 }
-      : null;
-    return { answers: parseAnswers(content, questions.length), usage };
-  } finally {
-    clearTimeout(timer);
-  }
+  const [sys, usr] = buildAnswerMessages(context, job, questions);
+  const { content, usage } = await runChat(
+    cfg,
+    {
+      system: sys.content,
+      user: usr.content,
+      maxTokens: Math.min(200 + questions.length * 220, 1600),
+      temperature: 0.4,
+    },
+    fetchImpl,
+    30_000,
+  );
+  return { answers: parseAnswers(content, questions.length), usage };
 }
