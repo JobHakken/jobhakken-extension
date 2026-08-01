@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.4
+- **Autofill now uploads the résumé you linked to a job.** After you save a job to the desktop app, an
+  autofill on that job’s application attaches the résumé you linked to it (ADR 0012, `@jobhakken/core`
+  0.3.0) instead of a generic one — falling back to your default main résumé when the job isn’t linked.
+  Jobs you haven’t saved, and standalone (no-desktop) uploads, are unchanged. (#397)
+
 ## 0.21.3
 - **Managed-AI subscribers now read their real plan.** When signed in, the extension fetches your tier
   from the webapp’s `/api/entitlement` (source of truth: `profiles.subscription_tier`) using your access
