@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.22.3
+- **Hardened the desktop-app connection against local impersonators.** Before sending your connection
+  token to the local app, the extension now requires the server to prove it holds that token (an HMAC
+  challenge) — so a rogue program on your machine that merely pretends to be JobHakken is rejected
+  instead of harvesting the token. Older apps keep working; fully active once the desktop app ships the
+  matching challenge.
+
 ## 0.22.2
 - **Privacy Policy & Terms of Use links** in Settings. The Account & settings section now links to
   jobhakken.com/privacy-policy and jobhakken.com/terms-of-service.
