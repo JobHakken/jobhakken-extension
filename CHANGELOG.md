@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.0
+- **Redesigned Profile & settings page.** The row of tabs is now a calm left sidebar with collapsible
+  sections and a “you’re X% ready to apply” bar at the top, so it’s clear what’s set up and what’s left.
+  Long explanations are tucked behind ⓘ icons (click or hover for the detail), and the duplicated
+  desktop-app setup is merged into one place. Every field and setting is unchanged — just easier to move
+  through, and it still respects your light/dark theme.
+
 ## 0.20.3
 - **Custom Fields → “Advanced: matching operators” now shows worked examples.** It was just a legend of
   symbols; now it shows what each one does on a real field label (e.g. `^salary` starts-with, `salary &&

@@ -45,16 +45,65 @@ let testModeOn = false; // extension test toggle (import brings dummy data when 
 
 void initThemeToggle($('theme')); // manual light/dark toggle (default: follow system)
 
-// ── tabs ─────────────────────────────────────────────────────
-$('tabs').addEventListener('click', (e) => {
-  const b = (e.target as HTMLElement).closest('.tab') as HTMLElement | null;
-  if (!b) return;
-  const key = b.dataset.t;
-  document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === b));
+// ── sidebar + accordion sections ─────────────────────────────
+function openSection(key: string | undefined, scroll = true): void {
+  if (!key) return;
   document
-    .querySelectorAll('.panel')
-    .forEach((p) => p.classList.toggle('active', (p as HTMLElement).dataset.p === key));
+    .querySelectorAll('.s-item')
+    .forEach((s) => s.classList.toggle('active', (s as HTMLElement).dataset.p === key));
+  document
+    .querySelectorAll('.acc')
+    .forEach((a) => a.classList.toggle('collapsed', (a as HTMLElement).dataset.p !== key));
+  if (scroll) document.querySelector(`.acc[data-p="${key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('side').addEventListener('click', (e) => {
+  const it = (e.target as HTMLElement).closest('.s-item') as HTMLElement | null;
+  if (it) openSection(it.dataset.p);
 });
+document.querySelectorAll('.acc-h').forEach((h) => {
+  h.addEventListener('click', () => {
+    const sec = h.closest('.acc') as HTMLElement;
+    if (sec.classList.contains('collapsed')) openSection(sec.dataset.p);
+    else sec.classList.add('collapsed'); // clicking the open header closes it
+  });
+});
+// ── ⓘ info tooltips (click toggles; hover handled by CSS) ─────
+document.querySelectorAll('.info').forEach((el) => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const was = el.classList.contains('open');
+    document.querySelectorAll('.info.open').forEach((o) => o.classList.remove('open'));
+    if (!was) el.classList.add('open');
+  });
+});
+document.addEventListener('click', () =>
+  document.querySelectorAll('.info.open').forEach((o) => o.classList.remove('open')),
+);
+
+// ── readiness header (honest: how many profile sections have data) ─
+function updateReadiness(): void {
+  const keys = ['personal', 'additional', 'education', 'work', 'custom'];
+  const segs = $('segbar').children;
+  let filled = 0;
+  keys.forEach((k, i) => {
+    const sec = document.querySelector(`.acc[data-p="${k}"]`);
+    let has = false;
+    sec?.querySelectorAll('input, textarea, select').forEach((el) => {
+      const inp = el as HTMLInputElement;
+      if (inp.type === 'checkbox' || inp.type === 'radio') return;
+      if (inp.value.trim()) has = true;
+    });
+    if (has) filled++;
+    const seg = segs[i] as HTMLElement | undefined;
+    if (seg) seg.className = has ? 'on' : '';
+  });
+  const pct = Math.round((filled / keys.length) * 100);
+  $('readyPct').textContent = filled === keys.length ? "You're all set — 100% ready" : `You're ${pct}% ready to apply`;
+  const count = $('readyCount');
+  count.textContent = `${filled} / ${keys.length}`;
+  count.className = 'pill ' + (filled > 0 ? 'ok' : 'todo');
+}
+document.addEventListener('input', updateReadiness);
 
 // ── personal / additional single fields ──────────────────────
 function renderFields(containerId: string, defs: typeof PERSONAL_FIELDS) {
@@ -356,6 +405,7 @@ function renderAll() {
   renderRules();
   renderCommonQuestions();
   renderEeoNudge();
+  updateReadiness();
 }
 // Hide the nudge live as the user fills an EEO field in the Additional grid.
 $('additionalGrid').addEventListener('input', renderEeoNudge);
