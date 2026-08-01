@@ -10,7 +10,7 @@ import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
 import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
-import { clearIdentity, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
+import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
@@ -205,8 +205,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!sender.url || !sender.url.startsWith(WEB_APP_ORIGIN)) return; // must come from the web app
   (async () => {
     const id = msg.identity as Identity | null;
-    if (id && typeof id.email === 'string' && id.email) await saveIdentity(id);
-    else await clearIdentity();
+    if (id && typeof id.email === 'string' && id.email) {
+      // Tier lives in profiles.subscription_tier (Stripe webhook), not the token metadata — fetch the
+      // authoritative entitlement with the access token and let it win. Fails soft (keeps prior tier).
+      if (id.accessToken) {
+        const tier = await fetchEntitlement(id.accessToken);
+        if (tier) id.tier = tier;
+      }
+      await saveIdentity(id);
+    } else await clearIdentity();
     sendResponse({ ok: true });
   })();
   return true; // async response

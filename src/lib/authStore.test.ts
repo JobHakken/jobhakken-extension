@@ -1,6 +1,13 @@
-import { beforeEach, describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { clearIdentity, loadIdentity, parseSupabaseCookies, parseSupabaseSession, saveIdentity } from './authStore';
+import {
+  clearIdentity,
+  fetchEntitlement,
+  loadIdentity,
+  parseSupabaseCookies,
+  parseSupabaseSession,
+  saveIdentity,
+} from './authStore';
 
 const mem: Record<string, unknown> = {};
 beforeEach(() => {
@@ -95,5 +102,35 @@ describe('parseSupabaseCookies (@supabase/ssr session cookies)', () => {
   it('ignores unrelated sb cookies and malformed values', () => {
     expect(parseSupabaseCookies('sb-abcdef-auth-token=base64-not$$valid')).toBeNull();
     expect(parseSupabaseCookies('sb-provider-token=whatever')).toBeNull();
+  });
+});
+
+describe('fetchEntitlement', () => {
+  const setFetch = (impl: () => Promise<{ ok: boolean; json: () => Promise<unknown> }>) => {
+    const spy = jest.fn(impl);
+    (globalThis as unknown as { fetch: unknown }).fetch = spy;
+    return spy;
+  };
+  const ok = (tier: unknown) => () => Promise.resolve({ ok: true, json: () => Promise.resolve({ tier }) });
+
+  it('returns the tier from a 200 response and sends a Bearer token', async () => {
+    const spy = setFetch(ok('pro'));
+    expect(await fetchEntitlement('at-123')).toBe('pro');
+    const [url, init] = spy.mock.calls[0] as unknown as [string, { headers: Record<string, string> }];
+    expect(url).toContain('/api/entitlement');
+    expect(init.headers.Authorization).toBe('Bearer at-123');
+  });
+
+  it('returns undefined on a non-ok response (e.g. 401)', async () => {
+    setFetch(() => Promise.resolve({ ok: false, json: () => Promise.resolve({}) }));
+    expect(await fetchEntitlement('at')).toBeUndefined();
+  });
+
+  it('returns undefined on network error, missing/non-string tier, or empty token', async () => {
+    setFetch(() => Promise.reject(new Error('offline')));
+    expect(await fetchEntitlement('at')).toBeUndefined();
+    setFetch(ok(undefined));
+    expect(await fetchEntitlement('at')).toBeUndefined();
+    expect(await fetchEntitlement('')).toBeUndefined();
   });
 });
