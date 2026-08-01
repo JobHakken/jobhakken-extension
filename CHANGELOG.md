@@ -4,6 +4,10 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.22.2
+- **Privacy Policy & Terms of Use links** in Settings. The Account & settings section now links to
+  jobhakken.com/privacy-policy and jobhakken.com/terms-of-service.
+
 ## 0.22.1
 - **Sign-in is easier to find — and shows what you unlock.** A persistent sign-in chip now sits in the
   Profile & settings header (“Sign in” signed out, your account once you’re in) on every section. And a
