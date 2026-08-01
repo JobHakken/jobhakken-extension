@@ -20,6 +20,7 @@ const ALLOWED_EVENTS = new Set<string>([
   'cover_letter_generated',
   'resume_tailored',
   'resume_received', // a résumé was handed off from the website (#358) — count only, no content
+  'site_candidate', // user invoked us on an UNSUPPORTED job form (#278) — salted host hash only, no URL
   'error',
   'settings_changed',
 ]);
@@ -32,6 +33,8 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'fields_total', // coarse bucket string — total detected fields (with fields_filled → coarse fill rate)
   'ats_platform', // bounded enum: which ATS family (workday|greenhouse|…|generic) — NOT the hostname
   'missed_types', // CSV of the fixed MissedFieldType vocab (coverage.ts) — field TYPES only, never labels
+  'ats_guess', // Layer 2: coarse ATS-family guess for an unsupported page (bounded enum, "unknown")
+  'host_hash', // Layer 2: SALTED, truncated hash of the registrable domain — never the plaintext host
   'area', // code region for an error, e.g. "autofill" | "bridge"
   'category', // error category (NEVER the message)
   'setting_key', // which setting changed (not its value)
