@@ -11,6 +11,10 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   authorization, salary, a custom dropdown — from a fixed vocabulary, never the label text or your
   answers). This tells us where to improve autofill without reading your applications. Same opt-out
   analytics toggle governs it; nothing about your specific job hunt is captured. (Coverage Layer 1 #105.)
+- **First-party analytics (infrastructure).** The same anonymous, opt-out, metadata-only telemetry can
+  now also flow to our own PostHog project (the one the website uses), so product usage sits in one
+  place. Cookieless (no person profile), routed through our own domain, and inert unless configured in a
+  release build — no new permissions, no third-party scripts. (First-party sink #106.)
 
 ## 0.23.0
 - **Send your résumé straight from the website into the extension.** Build a résumé on jobhakken.com and

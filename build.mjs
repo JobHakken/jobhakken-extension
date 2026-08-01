@@ -17,7 +17,11 @@ const shared = {
   logLevel: 'info',
   minify: prod,
   sourcemap: prod ? false : 'linked',
-  define: { __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET || '') },
+  define: {
+    __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET || ''),
+    // PostHog project key (#106) — injected in release builds only; empty elsewhere keeps the sink inert.
+    __POSTHOG_KEY__: JSON.stringify(process.env.POSTHOG_KEY || ''),
+  },
 };
 rmSync(outdir, { recursive: true, force: true });
 
