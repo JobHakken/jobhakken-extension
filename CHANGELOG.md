@@ -4,7 +4,7 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
-## 0.23.1
+## 0.24.0
 - **Fixed "Send résumé to extension" from the website.** The website's résumé handoff was being rejected
   because the two sides disagreed on how the résumé version is labeled — the site sends a numeric
   version and the extension expected the old text tag. Now it accepts the numeric `schemaVersion` (5)
