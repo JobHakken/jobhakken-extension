@@ -90,6 +90,19 @@ the real gate** — green locally before you merge.
 - `npm run test:e2e` builds + drives the extension in real Chromium against local ATS fixtures + a mock
   bridge. `npm run gen:h1b -- <csv>` regenerates the sponsor list.
 
+### Robustness testing (dev loop — all local, no CI; see `plans-and-thoughts/ideas/robustness-approach.md`)
+
+- `npm run smoke` — the **honest coverage gate**: golden tests (`e2e/goldens/*.golden.json`) assert the
+  right value lands in the right field (precision/recall), core PII gated. **Run after any
+  `@jobhakken/autofill` bump.**
+- `npm run test:live` (alias `npm run canary`) — **discovery/drift**: drive the extension against real
+  public ATS pages in Demo mode (dummy data, fill-only, never submit); reports per-site coverage + flags
+  fixture candidates. Edit `e2e/live/targets.json` first. Non-gating (URLs rot).
+- `npm run capture:har -- ` (env `CAPTURE_URL`/`CAPTURE_NAME`) — freeze a SPA/gated page into a replayable
+  HAR (`e2e/har/`); `e2e/replay.spec.ts` then replays it offline in the gate. Private repo, minimise captures.
+- Dev-only correction signal (`src/lib/correctionSignal.ts`) ranks the fields autofill keeps missing —
+  gated behind a dev flag **and** Demo mode; never runs for a real user.
+
 ## Standards status
 
 This repo is **mid-hardening** — see epic **#11**. Not yet in place (do not assume they exist): ESLint,

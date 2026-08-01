@@ -8,6 +8,9 @@
  */
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
+import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
+import { getAiConfig } from '../lib/aiKeyStore.js';
+import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
 import { rpc } from '../lib/bridgeClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
@@ -19,7 +22,12 @@ import { track } from '../lib/telemetry.js';
 // scripts / options forward events here via a `jh-telemetry` message so a single sink runs.
 initGaSink();
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') void track('extension_installed', {});
+  if (details.reason === 'install') {
+    void track('extension_installed', {});
+    // First run: land the user on the setup page instead of a cold toolbar icon they have to
+    // discover. The Options page carries the "Getting started" strip (onboarding dead-end #1).
+    void chrome.runtime.openOptionsPage();
+  }
 });
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
@@ -155,6 +163,58 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     } catch (e) {
       sendResponse({ error: e instanceof Error ? e.message : 'bridge error' });
     }
+  })();
+  return true; // async response
+});
+
+// Standalone AI (BYO key): the content script sends a candidate brief + job + questions; WE hold the
+// key (session storage) and call the provider directly, so no desktop app is needed and the key never
+// enters the page/content world. Zero telemetry on this path (ADR-0009). Only our own contexts.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-ai' || (msg.method !== 'answers' && msg.method !== 'parseResume')) return;
+  if (sender.id !== chrome.runtime.id) return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg) {
+        sendResponse({ error: 'no-key' });
+        return;
+      }
+      if (msg.method === 'parseResume') {
+        const p = (msg.params ?? {}) as { text?: string };
+        const { parsed, usage } = await parseResumeToProfile(cfg, String(p.text ?? '').slice(0, 20_000));
+        sendResponse({ result: { parsed, usage } });
+        return;
+      }
+      const params = (msg.params ?? {}) as { context?: string; job?: Record<string, string>; questions?: string[] };
+      const questions = Array.isArray(params.questions) ? params.questions.map(String).slice(0, 8) : [];
+      const { answers, usage } = await draftAnswers(cfg, String(params.context ?? ''), params.job ?? {}, questions);
+      sendResponse({ result: { answers, usage } });
+    } catch (e) {
+      sendResponse({ error: e instanceof Error ? e.message : 'ai error' });
+    }
+  })();
+  return true; // async response
+});
+
+// Sign-in bridge: the auth content script on app.jobhakken.com forwards the signed-in identity (or
+// null on sign-out). Only accept it from our own content script AND only from the web-app origin.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-auth') return;
+  if (sender.id !== chrome.runtime.id) return;
+  if (!sender.url || !sender.url.startsWith(WEB_APP_ORIGIN)) return; // must come from the web app
+  (async () => {
+    const id = msg.identity as Identity | null;
+    if (id && typeof id.email === 'string' && id.email) {
+      // Tier lives in profiles.subscription_tier (Stripe webhook), not the token metadata — fetch the
+      // authoritative entitlement with the access token and let it win. Fails soft (keeps prior tier).
+      if (id.accessToken) {
+        const tier = await fetchEntitlement(id.accessToken);
+        if (tier) id.tier = tier;
+      }
+      await saveIdentity(id);
+    } else await clearIdentity();
+    sendResponse({ ok: true });
   })();
   return true; // async response
 });

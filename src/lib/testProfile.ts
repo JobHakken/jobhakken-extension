@@ -15,7 +15,10 @@ export const TEST_PROFILE: FullProfile = {
     fullName: 'Jordan Alex Rivera',
     preferredName: 'Jordan',
     email: 'jordan.rivera@example.com',
-    phone: '(555) 010-0134',
+    // A libphonenumber-valid US example ((201) 555-0123 → +12015550123). The old (555) 010-0134 was
+    // rejected by real region validators (Workday): 555 is not a valid area code and an exchange
+    // starting with 0 is illegal, so the number blocked the wizard's Save-and-Continue.
+    phone: '(201) 555-0123',
     nationality: 'United States',
     addressLine1: '128 Maple Street',
     addressLine2: 'Apt 4B',
@@ -25,7 +28,7 @@ export const TEST_PROFILE: FullProfile = {
     zipCode: '78701',
     country: 'United States',
     location: 'Austin, TX',
-    linkedin: 'https://linkedin.com/in/jordan-rivera',
+    linkedin: 'https://www.linkedin.com/in/jordan-rivera',
     github: 'https://github.com/jordan-rivera',
     website: 'https://jordanrivera.dev',
     currentCompany: 'Globex Corp',
@@ -45,7 +48,10 @@ export const TEST_PROFILE: FullProfile = {
     hispanicLatino: 'No',
     veteranStatus: 'I am not a protected veteran',
     disabilityStatus: 'No, I do not have a disability',
-    school: 'State University',
+    // A real, searchable institution: Workday's School field is a prompt backed by a real
+    // institution database, so a generic "State University" never matches. Real ATS use needs the
+    // user's actual school; the dummy profile uses a real name so demo/tests exercise the match.
+    school: 'The University of Texas at Austin',
     degree: 'Masters',
     fieldOfStudy: 'Computer Science',
   },
@@ -73,9 +79,19 @@ export const TEST_PROFILE: FullProfile = {
     },
   ],
   education: [
-    { school: 'State University', degree: 'Masters', fieldOfStudy: 'Computer Science', period: '2022 - 2024' },
-    { school: 'City College', degree: 'Bachelors', fieldOfStudy: 'Electrical Engineering', period: '2016 - 2020' },
-    { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: '2012 - 2016' },
+    {
+      school: 'The University of Texas at Austin',
+      degree: 'Masters',
+      fieldOfStudy: 'Computer Science',
+      period: 'Sep 2022 - May 2024',
+    },
+    {
+      school: 'Texas State University',
+      degree: 'Bachelors',
+      fieldOfStudy: 'Electrical Engineering',
+      period: 'Sep 2016 - May 2020',
+    },
+    { school: 'Riverdale High', degree: 'High School Diploma', fieldOfStudy: 'General', period: 'Sep 2012 - May 2016' },
   ],
   rules: [{ condition: '(how did you hear)', value: 'LinkedIn' }],
 };

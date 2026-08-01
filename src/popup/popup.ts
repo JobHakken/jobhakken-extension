@@ -1,3 +1,6 @@
+import { hasAiKey } from '../lib/aiKeyStore.js';
+import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
+import { markReviewShown, recordMeaningfulFill, REVIEW_URL, shouldPromptReview } from '../lib/reviewStore.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
 import { escapeHtml } from '../lib/html.js';
@@ -68,6 +71,7 @@ let lastState: State | null = null;
 
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
+$('setupCta').addEventListener('click', () => chrome.runtime.openOptionsPage());
 void initThemeToggle($('theme'));
 
 async function render() {
@@ -77,12 +81,19 @@ async function render() {
   if (!state) {
     $('connLabel').textContent = 'Open a job page';
     $('foot').innerHTML =
-      'JobHakken works on application pages and job boards. Open one to autofill or check sponsorship.';
-    (['fill2', 'insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
+      'First time? <b>Set up your profile</b>, then open any job application and click Autofill. JobHakken works on job boards and application pages.';
+    // NB: these are real element ids (an earlier list included a phantom "fill2" — a class, not an
+    // id — so $('fill2') was null and this whole branch threw before disabling Autofill / showing
+    // the CTA; the empty state only looked right thanks to default CSS).
+    (['insights', 'mini', 'siteCapRow', 'captureRow'] as const).forEach((id) => $(id).classList.add('hidden'));
+    $('setupCta').classList.remove('hidden'); // give first-run / off-a-job-page users a way forward
     $('siteHint').classList.remove('on');
     ($('autofill') as HTMLButtonElement).disabled = true;
     return; // the ⚑ Report block stays available (this is the "not detected" case)
   }
+
+  // On a job page but no profile yet → still surface the setup CTA (dead-end #2). Otherwise hide it.
+  $('setupCta').classList.toggle('hidden', state.mode !== 'none');
 
   const connected = state.mode === 'connected';
   const testOn = !!state.testMode || testMode;
@@ -94,8 +105,8 @@ async function render() {
       ? '🧪 Demo mode'
       : (conn?.profile?.basics?.name ?? 'Connected')
     : state.mode === 'standalone'
-      ? 'Standalone'
-      : 'No profile';
+      ? 'App not connected'
+      : 'Profile not set up';
 
   $('testbar').classList.toggle('on', testOn);
 
@@ -122,16 +133,20 @@ async function render() {
   const h1b = $('h1b');
   if (state.h1b && state.h1b.approvals > 0) {
     h1b.classList.add('on');
-    h1b.textContent = `✓ H-1B sponsor${state.h1b.approvals >= 5 ? ` · ${state.h1b.approvals.toLocaleString()}` : ''}`;
+    h1b.textContent = `✓ Sponsors visas${state.h1b.approvals >= 5 ? ` · ${state.h1b.approvals.toLocaleString()}` : ''}`;
     h1b.title = `${state.h1b.company} has ${state.h1b.approvals.toLocaleString()} H-1B approval(s) on record. Company-level signal — a specific role may still not sponsor.`;
   } else h1b.classList.remove('on');
 
   $('fieldCount').textContent = String(state.fields);
 
-  // connected-only surfaces
-  $('autofillAts').classList.toggle('hidden', !connected);
+  // "Autofill + AI" is always available (BYO key or desktop); it just drafts the open-ended answers
+  // after filling. connected-only surfaces:
   $('insights').classList.toggle('hidden', !connected);
-  $('mini').classList.toggle('hidden', !connected);
+  // The Draft-answers row shows when the desktop is connected OR a BYO AI key is set (standalone AI) —
+  // otherwise the key would be unreachable from the UI. "Save job" is desktop-only, so hide it alone.
+  const hasKey = await hasAiKey();
+  $('mini').classList.toggle('hidden', !(connected || hasKey));
+  $('save').classList.toggle('hidden', !connected);
 
   // "run on this site" — for job/career sites we don't auto-detect
   const cs = state.captureSite;
@@ -147,9 +162,11 @@ async function render() {
 
   $('foot').innerHTML = connected
     ? 'Never auto-submits — you review first. AI runs through your desktop app.'
-    : state.mode === 'standalone'
-      ? 'Connect the desktop app (Settings) for ATS match, visa signal &amp; a tailored résumé.'
-      : 'Add your profile in Settings to autofill. Connect the app for AI + résumé.';
+    : hasKey
+      ? 'Draft answers uses your own AI key. Never auto-submits — you review first.'
+      : state.mode === 'standalone'
+        ? 'Connect the desktop app (Settings) for a résumé match, visa signal &amp; a tailored résumé.'
+        : 'Add your profile in Settings to autofill. Connect the app for AI + résumé.';
 }
 
 // ── actions ──────────────────────────────────────────────
@@ -164,7 +181,7 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
     return;
   }
   filling = true;
-  const other = (mode === 'ats' ? $('autofill') : $('autofillAts')) as HTMLButtonElement;
+  const other = (btn.id === 'autofill' ? $('autofillAi') : $('autofill')) as HTMLButtonElement;
   other.disabled = true;
   const big = btn.querySelector('.big') as HTMLElement;
   const sm = btn.querySelector('.sm') as HTMLElement;
@@ -176,10 +193,22 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
 
   // safety net in case the content script itself is gone (content already self-bounds to 20/45s)
   const timeoutMs = mode === 'ats' ? 50_000 : 24_000;
-  const r = (await Promise.race([
+  let r = (await Promise.race([
     rpc<FillResult>('autofill', { mode }),
     new Promise((res) => setTimeout(() => res('__timeout__'), timeoutMs)),
   ])) as FillResult | '__timeout__';
+
+  // A pre-step (e.g. Jobvite's residence-consent gate) can reveal a fresh form — often in a new
+  // same-origin iframe — that our first pass didn't fill. If the page now has many more fields than we
+  // filled, run once more (targets the now-busiest frame) so the revealed form fills in one click.
+  if (r && typeof r !== 'string') {
+    const st = await rpc<State>('getState');
+    if (st && st.fields > r.filled + r.review + 3) {
+      await new Promise((res) => setTimeout(res, 900));
+      const r2 = (await rpc<FillResult>('autofill', { mode })) as FillResult | null;
+      if (r2 && r2.filled > r.filled) r = r2;
+    }
+  }
 
   filling = false;
   other.disabled = false;
@@ -192,15 +221,48 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
     return;
   }
   $('fillResult').innerHTML = r
-    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<span class="chip rev">${r.review} to review</span>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}`
+    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip jump" title="Scroll to the purple-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in purple on the page.</div>' : ''}`
     : 'Set up your profile in Settings first.';
+
+  // Organic review prompt: after a couple of meaningful fills, offer a review once (ever).
+  if (r && typeof r !== 'string' && r.filled >= 8 && !r.partial) {
+    await recordMeaningfulFill();
+    if (await shouldPromptReview()) {
+      await markReviewShown();
+      $('reviewBar').classList.remove('hidden');
+    }
+  }
 }
+// Review banner: open the Web Store reviews page, or dismiss — either way it never returns
+// (markReviewShown was already called when it appeared).
+$('reviewLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  void chrome.tabs.create({ url: REVIEW_URL });
+  $('reviewBar').classList.add('hidden');
+});
+$('reviewDismiss').addEventListener('click', () => $('reviewBar').classList.add('hidden'));
+
+// Autofill — plain deterministic fill (tailored résumé too when the desktop app is connected).
 ($('autofill') as HTMLButtonElement).addEventListener('click', (e) =>
-  runFill(e.currentTarget as HTMLButtonElement, 'default'),
+  runFill(e.currentTarget as HTMLButtonElement, lastState?.mode === 'connected' ? 'ats' : 'default'),
 );
-($('autofillAts') as HTMLButtonElement).addEventListener('click', (e) =>
-  runFill(e.currentTarget as HTMLButtonElement, 'ats'),
-);
+// Autofill + AI — fill, then draft the open-ended answers in one action. Adds a distinct "✍️ N AI
+// answers" chip so it's clear what this button did beyond a plain Autofill (those are the purple ones).
+($('autofillAi') as HTMLButtonElement).addEventListener('click', async (e) => {
+  const btn = e.currentTarget as HTMLButtonElement;
+  await runFill(btn, lastState?.mode === 'connected' ? 'ats' : 'default');
+  const drafted = await doDraft(null);
+  if (drafted > 0) {
+    $('fillResult').insertAdjacentHTML(
+      'beforeend',
+      `<span class="chip ai" title="Open-ended answers written by AI — outlined in purple to review">✍️ ${drafted} AI answer${drafted === 1 ? '' : 's'}</span>`,
+    );
+  }
+});
+// Jump to the fields that need review (outlined in amber on the page).
+$('fillResult').addEventListener('click', (e) => {
+  if ((e.target as HTMLElement).closest('.jump')) void rpc('scrollToReview');
+});
 
 const insights = $('insights') as HTMLDetailsElement;
 let analyzed = false;
@@ -216,7 +278,7 @@ insights.addEventListener('toggle', async () => {
   }
   const parts: string[] = [];
   if (typeof r.ats === 'number') {
-    parts.push(`<div><b style="color:var(--fg)">ATS match: ${r.ats}%</b> — recomputed for this posting</div>`);
+    parts.push(`<div><b style="color:var(--fg)">Résumé match: ${r.ats}%</b> for this job</div>`);
     $('insPeek').innerHTML = `<span class="chip ok">${r.ats}%</span>`;
   }
   if (r.visa) parts.push(`<div><span class="visa">🛂 ${esc(r.visa)}</span></div>`);
@@ -235,17 +297,129 @@ insights.addEventListener('toggle', async () => {
   body.innerHTML = parts.length ? parts.join('') : 'No signal for this page.';
 });
 
-($('draft') as HTMLButtonElement).addEventListener('click', async (e) => {
-  const b = e.currentTarget as HTMLButtonElement;
-  b.textContent = 'Drafting…';
-  const r = await rpc<{ ok: boolean; error?: string } | null>('draft');
-  b.textContent = r?.ok ? '✓ Drafted' : r?.error ? '⚠ ' + r.error.slice(0, 16) : '✍️ Draft answer';
+// Turn a terse internal error into plain guidance the user can act on. Falls back to the raw
+// message (never truncated) rather than swallowing it. Keyed on substrings the content script /
+// bridge return (e.g. "off in test mode", "No question field", "Open the JobHakken app…").
+function friendlyError(raw: string | undefined, fallback: string): string {
+  const e = (raw ?? '').toLowerCase();
+  if (!raw) return fallback;
+  if (e.includes('test mode') || e.includes('demo')) return 'Turn off Demo mode to use this on real data.';
+  if (e.includes('question field') || e.includes('no question'))
+    return "Couldn't find a question to answer on this page.";
+  if (e.includes('connect') || e.includes('app') || e.includes('bridge') || e.includes('unreachable'))
+    return 'Open the JobHakken desktop app first, then try again.';
+  if (e.includes('profile')) return 'Set up your profile in Settings first.';
+  return raw; // unknown — show the real message in full, don't chop it
+}
+
+// Show a result under the draft/save row, then reset the button label after a beat so the button
+// never gets stuck in an error/"…" state (the old code left truncated errors on the button forever).
+function showMiniResult(ok: boolean, msg: string): void {
+  $('miniResult').innerHTML = `<span class="chip ${ok ? 'ok' : 'rev'}">${ok ? '✓' : '⚠'} ${esc(msg)}</span>`;
+}
+
+// Render this month's AI-draft usage under the mini row (on-device only; hidden until there's any).
+async function renderAiUsage(): Promise<void> {
+  const el = $('aiUsage');
+  const m = await getMonthUsage();
+  if (!m.drafts) {
+    el.classList.add('hidden');
+    return;
+  }
+  const tokens = totalTokens(m);
+  const cost = fmtCost(estCostUsd(m.promptTokens, m.completionTokens));
+  const parts = [`<b>${m.drafts}</b> draft${m.drafts === 1 ? '' : 's'} this month`];
+  if (tokens) parts.push(`<b>${fmtTokens(tokens)}</b> tokens`, `≈ <b>${cost}</b>`);
+  el.innerHTML = `🤖 ${parts.join(' · ')}`;
+  el.classList.remove('hidden');
+}
+
+// Draft the open-ended answers. Reused by the "Draft answers" button and "Autofill + AI"; when called
+// from the combined action (btn=null) a "no questions here" result is silent, not an error.
+async function doDraft(btn: HTMLButtonElement | null): Promise<number> {
+  const label = btn?.textContent ?? '✍️ Draft answers';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Drafting…';
+  }
+  const r = await rpc<{
+    ok: boolean;
+    filled?: number;
+    usage?: { promptTokens: number; completionTokens: number } | null;
+    error?: string;
+  } | null>('draft');
+  let drafted = 0;
+  if (r?.ok) {
+    drafted = r.filled ?? 1;
+    await recordDraft(drafted, r.usage?.promptTokens ?? 0, r.usage?.completionTokens ?? 0);
+    const tok = r.usage ? ` · ~${fmtTokens(totalTokens(r.usage))} tokens` : '';
+    showMiniResult(
+      true,
+      `Drafted ${drafted} answer${drafted === 1 ? '' : 's'}${tok} — the purple-outlined AI answers are on the page to review.`,
+    );
+    await renderAiUsage();
+    $('refineBox').classList.add('hidden'); // fresh draft → collapse any open refine box
+    $('refineToggle').classList.remove('hidden'); // offer per-field refine
+  } else if (!(btn === null && /no question/i.test(r?.error ?? ''))) {
+    showMiniResult(false, friendlyError(r?.error, 'No open-ended questions to draft here.'));
+  }
+  if (btn) {
+    btn.textContent = label;
+    btn.disabled = false;
+  }
+  return drafted;
+}
+($('draft') as HTMLButtonElement).addEventListener('click', (e) => void doDraft(e.currentTarget as HTMLButtonElement));
+
+// Per-field AI re-draft: pick a drafted question, tell the AI what to change, redo just that answer.
+let draftedLabels: string[] = [];
+$('refineToggle').addEventListener('click', async () => {
+  const res = await rpc<{ items?: { label: string }[] }>('draftedList');
+  draftedLabels = (res?.items ?? []).map((it) => it.label);
+  if (!draftedLabels.length) {
+    showMiniResult(false, 'Draft answers first, then refine.');
+    return;
+  }
+  ($('refinePick') as HTMLSelectElement).innerHTML = draftedLabels
+    .map((l, i) => `<option value="${i}">${esc(l.length > 60 ? l.slice(0, 57) + '…' : l)}</option>`)
+    .join('');
+  $('refineToggle').classList.add('hidden');
+  $('refineBox').classList.remove('hidden');
+});
+$('refineGo').addEventListener('click', async () => {
+  const label = draftedLabels[Number(($('refinePick') as HTMLSelectElement).value)] ?? '';
+  const instruction = ($('refineInstruction') as HTMLTextAreaElement).value.trim();
+  const status = $('refineStatus');
+  if (!instruction) {
+    status.textContent = 'Add an instruction first.';
+    return;
+  }
+  const btn = $('refineGo') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'Redoing…';
+  const r = await rpc<{
+    ok: boolean;
+    usage?: { promptTokens: number; completionTokens: number } | null;
+    error?: string;
+  }>('redraft', { label, instruction });
+  btn.disabled = false;
+  btn.textContent = 'Redo this answer';
+  if (r?.ok) {
+    if (r.usage) await recordDraft(1, r.usage.promptTokens, r.usage.completionTokens);
+    status.innerHTML = '<span class="chip ok">✓ Rewritten — check it on the page</span>';
+    await renderAiUsage();
+  } else status.innerHTML = `<span class="chip rev">${esc(r?.error ?? 'Could not refine')}</span>`;
 });
 ($('save') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
+  const label = b.textContent ?? '📌 Save job';
+  b.disabled = true;
   b.textContent = 'Saving…';
   const r = await rpc<{ ok: boolean; error?: string } | null>('save');
-  b.textContent = r?.ok ? '✓ Saved' : '📌 Save job';
+  if (r?.ok) showMiniResult(true, 'Saved to your JobHakken app.');
+  else showMiniResult(false, friendlyError(r?.error, 'Could not save this job.'));
+  b.textContent = label;
+  b.disabled = false;
 });
 ($('capture') as HTMLButtonElement).addEventListener('click', async (e) => {
   const b = e.currentTarget as HTMLButtonElement;
@@ -320,3 +494,4 @@ document
   .forEach((b) => b.addEventListener('click', () => void openReport(b.dataset.r ?? 'other')));
 
 void render();
+void renderAiUsage();

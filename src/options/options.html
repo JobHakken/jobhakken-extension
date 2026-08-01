@@ -126,6 +126,228 @@
         border-radius: 12px;
         margin-bottom: 16px;
       }
+      .resumeai {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .resumeai > summary {
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .resumeai .ic {
+        margin-right: 6px;
+      }
+      .resumeai textarea {
+        width: 100%;
+      }
+      .uploadbtn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 14px 16px;
+        border: 2px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .uploadbtn:hover {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+      }
+      .uploadbtn .up-ic {
+        font-size: 22px;
+      }
+      .uploadbtn b {
+        display: block;
+        font-size: 13.5px;
+        color: var(--accent);
+      }
+      .uploadbtn .up-sub {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .or-sep {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 4px;
+        color: var(--muted);
+        font-size: 11.5px;
+      }
+      .or-sep::before,
+      .or-sep::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .filenote {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--fg);
+      }
+      .filenote a {
+        color: var(--err);
+        margin-left: 6px;
+      }
+      .filenote.hidden {
+        display: none;
+      }
+      table.examples {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 4px 0 16px;
+        font-size: 12.5px;
+      }
+      table.examples th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 11.5px;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.examples td {
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.examples td:first-child {
+        color: var(--muted);
+      }
+      table.examples td:last-child {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .commonq {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 0 0 16px;
+      }
+      .commonq button {
+        font: inherit;
+        font-size: 12px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .commonq button:hover {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+      }
+      .commonq button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .commonq button::before {
+        content: '+ ';
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .eeonudge {
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+      }
+      .eeonudge.hidden {
+        display: none;
+      }
+      .getstarted {
+        position: relative;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+        border-radius: 12px;
+      }
+      .getstarted .gs-h {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      .getstarted .gs-steps {
+        margin: 0 0 8px;
+        padding-left: 20px;
+        display: grid;
+        gap: 4px;
+      }
+      .getstarted .gs-steps li {
+        font-size: 13.5px;
+      }
+      .getstarted .gs-note {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .getstarted .gs-x {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 6px;
+      }
+      .getstarted .gs-x:hover {
+        background: color-mix(in srgb, var(--fg) 10%, transparent);
+      }
+      .sec-h {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 22px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sec-h .opt {
+        font-weight: 400;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      details.adv {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+        padding: 0 14px;
+      }
+      details.adv > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 11px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      details.adv > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.adv > summary::before {
+        content: '▸ ';
+        color: var(--muted);
+      }
+      details.adv[open] > summary::before {
+        content: '▾ ';
+      }
+      details.adv[open] {
+        padding-bottom: 12px;
+      }
       .import .ic {
         font-size: 20px;
       }
@@ -181,6 +403,257 @@
       }
       .panel.active {
         display: block;
+      }
+      /* ── accordion shell (sidebar + collapsible sections + readiness) ── */
+      .layout {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        gap: 0;
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      @media (max-width: 720px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          border-right: none !important;
+          border-bottom: 1px solid var(--line);
+        }
+      }
+      .side {
+        padding: 16px 12px 16px 0;
+        border-right: 1px solid var(--line);
+        position: sticky;
+        top: 8px;
+        align-self: start;
+      }
+      .s-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        margin: 2px 0 12px;
+        color: var(--fg);
+      }
+      .s-logo svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+      }
+      .s-group {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        font-weight: 700;
+        margin: 14px 8px 5px;
+      }
+      .s-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 10px;
+        font-size: 12.5px;
+        color: var(--fg);
+        border-left: 2px solid transparent;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+      }
+      .s-item .ic {
+        width: 15px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .s-item:hover {
+        background: color-mix(in srgb, var(--accent) 7%, transparent);
+      }
+      .s-item.active {
+        border-left-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600;
+        background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 88%);
+      }
+      .s-item.active .ic {
+        color: var(--accent);
+      }
+      .content {
+        padding: 16px 0 16px 18px;
+        min-width: 0;
+      }
+      @media (max-width: 720px) {
+        .content {
+          padding: 16px 0;
+        }
+      }
+      .ready {
+        border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: var(--soft);
+        margin-bottom: 14px;
+      }
+      .ready-t {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .ready-t b {
+        font-size: 14px;
+      }
+      .segbar {
+        display: flex;
+        gap: 4px;
+      }
+      .segbar span {
+        height: 6px;
+        border-radius: 4px;
+        flex: 1;
+        background: color-mix(in srgb, var(--fg) 14%, var(--surface));
+      }
+      .segbar span.on {
+        background: var(--accent);
+      }
+      .segbar span.warn {
+        background: var(--warn);
+      }
+      .acc {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        background: var(--surface);
+      }
+      .acc-h {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        cursor: pointer;
+        user-select: none;
+        background: color-mix(in srgb, var(--fg) 4%, var(--surface));
+      }
+      .acc-h .ic {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .acc-h .tt {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .acc-h .chev {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 11px;
+        transition: transform 0.18s;
+      }
+      .acc-b {
+        padding: 16px 14px;
+        border-top: 1px solid var(--line);
+      }
+      .acc.collapsed .acc-b {
+        display: none;
+      }
+      .acc.collapsed .acc-h .chev {
+        transform: rotate(-90deg);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .pill.ok {
+        background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+        color: var(--accent);
+      }
+      .pill.todo {
+        background: color-mix(in srgb, var(--fg) 8%, var(--surface));
+        color: var(--muted);
+      }
+      .setblk + .setblk {
+        border-top: 1px solid var(--line);
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+      /* ── ⓘ info tooltip ── */
+      .info {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.4px solid var(--muted);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        font-style: italic;
+        font-family: Georgia, 'Times New Roman', serif;
+        cursor: pointer;
+        vertical-align: middle;
+        margin-left: 3px;
+      }
+      .info:hover,
+      .info.open {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .info .pop {
+        position: absolute;
+        top: 24px;
+        left: -6px;
+        width: 300px;
+        max-width: 70vw;
+        z-index: 20;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+        padding: 11px 13px;
+        font: 400 12px/1.55 var(--sans, inherit);
+        color: var(--muted);
+        text-align: left;
+        letter-spacing: normal;
+        text-transform: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition:
+          opacity 0.14s,
+          transform 0.14s,
+          visibility 0.14s;
+      }
+      .info .pop::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 10px;
+        width: 10px;
+        height: 10px;
+        background: var(--surface);
+        border-left: 1px solid var(--line);
+        border-top: 1px solid var(--line);
+        transform: rotate(45deg);
+      }
+      .info:hover .pop,
+      .info.open .pop {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      .info .pop a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .info .pop b {
+        color: var(--fg);
       }
       .grid {
         display: grid;
@@ -284,6 +757,35 @@
         border-radius: 4px;
         font-family: monospace;
       }
+      ul.opex {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      ul.opex li {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        font-size: 11.5px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      ul.opex code {
+        flex: none;
+        background: var(--soft);
+        color: var(--accent);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        white-space: nowrap;
+      }
+      ul.opex b {
+        color: var(--fg);
+        font-weight: 600;
+      }
       .bar {
         position: sticky;
         bottom: 0;
@@ -366,156 +868,382 @@
       résumé + unlock AI). <span id="ver" style="color: var(--muted); font-size: 11px"></span>
     </p>
 
-    <div class="import">
-      <span class="ic">✨</span>
-      <div class="t">
-        <b>Import from my résumé</b>
-        <div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div>
-      </div>
-      <button id="importBtn" disabled title="Connect the desktop app first (Desktop tab)">Import</button>
-    </div>
+    <div class="layout">
+      <nav class="side" id="side">
+        <div class="s-logo">
+          <svg viewBox="0 0 24 24">
+            <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.1" />
+            <line x1="15" y1="15" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+            <circle cx="10" cy="10" r="2.4" fill="currentColor" />
+          </svg>
+          Settings
+        </div>
+        <div class="s-item active" data-p="home"><span class="ic">⌂</span>Home</div>
+        <div class="s-group">You</div>
+        <div class="s-item" data-p="personal"><span class="ic">◐</span>Profile</div>
+        <div class="s-item" data-p="additional"><span class="ic">§</span>Additional</div>
+        <div class="s-item" data-p="education"><span class="ic">▤</span>Education</div>
+        <div class="s-item" data-p="work"><span class="ic">▥</span>Work experience</div>
+        <div class="s-group">Autofill</div>
+        <div class="s-item" data-p="custom"><span class="ic">✎</span>Custom fields</div>
+        <div class="s-group">More</div>
+        <div class="s-item" data-p="desktop"><span class="ic">⚙</span>Account &amp; settings</div>
+      </nav>
+      <div class="content">
+        <div class="ready" id="readiness">
+          <div class="ready-t">
+            <b id="readyPct">Getting set up…</b><span class="pill todo" id="readyCount">0 / 5</span>
+          </div>
+          <div class="segbar" id="segbar"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
 
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-t="personal">Personal</button>
-      <button class="tab" data-t="additional">Additional</button>
-      <button class="tab" data-t="education">Education</button>
-      <button class="tab" data-t="work">Work Experience</button>
-      <button class="tab" data-t="custom">Custom Fields</button>
-      <button class="tab" data-t="desktop">Desktop</button>
-    </div>
+        <section class="acc" data-p="home">
+          <div class="acc-h"><span class="ic">⌂</span><span class="tt">Home</span><span class="chev">▾</span></div>
+          <div class="acc-b">
+            <div class="getstarted" id="getstarted" hidden>
+              <button class="gs-x" id="gsDismiss" title="Dismiss" aria-label="Dismiss getting started">×</button>
+              <b class="gs-h">👋 Getting started — three steps</b>
+              <ol class="gs-steps">
+                <li><b>Add your info</b> below (or Import it from the app).</li>
+                <li><b>Open a job application</b> in your browser.</li>
+                <li>Click <b>Autofill</b> in the JobHakken toolbar popup.</li>
+              </ol>
+              <p class="gs-note">
+                Nothing is ever submitted for you — you review everything first. Your data stays on your computer.
+              </p>
+            </div>
 
-    <div class="panel active" data-p="personal"><div class="grid" id="personalGrid"></div></div>
-    <div class="panel" data-p="additional">
-      <p class="note warn">
-        <label
-          ><input type="checkbox" id="fillSensitive" checked /> <b>Autofill sensitive fields</b> (EEO / demographic,
-          salary, visa) by default</label
-        ><br />
-        Nothing is ever auto-submitted — you review everything on the page before submitting. Uncheck to leave these
-        blank and fill them yourself.
-      </p>
-      <div class="grid" id="additionalGrid"></div>
-    </div>
-    <div class="panel" data-p="education">
-      <p class="note">Used to fill repeated Education sections on applications.</p>
-      <div id="eduList"></div>
-      <span class="add" id="addEdu">+ Add education</span>
-    </div>
-    <div class="panel" data-p="work">
-      <p class="note">Used to fill repeated Work-Experience rows (company, title, dates).</p>
-      <div id="workList"></div>
-      <span class="add" id="addWork">+ Add experience</span>
-    </div>
-    <div class="panel" data-p="custom">
-      <p class="note">
-        Your own rules for anything the auto-mapper misses. A condition matches a field's <b>label</b>; the value fills
-        it. These always win.
-      </p>
-      <div id="ruleList"></div>
-      <span class="add" id="addRule">+ Add rule</span>
-      <div class="ops">
-        Operators: <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and
-        · <code>||</code> or · <code>( )</code> group
-      </div>
-    </div>
-    <div class="panel" data-p="desktop">
-      <p class="note">
-        <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label
-        ><br />
-        On job pages (LinkedIn, career sites), flags roles whose description explicitly rules out sponsorship — those
-        requiring U.S. citizenship, a security clearance, “no sponsorship,” or export-control (ITAR/EAR) eligibility.
-        Runs entirely on your machine (no AI). Off by default.
-        <br />
-        <label style="display: inline-block; margin-top: 8px; margin-left: 22px"
-          ><input type="checkbox" id="hideUnsponsored" /> <b>Hide these jobs</b> instead of marking them</label
-        ><br />
-        <span style="margin-left: 22px; color: var(--muted)"
-          >When off, a red “No sponsorship” mark is added to the job’s tile. When on, the job’s tile is hidden from the
-          list. (LinkedIn shows the full description only once a job is opened, so a job is judged when you open it; the
-          desktop app hides them upfront.)</span
-        >
-      </p>
-      <p class="note warn">
-        <label><input type="checkbox" id="testMode" /> <b>🧪 Demo mode — fill anonymous sample data</b></label
-        ><br />
-        Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so you can
-        safely try it on live application pages without exposing anything. The toolbar popup shows a
-        <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
-      </p>
-      <p class="note">
-        <label
-          ><input type="checkbox" id="telemetryToggle" checked /> <b>📊 Share anonymous usage analytics</b> — on by
-          default</label
-        ><br />
-        Helps us improve the extension. We collect <b>only</b> which features you use, success/failure, coarse counts,
-        your extension version, and browser/OS — <b>never</b> your résumé, job postings, form values, URLs, or personal
-        data. Untick to turn it off.
-      </p>
-      <p class="note">
-        <label
-          ><input type="checkbox" id="autoCapture" /> <b>🗂️ Auto-capture applications (local, anonymized)</b> — off by
-          default; opt in below</label
-        ><br />
-        <b>This is off unless you turn it on.</b> When enabled, as you apply it takes a passive
-        <b>snapshot of each application page’s HTML</b> and records the <b>whole flow</b> — which fields autofill
-        handled and which you filled in yourself — with your personal details scrubbed (emails/phones/long text reduced
-        to placeholders; short answers like “Yes”/“LinkedIn” kept). It builds a local corpus that makes autofill smarter
-        over time. Only on job-application pages you visit (built-in ATS list + your own sites) — never touches the
-        form, never leaves your machine, never captures other browsing. <b>Export</b> it to send for analysis. By
-        ticking the box you consent to this local capture; untick any time to stop.
-        <span id="capCount" style="color: var(--muted)"></span>
-        <br />
-        <button id="exportCorpus" class="secondary" style="margin-top: 8px">Export corpus</button>
-        <button id="clearCorpus" class="secondary" style="margin-top: 8px">Clear</button>
-      </p>
-      <p class="note">
-        <label><input type="checkbox" id="captureMode" /> <b>📸 Fixture capture (developer)</b></label
-        ><br />
-        Separate one-off tool: adds a <b>Capture fixture</b> button to the panel that <b>downloads</b> a scrubbed HTML
-        snapshot + coverage report for engineering. Not needed for normal use — the auto-capture above is the corpus.
-      </p>
-      <p class="note">
-        <b>🌐 My sites</b> — where JobHakken is always active (opens the panel + auto-captures), in addition to the
-        built-in ATS list (Workday, Greenhouse, Lever, …). Add a company careers domain, or use the “Always open on this
-        site” toggle in the on-page panel.
-      </p>
-      <div id="siteList" style="display: flex; flex-direction: column; gap: 6px"></div>
-      <div style="display: flex; gap: 6px; margin-top: 8px">
-        <input
-          id="siteInput"
-          type="text"
-          placeholder="careers.company.com"
-          style="flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px"
-        />
-        <button id="siteAdd" class="secondary">Add</button>
-      </div>
-      <p class="note">
-        Connect to the running JobHakken desktop app for AI (ATS match, visa signal, tailored résumé) and one-click
-        résumé import.
-      </p>
-      <div class="f">
-        <label for="token">Connection token</label
-        ><input
-          id="token"
-          type="password"
-          placeholder="Paste from the app → Settings → Browser extension"
-          autocomplete="off"
-        />
-      </div>
-      <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
-        <button class="save" id="connect">Connect</button>
-        <button class="secondary" id="disconnect" hidden>Disconnect</button>
-        <span class="status" id="connStatus"></span>
-      </div>
-      <p class="note">
-        In the app: <b>Settings → Browser extension (beta)</b> → enable it, copy the token here. Everything stays on
-        <code class="inline">127.0.0.1</code>.
-      </p>
-    </div>
+            <div class="import">
+              <span class="ic">✨</span>
+              <div class="t">
+                <b>Import from my résumé</b>
+                <div>Pulls your AI-parsed résumé from the connected desktop app — no retyping.</div>
+              </div>
+              <button id="importBtn" disabled title="Connect the app first (Settings tab → Connect the JobHakken app)">
+                Import
+              </button>
+            </div>
 
-    <div class="bar">
-      <button class="save" id="saveProfile">Save profile</button>
-      <span class="status" id="profileStatus"></span>
+            <details class="resumeai" id="resumeAi">
+              <summary><span class="ic">🤖</span> <b>Upload or paste a résumé — fill my profile with AI</b></summary>
+              <p class="note">
+                AI reads your résumé and fills in the fields for you — <b>no desktop app needed</b>. Uses your own AI
+                key (Settings → AI drafting). Only what's written is used; nothing is invented, and it never sends your
+                résumé to JobHakken.
+              </p>
+              <label class="uploadbtn" id="resumePdfLabel">
+                <span class="up-ic">📄</span>
+                <span>
+                  <b>Upload a PDF or Word file</b>
+                  <span class="up-sub">.pdf or .docx — read on your device</span>
+                </span>
+                <input
+                  id="resumePdf"
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  hidden
+                />
+              </label>
+              <div class="filenote hidden" id="resumeFileInfo"></div>
+              <div class="or-sep"><span>or paste the text</span></div>
+              <textarea id="resumeText" rows="6" placeholder="Paste your résumé text here…"></textarea>
+              <div class="bar" style="position: static; border: none; margin-top: 8px; padding: 0; gap: 10px">
+                <button class="save" id="resumeParse">Parse with AI</button>
+                <span class="status" id="resumeStatus"></span>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="acc collapsed" data-p="personal">
+          <div class="acc-h">
+            <span class="ic">◐</span><span class="tt">Profile &amp; contact</span><span class="chev">▾</span>
+          </div>
+          <div class="acc-b"><div class="grid" id="personalGrid"></div></div>
+        </section>
+
+        <section class="acc collapsed" data-p="additional">
+          <div class="acc-h">
+            <span class="ic">§</span><span class="tt">Additional — work eligibility &amp; EEO</span
+            ><span class="chev">▾</span>
+          </div>
+          <div class="acc-b">
+            <div class="eeonudge hidden" id="eeoNudge">
+              💡 <b>Set your demographic / EEO answers once below</b> (gender, race, veteran, disability). JobHakken
+              <b>never guesses</b> these, and a résumé doesn’t contain them — so they stay blank on applications until
+              you add them here. Common choice: “Decline to self-identify”.
+            </div>
+            <p class="note warn">
+              <label
+                ><input type="checkbox" id="fillSensitive" checked /> <b>Autofill sensitive fields</b> (EEO /
+                demographic, salary, visa) by default</label
+              ><br />
+              Nothing is ever auto-submitted — you review everything on the page before submitting. Uncheck to leave
+              these blank and fill them yourself.
+            </p>
+            <div class="grid" id="additionalGrid"></div>
+          </div>
+        </section>
+
+        <section class="acc collapsed" data-p="education">
+          <div class="acc-h"><span class="ic">▤</span><span class="tt">Education</span><span class="chev">▾</span></div>
+          <div class="acc-b">
+            <p class="note">Used to fill repeated Education sections on applications.</p>
+            <div id="eduList"></div>
+            <span class="add" id="addEdu">+ Add education</span>
+          </div>
+        </section>
+
+        <section class="acc collapsed" data-p="work">
+          <div class="acc-h">
+            <span class="ic">▥</span><span class="tt">Work experience</span><span class="chev">▾</span>
+          </div>
+          <div class="acc-b">
+            <p class="note">Used to fill repeated Work-Experience rows (company, title, dates).</p>
+            <div id="workList"></div>
+            <span class="add" id="addWork">+ Add experience</span>
+          </div>
+        </section>
+
+        <section class="acc collapsed" data-p="custom">
+          <div class="acc-h">
+            <span class="ic">✎</span><span class="tt">Custom fields</span><span class="chev">▾</span>
+          </div>
+          <div class="acc-b">
+            <p class="note">
+              Set your own answers for questions autofill doesn’t already handle — JobHakken can’t list every field on
+              this page, so add the common ones you run into. When a field’s label contains your phrase, it fills your
+              answer.
+            </p>
+            <p class="note"><b>Common questions — click one to add it, then fill in your answer:</b></p>
+            <div class="commonq" id="commonQ"></div>
+            <div id="ruleList"></div>
+            <span class="add" id="addRule">+ Add rule</span>
+            <details class="adv">
+              <summary>Advanced: matching operators</summary>
+              <div class="ops">
+                <code>=</code> equals · <code>^</code> starts-with · <code>!</code> not · <code>&amp;&amp;</code> and ·
+                <code>||</code> or · <code>( )</code> group
+              </div>
+              <p class="ops" style="margin-top: 8px">
+                The condition is matched against the field’s <b>label</b> (case-insensitive). With no operator your
+                phrase just has to be <b>contained</b> in the label — the operators are for the trickier cases:
+              </p>
+              <ul class="opex">
+                <li><code>notice period</code><span>label contains it — “What is your notice period?”</span></li>
+                <li>
+                  <code>^salary</code
+                  ><span
+                    >label <b>starts with</b> “salary” — matches “Salary expectations”, not “Desired base salary”</span
+                  >
+                </li>
+                <li>
+                  <code>=gpa</code><span>label is <b>exactly</b> “GPA” — skips “What’s your GPA and major?”</span>
+                </li>
+                <li>
+                  <code>salary &amp;&amp; !current</code
+                  ><span>has “salary” but <b>not</b> “current” — fills “Expected salary”, skips “Current salary”</span>
+                </li>
+                <li>
+                  <code>sponsor || visa</code
+                  ><span>has “sponsor” <b>or</b> “visa” — one rule covers both phrasings</span>
+                </li>
+                <li>
+                  <code>(relocate || relocation) &amp;&amp; !remote</code
+                  ><span><b>grouped</b> — a relocation question that isn’t about remote work</span>
+                </li>
+              </ul>
+            </details>
+          </div>
+        </section>
+
+        <section class="acc collapsed" data-p="desktop">
+          <div class="acc-h">
+            <span class="ic">⚙</span><span class="tt">Account &amp; settings</span><span class="chev">▾</span>
+          </div>
+          <div class="acc-b">
+            <div class="setblk">
+              <h3 class="sec-h" style="margin-top: 0">
+                👤 Your JobHakken account
+                <span class="info"
+                  ><span aria-hidden="true">i</span
+                  ><span class="pop"
+                    >Sign in for <b>managed AI</b> and to <b>sync across devices</b> — the same login you use
+                    everywhere. Optional: the extension works without an account, and with your own AI key it's fully
+                    free.</span
+                  ></span
+                >
+              </h3>
+              <div class="bar" style="position: static; border: none; margin: 4px 0 8px; padding: 0">
+                <button class="save" id="signIn">Sign in with JobHakken</button>
+                <button class="secondary" id="signOut" hidden>Sign out</button>
+                <span class="status" id="authStatus"></span>
+              </div>
+            </div>
+
+            <div class="setblk">
+              <h3 class="sec-h">
+                🤖 AI drafting <span class="opt">(your own key)</span>
+                <span class="info"
+                  ><span aria-hidden="true">i</span
+                  ><span class="pop"
+                    >Add your own AI key to draft answers for open-ended questions — works
+                    <b>without the desktop app</b>, on any plan, at no cost to us. Get a key at
+                    <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> (or use
+                    OpenAI). Kept in memory this session only, never sent to JobHakken.</span
+                  ></span
+                >
+              </h3>
+              <div class="f">
+                <label for="aiKey">AI API key</label
+                ><input
+                  id="aiKey"
+                  type="password"
+                  placeholder="sk-or-… (OpenRouter) or sk-… (OpenAI)"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="f">
+                <label for="aiModel">Model (optional)</label
+                ><input id="aiModel" type="text" placeholder="openai/gpt-4o-mini (default)" autocomplete="off" />
+              </div>
+              <div class="f">
+                <label for="aiBase">Base URL (optional)</label
+                ><input
+                  id="aiBase"
+                  type="text"
+                  placeholder="https://openrouter.ai/api/v1 (default)"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
+                <button class="save" id="aiSave">Save key</button>
+                <button class="secondary" id="aiClear" hidden>Remove key</button>
+                <span class="status" id="aiStatus"></span>
+              </div>
+            </div>
+
+            <div class="setblk">
+              <h3 class="sec-h">
+                🖥️ Desktop app <span class="opt">— optional</span>
+                <span class="info"
+                  ><span aria-hidden="true">i</span
+                  ><span class="pop"
+                    >Lets you <b>import your résumé</b> and unlock AI features (résumé match, visa signal, tailored
+                    résumé). In the app, open <b>Settings → Browser extension</b>, turn it on, and copy the code here.
+                    Your data never leaves your computer. Don't have it?
+                    <a href="https://jobhakken.com/download" target="_blank" rel="noopener">Download the app</a>.</span
+                  ></span
+                >
+              </h3>
+              <div class="f">
+                <label for="token">Connection code</label
+                ><input
+                  id="token"
+                  type="password"
+                  placeholder="Paste the code from the app (Settings → Browser extension)"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
+                <button class="save" id="connect">Connect</button>
+                <button class="secondary" id="disconnect" hidden>Disconnect</button>
+                <span class="status" id="connStatus"></span>
+              </div>
+            </div>
+
+            <div class="setblk">
+              <h3 class="sec-h">⚙️ Preferences</h3>
+              <p class="note">
+                <label><input type="checkbox" id="needsSponsorship" /> <b>🛂 I need visa sponsorship</b></label
+                ><br />
+                Marks jobs that say they won’t sponsor a visa (for example, ones that require U.S. citizenship). Runs on
+                your device. Off by default.
+                <br />
+                <label style="display: inline-block; margin-top: 8px; margin-left: 22px"
+                  ><input type="checkbox" id="hideUnsponsored" /> <b>Hide those jobs</b> instead of just marking
+                  them</label
+                >
+              </p>
+              <p class="note warn">
+                <label><input type="checkbox" id="testMode" /> <b>🧪 Demo mode — fill anonymous sample data</b></label
+                ><br />
+                Autofills a built-in placeholder identity (Jordan Rivera / example.com) instead of your real profile, so
+                you can safely try it on live application pages without exposing anything. The toolbar popup shows a
+                <b>DEMO DATA</b> banner while this is on. Turn off before real applications.
+              </p>
+              <p class="note">
+                <label
+                  ><input type="checkbox" id="telemetryToggle" checked /> <b>📊 Share anonymous usage analytics</b> — on
+                  by default</label
+                ><br />
+                Helps us improve the extension. We collect <b>only</b> which features you use, success/failure, coarse
+                counts, your extension version, and browser/OS — <b>never</b> your résumé, job postings, form values,
+                URLs, or personal data. Untick to turn it off.
+              </p>
+              <details class="adv">
+                <summary>Advanced</summary>
+
+                <p class="note" style="margin-top: 14px">
+                  <b>🌐 Run on another site.</b> JobHakken already works on the big job boards and application systems.
+                  Add a company’s careers website here if you want it to run there too.
+                </p>
+                <div id="siteList" style="display: flex; flex-direction: column; gap: 6px"></div>
+                <div style="display: flex; gap: 6px; margin-top: 8px">
+                  <input
+                    id="siteInput"
+                    type="text"
+                    placeholder="careers.company.com"
+                    style="
+                      flex: 1;
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      padding: 8px 10px;
+                      font-size: 13px;
+                    "
+                  />
+                  <button id="siteAdd" class="secondary">Add</button>
+                </div>
+
+                <p class="note" style="margin-top: 16px">
+                  <label><input type="checkbox" id="autoCapture" /> <b>🗂️ Help improve autofill</b></label
+                  ><br />
+                  Off by default. When on, JobHakken keeps a private, on-device record of the forms you fill — with your
+                  personal details removed — so autofill gets better over time. It never leaves your computer; untick
+                  any time to stop. <span id="capCount" style="color: var(--muted)"></span><br />
+                  <button id="exportCorpus" class="secondary" style="margin-top: 8px">Export</button>
+                  <button id="clearCorpus" class="secondary" style="margin-top: 8px">Clear</button>
+                </p>
+
+                <p class="note">
+                  <label><input type="checkbox" id="captureMode" /> <b>🛠️ Developer capture</b></label
+                  ><br />
+                  For engineering only — adds a button to save a technical snapshot of a page. Not needed for normal
+                  use.
+                </p>
+
+                <p class="note">
+                  <label><input type="checkbox" id="devCorrection" /> <b>🧪 Correction report (dev)</b></label
+                  ><br />
+                  Engineering only. With this on <b>and Demo mode on</b>, export a ranked list of the fields autofill
+                  keeps missing (from your local dummy-data captures) — the signal that prioritises which ATS to harden.
+                  Uses dummy data only; never runs for a real user.
+                  <br />
+                  <button id="correctionReport" class="secondary" style="margin-top: 8px">
+                    Export correction report
+                  </button>
+                  <span id="correctionNote" style="margin-left: 8px; color: var(--muted)"></span>
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <div class="bar">
+          <button class="save" id="saveProfile">Save profile</button>
+          <span class="status" id="profileStatus"></span>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="options.js"></script>

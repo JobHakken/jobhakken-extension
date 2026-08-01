@@ -4,6 +4,168 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.3
+- **Managed-AI subscribers now read their real plan.** When signed in, the extension fetches your tier
+  from the webapp’s `/api/entitlement` (source of truth: `profiles.subscription_tier`) using your access
+  token, instead of a token field that was never populated — so a Plus/Pro/Max plan is finally
+  recognised. Using your own AI key is unaffected. (Activates once the backend endpoint is live.)
+
+## 0.21.2
+- Internal: bump the shared `@jobhakken/core` library 0.1.0 → 0.2.0 (cross-surface sync-consumer /
+  materialize groundwork, ADR-0009). No user-facing change; sponsor/eligibility classifiers unchanged.
+
+## 0.21.1
+- **Groundwork for signing in with your JobHakken account.** Fixed the auth handshake so the extension
+  can detect your website sign-in — it now reads the session from the app.jobhakken.com cookie (the app
+  moved to cookie-based sessions, including large chunked sessions) instead of localStorage where it no
+  longer lives. Using your own AI key is unaffected; managed AI for subscribers still needs a couple of
+  backend pieces before it’s live.
+
+## 0.21.0
+- **Redesigned Profile & settings page.** The row of tabs is now a calm left sidebar with collapsible
+  sections and a “you’re X% ready to apply” bar at the top, so it’s clear what’s set up and what’s left.
+  Long explanations are tucked behind ⓘ icons (click or hover for the detail), and the duplicated
+  desktop-app setup is merged into one place. Every field and setting is unchanged — just easier to move
+  through, and it still respects your light/dark theme.
+
+## 0.20.3
+- **Custom Fields → “Advanced: matching operators” now shows worked examples.** It was just a legend of
+  symbols; now it shows what each one does on a real field label (e.g. `^salary` starts-with, `salary &&
+  !current`, `sponsor || visa`, `=gpa` exact), so targeting tricky questions is clear.
+
+## 0.20.2
+- **Screening questions on Lever-style applications now fill.** Custom dropdown questions whose label
+  sits next to the field (common on Lever and similar forms) were being skipped; the copilot now reads
+  those side-labels and answers them. Bumps the autofill engine 0.1.0 → 0.2.1, which also brings the
+  accumulated engine improvements (answer-bank, intl phone E.164, Oracle/react-select comboboxes,
+  Ashby EEO/work-auth) that had never shipped to the extension.
+
+## 0.20.1
+- **Common questions, one click to add.** Custom Fields now has a row of the questions people hit most
+  (notice period, start date, relocate, sponsorship, references, GPA…) — click one to add it, pre-filled
+  with a sensible answer to edit. JobHakken can't put every possible field on the profile page, so this
+  makes the ones you run into quick to set up.
+
+## 0.20.0
+- **Don't like an AI answer? Refine it.** After drafting, the popup lets you pick a drafted question,
+  tell the AI what to change (e.g. "make it shorter and mention my Python experience"), and redo just
+  that one answer — using your own key, still review-first, never submitted.
+
+## 0.19.2
+- **Clearer "Autofill" vs "Autofill + AI".** After "Autofill + AI" the popup now shows a distinct
+  "✍️ N AI answers" chip, so you can see what the AI wrote versus what was filled from your profile —
+  and those AI answers are the purple-outlined ones on the page.
+
+## 0.19.1
+- **Résumé upload now attaches to applications — without the desktop app.** Uploading a PDF/Word résumé
+  in Settings now keeps the file and attaches it to application forms (it used to only work when the
+  desktop app was connected, so standalone users saw the résumé field left empty). Kept on your device.
+
+## 0.19.0
+- **Jobvite applications no longer get stuck at the "Location of Residence" step.** When your country
+  clearly matches an option, JobHakken selects it to reveal the form and fills it in the same click.
+  It only does this when it can match your *own* stated country — it never picks a residence/consent
+  option for you otherwise, and never submits.
+
+## 0.18.1
+- **A reminder to set your EEO/demographic answers once.** A résumé never contains gender/race/veteran/
+  disability, and JobHakken never guesses them — so the Additional tab now nudges you to set them once
+  (with "Decline to self-identify" as the common choice), and the résumé parser points you there too.
+
+## 0.18.0
+- **Upload a Word (.docx) résumé too, not just PDF** — and the upload is now a clear, prominent button
+  ("Upload a PDF or Word file"), no longer easy to miss.
+- **Review fields are now outlined in bright violet** (was a faint amber) — much easier to spot the
+  fields to check on the page.
+- **Custom Fields is easier to use** — an examples table (e.g. "notice period" → "2 weeks", "how did
+  you hear" → "LinkedIn") and clearer input hints.
+
+## 0.17.0
+- **Two clear buttons: "Autofill" and "Autofill + AI".** "Autofill" fills the form; "Autofill + AI"
+  fills *and* drafts the open-ended answers in one click.
+- **You can now see exactly what to review.** Fields JobHakken fills but that you should double-check
+  (defaults, AI drafts) are **outlined in amber on the page**, and the popup's "N to review" is a button
+  that scrolls straight to them — no more guessing what "to review" means.
+
+## 0.16.0
+- **Upload a PDF résumé (not just paste).** The "Parse a résumé" panel now takes a PDF — the extension
+  reads the text on-device and drops it into the box for you to review, then parse with AI. Works for
+  normal text-based PDFs; a scanned/image-only PDF can't be read, so you'll be asked to paste instead.
+
+## 0.15.1
+- A gentle, one-time "enjoying JobHakken? leave a review" note appears in the popup after a couple of
+  good autofills — dismissible, shown at most once ever, counted only on your device.
+
+## 0.15.0
+- **Sign in with your JobHakken account.** Settings → "Sign in with JobHakken" opens the JobHakken
+  website (the same login you use everywhere — password, code, or Google); once you're in, the
+  extension picks up your account automatically. It's the groundwork for managed AI and syncing across
+  devices. Optional — the extension still works without an account, and free with your own AI key. Your
+  sign-in stays on your device; only your email/plan is kept (never your password or refresh token).
+
+## 0.14.0
+- **Fill your profile from a résumé with AI — no desktop app.** In Settings → Profile, paste your
+  résumé text and click "Parse with AI"; it extracts your name, contact, links, and work/education
+  history into the fields for you to review. Uses your own AI key (Settings → AI drafting), only uses
+  what's written (never invents details), and never sends your résumé to JobHakken. Sensitive fields
+  (salary, EEO, work authorization) are never guessed from a résumé.
+
+## 0.13.2
+- **"Draft answers" now works with just your AI key.** Fixed: the button was only shown when the
+  desktop app was connected, so someone using only their own AI key couldn't reach it. It now appears
+  whenever a key is set (or the app is connected). "Save job" stays desktop-only.
+
+## 0.13.1
+- **See your AI usage in the popup.** After drafting answers, the popup shows a running "N drafts this
+  month · X tokens · ≈ cost" line so you always know what the AI has used. It's counted on your device
+  only and never sent to JobHakken; the cost is an estimate at gpt-4o-mini rates (your actual rate
+  depends on the model you choose).
+
+## 0.13.0
+- **Draft answers with your own AI key — no desktop app needed.** Open-ended application questions
+  ("What excites you about this role?", "Describe a project you're proud of") can now be drafted right
+  in the extension. Add your own AI key (OpenRouter, OpenAI, or any compatible provider) under
+  **Settings → AI drafting** and it works on any plan, at no cost to us. Everything else — name,
+  contact, work authorization, EEO, dropdowns — still fills with **no key and no AI**; the key only
+  drafts the essay questions rules can't answer. Answers are always shown for you to review, never
+  submitted. Your key is kept in memory for the browser session only and never sent to JobHakken.
+
+## 0.12.1
+- **Autofill now fills every field by default — including work authorization, visa sponsorship,
+  salary, and EEO/demographic questions.** It's your own data and nothing is ever submitted for you
+  (you review first), so the copilot no longer leaves these common, required questions blank. You can
+  still turn off "Autofill sensitive fields" in Settings if you'd rather fill those by hand.
+
+## 0.12.0
+- **A real first-run experience.** Installing the extension now opens a setup page with a short
+  “Getting started — three steps” guide, so you’re never staring at a cold toolbar icon wondering
+  what to do. Dismissible once you’re set up.
+- **The popup guides you when there’s nothing to fill.** Instead of a dead-end message, it now shows
+  a **“Set up your profile →”** button (and again on a job page if your profile isn’t set up yet).
+- **Clearer setup.** The old “Desktop” tab is now **“Settings”**, with a **“Connect the app”**
+  section moved to the top so it’s the first thing you see (not buried under other options). It
+  explains what connecting unlocks, links to the download, and drops the technical wording —
+  “connection code” instead of “token”, no raw IP address, no “beta”.
+- **Fix:** on a page with nothing to fill, the **Autofill** button is now correctly disabled (a
+  latent error previously left the empty-state half-rendered).
+- **Less clutter on the settings page.** Rewrote the dense, developer-flavoured text in plain
+  language and tucked the power-user / engineering controls (custom sites, “help improve autofill”,
+  developer capture, rule operators) behind a collapsed **Advanced** section, so a first-time user
+  only sees what matters to them.
+
+## 0.11.4
+- **Plainer language throughout.** Replaced insider jargon with words anyone can follow:
+  "Standalone" → "App not connected", "No profile" → "Profile not set up", the visa badges now
+  read "Sponsors visas ✓" / "Won't sponsor visa" (instead of "H‑1B sponsor" / "No sponsorship"),
+  the résumé-tailoring button drops "ATS", the match score reads "Résumé match", and the connected
+  status no longer shows a raw IP address.
+
+## 0.11.3
+- **Fix: clearer results for "Draft answer" and "Save job".** Both buttons now show a full,
+  plain-language outcome (success or a helpful reason) beneath them instead of a cut-off error
+  stuck on the button — e.g. "Turn off Demo mode to use this on real data." or "Open the
+  JobHakken desktop app first, then try again."
+
 ## 0.11.2
 - **Fix: "⚑ Report this page" now files to our real tracker.** Feedback was pointing at a
   placeholder repo; it now opens an issue on the public
