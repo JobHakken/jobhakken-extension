@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.3
+- **Managed-AI subscribers now read their real plan.** When signed in, the extension fetches your tier
+  from the webapp’s `/api/entitlement` (source of truth: `profiles.subscription_tier`) using your access
+  token, instead of a token field that was never populated — so a Plus/Pro/Max plan is finally
+  recognised. Using your own AI key is unaffected. (Activates once the backend endpoint is live.)
+
 ## 0.21.2
 - Internal: bump the shared `@jobhakken/core` library 0.1.0 → 0.2.0 (cross-surface sync-consumer /
   materialize groundwork, ADR-0009). No user-facing change; sponsor/eligibility classifiers unchanged.

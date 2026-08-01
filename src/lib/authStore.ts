@@ -12,6 +12,28 @@
 export const WEB_APP_ORIGIN = 'https://app.jobhakken.com';
 export const LOGIN_URL = `${WEB_APP_ORIGIN}/`; // the app root hosts sign-in
 export const ACCOUNT_URL = `${WEB_APP_ORIGIN}/account`;
+export const ENTITLEMENT_URL = `${WEB_APP_ORIGIN}/api/entitlement`;
+
+/**
+ * Fetch the authoritative managed-AI tier from the webapp. The real tier lives in
+ * `profiles.subscription_tier` (written by the Stripe webhook), NOT in the session-token metadata, so
+ * we call the Bearer-authed endpoint with the stored access token (no cookies). Expired subscriptions
+ * return `free`. Returns undefined on any failure — the caller then keeps whatever tier it already had.
+ */
+export async function fetchEntitlement(accessToken: string): Promise<string | undefined> {
+  if (!accessToken) return undefined;
+  try {
+    const res = await fetch(ENTITLEMENT_URL, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as { tier?: unknown };
+    return typeof data.tier === 'string' ? data.tier : undefined;
+  } catch {
+    return undefined; // offline / CORS / malformed — fail soft (treated as no managed entitlement)
+  }
+}
 
 export type Identity = {
   email: string;
