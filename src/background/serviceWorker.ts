@@ -16,6 +16,7 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
 import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
+import { initPosthogSink } from '../lib/posthogSink.js';
 import { saveFullProfile } from '../lib/profileStore.js';
 import { resumeDataToProfile } from '../lib/resumeReceive.js';
 import { track } from '../lib/telemetry.js';
@@ -24,6 +25,7 @@ import { track } from '../lib/telemetry.js';
 // GA sink is active only in release builds (API secret injected at build time). Content
 // scripts / options forward events here via a `jh-telemetry` message so a single sink runs.
 initGaSink();
+initPosthogSink(); // dual-sink the same metadata to PostHog (#106); inert until the key is built in
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     void track('extension_installed', {});
