@@ -16,7 +16,9 @@ const CFG_LOCAL = 'f2a_ai_cfg'; // { model, baseUrl } → local (non-secret)
 
 export async function setAiConfig(cfg: AiConfig): Promise<void> {
   await chrome.storage.session.set({ [KEY_SESSION]: cfg.apiKey ?? '' });
-  await chrome.storage.local.set({ [CFG_LOCAL]: { model: cfg.model ?? '', baseUrl: cfg.baseUrl ?? '' } });
+  await chrome.storage.local.set({
+    [CFG_LOCAL]: { model: cfg.model ?? '', baseUrl: cfg.baseUrl ?? '', provider: cfg.provider ?? '' },
+  });
 }
 
 export async function getAiConfig(): Promise<AiConfig | null> {
@@ -24,15 +26,30 @@ export async function getAiConfig(): Promise<AiConfig | null> {
   const apiKey = (s[KEY_SESSION] as string) ?? '';
   if (!apiKey) return null;
   const l = await chrome.storage.local.get(CFG_LOCAL);
-  const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string }) ?? {};
-  return { apiKey, model: cfg.model || undefined, baseUrl: cfg.baseUrl || undefined };
+  const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string; provider?: string }) ?? {};
+  return {
+    apiKey,
+    model: cfg.model || undefined,
+    baseUrl: cfg.baseUrl || undefined,
+    provider: cfg.provider || undefined,
+  };
 }
 
-/** The saved (non-secret) model + base URL, plus whether a key is currently held this session. */
-export async function getAiConfigMeta(): Promise<{ model: string; baseUrl: string; hasKey: boolean }> {
+/** The saved (non-secret) provider id + model + base URL, plus whether a key is currently held. */
+export async function getAiConfigMeta(): Promise<{
+  provider: string;
+  model: string;
+  baseUrl: string;
+  hasKey: boolean;
+}> {
   const [s, l] = await Promise.all([chrome.storage.session.get(KEY_SESSION), chrome.storage.local.get(CFG_LOCAL)]);
-  const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string }) ?? {};
-  return { model: cfg.model ?? '', baseUrl: cfg.baseUrl ?? '', hasKey: !!(s[KEY_SESSION] as string) };
+  const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string; provider?: string }) ?? {};
+  return {
+    provider: cfg.provider ?? '',
+    model: cfg.model ?? '',
+    baseUrl: cfg.baseUrl ?? '',
+    hasKey: !!(s[KEY_SESSION] as string),
+  };
 }
 
 export async function hasAiKey(): Promise<boolean> {

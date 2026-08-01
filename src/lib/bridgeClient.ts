@@ -18,21 +18,58 @@ function assertBodySize(res: Response, max: number): void {
   if (Number.isFinite(len) && len > max) throw new Error(`bridge response too large: ${len} bytes`);
 }
 
+// Mirrors the desktop app's `profile` RPC payload (source of truth:
+// apps/desktopProbe/src/server/extensionBridge.ts). It sends the WHOLE structured profile —
+// basics.{website,links} + experience[] + education[] — which `deriveFullProfile` maps into the autofill
+// FullProfile. Declare it all so a refactor can't silently drop experience/education (the code fed it
+// through a cast before, hiding the real shape). Fields are optional/defensive (older apps send less).
 export type BridgeProfile = {
   hasResume: boolean;
-  basics?: { name?: string; email?: string; phone?: string; location?: string };
+  basics?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    website?: string;
+    links?: { text?: string; url?: string }[];
+  };
+  experience?: { company?: string; title?: string; period?: string }[];
+  education?: { school?: string; degree?: string; field?: string; period?: string }[];
   resumeText?: string;
+  /** ADR-0005 résumé payload version the app stamped (#283). Absent on older apps. */
+  schemaVersion?: number;
 };
 
-export type BridgeConnection = { port: number; token: string; profile: BridgeProfile };
+export type BridgeConnection = { port: number; token: string; profile: BridgeProfile; schemaWarning?: string };
+
+// The résumé-payload schema version this build understands (ADR-0005). MIRRORS `RESUME_SCHEMA_VERSION`
+// in @jobhakken/core — TODO: import it once core ≥0.4.1 (which exports it) is published; hardcoded for
+// now so we can validate the bridge payload today. Bump in lockstep with core.
+export const SUPPORTED_RESUME_SCHEMA = 5;
+
+/**
+ * Validate a résumé payload version received over the bridge (ADR-0005). A NEWER app than this
+ * extension understands may carry fields we'd mis-read, so we warn the user to update rather than
+ * silently mis-fill. Older/equal/absent → no warning (we stay backward-compatible). Returns the
+ * user-facing warning, or null when compatible.
+ */
+export function resumeSchemaWarning(version?: number): string | null {
+  if (typeof version !== 'number' || version <= SUPPORTED_RESUME_SCHEMA) return null;
+  return `Your JobHakken app uses a newer résumé format (v${version}) than this extension (v${SUPPORTED_RESUME_SCHEMA}). Update the extension for the most accurate autofill.`;
+}
 
 type Opts = { fetchImpl?: typeof fetch; ports?: number[]; timeoutMs?: number };
 
-// The genuine desktop app answers /health with an identity challenge: a random `nonce` plus
-// `mac = HMAC-SHA256(connection-token, 'jh-health:' + nonce)`. Only a server that knows the token
-// (the one the user pasted from the app) can produce a valid mac — so we can reject a rogue localhost
-// server that merely echoes name:'jobhakken' BEFORE handing it the token or any RPC content (#1).
-export type BridgeHealth = { name?: string; nonce?: unknown; mac?: unknown };
+// /health is unauthenticated (probe-friendly). It advertises `capabilities.handshake` — the app
+// supports the #283 challenge-response — and `resumeSchemaVersion` (the ADR-0005 payload version).
+// When handshake is advertised we PROVE the server holds the shared token via /handshake BEFORE
+// sending it, so a rogue localhost server that merely echoes name:'jobhakken' can't harvest the token
+// or any RPC content (#1). Name-only is never trusted with the token.
+export type BridgeHealth = {
+  name?: string;
+  capabilities?: { handshake?: boolean };
+  resumeSchemaVersion?: number;
+};
 
 /** fetch with an AbortController timeout so a hung/crashed desktop app can't stall us forever. */
 async function fetchWithTimeout(f: typeof fetch, url: string, init: RequestInit, ms: number): Promise<Response> {
@@ -62,35 +99,60 @@ export async function discoverBridge(opts: Opts = {}): Promise<{ port: number; h
   return null;
 }
 
-/** HMAC-SHA256(key, msg) as lowercase hex (WebCrypto — available in the SW + tests). */
-async function hmacSha256Hex(key: string, msg: string): Promise<string> {
+/** HMAC-SHA256(key, msg) as base64 — matches the desktop app's `computeHandshakeMac` (#283). WebCrypto
+ *  + btoa are both available in the MV3 service worker and in jest. */
+async function hmacSha256Base64(key: string, msg: string): Promise<string> {
   const enc = new TextEncoder();
   const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', k, enc.encode(msg));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  let bin = '';
+  for (const b of new Uint8Array(sig)) bin += String.fromCharCode(b);
+  return btoa(bin);
 }
 
-/** Constant-time hex compare so a mac check can't be timing-probed. */
-function timingSafeEqualHex(a: string, b: string): boolean {
+/** Constant-time string compare so a mac check can't be timing-probed. */
+function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let r = 0;
   for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
 }
 
+/** A fresh random nonce for a handshake (hex — comfortably within the app's 8..4096 length bound). */
+function makeNonce(): string {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  return [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
 /**
- * Verify the /health identity challenge proves the server knows the connection token (#1):
- *   'ok'     — valid mac → this is the genuine desktop app; safe to send the token.
- *   'reject' — a nonce+mac was present but the mac is wrong → a rogue impersonating the app. Do NOT connect.
- *   'legacy' — no challenge in /health → an older app that predates this; caller keeps the old behaviour
- *              (backward-compatible) until the desktop always emits the challenge, then we can require it.
+ * Prove the server on `port` holds the shared connection token WITHOUT revealing our copy (#1 / #283).
+ * We POST a fresh, client-generated nonce to /handshake; the genuine app answers
+ * `mac = base64(HMAC-SHA256(token, nonce))`. A rogue localhost server that won name-only discovery but
+ * doesn't know the token can't forge this, so we refuse it before ever sending the token to /rpc.
+ * The token itself never goes on the wire here — only the nonce out and the mac back. Returns true iff
+ * the mac verifies (a fresh nonce each call means a captured mac can't be replayed).
  */
-export async function verifyHealthChallenge(token: string, health: BridgeHealth): Promise<'ok' | 'reject' | 'legacy'> {
-  const nonce = typeof health.nonce === 'string' ? health.nonce : '';
-  const mac = typeof health.mac === 'string' ? health.mac : '';
-  if (!nonce || !mac) return 'legacy';
-  const expected = await hmacSha256Hex(token, 'jh-health:' + nonce);
-  return timingSafeEqualHex(mac.toLowerCase(), expected) ? 'ok' : 'reject';
+export async function performHandshake(token: string, port: number, opts: Opts = {}): Promise<boolean> {
+  const f = opts.fetchImpl ?? fetch;
+  const nonce = makeNonce();
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(
+      f,
+      `http://127.0.0.1:${port}/handshake`,
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nonce }) },
+      opts.timeoutMs ?? 1500,
+    );
+  } catch {
+    return false; // /handshake unreachable → proof failed
+  }
+  if (!res.ok) return false;
+  assertBodySize(res, MAX_HEALTH_BYTES);
+  const body = (await res.json().catch(() => ({}))) as { mac?: unknown };
+  const mac = typeof body.mac === 'string' ? body.mac : '';
+  if (!mac) return false;
+  return timingSafeEqual(mac, await hmacSha256Base64(token, nonce));
 }
 
 /**
@@ -144,16 +206,18 @@ export async function connect(token: string, opts: Opts = {}): Promise<BridgeCon
     throw new Error('Paste the connection token from the JobHakken app (Settings → Browser extension).');
   const found = await discoverBridge(opts);
   if (!found) throw new Error('JobHakken desktop app not found. Open it and enable the browser extension in Settings.');
-  // Prove the server on this port knows the token BEFORE we send it (else a rogue localhost server that
-  // won name-only discovery would harvest the token + RPC content — #1).
-  const verdict = await verifyHealthChallenge(token, found.health);
-  if (verdict === 'reject') {
-    throw new Error(
-      'A local program is impersonating the JobHakken app — not connecting. Quit other JobHakken windows / restart the desktop app and try again.',
-    );
+  // When the app advertises the handshake capability, PROVE it holds the token BEFORE we send it — a
+  // rogue localhost server that won name-only discovery can't forge the mac, so we refuse it and never
+  // leak the token or RPC content (#1 / #283). An older app that doesn't advertise it predates the
+  // handshake; connect as before (backward-compatible during rollout — the app ships this first).
+  if (found.health.capabilities?.handshake) {
+    const proven = await performHandshake(token, found.port, opts);
+    if (!proven) {
+      throw new Error(
+        'A local program is impersonating the JobHakken app — not connecting. Quit other JobHakken windows / restart the desktop app and try again.',
+      );
+    }
   }
-  // 'legacy' → an older desktop app that doesn't send the challenge yet; connect as before (backward
-  // compatible). 'ok' → the server proved it holds the token, so it's genuine.
   let profile: BridgeProfile;
   try {
     profile = await rpc<BridgeProfile>(found.port, token, 'profile', {}, opts);
@@ -163,5 +227,6 @@ export async function connect(token: string, opts: Opts = {}): Promise<BridgeCon
     }
     throw e;
   }
-  return { port: found.port, token, profile };
+  // ADR-0005: validate the résumé payload version — warn (don't block) if the app is newer than us.
+  return { port: found.port, token, profile, schemaWarning: resumeSchemaWarning(profile.schemaVersion) ?? undefined };
 }

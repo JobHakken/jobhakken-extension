@@ -4,6 +4,53 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.24.0
+- **Fixed "Send résumé to extension" from the website.** The website's résumé handoff was being rejected
+  because the two sides disagreed on how the résumé version is labeled — the site sends a numeric
+  version and the extension expected the old text tag. Now it accepts the numeric `schemaVersion` (5)
+  the site + desktop app use (ADR-0005), with the old tag still accepted during rollout. (#107)
+- **Fixed résumé PDF upload showing garbled text.** Uploading a PDF résumé could dump binary/glyph-code
+  gibberish into the text box (reported by a user). The extractor now applies fonts' `/ToUnicode` maps
+  (so Word/Google-Docs subset-font PDFs decode to real text), honors text layout (no split/glued
+  words), scrapes only page-content streams (never font/image binary), and — if it still can't read the
+  file (e.g. a scanned/image-only PDF) — leaves the box empty and tells you to paste the text instead,
+  rather than showing garbage.
+- **Résumé version check.** When connected to the desktop app, the extension now reads the résumé
+  format version the app sends and, if the app is newer than the extension understands, tells you to
+  update — instead of silently mis-filling. (ADR-0005 schema validation over the bridge.)
+- **Verified desktop-app connection.** When you connect the extension to the desktop app, the extension
+  now makes the local app **prove it holds your connection token** — a challenge/response handshake the
+  app answers — *before* sending the token or any data. A rogue program on your machine posing as
+  JobHakken is refused, and your token never reaches it. (Completes the #1 bridge-trust hardening now
+  that the desktop app ships the matching handshake; older apps still connect during rollout.)
+- **Pick your AI provider.** BYOK settings now have a provider picker (shared with the desktop app):
+  OpenRouter, OpenAI, **Claude (Anthropic)**, **Gemini (Google)**, GLM/Zhipu, and local runtimes —
+  **Ollama, LM Studio, Codex** (no key needed) — plus **Custom** for any OpenAI-compatible endpoint.
+  Choosing one prefills its base URL + model and requests only that provider's browser access. Claude
+  and Gemini connect natively (not routed through anyone else).
+- **Better coverage insight (privacy-preserving).** Autofill now records — as anonymous, opt-out
+  metadata only — which ATS *family* a form runs on (Workday/Greenhouse/…, from the page fingerprint,
+  never the URL or company) and which *types* of field it detected but couldn't fill (e.g. work
+  authorization, salary, a custom dropdown — from a fixed vocabulary, never the label text or your
+  answers). This tells us where to improve autofill without reading your applications. Same opt-out
+  analytics toggle governs it; nothing about your specific job hunt is captured. (Coverage Layer 1 #105.)
+- **First-party analytics (infrastructure).** The same anonymous, opt-out, metadata-only telemetry can
+  now also flow to our own PostHog project (the one the website uses), so product usage sits in one
+  place. Cookieless (no person profile), routed through our own domain, and inert unless configured in a
+  release build — no new permissions, no third-party scripts. (First-party sink #106.)
+- **Fewer permissions by default.** The extension no longer asks for access to third-party AI providers
+  (OpenRouter, OpenAI, …) at install. Those are now **optional** — requested only if you bring your own
+  AI key, and only for the one provider you choose (a one-time browser prompt when you save your key).
+  Out of the box the extension talks to just your local desktop app and jobhakken.com; local AI
+  endpoints (127.0.0.1) keep working with no prompt. Smaller footprint, same features.
+- **Help us support more sites (privacy-preserving).** When you open the toolbar on a job application we
+  don't support yet, the extension can now note *that* an unsupported job form exists — as a **salted,
+  anonymized fingerprint of the site's domain** plus a coarse guess at which ATS it runs — so we know
+  which platforms to add next. It never sends the site address, the company, the page, or anything you
+  typed; it only looks at the current tab when *you* click the toolbar (the `activeTab` permission — no
+  always-on site access), and only if analytics are on. This is how we stay scoped instead of reading
+  every website like other autofill extensions. (Coverage Layer 2 #278.)
+
 ## 0.23.0
 - **Send your résumé straight from the website into the extension.** Build a résumé on jobhakken.com and
   hand it off to the extension in one click — it lands in your autofill profile (name, contact, links,

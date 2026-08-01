@@ -16,14 +16,16 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
 import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
+import { initPosthogSink } from '../lib/posthogSink.js';
 import { saveFullProfile } from '../lib/profileStore.js';
-import { resumeDataToProfile } from '../lib/resumeReceive.js';
+import { acceptsResumeSchema, resumeDataToProfile } from '../lib/resumeReceive.js';
 import { track } from '../lib/telemetry.js';
 
 // ── Telemetry (metadata-only; opt-out; content can never pass the allowlist) ──────
 // GA sink is active only in release builds (API secret injected at build time). Content
 // scripts / options forward events here via a `jh-telemetry` message so a single sink runs.
 initGaSink();
+initPosthogSink(); // dual-sink the same metadata to PostHog (#106); inert until the key is built in
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     void track('extension_installed', {});
@@ -50,7 +52,7 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
     }
   }
   if (!JH_LINK_ORIGINS.has(origin)) return; // defense-in-depth on top of externally_connectable
-  const m = msg as { type?: unknown; schema?: unknown; payload?: unknown };
+  const m = msg as { type?: unknown; schema?: unknown; schemaVersion?: unknown; payload?: unknown };
 
   if (m?.type === 'JH_EXT_PING') {
     // `capabilities` tells the site this build can receive a résumé (JH_EXT_RESUME) so it can show
@@ -66,8 +68,11 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
   if (m?.type === 'JH_EXT_RESUME') {
     (async () => {
       try {
-        if (m.schema !== 'reactive-resume-v5') {
-          sendResponse({ ok: false, error: 'unsupported schema — expected reactive-resume-v5' });
+        // ADR-0005: the site sends a NUMERIC `schemaVersion` (= @jobhakken/core RESUME_SCHEMA_VERSION,
+        // the same field the desktop app stamps on the bridge). See acceptsResumeSchema (also accepts
+        // the legacy 'reactive-resume-v5' string during rollout).
+        if (!acceptsResumeSchema(m)) {
+          sendResponse({ ok: false, error: 'unsupported résumé schema version (need 5)' });
           return;
         }
         const fp = resumeDataToProfile(m.payload); // coerces + validates; throws on a non-résumé payload
@@ -163,8 +168,9 @@ function h1bSum(query: string): number {
   return sum;
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'f2a-h1b') return;
+  if (sender.id !== chrome.runtime.id) return; // only our own contexts (consistency with sibling handlers)
   (async () => {
     try {
       await ensureH1b();
@@ -225,8 +231,9 @@ async function ensureH1bRoles(): Promise<void> {
   await h1bRoleLoading;
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'f2a-h1b-detail') return;
+  if (sender.id !== chrome.runtime.id) return; // only our own contexts (consistency with sibling handlers)
   (async () => {
     try {
       await ensureH1bRoles();

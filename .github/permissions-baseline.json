@@ -1,18 +1,26 @@
 {
-  "permissions": [
-    "storage",
-    "unlimitedStorage"
-  ],
+  "permissions": ["activeTab", "scripting", "storage", "unlimitedStorage"],
   "optional_permissions": [],
   "host_permissions": [
     "http://127.0.0.1/*",
     "http://localhost/*",
-    "https://api.openai.com/*",
     "https://app.jobhakken.com/*",
-    "https://openrouter.ai/*",
     "https://www.google-analytics.com/*"
   ],
-  "optional_host_permissions": [],
+  "optional_host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://api.deepseek.com/*",
+    "https://api.fireworks.ai/*",
+    "https://api.groq.com/*",
+    "https://api.mistral.ai/*",
+    "https://api.openai.com/*",
+    "https://api.perplexity.ai/*",
+    "https://api.together.xyz/*",
+    "https://api.x.ai/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://open.bigmodel.cn/*",
+    "https://openrouter.ai/*"
+  ],
   "content_scripts_matches": [
     "*://*.applytojob.com/*",
     "*://*.ashbyhq.com/*",

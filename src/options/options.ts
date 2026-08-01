@@ -6,8 +6,12 @@ import {
   type UserRule,
 } from '@jobhakken/autofill';
 
+import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '@jobhakken/core/build/llm/providers.js';
+
+import { DEFAULT_BASE } from '../lib/aiClient.js';
 import { connect, rpc } from '../lib/bridgeClient.js';
 import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { ensureAiHostPermission, hasAiHostPermission } from '../lib/hostPerms.js';
 import { ACCOUNT_URL, clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
 import { clearConnection, loadConnection, saveConnection } from '../lib/connectionStore.js';
@@ -312,6 +316,11 @@ async function onConnect() {
     await saveConnection(conn);
     renderConn(true, conn.profile.basics?.name);
     report('bridge_connected', { ok: true });
+    // ADR-0005: if the app speaks a newer résumé format than we understand, tell the user to update
+    // (we still connect — basics/text degrade gracefully).
+    if (conn.schemaWarning) {
+      $('connStatus').innerHTML += ` <span class="warn">${escapeHtml(conn.schemaWarning)}</span>`;
+    }
   } catch (e) {
     report('bridge_failed', { ok: false });
     $('connStatus').innerHTML =
@@ -741,25 +750,104 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 void refreshAuth();
 
-// ── BYO AI key (standalone AI, no desktop) ───────────────────
+// ── BYO AI key (standalone AI, no desktop) — provider picker from @jobhakken/core (#115) ───────────
+// The registry is the single source of truth (shared with desktop); we render it, never fork it. All
+// adapters are supported: OpenAI-compatible reuse the existing aiClient; Anthropic + Gemini route
+// through core's native clients (aiClient handles the MV3-CORS specifics — #115 phase 2).
+const KNOWN_PROVIDER_IDS = new Set(LLM_PROVIDERS.map((p) => p.id));
+/** apiKeyless local runtimes (Ollama/LM Studio/Codex) still need a non-empty apiKey for the config to
+ *  be considered "active" (getAiConfig returns null on an empty key) — send a harmless sentinel the
+ *  local server ignores. */
+const LOCAL_SENTINEL_KEY = 'local';
+
+function populateProviders(): void {
+  const sel = $('aiProvider') as HTMLSelectElement;
+  if (sel.options.length) return; // build once
+  for (const p of LLM_PROVIDERS) {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.label;
+    sel.appendChild(o);
+  }
+  sel.addEventListener('change', () => applyProvider(sel.value, true));
+}
+
+/** Reflect a provider preset in the fields. `userPicked` prefills model/base from the preset (a fresh
+ *  choice); on initial load we pass false so the user's saved model/base overrides survive. */
+function applyProvider(id: string, userPicked: boolean): void {
+  const p = getProvider(id);
+  const isCustom = p.id === 'custom';
+  ($('aiKeyRow') as HTMLElement).hidden = !!p.apiKeyless; // local runtimes need no key
+  ($('aiKeyLabel') as HTMLElement).textContent = p.apiKeyLabel ?? 'API key';
+  ($('aiBaseRow') as HTMLElement).hidden = !isCustom; // only "custom" exposes the base URL
+  if (userPicked) {
+    ($('aiModel') as HTMLInputElement).value = p.defaultModel;
+    ($('aiBase') as HTMLInputElement).value = isCustom ? '' : (p.baseUrl ?? '');
+  }
+  const hint = $('aiHint');
+  hint.textContent = p.hint ?? '';
+  if (p.docsUrl && !p.apiKeyless && p.docsUrl.startsWith('https://')) {
+    const a = document.createElement('a');
+    a.href = p.docsUrl;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = `${hint.textContent ? ' · ' : ''}Get a key ↗`;
+    hint.appendChild(a);
+  }
+}
+
 async function refreshAi(): Promise<void> {
+  populateProviders();
   const m = await getAiConfigMeta();
-  ($('aiModel') as HTMLInputElement).value = m.model;
-  ($('aiBase') as HTMLInputElement).value = m.baseUrl;
-  ($('aiStatus') as HTMLElement).textContent = m.hasKey ? '✓ Key active this session' : '';
+  const sel = $('aiProvider') as HTMLSelectElement;
+  const savedId = m.provider || DEFAULT_PROVIDER_ID;
+  sel.value = KNOWN_PROVIDER_IDS.has(savedId) ? savedId : DEFAULT_PROVIDER_ID;
+  applyProvider(sel.value, false); // toggles + labels, but keep saved overrides below
+  const p = getProvider(sel.value);
+  ($('aiModel') as HTMLInputElement).value = m.model || p.defaultModel;
+  ($('aiBase') as HTMLInputElement).value = m.baseUrl || (p.id === 'custom' ? '' : (p.baseUrl ?? ''));
+  const status = $('aiStatus') as HTMLElement;
+  if (m.hasKey) {
+    // BYOK provider hosts are optional permissions — if the grant is missing, AI calls fail, so nudge
+    // the user to re-Save (which requests it). Local endpoints need no grant.
+    const granted = await hasAiHostPermission(m.baseUrl || p.baseUrl || DEFAULT_BASE);
+    status.textContent = granted
+      ? '✓ Active this session'
+      : '⚠ Active — click Save to grant browser access to your AI provider.';
+  } else {
+    status.textContent = '';
+  }
   ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
 }
+
 $('aiSave').addEventListener('click', async () => {
-  const apiKey = ($('aiKey') as HTMLInputElement).value.trim();
+  const sel = $('aiProvider') as HTMLSelectElement;
+  const p = getProvider(sel.value);
+  const status = $('aiStatus') as HTMLElement;
   const model = ($('aiModel') as HTMLInputElement).value.trim();
-  const baseUrl = ($('aiBase') as HTMLInputElement).value.trim();
-  if (!apiKey) {
-    ($('aiStatus') as HTMLElement).textContent = 'Enter a key first';
+  const typedKey = ($('aiKey') as HTMLInputElement).value.trim();
+  // Custom → user-supplied base URL; every other preset → its registry baseUrl.
+  const baseUrl = p.id === 'custom' ? ($('aiBase') as HTMLInputElement).value.trim() : (p.baseUrl ?? '');
+  if (p.id === 'custom' && !baseUrl) {
+    status.textContent = 'Enter the endpoint base URL';
     return;
   }
-  await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined });
+  if (!p.apiKeyless && !typedKey) {
+    status.textContent = `Enter your ${p.apiKeyLabel ?? 'API key'} first`;
+    return;
+  }
+  const apiKey = p.apiKeyless ? LOCAL_SENTINEL_KEY : typedKey;
+  await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined, provider: p.id });
   ($('aiKey') as HTMLInputElement).value = '';
+  // Request browser access to the chosen provider now (BYOK hosts are OPTIONAL — kept out of the
+  // default install; see hostPerms.ts). This click is the user gesture Chrome needs for the prompt.
+  const outcome = await ensureAiHostPermission(baseUrl || DEFAULT_BASE);
   await refreshAi();
+  if (outcome === 'denied') {
+    status.textContent = '✓ Saved — but browser access to the provider was denied. Click Save to grant it.';
+  } else if (outcome === 'unsupported') {
+    status.textContent = '✓ Saved. That endpoint needs manual permission — use a listed provider or a local endpoint.';
+  }
 });
 $('aiClear').addEventListener('click', async () => {
   await clearAiConfig();

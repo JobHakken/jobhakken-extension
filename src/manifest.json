@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JobHakken — Apply Copilot",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -88,7 +88,7 @@
       "description": "Autofill this application"
     }
   },
-  "permissions": ["storage", "unlimitedStorage"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
   "externally_connectable": {
     "matches": ["https://jobhakken.com/*", "https://www.jobhakken.com/*", "https://app.jobhakken.com/*"]
   },
@@ -96,9 +96,21 @@
     "http://127.0.0.1/*",
     "http://localhost/*",
     "https://www.google-analytics.com/*",
+    "https://app.jobhakken.com/*"
+  ],
+  "optional_host_permissions": [
     "https://openrouter.ai/*",
     "https://api.openai.com/*",
-    "https://app.jobhakken.com/*"
+    "https://open.bigmodel.cn/*",
+    "https://api.groq.com/*",
+    "https://api.together.xyz/*",
+    "https://api.mistral.ai/*",
+    "https://api.deepseek.com/*",
+    "https://api.perplexity.ai/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.fireworks.ai/*",
+    "https://api.x.ai/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
