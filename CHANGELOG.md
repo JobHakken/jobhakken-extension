@@ -5,9 +5,11 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.22.1
-- **Sign-in is now always visible.** A persistent sign-in chip sits in the header of the Profile &
-  settings page — “Sign in” when signed out (click → JobHakken login), your account once you’re in — on
-  every section. Previously sign-in was reachable only inside the Account section.
+- **Sign-in is easier to find — and shows what you unlock.** A persistent sign-in chip now sits in the
+  Profile & settings header (“Sign in” signed out, your account once you’re in) on every section. And a
+  signed-out “Unlock 3 more features” card on Home teases what an account adds — AI answers, H-1B salary
+  insights, sync — with a hover tip on each chip and one-click sign-in. Dismissible, never nags once
+  you’re in, and autofill stays free.
 
 ## 0.22.0
 - **H-1B company insights, right in the popup.** For the company on the current job page, expand the new

@@ -710,11 +710,21 @@ async function refreshAuth(): Promise<void> {
   chip.title = id
     ? `Signed in as ${id.email}${id.tier ? ` · ${id.tier}` : ''} — manage account`
     : 'Sign in to JobHakken (unlocks managed AI + H-1B insights)';
+  // Signed-out "unlock" hero on Home — hidden once signed in or dismissed.
+  const heroDismissed = (await chrome.storage.local.get('f2a_signin_hero')).f2a_signin_hero === true;
+  ($('signinHero') as HTMLElement).hidden = !!id || heroDismissed;
 }
 // Masthead chip: signed out → open login; signed in → open the account page.
 $('authChip').addEventListener('click', (e) => {
   e.preventDefault();
   void loadIdentity().then((id) => chrome.tabs.create({ url: id ? ACCOUNT_URL : LOGIN_URL }));
+});
+$('signinHeroCta').addEventListener('click', () => {
+  void chrome.tabs.create({ url: LOGIN_URL });
+});
+$('signinHeroDismiss').addEventListener('click', () => {
+  ($('signinHero') as HTMLElement).hidden = true;
+  void chrome.storage.local.set({ f2a_signin_hero: true });
 });
 $('signIn').addEventListener('click', () => {
   void chrome.tabs.create({ url: LOGIN_URL });
