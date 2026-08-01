@@ -47,7 +47,7 @@ jobs:
           GA_API_SECRET: ${{ secrets.GA_API_SECRET }} # embed the GA MP secret in the release build
         run: npm run package # → jobhakken-extension.zip (minified prod build + manifest/version asserts)
       - name: Upload + publish to the Chrome Web Store
-        uses: mnao305/chrome-extension-upload@4008e29e13c144d0f6725462cbd49b7c291b4928 # v5.0.0 (SHA-pinned)
+        uses: mnao305/chrome-extension-upload@fdfe79400af990f5145a319e834aee64907ccff4 # v5.0.0 (SHA-pinned)
         with:
           file-path: jobhakken-extension.zip
           extension-id: ${{ secrets.CWS_EXTENSION_ID }}
