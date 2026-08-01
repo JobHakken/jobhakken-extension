@@ -16,6 +16,8 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStore.js';
 import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
+import { saveFullProfile } from '../lib/profileStore.js';
+import { resumeDataToProfile } from '../lib/resumeReceive.js';
 import { track } from '../lib/telemetry.js';
 
 // ── Telemetry (metadata-only; opt-out; content can never pass the allowlist) ──────
@@ -30,6 +32,57 @@ chrome.runtime.onInstalled.addListener((details) => {
     void chrome.runtime.openOptionsPage();
   }
 });
+
+// Cross-surface link (#358): the JobHakken website can (a) detect the extension is installed and
+// (b) hand off a résumé — with no Chrome Web Store round-trip. `externally_connectable` already
+// restricts *who* can reach this to our own origins; per CLAUDE.md we STILL treat the message as
+// untrusted — re-check the sender origin, respond only to exact known types, and validate the résumé
+// payload via @jobhakken/core before persisting. Nothing leaves the browser: the résumé travels
+// website → extension locally into the same autofill profile the rest of the extension reads.
+const JH_LINK_ORIGINS = new Set(['https://jobhakken.com', 'https://www.jobhakken.com', 'https://app.jobhakken.com']);
+chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
+  let origin = sender.origin ?? '';
+  if (!origin && sender.url) {
+    try {
+      origin = new URL(sender.url).origin;
+    } catch {
+      /* malformed sender.url — treat as no origin */
+    }
+  }
+  if (!JH_LINK_ORIGINS.has(origin)) return; // defense-in-depth on top of externally_connectable
+  const m = msg as { type?: unknown; schema?: unknown; payload?: unknown };
+
+  if (m?.type === 'JH_EXT_PING') {
+    // `capabilities` tells the site this build can receive a résumé (JH_EXT_RESUME) so it can show
+    // "Send to extension" instead of only "installed".
+    sendResponse({
+      installed: true,
+      version: chrome.runtime.getManifest().version,
+      capabilities: ['resume-import'],
+    });
+    return; // synchronous
+  }
+
+  if (m?.type === 'JH_EXT_RESUME') {
+    (async () => {
+      try {
+        if (m.schema !== 'reactive-resume-v5') {
+          sendResponse({ ok: false, error: 'unsupported schema — expected reactive-resume-v5' });
+          return;
+        }
+        const fp = resumeDataToProfile(m.payload); // coerces + validates; throws on a non-résumé payload
+        await saveFullProfile(fp);
+        void track('resume_received', { source: 'web' }); // metadata only — no résumé content
+        sendResponse({ ok: true });
+      } catch (e) {
+        sendResponse({ ok: false, error: e instanceof Error ? e.message : 'invalid résumé payload' });
+      }
+    })();
+    return true; // async — keep the message channel open for sendResponse
+  }
+  // Unknown type from a trusted origin → ignore (no ack); nothing to keep the channel open for.
+});
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
     void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped
