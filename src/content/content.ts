@@ -26,6 +26,7 @@ import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureF
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { getResumeFile } from '../lib/resumeFileStore.js';
+import { resumeFileRpc } from './jobResumeParams.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
@@ -59,6 +60,9 @@ let needsSponsorship = false; // "I need visa sponsorship" → mark/hide roles t
 let hideUnsponsored = false; // hide (vs mark) won't-sponsor tiles
 let fieldCount = 0;
 let autofillAbort: AbortController | null = null; // lets the popup cancel a running autofill
+// Desktop-side jobId for the current page, learned when the user saves the job (ADR 0012, #397). Lets
+// autofill upload the résumé LINKED to this job instead of the generic active one. null = not saved yet.
+let savedJobId: number | null = null;
 // What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
@@ -600,11 +604,10 @@ async function realDocuments(mode: 'default' | 'ats' = 'default'): Promise<{ res
   const out: { resume?: File; coverLetter?: File } = {};
   if (connection) {
     try {
-      const method = mode === 'ats' ? 'tailoredResumeFile' : 'resumeFile';
-      const r = await bridgeRpc<{ fileName?: string; base64?: string; mimeType?: string }>(
-        method,
-        mode === 'ats' ? pageJob() : {},
-      );
+      // Default upload → the résumé LINKED to this job when we know its desktop jobId (#397); the AI
+      // path still tailors from the scraped page job. Not-yet-saved / standalone → the active résumé.
+      const { method, params } = resumeFileRpc(mode, { savedJobId, pageJob });
+      const r = await bridgeRpc<{ fileName?: string; base64?: string; mimeType?: string }>(method, params);
       if (r?.base64) out.resume = base64ToFile(r.base64, r.fileName || 'resume.pdf', r.mimeType || 'application/pdf');
     } catch {
       /* no résumé saved, or rendering unavailable — skip résumé */
@@ -863,11 +866,13 @@ async function analyzeJob(): Promise<{
 async function saveJob(): Promise<{ ok: boolean; already?: boolean; error?: string }> {
   if (!connection) return { ok: false, error: 'Open the JobHakken app to save jobs' };
   try {
-    const r = await bridgeRpc<{ saved?: boolean; already?: boolean }>('saveJob', {
+    const r = await bridgeRpc<{ saved?: boolean; already?: boolean; id?: number }>('saveJob', {
       title: cleanTitle(document.title),
       company: pageCompany(),
       url: location.href,
     });
+    // Remember the desktop jobId so a later autofill can upload this job's LINKED résumé (#397).
+    if (typeof r?.id === 'number') savedJobId = r.id;
     return { ok: !!r?.saved, already: r?.already };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Failed to save' };
