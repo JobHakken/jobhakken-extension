@@ -2,7 +2,14 @@ import { createHmac } from 'crypto';
 
 import { describe, expect, it } from '@jest/globals';
 
-import { connect, discoverBridge, performHandshake, rpc } from './bridgeClient';
+import {
+  connect,
+  discoverBridge,
+  performHandshake,
+  resumeSchemaWarning,
+  rpc,
+  SUPPORTED_RESUME_SCHEMA,
+} from './bridgeClient';
 
 /** The mac the genuine app returns: base64(HMAC-SHA256(token, nonce)) — mirrors the desktop's
  *  `computeHandshakeMac` (#283). */
@@ -14,8 +21,14 @@ const macFor = (token: string, nonce: string) => createHmac('sha256', token).upd
  * bearer against `serverToken`. Set `serverToken` ≠ the client token to model a ROGUE that won name-
  * only discovery but doesn't know the real token. `onRpc` fires if /rpc is ever hit (token leak check).
  */
-function makeBridge(opts: { livePort: number; serverToken: string; handshakeCap?: boolean; onRpc?: () => void }) {
-  const { livePort, serverToken, handshakeCap = true, onRpc } = opts;
+function makeBridge(opts: {
+  livePort: number;
+  serverToken: string;
+  handshakeCap?: boolean;
+  onRpc?: () => void;
+  schemaVersion?: number;
+}) {
+  const { livePort, serverToken, handshakeCap = true, onRpc, schemaVersion } = opts;
   return (async (url: string, init?: RequestInit) => {
     const u = String(url);
     if (!u.includes(`:${livePort}/`)) throw new Error('ECONNREFUSED');
@@ -43,7 +56,9 @@ function makeBridge(opts: { livePort: number; serverToken: string; handshakeCap?
       return {
         ok: true,
         status: 200,
-        json: async () => ({ result: { hasResume: true, basics: { name: 'Jordan Rivera' } } }),
+        json: async () => ({
+          result: { hasResume: true, basics: { name: 'Jordan Rivera' }, ...(schemaVersion ? { schemaVersion } : {}) },
+        }),
       } as unknown as Response;
     }
     throw new Error(`unexpected url ${u}`);
@@ -147,5 +162,31 @@ describe('connect (#1 — handshake gating)', () => {
   it('a wrong token on a legacy app is rejected at /rpc with a friendly message', async () => {
     const fetchImpl = makeBridge({ livePort: 41575, serverToken: 'real', handshakeCap: false });
     await expect(connect('wrong', { fetchImpl, ports: PORTS })).rejects.toThrow(/rejected|token/i);
+  });
+
+  it('warns (but still connects) when the app speaks a newer résumé schema (ADR-0005)', async () => {
+    const conn = await connect('good', {
+      fetchImpl: makeBridge({ livePort: 41575, serverToken: 'good', schemaVersion: SUPPORTED_RESUME_SCHEMA + 1 }),
+      ports: PORTS,
+    });
+    expect(conn.port).toBe(41575); // still connects — basics/text degrade gracefully
+    expect(conn.schemaWarning).toMatch(/newer résumé format/i);
+  });
+
+  it('no schema warning at the supported version', async () => {
+    const conn = await connect('good', {
+      fetchImpl: makeBridge({ livePort: 41575, serverToken: 'good', schemaVersion: SUPPORTED_RESUME_SCHEMA }),
+      ports: PORTS,
+    });
+    expect(conn.schemaWarning).toBeUndefined();
+  });
+});
+
+describe('resumeSchemaWarning (ADR-0005)', () => {
+  it('warns only when the app version exceeds what we support', () => {
+    expect(resumeSchemaWarning(undefined)).toBeNull(); // legacy app
+    expect(resumeSchemaWarning(SUPPORTED_RESUME_SCHEMA)).toBeNull();
+    expect(resumeSchemaWarning(SUPPORTED_RESUME_SCHEMA - 1)).toBeNull(); // older → forward-compatible
+    expect(resumeSchemaWarning(SUPPORTED_RESUME_SCHEMA + 1)).toMatch(/update the extension/i);
   });
 });

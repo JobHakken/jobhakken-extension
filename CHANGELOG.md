@@ -5,6 +5,9 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.23.1
+- **Résumé version check.** When connected to the desktop app, the extension now reads the résumé
+  format version the app sends and, if the app is newer than the extension understands, tells you to
+  update — instead of silently mis-filling. (ADR-0005 schema validation over the bridge.)
 - **Verified desktop-app connection.** When you connect the extension to the desktop app, the extension
   now makes the local app **prove it holds your connection token** — a challenge/response handshake the
   app answers — *before* sending the token or any data. A rogue program on your machine posing as

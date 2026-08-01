@@ -316,6 +316,11 @@ async function onConnect() {
     await saveConnection(conn);
     renderConn(true, conn.profile.basics?.name);
     report('bridge_connected', { ok: true });
+    // ADR-0005: if the app speaks a newer résumé format than we understand, tell the user to update
+    // (we still connect — basics/text degrade gracefully).
+    if (conn.schemaWarning) {
+      $('connStatus').innerHTML += ` <span class="warn">${escapeHtml(conn.schemaWarning)}</span>`;
+    }
   } catch (e) {
     report('bridge_failed', { ok: false });
     $('connStatus').innerHTML =

@@ -22,9 +22,27 @@ export type BridgeProfile = {
   hasResume: boolean;
   basics?: { name?: string; email?: string; phone?: string; location?: string };
   resumeText?: string;
+  /** ADR-0005 résumé payload version the app stamped (#283). Absent on older apps. */
+  schemaVersion?: number;
 };
 
-export type BridgeConnection = { port: number; token: string; profile: BridgeProfile };
+export type BridgeConnection = { port: number; token: string; profile: BridgeProfile; schemaWarning?: string };
+
+// The résumé-payload schema version this build understands (ADR-0005). MIRRORS `RESUME_SCHEMA_VERSION`
+// in @jobhakken/core — TODO: import it once core ≥0.4.1 (which exports it) is published; hardcoded for
+// now so we can validate the bridge payload today. Bump in lockstep with core.
+export const SUPPORTED_RESUME_SCHEMA = 5;
+
+/**
+ * Validate a résumé payload version received over the bridge (ADR-0005). A NEWER app than this
+ * extension understands may carry fields we'd mis-read, so we warn the user to update rather than
+ * silently mis-fill. Older/equal/absent → no warning (we stay backward-compatible). Returns the
+ * user-facing warning, or null when compatible.
+ */
+export function resumeSchemaWarning(version?: number): string | null {
+  if (typeof version !== 'number' || version <= SUPPORTED_RESUME_SCHEMA) return null;
+  return `Your JobHakken app uses a newer résumé format (v${version}) than this extension (v${SUPPORTED_RESUME_SCHEMA}). Update the extension for the most accurate autofill.`;
+}
 
 type Opts = { fetchImpl?: typeof fetch; ports?: number[]; timeoutMs?: number };
 
@@ -195,5 +213,6 @@ export async function connect(token: string, opts: Opts = {}): Promise<BridgeCon
     }
     throw e;
   }
-  return { port: found.port, token, profile };
+  // ADR-0005: validate the résumé payload version — warn (don't block) if the app is newer than us.
+  return { port: found.port, token, profile, schemaWarning: resumeSchemaWarning(profile.schemaVersion) ?? undefined };
 }
