@@ -4,6 +4,10 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.21.2
+- Internal: bump the shared `@jobhakken/core` library 0.1.0 → 0.2.0 (cross-surface sync-consumer /
+  materialize groundwork, ADR-0009). No user-facing change; sponsor/eligibility classifiers unchanged.
+
 ## 0.21.1
 - **Groundwork for signing in with your JobHakken account.** Fixed the auth handshake so the extension
   can detect your website sign-in — it now reads the session from the app.jobhakken.com cookie (the app
