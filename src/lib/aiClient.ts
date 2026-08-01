@@ -10,6 +10,7 @@
  * COST: all questions on a form are drafted in ONE call (résumé/job context sent once), not one call
  * per question — a 4–6× token reduction on multi-essay forms. Output is capped.
  */
+import { hasAiHostPermission } from './hostPerms.js';
 
 export type AiConfig = {
   apiKey: string;
@@ -22,8 +23,26 @@ export type AiConfig = {
 export type AiUsage = { promptTokens: number; completionTokens: number };
 export type DraftResult = { answers: string[]; usage: AiUsage | null };
 
-const DEFAULT_BASE = 'https://openrouter.ai/api/v1';
+export const DEFAULT_BASE = 'https://openrouter.ai/api/v1';
 const DEFAULT_MODEL = 'openai/gpt-4o-mini';
+
+/**
+ * BYOK provider hosts are OPTIONAL permissions (requested when the user saves their key). Verify we
+ * hold the grant before calling out, so a missing/denied permission surfaces as a clear "grant access"
+ * message instead of an opaque network failure. No-op in tests (no `chrome`) and for local endpoints.
+ */
+async function ensureHostAllowed(base: string): Promise<void> {
+  const g = globalThis as { chrome?: { permissions?: unknown } };
+  if (!g.chrome?.permissions) return; // jest / content world — skip
+  if (await hasAiHostPermission(base)) return;
+  let host = base;
+  try {
+    host = new URL(base).hostname;
+  } catch {
+    /* keep the raw base in the message */
+  }
+  throw new Error(`Grant access to ${host} in Settings → AI (your key’s provider), then try again.`);
+}
 
 /** A compact, honest candidate brief built from the structured profile — the model may use ONLY this. */
 export function buildCandidateContext(
@@ -204,6 +223,7 @@ export async function parseResumeToProfile(
   if (!cfg.apiKey) throw new Error('No AI key');
   if (!resumeText.trim()) return { parsed: { profile: {}, experience: [], education: [] }, usage: null };
   const base = (cfg.baseUrl || DEFAULT_BASE).replace(/\/$/, '');
+  await ensureHostAllowed(base);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 45_000);
   try {
@@ -252,6 +272,7 @@ export async function draftAnswers(
   if (!cfg.apiKey) throw new Error('No AI key');
   if (!questions.length) return { answers: [], usage: null };
   const base = (cfg.baseUrl || DEFAULT_BASE).replace(/\/$/, '');
+  await ensureHostAllowed(base);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {

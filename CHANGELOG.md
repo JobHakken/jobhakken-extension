@@ -15,6 +15,11 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   now also flow to our own PostHog project (the one the website uses), so product usage sits in one
   place. Cookieless (no person profile), routed through our own domain, and inert unless configured in a
   release build — no new permissions, no third-party scripts. (First-party sink #106.)
+- **Fewer permissions by default.** The extension no longer asks for access to third-party AI providers
+  (OpenRouter, OpenAI, …) at install. Those are now **optional** — requested only if you bring your own
+  AI key, and only for the one provider you choose (a one-time browser prompt when you save your key).
+  Out of the box the extension talks to just your local desktop app and jobhakken.com; local AI
+  endpoints (127.0.0.1) keep working with no prompt. Smaller footprint, same features.
 - **Help us support more sites (privacy-preserving).** When you open the toolbar on a job application we
   don't support yet, the extension can now note *that* an unsupported job form exists — as a **salted,
   anonymized fingerprint of the site's domain** plus a coarse guess at which ATS it runs — so we know
