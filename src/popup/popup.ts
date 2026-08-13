@@ -1,4 +1,4 @@
-import { hasAiKey } from '../lib/aiKeyStore.js';
+import { getAiConfigMeta, hasAiKey } from '../lib/aiKeyStore.js';
 import { estCostUsd, fmtCost, fmtTokens, getMonthUsage, recordDraft, totalTokens } from '../lib/aiUsageStore.js';
 import { markReviewShown, recordMeaningfulFill, REVIEW_URL, shouldPromptReview } from '../lib/reviewStore.js';
 import { isPaidTier, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
@@ -26,6 +26,7 @@ type State = {
   fields: number;
   relevant: boolean;
   job?: { title?: string; company?: string; url?: string };
+  atsPlatform?: string | null;
   testMode?: boolean;
   captureMode?: boolean;
   captureSite?: { show: boolean; optedIn: boolean };
@@ -302,6 +303,9 @@ async function render() {
 // becomes "✕ Cancel" (a second click aborts it), and there's a hard timeout so it never hangs.
 let filling = false;
 type FillResult = { filled: number; review: number; total: number; partial?: boolean } | null;
+// Last autofill outcome this popup saw — folded into a bug report so "autofill missed fields" arrives
+// with the actual numbers instead of a description.
+let lastFill: { filled: number; review: number; total: number; partial?: boolean } | null = null;
 async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
   if (filling) {
     // acts as Cancel — the pending autofill RPC then resolves (partial) and resets the UI
@@ -346,8 +350,10 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
 
   if (r === '__timeout__') {
     $('fillResult').innerHTML = '<span class="chip rev">Timed out — try again</span>';
+    lastFill = null;
     return;
   }
+  lastFill = r; // remember for "Report this page"
   $('fillResult').innerHTML = r
     ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip jump" title="Scroll to the purple-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in purple on the page.</div>' : ''}`
     : 'Set up your profile in Settings first.';
@@ -598,7 +604,10 @@ $('refineGo').addEventListener('click', async () => {
   (e) => void rpc('toggleSite', { on: (e.currentTarget as HTMLInputElement).checked }).then(render),
 );
 
-// ── feedback → prefilled GitHub issue (no backend needed; PII-safe: host only) ──
+// ── feedback → prefilled GitHub issue (no backend needed) ──
+// Auto-fills the page + environment diagnostics a maintainer would otherwise have to ask for: URL, ATS
+// platform, field count, the last autofill result, mode, browser/OS, extension version, AI provider.
+// Deliberately EXCLUDES personal data — no profile values, résumé text, or drafted answers.
 const REASONS: Record<string, string> = {
   'not-detected': 'Not detected as a job page',
   'autofill-missed': 'Autofill missed fields',
@@ -624,6 +633,21 @@ async function openReport(reasonKey: string) {
   const pageUrl = s?.job?.url || '(unknown)'; // a job posting URL is public, not personal data
   const elig = s?.eligibility?.blocked ? `⚠️ won't sponsor — ${s.eligibility.categories.join(', ')}` : 'none';
   const h1b = s?.h1b && s.h1b.approvals > 0 ? `✅ ${s.h1b.company} · ${s.h1b.approvals} approvals` : 'none';
+  // Environment + last-run diagnostics: everything a maintainer would otherwise have to ask for.
+  const ats = s?.atsPlatform ?? '(not detected)';
+  const chrome_ = / Chrome\/(\d+)/.exec(navigator.userAgent)?.[1];
+  const os = /Mac/.test(navigator.userAgent)
+    ? 'macOS'
+    : /Windows/.test(navigator.userAgent)
+      ? 'Windows'
+      : /Linux|X11|CrOS/.test(navigator.userAgent)
+        ? 'Linux/ChromeOS'
+        : 'other';
+  const fill = lastFill
+    ? `${lastFill.filled}/${lastFill.total} filled${lastFill.review ? ` · ${lastFill.review} to review` : ''}${lastFill.partial ? ' · partial (slow/cancelled)' : ''}`
+    : '(autofill not run in this popup session)';
+  const ai = await getAiConfigMeta().catch(() => null);
+  const aiLine = ai?.hasKey ? `${ai.provider || 'openrouter'}${ai.model ? ` · ${ai.model}` : ''}` : 'no key set';
   if (reasonKey === 'not-detected') await rpc('toggleSite', { on: true }); // also make it work next time
   const body = [
     `### ⚑ ${reason}`,
@@ -636,17 +660,26 @@ async function openReport(reasonKey: string) {
     `|---|---|`,
     `| **URL** | ${pageUrl} |`,
     `| **Job** | ${title} — ${company} |`,
+    `| **ATS platform** | \`${ats}\` |`,
     `| **Detected** | ${s?.relevant ? 'yes' : 'no'} · ${s?.fields ?? 0} fillable fields |`,
+    `| **Last autofill** | ${fill} |`,
     `| **Sponsorship flag** | ${elig} |`,
     `| **H‑1B sponsor** | ${h1b} |`,
-    `| **Mode** | ${s?.mode ?? 'unknown'}${s?.testMode ? ' (demo)' : ''} |`,
+    '',
+    '### Environment',
+    `| | |`,
+    `|---|---|`,
+    `| **Extension** | v${version} |`,
+    `| **Browser / OS** | Chrome ${chrome_ ?? '?'} · ${os} |`,
+    `| **Mode** | ${s?.mode ?? 'unknown'}${s?.testMode ? ' · demo mode' : ''} |`,
+    `| **AI provider** | ${aiLine} |`,
     '',
     '### Steps to reproduce',
     '1. ',
     '2. ',
     '',
     '---',
-    `_JobHakken extension v${version} · auto-filled from the page; no personal data included._`,
+    `_JobHakken extension v${version} · auto-filled from the page. No personal data included (no profile values, résumé, or answers)._`,
   ].join('\n');
   const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(`[extension] ${reason} — ${company !== '(unknown)' ? company : host}`)}&body=${encodeURIComponent(body)}`;
   await chrome.tabs.create({ url });

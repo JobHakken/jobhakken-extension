@@ -344,6 +344,9 @@ function getState() {
     fields: fieldCount,
     relevant: isRelevantPage(),
     job: { title: cleanTitle(document.title), company: pageCompany(), url: location.href },
+    // Which ATS powers this page (own fixed enum, from the DOM fingerprint) — surfaced so a bug report
+    // says "workday" instead of making us guess from the URL.
+    atsPlatform: detectAts(document) ?? (isRelevantPage() ? 'generic' : null),
     testMode: testMode || appTest,
     captureMode,
     captureSite: { show: !isAtsHost(location.hostname), optedIn: siteOptedIn },

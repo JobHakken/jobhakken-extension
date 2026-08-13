@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.24.2
+- **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
+  GitHub issue with everything we'd otherwise have to ask for: the page URL and job, **which ATS the page
+  runs on** (Workday/Greenhouse/…), how many fields were found, **the last autofill result** (filled / to
+  review / partial), the sponsorship + H-1B signals, your extension version, browser/OS, mode, and which
+  AI provider is configured. Still no personal data — never your profile values, résumé, or answers.
+
 ## 0.24.1
 - **Reset extension (Settings).** A new "Reset extension" button erases everything on this device —
   your profile, résumé, saved answers, captured forms, AI key, settings, and your JobHakken sign-in —
