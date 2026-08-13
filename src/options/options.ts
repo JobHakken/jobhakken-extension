@@ -40,6 +40,7 @@ import {
   saveNeedsSponsorship,
   saveTestMode,
 } from '../lib/profileStore.js';
+import { resetAllData } from '../lib/resetStore.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -628,6 +629,33 @@ $('resumeParse').addEventListener('click', async () => {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     note.textContent = `${ranked.length} field signatures ranked (worst gaps first).`;
   });
+
+  // Danger zone — full local reset (wipes everything except the desktop-app connection). Two-click
+  // confirm so a stray click can't erase the user's profile/résumé/AI key/sign-in.
+  let resetArmed = false;
+  let resetTimer: ReturnType<typeof setTimeout> | undefined;
+  $('resetData').addEventListener('click', async () => {
+    const btn = $('resetData') as HTMLButtonElement;
+    const status = $('resetStatus');
+    if (!resetArmed) {
+      resetArmed = true;
+      btn.textContent = 'Click again to erase everything';
+      status.innerHTML =
+        '<span class="warn">Wipes your profile, résumé, answers, AI key &amp; sign-in — keeps only the desktop-app link.</span>';
+      resetTimer = setTimeout(() => {
+        resetArmed = false;
+        btn.textContent = 'Reset extension data…';
+        status.textContent = '';
+      }, 5000);
+      return;
+    }
+    if (resetTimer) clearTimeout(resetTimer);
+    btn.disabled = true;
+    await resetAllData();
+    status.innerHTML = '<span class="ok">✓ Everything reset. Reloading…</span>';
+    setTimeout(() => location.reload(), 700);
+  });
+
   // My sites — user-managed hosts where the extension is always active
   const normHost = (v: string): string => {
     const s = v.trim();
