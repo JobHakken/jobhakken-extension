@@ -40,9 +40,21 @@ await opt.close();
 /** Visible, fillable fields + how many hold a value — measured the way a user would see it. */
 const snapshot = (page) =>
   page.evaluate(() => {
+    // Count what a PERSON would see and fill. Two corrections that were skewing the number badly:
+    //  - react-select renders an invisible `requiredInput` proxy per dropdown purely for HTML5
+    //    validation. Those are transparent stand-ins, not fields — counting them inflated the
+    //    denominator (4 phantom "fields" on one Greenhouse form).
+    //  - file inputs are 1px and hidden behind an "Attach" button; they're handled separately below.
     const vis = [...document.querySelectorAll('input,textarea,select')].filter((e) => {
+      if (['hidden', 'submit', 'button', 'file'].includes(e.type)) return false;
       const r = e.getBoundingClientRect();
-      return !['hidden', 'submit', 'button'].includes(e.type) && r.height > 0 && r.width > 0;
+      if (r.height <= 0 || r.width <= 0) return false;
+      // react-select renders TWO inputs per dropdown: the combobox the user interacts with, and a
+      // transparent `requiredInput` clone that exists only so HTML5 validation fires. Drop the clone,
+      // KEEP the combobox — it's a field the user must still complete, so hiding it would flatter our
+      // score while the form stays half-empty.
+      if (/requiredInput/i.test(e.className || '')) return false;
+      return true;
     });
     const labelFor = (el) => {
       const id = el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
@@ -72,6 +84,15 @@ const snapshot = (page) =>
         kind: e.tagName.toLowerCase() + (e.type ? ':' + e.type : ''),
       })),
       empty: vis.filter((e) => !filled.includes(e)).map(labelFor),
+      // Uploads: the input often disappears once the ATS accepts the file (it swaps in a filename
+      // chip), so the only reliable evidence is the document naming the file we attached.
+      uploads: [...document.querySelectorAll('input[type=file]')].length,
+      // An upload counts when EITHER the input still holds the file (Ashby) or the ATS has swapped in
+      // a filename chip and removed the input (Greenhouse). Checking only one under-counts the other.
+      attached: Math.max(
+        (document.body.innerText.match(/jordan-rivera-[a-z-]+\.pdf/gi) || []).length,
+        [...document.querySelectorAll('input[type=file]')].filter((f) => (f.files || []).length).length,
+      ),
     };
   });
 
@@ -108,8 +129,12 @@ for (const t of targets) {
     row.hung = done === 'TIMEOUT';
     await page.waitForTimeout(1500);
     const after = await snapshot(page);
-    row.filled = after.filled - before.filled;
-    row.rate = before.total ? Math.round((after.filled / before.total) * 100) : 0;
+    // A résumé/cover-letter attachment is a completed field from the user's point of view, so count
+    // it — the input element itself is gone by then.
+    row.attached = after.attached;
+    row.fields = before.total + before.uploads;
+    row.filled = after.filled - before.filled + after.attached;
+    row.rate = row.fields ? Math.round(((after.filled + after.attached) / row.fields) * 100) : 0;
     row.filledFields = after.pairs; // field → value we placed
     row.missed = after.empty; // fields left untouched (the gap list)
   } catch (e) {

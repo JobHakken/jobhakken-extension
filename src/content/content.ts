@@ -24,6 +24,7 @@ import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
+import { withBuiltinRules } from '../lib/builtinRules.js';
 import { repairFills, type Attempt } from '../lib/fillRepair.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
@@ -221,7 +222,7 @@ const answerStore = () => (answerStoreP ??= loadAnswerStore());
 /** Remember answers the user typed into questions the profile couldn't fill (auto-capture). */
 function captureLearnable(fp: FullProfile, store: MappingStore): void {
   try {
-    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: fp.rules, store })) {
+    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: withBuiltinRules(fp.rules), store })) {
       // reuse-at-review confidence; a user rule/profile value always outranks it
       store.put(a.signature, { value: a.value, source: 'user', confidence: 0.7 });
     }
@@ -460,7 +461,7 @@ async function runAutofill(
     profile: fp.profile,
     experience: fp.experience,
     education: fp.education,
-    userRules: fp.rules,
+    userRules: withBuiltinRules(fp.rules),
     fillSensitive,
     store,
   };
@@ -1094,7 +1095,7 @@ async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: Ai
   if (!fp || Object.keys(fp.profile).length === 0) return { ok: false, error: 'No profile' };
   const test = await isTestActive();
   const store = await answerStore();
-  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: fp.rules, store });
+  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: withBuiltinRules(fp.rules), store });
   if (!questions.length) return { ok: false, error: 'No question field' };
   const job = pageJob();
   const qs = questions.slice(0, 6); // cap: don't spam a form with many essays
