@@ -42,7 +42,11 @@ await esbuild.build({
 // Content scripts → IIFE (content scripts don't support ESM imports). content = autofill on ATS
 // hosts; auth = the sign-in bridge on app.jobhakken.com.
 await esbuild.build({
-  entryPoints: { 'content/content': 'src/content/content.ts', 'content/auth': 'src/content/auth.ts' },
+  entryPoints: {
+    'content/content': 'src/content/content.ts',
+    'content/auth': 'src/content/auth.ts',
+    'content/pageBridge': 'src/content/pageBridge.ts',
+  },
   outdir,
   format: 'iife',
   ...shared,

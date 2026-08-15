@@ -325,22 +325,16 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
 
   // safety net in case the content script itself is gone (content already self-bounds to 20/45s)
   const timeoutMs = mode === 'ats' ? 50_000 : 24_000;
-  let r = (await Promise.race([
+  const r = (await Promise.race([
     rpc<FillResult>('autofill', { mode }),
     new Promise((res) => setTimeout(() => res('__timeout__'), timeoutMs)),
   ])) as FillResult | '__timeout__';
 
-  // A pre-step (e.g. Jobvite's residence-consent gate) can reveal a fresh form — often in a new
-  // same-origin iframe — that our first pass didn't fill. If the page now has many more fields than we
-  // filled, run once more (targets the now-busiest frame) so the revealed form fills in one click.
-  if (r && typeof r !== 'string') {
-    const st = await rpc<State>('getState');
-    if (st && st.fields > r.filled + r.review + 3) {
-      await new Promise((res) => setTimeout(res, 900));
-      const r2 = (await rpc<FillResult>('autofill', { mode })) as FillResult | null;
-      if (r2 && r2.filled > r.filled) r = r2;
-    }
-  }
+  // NB: we deliberately do NOT re-run the whole fill here (#136). The old heuristic — "re-run if the
+  // page has more fields than we filled" — fired on every page we filled poorly, which is exactly the
+  // pages users complain about, and measurably added zero fills while doubling the clicks dispatched
+  // into the page (the visible "up and down"). Fields revealed by a gate are now handled inside the
+  // content script by a debounced DOM-change watcher that fills only what actually appeared.
 
   filling = false;
   other.disabled = false;

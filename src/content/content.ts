@@ -24,6 +24,7 @@ import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
+import { repairFills, type Attempt } from '../lib/fillRepair.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -64,6 +65,10 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
+
+// Which wizard step we've already grown repeated sections for (#136). Clicking "Add another" is real
+// page interaction, so it must happen once per step — not once per fill pass.
+let expandedFor = '';
 
 // Visually flag the fields the user should review (filled at review-confidence, or AI-drafted) so
 // "N to review" is actionable — an amber outline + hover hint, cleared on the next fill. Tracking
@@ -111,6 +116,54 @@ function markReview(el: HTMLElement): void {
   if (!t.getAttribute('title')) t.setAttribute('title', REVIEW_HINT);
   reviewMarked.add(t);
   reviewedEls.push(t);
+}
+
+/**
+ * Load the page-world value bridge (pageBridge.ts) into the page's OWN JS world.
+ *
+ * It has to run there to reach React's per-world expandos (`__reactProps`, `_valueTracker`) — a content
+ * script literally cannot see them. We inject it as a <script src> from web_accessible_resources rather
+ * than declaring a `"world": "MAIN"` content script: that manifest key made Chrome reject the whole
+ * extension in our test browser (every golden went red because NOTHING was injected), and this form
+ * works on the same Chrome versions we already support. Injected once, lazily, on first use.
+ */
+let bridgeReady: Promise<void> | null = null;
+function injectPageBridge(): Promise<void> {
+  if (bridgeReady) return bridgeReady;
+  bridgeReady = new Promise<void>((resolve) => {
+    try {
+      const s = document.createElement('script');
+      s.src = chrome.runtime.getURL('content/pageBridge.js');
+      s.onload = () => {
+        s.remove(); // the listener stays registered; the tag itself is noise
+        resolve();
+      };
+      s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
+      (document.head ?? document.documentElement).appendChild(s);
+    } catch {
+      resolve();
+    }
+  });
+  return bridgeReady;
+}
+
+/**
+ * How many fillable controls currently hold a value — the DOM's own answer, used to report what
+ * autofill ACTUALLY landed rather than what it attempted (#136). Counts hidden controls too, since
+ * several ATS keep the real <select> off-screen behind a custom widget.
+ */
+function filledControlCount(): number {
+  let n = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button') continue;
+    const held =
+      t === 'checkbox' || t === 'radio'
+        ? (el as HTMLInputElement).checked
+        : String((el as HTMLInputElement).value ?? '').trim() !== '';
+    if (held) n++;
+  }
+  return n;
 }
 
 /** Set a field's value the way React/controlled inputs accept (native setter + input/change events). */
@@ -388,6 +441,9 @@ async function runAutofill(
   signal?: AbortSignal,
 ): Promise<{
   filled: number;
+  claimed: number;
+  sync: number;
+  interactive: number;
   review: number;
   total: number;
   partial?: boolean;
@@ -408,8 +464,15 @@ async function runAutofill(
     fillSensitive,
     store,
   };
-  // 1) grow repeated sections so there's a row per role/school ("Add another")
-  await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
+  const heldBefore = filledControlCount(); // DOM truth baseline — see the honest count below
+  // 1) grow repeated sections so there's a row per role/school ("Add another") — ONCE per page (#136).
+  // This clicks real "Add another" buttons, so repeating it on every pass was the bulk of the ~25 clicks
+  // a single run dispatched, and each click makes the browser scroll to it (the "up and down" churn).
+  // A wizard step change resets the guard (see stepSignature below) so a later step still expands.
+  if (expandedFor !== stepSignature()) {
+    expandedFor = stepSignature();
+    await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
+  }
   // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes.
   // NB: fill runs against the whole document — scoping to formRegion() was tried (#13) but broke
   // Workday, whose fields span wider than the detected-field common ancestor. The engine gates the
@@ -418,12 +481,22 @@ async function runAutofill(
   // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
   // so a later capture can tell autofill from manual entry without exposing the values to the page.
   clearReviewMarks(); // fresh run → drop last run's outlines
+  const attempts: Attempt[] = [];
   for (const r of report.results) {
     if (r.field.el instanceof HTMLElement) {
-      if (r.status === 'filled') filledValues.set(r.field.el, String(r.value));
-      else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
+      if (r.status === 'filled') {
+        filledValues.set(r.field.el, String(r.value));
+        attempts.push({ el: r.field.el, value: String(r.value) });
+      } else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
     }
   }
+  // 2b) VERIFY the writes actually landed, and repair the ones the page threw away. React & co. own
+  //     their inputs' values, so a plain assignment from this (isolated) world is discarded on the next
+  //     render — measured live: 14 "filled", only 5 real. repairFills re-writes those through the
+  //     page-world bridge and returns the count the DOM confirms, so `filled` stops lying.
+  await injectPageBridge();
+  const { confirmed, repaired } = await repairFills(attempts);
+  if (repaired) report.filled = confirmed;
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
   //      upload (ATS mode renders a tailored résumé via the desktop AI, which can be slow).
   //      Bound it so the button never hangs forever, and honor Cancel. On timeout/cancel we
@@ -446,8 +519,18 @@ async function runAutofill(
   void captureFlow(); // record the autofilled state into the corpus
   // Coverage (Layer 1, #105): which TYPES of field we detected but couldn't fill — bounded enum only,
   // no label text or values (see coverage.ts). Feeds "where is autofill weak?" telemetry.
+  // HONEST COUNT (#136): report what the DOM actually holds, not what we attempted. The interactive
+  // widget pass self-reports successes that frequently don't land on custom dropdowns — measured live:
+  // it claimed 9 fills on a Greenhouse form where the page gained none. Counting the real delta stops
+  // the popup telling the user "14 filled" when 5 landed, and makes every future fix measurable.
+  const landed = Math.max(0, filledControlCount() - heldBefore);
   return {
-    filled: report.filled + extra,
+    filled: landed,
+    claimed: report.filled + extra,
+    // Attribution: synchronous engine (verified + repaired against the DOM) vs the interactive widget
+    // pass (comboboxes/dates/uploads), which is where the claimed-vs-landed gap lives.
+    sync: report.filled,
+    interactive: extra,
     review: report.review,
     total: report.total,
     partial,
@@ -527,11 +610,15 @@ async function autofillWholeApplication(
   review: number;
   total: number;
   partial?: boolean;
+  sync: number;
+  interactive: number;
   steps: number;
   stopped: string;
   missedTypes: MissedFieldType[];
 }> {
   let filled = 0;
+  let sync = 0;
+  let interactive = 0;
   let review = 0;
   let total = 0;
   let steps = 0;
@@ -542,22 +629,26 @@ async function autofillWholeApplication(
       stopped = 'cancelled';
       break;
     }
-    // Two re-detecting passes per step: a step can have more lazy comboboxes than one interactive
-    // budget reaches, and framework re-renders (Taleo JSF partial postbacks, BrassRing/Oracle
-    // Angular/Knockout) mutate the DOM mid-fill — which can THROW on stale element refs. Each pass
-    // re-detects (runAutofill calls detectFields fresh) and refills; wrapping each pass so a mid-fill
-    // re-render never aborts the whole run means the 2nd pass simply re-detects and completes.
+    // ONE pass per step, retried ONLY if it threw (#136). A framework re-render (Taleo JSF postbacks,
+    // BrassRing/Oracle Angular/Knockout) can invalidate element refs mid-fill and throw; that case
+    // genuinely needs a fresh re-detect. But retrying unconditionally meant every single-page form got
+    // two full detect+fill passes — doubling the real clicks we dispatch into the page for no gain
+    // (measured: pass 2 added 0 fills on a live Greenhouse form). Newly-revealed fields are handled by
+    // the DOM-change watcher below instead of by blind repetition.
     let r: Awaited<ReturnType<typeof runAutofill>> = null;
     for (let pass = 0; pass < 2; pass++) {
       if (signal?.aborted) break;
       try {
         r = await runAutofill(mode, signal);
+        break; // succeeded → no blind second pass (#136)
       } catch {
-        await sleep(400); // DOM re-rendered mid-pass — let it settle; the next pass re-detects
+        await sleep(400); // DOM re-rendered mid-pass — let it settle, then re-detect once
       }
     }
     if (r) {
       filled += r.filled;
+      sync += r.sync;
+      interactive += r.interactive;
       review += r.review;
       total += r.total;
       r.missedTypes.forEach((t) => missed.add(t));
@@ -591,7 +682,68 @@ async function autofillWholeApplication(
       break;
     }
   }
-  return { filled, review, total, steps, stopped, missedTypes: [...missed].sort() };
+  return { filled, sync, interactive, review, total, steps, stopped, missedTypes: [...missed].sort() };
+}
+
+/** How many fillable, visible controls the page currently shows — the signal for "the form grew". */
+function fillableCount(): number {
+  let n = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button') continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && r.width > 0) n++;
+  }
+  return n;
+}
+
+/**
+ * Fill fields that appear AFTER an explicit autofill (#136).
+ *
+ * Some flows reveal a form only once something is filled or a gate is passed (Jobvite's residence
+ * consent, lazy sections). The popup used to handle that by blindly re-running the whole fill whenever
+ * `fields > filled + 3` — a condition that is true on any page we fill poorly, so it fired constantly
+ * and (measured on a live Greenhouse form) added ZERO fills while doubling the clicks we dispatch.
+ *
+ * Instead, watch the DOM for a short window after the run and fill again ONLY if the page genuinely
+ * grew new fillable fields — debounced so a burst of mutations triggers one fill, not dozens. This is
+ * the model the mature autofill extensions use (observe + debounce) rather than blind repetition.
+ * Still user-initiated: the watcher only exists in the seconds following a fill the user asked for.
+ */
+async function fillRevealedFields(mode: 'default' | 'ats', signal?: AbortSignal): Promise<number> {
+  const WINDOW_MS = 4000; // hard cap: never hold the UI longer than this
+  const QUIET_MS = 1200; // a page that stops mutating isn't going to reveal anything — stop early
+  const SETTLE_MS = 400; // debounce: a burst of mutations triggers ONE fill, not dozens
+  const baseline = fillableCount();
+  return new Promise<number>((resolve) => {
+    let done = false;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const finish = (n: number) => {
+      if (done) return;
+      done = true;
+      clearTimeout(settle);
+      clearTimeout(quiet);
+      clearTimeout(deadline);
+      obs.disconnect();
+      resolve(n);
+    };
+    // Restarted on every mutation: if the DOM goes quiet, nothing more is coming.
+    let quiet = setTimeout(() => finish(0), QUIET_MS);
+    const obs = new MutationObserver(() => {
+      clearTimeout(quiet);
+      quiet = setTimeout(() => finish(0), QUIET_MS);
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        if (signal?.aborted) return finish(0);
+        if (fillableCount() <= baseline) return; // no NEW fields — keep watching, never blind-refill
+        void runAutofill(mode, signal)
+          .then((r) => finish(r?.filled ?? 0))
+          .catch(() => finish(0));
+      }, SETTLE_MS);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    const deadline = setTimeout(() => finish(0), WINDOW_MS);
+  });
 }
 
 /**
@@ -1133,6 +1285,12 @@ async function init() {
             // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
             // step by step, never submitting; single-page forms just fill once.
             const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
+            // A gate/lazy section can reveal more fields right after the fill. Wait briefly and fill
+            // only what genuinely appeared (#136) — replaces the popup's blind whole-form re-run.
+            if (r && !ctrl.signal.aborted) {
+              const extra = await fillRevealedFields(msg.params?.mode ?? 'default', ctrl.signal);
+              r.filled += extra;
+            }
             // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
             // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
             // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a

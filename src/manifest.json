@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "JobHakken — Apply Copilot",
+  "name": "JobHakken \u2014 Apply Copilot",
   "version": "0.24.2",
-  "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.",
+  "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a r\u00e9sum\u00e9 tailored for the job.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -114,5 +114,53 @@
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/pageBridge.js"],
+      "matches": [
+        "*://*.linkedin.com/*",
+        "*://*.indeed.com/*",
+        "*://*.glassdoor.com/*",
+        "*://*.ziprecruiter.com/*",
+        "*://*.dice.com/*",
+        "*://*.monster.com/*",
+        "*://*.simplyhired.com/*",
+        "*://*.wellfound.com/*",
+        "*://*.builtin.com/*",
+        "*://*.remoteok.com/*",
+        "*://*.remoteok.io/*",
+        "*://*.weworkremotely.com/*",
+        "*://*.workingnomads.com/*",
+        "*://*.myworkdayjobs.com/*",
+        "*://*.myworkdaysite.com/*",
+        "*://*.greenhouse.io/*",
+        "*://*.lever.co/*",
+        "*://*.ashbyhq.com/*",
+        "*://*.icims.com/*",
+        "*://*.successfactors.com/*",
+        "*://*.successfactors.eu/*",
+        "*://*.sapsf.com/*",
+        "*://*.sapsf.eu/*",
+        "*://*.jobs2web.com/*",
+        "*://*.smartrecruiters.com/*",
+        "*://*.workable.com/*",
+        "*://*.taleo.net/*",
+        "*://*.bamboohr.com/*",
+        "*://*.jobvite.com/*",
+        "*://*.applytojob.com/*",
+        "*://*.breezy.hr/*",
+        "*://*.recruitee.com/*",
+        "*://*.teamtailor.com/*",
+        "*://*.dayforcehcm.com/*",
+        "*://*.oraclecloud.com/*",
+        "*://*.brassring.com/*",
+        "*://*.kenexa.com/*",
+        "*://*.phenompeople.com/*",
+        "*://*.eightfold.ai/*",
+        "*://*.gr8people.com/*",
+        "*://*.paycomonline.com/*"
+      ]
+    }
+  ]
 }
