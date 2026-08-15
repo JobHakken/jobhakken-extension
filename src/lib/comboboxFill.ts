@@ -10,7 +10,7 @@
  *
  * Everything here is verified: we return true only when the control actually ends up holding a value.
  */
-import { bridgeReactClick } from './fillRepair.js';
+import { bridgeDomClick, bridgeReactClick } from './fillRepair.js';
 
 /** Options a popup exposes. Portalled popups aren't inside the input's subtree, so search the document
  *  and prefer the listbox the input points at via aria-controls/aria-owns. */
@@ -65,11 +65,39 @@ function typeInto(el: HTMLElement, text: string): void {
   el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-/** Full mouse sequence — many popup libraries commit on mousedown, not click. */
+/**
+ * Click the way the browser does.
+ *
+ * `HTMLElement.click()` runs the real activation path, and React's synthetic system handles it —
+ * whereas a hand-built `dispatchEvent(new MouseEvent('click'))` is ignored by react-select and friends.
+ * Verified on a live Greenhouse form: dispatchEvent → nothing; `.click()` → the option commits.
+ * The dispatch sequence stays as a fallback for widgets that commit on mousedown instead.
+ */
 function realClick(el: HTMLElement): void {
-  for (const type of ['pointerdown', 'mousedown', 'mouseup', 'click']) {
-    el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+  try {
+    el.click();
+  } catch {
+    /* fall through to the synthetic sequence */
   }
+}
+function syntheticClick(el: HTMLElement): void {
+  for (const type of ['pointerdown', 'mousedown', 'mouseup', 'click']) {
+    el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, button: 0, detail: 1 }));
+  }
+}
+
+/**
+ * What the widget currently DISPLAYS as its selection. react-select clears the search input on select
+ * and renders the chosen label as text in the control, so `input.value` is a false negative — checking
+ * it is what made us report failure (and then press Escape, undoing a pick that had worked).
+ */
+function shownSelection(el: HTMLElement): string {
+  const control =
+    el.closest('[class*="control"], [class*="Control"], [class*="select"], [class*="Select"]') ??
+    el.parentElement?.parentElement?.parentElement ??
+    null;
+  const text = (control?.textContent ?? '').replace(/select\s*\.{2,}/i, '').trim();
+  return text.replace(/\s+/g, ' ').slice(0, 120);
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -102,10 +130,15 @@ export function isCombobox(el: Element): boolean {
 export async function fillCombobox(el: HTMLElement, value: string, budgetMs = 1500): Promise<boolean> {
   const input = el as HTMLInputElement;
   const had = String(input.value ?? '').trim();
+  const shownBefore = shownSelection(el);
   try {
     el.focus();
-    realClick(el);
+    syntheticClick(el); // react-select opens its menu on MOUSEDOWN — `.click()` alone won't open it
     let nodes = await waitForOptions(el, Math.min(600, budgetMs));
+    // Let the menu finish mounting. Clicking the instant the first option appears hits a node React is
+    // still replacing, and the selection silently doesn't commit (verified on a live Greenhouse form).
+    await wait(320);
+    nodes = optionNodes(el).length ? optionNodes(el) : nodes;
     // Long lists (countries) are usually filtered by typing — narrow, then re-read the popup.
     if (nodes.length > 12 && el.tagName === 'INPUT') {
       typeInto(el, value.slice(0, 24));
@@ -113,30 +146,64 @@ export async function fillCombobox(el: HTMLElement, value: string, budgetMs = 15
       nodes = optionNodes(el).length ? optionNodes(el) : nodes;
     }
     if (!nodes.length) nodes = await waitForOptions(el, budgetMs);
+    const dbg = (() => {
+      try {
+        return localStorage.getItem('JH_DEBUG') === '1';
+      } catch {
+        return false;
+      }
+    })();
     const pick = bestOption(nodes, value);
+    if (dbg)
+      console.log(
+        '[jh-combo]',
+        value.slice(0, 14),
+        '| opts:',
+        nodes.length,
+        '| pick:',
+        (pick?.textContent || 'NONE').trim().slice(0, 20),
+        '| tag:',
+        pick?.tagName,
+        '| shownBefore:',
+        JSON.stringify(shownBefore.slice(0, 20)),
+      );
     if (!pick) {
       if (had !== String(input.value ?? '').trim()) typeInto(el, had); // undo any filter text we typed
       el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       return false;
     }
     pick.scrollIntoView?.({ block: 'nearest' });
-    const settled = () => {
+    // Did the selection take? Either the control now displays something new, or the input holds a value.
+    const committed = () => {
       const v = String(input.value ?? '').trim();
-      // Some widgets clear their search input and render the choice as text instead, so also accept
-      // "the popup closed and the control now reports a selection".
-      const chosen = el.getAttribute('aria-expanded') === 'false' && (el.getAttribute('aria-activedescendant') || v);
-      return v !== '' && v !== had ? v : chosen ? String(chosen) : '';
+      if (v && v !== had) return true;
+      const now = shownSelection(el);
+      return !!now && now !== shownBefore;
     };
-    realClick(pick);
-    await wait(160);
-    // Synthetic clicks are UNTRUSTED — react-select & friends ignore them. Ask the page world to call
-    // the option's own React handler instead (the technique the mature extensions use).
-    if (!settled()) {
-      await bridgeReactClick(pick);
+    await bridgeDomClick(pick); // page-world `.click()` — the one that actually commits
+    await wait(260);
+    if (!committed()) {
+      realClick(pick); // isolated-world .click() (works on simpler widgets)
+      await wait(200);
+    }
+    if (!committed()) {
+      syntheticClick(pick); // widgets that commit on mousedown
+      await wait(200);
+    }
+    if (!committed()) {
+      await bridgeReactClick(pick); // last resort: call the option's own React handler (page world)
       await wait(220);
     }
-    const now = String(input.value ?? '').trim();
-    const ok = settled() !== '' || (now !== '' && now !== had);
+    const ok = committed();
+    if (dbg)
+      console.log(
+        '[jh-combo]   after click → shown:',
+        JSON.stringify(shownSelection(el).slice(0, 26)),
+        '| value:',
+        JSON.stringify(String(input.value || '').slice(0, 20)),
+        ok ? 'OK' : 'FAIL',
+      );
+    // Only tidy up when we genuinely failed — pressing Escape after a SUCCESSFUL pick used to undo it.
     if (!ok) el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     return ok;
   } catch {

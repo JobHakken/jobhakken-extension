@@ -10,6 +10,15 @@
  */
 import { fillCombobox, isCombobox } from './comboboxFill.js';
 
+// Flip on from the console for a live-page debugging session: localStorage.JH_DEBUG = '1'
+const DEBUG = (() => {
+  try {
+    return localStorage.getItem('JH_DEBUG') === '1';
+  } catch {
+    return false;
+  }
+})();
+
 const REQ = 'jh-bridge-set';
 const RES = 'jh-bridge-done';
 
@@ -19,7 +28,12 @@ function valueOf(el: Element): string {
 }
 
 /** Ask the page-world bridge to write `value` into `el`. Resolves false if the bridge never answers. */
-function bridgeCall(el: Element, value: string, action: 'set' | 'click', timeoutMs = 400): Promise<boolean> {
+function bridgeCall(
+  el: Element,
+  value: string,
+  action: 'set' | 'click' | 'domclick' | 'combo',
+  timeoutMs = 400,
+): Promise<boolean> {
   return new Promise((resolve) => {
     const token = `jh${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
     let settled = false;
@@ -70,12 +84,22 @@ export async function repairFills(
     }
     if (Date.now() > deadline) continue;
     let ok = false;
-    if (el instanceof HTMLElement && isCombobox(el)) {
-      ok = await fillCombobox(el, value);
+    const combo = el instanceof HTMLElement && isCombobox(el);
+    if (combo) {
+      // DISABLED pending a working commit path (#138). Driving these costs ~6s per page and currently
+      // commits nothing: the identical open→pick→click sequence succeeds when run directly in the page,
+      // but not when the extension initiates it — even with the whole interaction delegated to the page
+      // world. Until that's understood, we don't spend the user's time on it. The driver is retained
+      // (pageBridge.driveCombobox / comboboxFill) so the next attempt starts from here.
+      ok = false;
+      void bridgeCall;
       if (ok) comboboxes++;
+      continue;
     } else {
       ok = await bridgeCall(el, value, 'set');
     }
+    if (DEBUG)
+      console.log('[jh-repair]', combo ? 'COMBO' : 'set  ', String(value).slice(0, 18), '→', ok ? 'OK' : 'fail');
     if (ok || valueOf(el) === value.trim()) {
       confirmed++;
       repaired++;
@@ -90,4 +114,9 @@ export async function repairFills(
  */
 export function bridgeReactClick(el: Element): Promise<boolean> {
   return bridgeCall(el, '', 'click');
+}
+
+/** Click an element with a plain `.click()` executed in the PAGE's world (see pageBridge). */
+export function bridgeDomClick(el: Element): Promise<boolean> {
+  return bridgeCall(el, '', 'domclick');
 }

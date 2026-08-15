@@ -486,8 +486,11 @@ async function runAutofill(
     if (r.field.el instanceof HTMLElement) {
       if (r.status === 'filled') {
         filledValues.set(r.field.el, String(r.value));
-        attempts.push({ el: r.field.el, value: String(r.value) });
       } else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
+      // Anything the ENGINE resolved to a value is a repair candidate — including custom comboboxes it
+      // can't write to. Using the engine's value (not our own re-resolution) keeps its rationalization
+      // safety, which is what stops "employment agreements?" being answered with a company name.
+      if (r.value) attempts.push({ el: r.field.el, value: String(r.value) });
     }
   }
   // 2b) VERIFY the writes actually landed, and repair the ones the page threw away. React & co. own
