@@ -86,13 +86,9 @@ export async function repairFills(
     let ok = false;
     const combo = el instanceof HTMLElement && isCombobox(el);
     if (combo) {
-      // DISABLED pending a working commit path (#138). Driving these costs ~6s per page and currently
-      // commits nothing: the identical open→pick→click sequence succeeds when run directly in the page,
-      // but not when the extension initiates it — even with the whole interaction delegated to the page
-      // world. Until that's understood, we don't spend the user's time on it. The driver is retained
-      // (pageBridge.driveCombobox / comboboxFill) so the next attempt starts from here.
-      ok = false;
-      void bridgeCall;
+      // Handled entirely in the page world: the component's own setValue() via React's fiber, with a
+      // click-the-menu fallback (pageBridge.driveCombobox). 4s covers the fallback's open+settle.
+      ok = await bridgeCall(el, value, 'combo', 4000);
       if (ok) comboboxes++;
       continue;
     } else {

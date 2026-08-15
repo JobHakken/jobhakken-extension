@@ -70,8 +70,20 @@ const snapshot = (page) =>
         .replace(/\s+/g, ' ')
         .slice(0, 42);
     };
-    const val = (e) =>
-      e.type === 'checkbox' || e.type === 'radio' ? (e.checked ? 'checked' : '') : String(e.value || '').trim();
+    const val = (e) => {
+      if (e.type === 'checkbox' || e.type === 'radio') return e.checked ? 'checked' : '';
+      const v = String(e.value || '').trim();
+      if (v) return v;
+      // A react-select keeps its SEARCH input empty and renders the choice as text inside the control
+      // (the submitted value goes to a hidden proxy). Read what the user actually sees — otherwise a
+      // successful selection is scored as an empty field.
+      if (e.getAttribute('role') === 'combobox') {
+        const box = e.closest('[class*="control"], [class*="Control"]');
+        const t = ((box && box.textContent) || '').replace(/select\s*\.{2,}/i, '').trim();
+        if (t) return t;
+      }
+      return '';
+    };
     const filled = vis.filter((e) => val(e));
     return {
       total: vis.length,
