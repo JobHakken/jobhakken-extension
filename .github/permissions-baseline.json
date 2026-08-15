@@ -66,6 +66,6 @@
     "https://app.jobhakken.com/*"
   ],
   "content_scripts_all_frames": true,
-  "web_accessible_resources": "[]",
+  "web_accessible_resources": "[{\"resources\":[\"content/pageBridge.js\"],\"matches\":[\"*://*.linkedin.com/*\",\"*://*.indeed.com/*\",\"*://*.glassdoor.com/*\",\"*://*.ziprecruiter.com/*\",\"*://*.dice.com/*\",\"*://*.monster.com/*\",\"*://*.simplyhired.com/*\",\"*://*.wellfound.com/*\",\"*://*.builtin.com/*\",\"*://*.remoteok.com/*\",\"*://*.remoteok.io/*\",\"*://*.weworkremotely.com/*\",\"*://*.workingnomads.com/*\",\"*://*.myworkdayjobs.com/*\",\"*://*.myworkdaysite.com/*\",\"*://*.greenhouse.io/*\",\"*://*.lever.co/*\",\"*://*.ashbyhq.com/*\",\"*://*.icims.com/*\",\"*://*.successfactors.com/*\",\"*://*.successfactors.eu/*\",\"*://*.sapsf.com/*\",\"*://*.sapsf.eu/*\",\"*://*.jobs2web.com/*\",\"*://*.smartrecruiters.com/*\",\"*://*.workable.com/*\",\"*://*.taleo.net/*\",\"*://*.bamboohr.com/*\",\"*://*.jobvite.com/*\",\"*://*.applytojob.com/*\",\"*://*.breezy.hr/*\",\"*://*.recruitee.com/*\",\"*://*.teamtailor.com/*\",\"*://*.dayforcehcm.com/*\",\"*://*.oraclecloud.com/*\",\"*://*.brassring.com/*\",\"*://*.kenexa.com/*\",\"*://*.phenompeople.com/*\",\"*://*.eightfold.ai/*\",\"*://*.gr8people.com/*\",\"*://*.paycomonline.com/*\"]}]",
   "externally_connectable": "{\"matches\":[\"https://jobhakken.com/*\",\"https://www.jobhakken.com/*\",\"https://app.jobhakken.com/*\"]}"
 }
