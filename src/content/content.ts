@@ -100,6 +100,10 @@ const OBVIOUS_KEYS = new Set<string>([
 // page interaction, so it must happen once per step — not once per fill pass.
 let expandedFor = '';
 
+// How many fields the AI mapper resolved on the last run — surfaced in the popup so the feature is
+// observable when testing it by hand (otherwise it works silently and looks like nothing happened).
+let aiMappedCount = 0;
+
 // Visually flag the fields the user should review (filled at review-confidence, or AI-drafted) so
 // "N to review" is actionable — an amber outline + hover hint, cleared on the next fill. Tracking
 // lives in the isolated world (a WeakSet + array), never a page-readable value (#12); only the
@@ -549,6 +553,7 @@ async function runAutofill(
 ): Promise<{
   filled: number;
   claimed: number;
+  aiMapped: number;
   sync: number;
   interactive: number;
   review: number;
@@ -654,7 +659,8 @@ async function runAutofill(
         const uploaded = await uploadDocuments(mode);
         // Last: let AI map the questions our rules didn't recognise (cache-first, so usually free).
         // Deliberately AFTER everything deterministic — AI only ever sees what's still empty.
-        const aiMapped = await aiMapUnfilled(fp, new Set(attempts.map((a) => a.el)));
+        aiMappedCount = await aiMapUnfilled(fp, new Set(attempts.map((a) => a.el)));
+        const aiMapped = aiMappedCount;
         return live.comboboxes + live.dates + uploaded + aiMapped;
       })(),
       mode === 'ats' ? 45_000 : 20_000,
@@ -678,6 +684,7 @@ async function runAutofill(
     // pass (comboboxes/dates/uploads), which is where the claimed-vs-landed gap lives.
     sync: report.filled,
     interactive: extra,
+    aiMapped: aiMappedCount,
     review: report.review,
     total: report.total,
     partial,
@@ -759,6 +766,7 @@ async function autofillWholeApplication(
   partial?: boolean;
   sync: number;
   interactive: number;
+  aiMapped: number;
   steps: number;
   stopped: string;
   missedTypes: MissedFieldType[];
@@ -766,6 +774,7 @@ async function autofillWholeApplication(
   let filled = 0;
   let sync = 0;
   let interactive = 0;
+  let aiMapped = 0;
   let review = 0;
   let total = 0;
   let steps = 0;
@@ -796,6 +805,7 @@ async function autofillWholeApplication(
       filled += r.filled;
       sync += r.sync;
       interactive += r.interactive;
+      aiMapped += r.aiMapped;
       review += r.review;
       total += r.total;
       r.missedTypes.forEach((t) => missed.add(t));
@@ -829,7 +839,7 @@ async function autofillWholeApplication(
       break;
     }
   }
-  return { filled, sync, interactive, review, total, steps, stopped, missedTypes: [...missed].sort() };
+  return { filled, sync, interactive, aiMapped, review, total, steps, stopped, missedTypes: [...missed].sort() };
 }
 
 /** How many fillable, visible controls the page currently shows — the signal for "the form grew". */

@@ -302,7 +302,7 @@ async function render() {
 // Autofill can be slow when it renders an AI-tailored résumé — so while it runs, the button
 // becomes "✕ Cancel" (a second click aborts it), and there's a hard timeout so it never hangs.
 let filling = false;
-type FillResult = { filled: number; review: number; total: number; partial?: boolean } | null;
+type FillResult = { filled: number; review: number; total: number; partial?: boolean; aiMapped?: number } | null;
 // Last autofill outcome this popup saw — folded into a bug report so "autofill missed fields" arrives
 // with the actual numbers instead of a description.
 let lastFill: { filled: number; review: number; total: number; partial?: boolean } | null = null;
@@ -349,7 +349,7 @@ async function runFill(btn: HTMLButtonElement, mode: 'default' | 'ats') {
   }
   lastFill = r; // remember for "Report this page"
   $('fillResult').innerHTML = r
-    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.review ? `<button class="chip jump" title="Scroll to the purple-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in purple on the page.</div>' : ''}`
+    ? `<span class="chip ok">✓ ${r.filled} filled</span>${r.aiMapped ? `<span class="chip ai" title="Questions our rules didn't recognise, matched to your profile by your own AI key. Only field names were sent — never your values.">✨ ${r.aiMapped} matched by AI</span>` : ''}${r.review ? `<button class="chip jump" title="Scroll to the purple-outlined fields on the page">${r.review} to review →</button>` : ''}${r.partial ? '<span class="chip rev">partial — cancelled/slow</span>' : ''}${r.review ? '<div class="hint">Fields to check are outlined in purple on the page.</div>' : ''}`
     : 'Set up your profile in Settings first.';
 
   // Organic review prompt: after a couple of meaningful fills, offer a review once (ever).
