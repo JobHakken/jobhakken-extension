@@ -70,6 +70,32 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
 
+/** Fields nobody needs to double-check: if we got the label right at all, the value is simply theirs. */
+const OBVIOUS_KEYS = new Set<string>([
+  'firstName',
+  'middleName',
+  'lastName',
+  'fullName',
+  'preferredName',
+  'email',
+  'phone',
+  'addressLine1',
+  'addressLine2',
+  'city',
+  'state',
+  'zipCode',
+  'country',
+  'location',
+  'linkedin',
+  'github',
+  'website',
+  'currentCompany',
+  'currentTitle',
+  'school',
+  'degree',
+  'fieldOfStudy',
+]);
+
 // Which wizard step we've already grown repeated sections for (#136). Clicking "Add another" is real
 // page interaction, so it must happen once per step — not once per fill pass.
 let expandedFor = '';
@@ -567,7 +593,12 @@ async function runAutofill(
     if (r.field.el instanceof HTMLElement) {
       if (r.status === 'filled') {
         filledValues.set(r.field.el, String(r.value));
-      } else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
+      } else if (r.status === 'review' && !OBVIOUS_KEYS.has(r.resolution?.key ?? '')) {
+        // Outline only what genuinely needs a human look. Basic contact details are unambiguous even
+        // when the engine reports low confidence, and ringing every one of them in violet made the
+        // whole form look like it needed re-checking — which trains people to ignore the marks.
+        markReview(r.field.el);
+      }
       // Anything the ENGINE resolved to a value is a repair candidate — including custom comboboxes it
       // can't write to. Using the engine's value (not our own re-resolution) keeps its rationalization
       // safety, which is what stops "employment agreements?" being answered with a company name.
@@ -1304,7 +1335,11 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
-  await checkBridge(); // live reachability + app sandbox state
+  // NOT awaited: probing the desktop bridge walks 5 localhost ports at 1.5s each, and with no app
+  // running that blocked the rest of init() — including the RPC listener registered below — for up to
+  // 7.5s. During that window the popup asked "how many fields?" and got no answer at all, so a perfectly
+  // fillable page reported "0 fillable fields". Connection status just updates a moment later instead.
+  void checkBridge();
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   needsSponsorship = await loadNeedsSponsorship();
@@ -1376,106 +1411,115 @@ async function init() {
     }
   });
   startBridgePolling();
-
-  // ── RPC: the toolbar popup drives everything through the active tab's content script ──
-  type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
-  chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
-    const msg = raw as Rpc;
-    if (msg?.type === 'f2a-run-autofill') {
-      void runAutofill(); // legacy one-shot (kept for the popup's quick action)
-      return; // no response
-    }
-    if (msg?.type !== 'f2a-rpc') return;
-    (async () => {
-      // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
-      // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
-      // result. Wrap the whole dispatch so the channel always resolves.
-      try {
-        switch (msg.method) {
-          case 'getState':
-            sendResponse(getState());
-            break;
-          case 'autofill': {
-            autofillAbort?.abort(); // supersede any in-flight run
-            const ctrl = (autofillAbort = new AbortController());
-            // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
-            // step by step, never submitting; single-page forms just fill once.
-            const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
-            // A gate/lazy section can reveal more fields right after the fill. Wait briefly and fill
-            // only what genuinely appeared (#136) — replaces the popup's blind whole-form re-run.
-            if (r && !ctrl.signal.aborted) {
-              const extra = await fillRevealedFields(msg.params?.mode ?? 'default', ctrl.signal);
-              r.filled += extra;
-            }
-            // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
-            // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
-            // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a
-            // sorted CSV of the bounded enum, capped so the emitted string stays low-cardinality.
-            report('autofill_run', {
-              ok: !!r && r.filled > 0,
-              fields_filled: bucket(r?.filled ?? 0),
-              fields_total: bucket(r?.total ?? 0),
-              ats_platform: detectAts(document) ?? 'generic',
-              missed_types: (r?.missedTypes ?? []).slice(0, 10).join(','),
-            });
-            sendResponse(r);
-            // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
-            // and break its Cancel.
-            if (autofillAbort === ctrl) autofillAbort = null;
-            break;
-          }
-          case 'cancelAutofill':
-            autofillAbort?.abort();
-            sendResponse({ ok: true });
-            break;
-          case 'analyze': {
-            const res = await analyzeJob();
-            report('match_scored', { ok: res?.ats != null });
-            sendResponse(res);
-            break;
-          }
-          case 'draft':
-            sendResponse(await draftAnswer());
-            break;
-          case 'draftedList':
-            sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
-            break;
-          case 'redraft': {
-            const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
-            sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
-            break;
-          }
-          case 'scrollToReview': {
-            const first = reviewedEls.find((el) => el.isConnected);
-            first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
-            break;
-          }
-          case 'save':
-            sendResponse(await saveJob());
-            break;
-          case 'capture':
-            sendResponse(await capturePage());
-            break;
-          case 'toggleSite':
-            siteOptedIn = !!msg.params?.on;
-            await setSiteOptIn(location.hostname, siteOptedIn);
-            if (siteOptedIn) void captureFlow();
-            sendResponse({ ok: true });
-            break;
-          default:
-            sendResponse({ error: 'unknown method' });
-        }
-      } catch (e) {
-        try {
-          sendResponse({ error: e instanceof Error ? e.message : String(e) });
-        } catch {
-          /* channel already closed by the caller — nothing to do */
-        }
-      }
-    })();
-    return true; // async sendResponse
-  });
 }
+
+/**
+ * Wire the popup's RPC IMMEDIATELY, at module load — never behind init()'s awaits.
+ *
+ * This used to live at the end of init(), so any slow or failing step before it (a desktop-bridge probe
+ * walking five localhost ports, a storage read on a fresh install) left the content script deaf. The
+ * popup would ask "how many fields are here?", get no answer at all, and show "0 fillable fields" on a
+ * page full of them — the extension looked broken on exactly the pages it should handle. Registering
+ * first means we always answer; handlers read module state that init() fills in a moment later.
+ */
+// ── RPC: the toolbar popup drives everything through the active tab's content script ──
+type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
+chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
+  const msg = raw as Rpc;
+  if (msg?.type === 'f2a-run-autofill') {
+    void runAutofill(); // legacy one-shot (kept for the popup's quick action)
+    return; // no response
+  }
+  if (msg?.type !== 'f2a-rpc') return;
+  (async () => {
+    // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
+    // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
+    // result. Wrap the whole dispatch so the channel always resolves.
+    try {
+      switch (msg.method) {
+        case 'getState':
+          sendResponse(getState());
+          break;
+        case 'autofill': {
+          autofillAbort?.abort(); // supersede any in-flight run
+          const ctrl = (autofillAbort = new AbortController());
+          // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
+          // step by step, never submitting; single-page forms just fill once.
+          const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
+          // A gate/lazy section can reveal more fields right after the fill. Wait briefly and fill
+          // only what genuinely appeared (#136) — replaces the popup's blind whole-form re-run.
+          if (r && !ctrl.signal.aborted) {
+            const extra = await fillRevealedFields(msg.params?.mode ?? 'default', ctrl.signal);
+            r.filled += extra;
+          }
+          // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
+          // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
+          // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a
+          // sorted CSV of the bounded enum, capped so the emitted string stays low-cardinality.
+          report('autofill_run', {
+            ok: !!r && r.filled > 0,
+            fields_filled: bucket(r?.filled ?? 0),
+            fields_total: bucket(r?.total ?? 0),
+            ats_platform: detectAts(document) ?? 'generic',
+            missed_types: (r?.missedTypes ?? []).slice(0, 10).join(','),
+          });
+          sendResponse(r);
+          // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
+          // and break its Cancel.
+          if (autofillAbort === ctrl) autofillAbort = null;
+          break;
+        }
+        case 'cancelAutofill':
+          autofillAbort?.abort();
+          sendResponse({ ok: true });
+          break;
+        case 'analyze': {
+          const res = await analyzeJob();
+          report('match_scored', { ok: res?.ats != null });
+          sendResponse(res);
+          break;
+        }
+        case 'draft':
+          sendResponse(await draftAnswer());
+          break;
+        case 'draftedList':
+          sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
+          break;
+        case 'redraft': {
+          const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
+          sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
+          break;
+        }
+        case 'scrollToReview': {
+          const first = reviewedEls.find((el) => el.isConnected);
+          first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
+          break;
+        }
+        case 'save':
+          sendResponse(await saveJob());
+          break;
+        case 'capture':
+          sendResponse(await capturePage());
+          break;
+        case 'toggleSite':
+          siteOptedIn = !!msg.params?.on;
+          await setSiteOptIn(location.hostname, siteOptedIn);
+          if (siteOptedIn) void captureFlow();
+          sendResponse({ ok: true });
+          break;
+        default:
+          sendResponse({ error: 'unknown method' });
+      }
+    } catch (e) {
+      try {
+        sendResponse({ error: e instanceof Error ? e.message : String(e) });
+      } catch {
+        /* channel already closed by the caller — nothing to do */
+      }
+    }
+  })();
+  return true; // async sendResponse
+});
 
 void init();
