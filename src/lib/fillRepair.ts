@@ -22,6 +22,25 @@ const DEBUG = (() => {
 const REQ = 'jh-bridge-set';
 const RES = 'jh-bridge-done';
 
+/** Write a value the ordinary way (native setter + the events frameworks listen for) and report
+ *  whether it actually stuck. */
+function localSet(el: Element, value: string): boolean {
+  try {
+    const proto =
+      el instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : el instanceof HTMLSelectElement
+          ? HTMLSelectElement.prototype
+          : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  } catch {
+    return false;
+  }
+  return valueOf(el) === value.trim();
+}
+
 /** Current value of a fillable control, normalized for comparison. */
 function valueOf(el: Element): string {
   return String((el as HTMLInputElement).value ?? '').trim();
@@ -92,7 +111,11 @@ export async function repairFills(
       if (ok) comboboxes++;
       continue;
     } else {
-      ok = await bridgeCall(el, value, 'set');
+      // Local write first: it works for ordinary inputs, costs nothing, and doesn't depend on the
+      // page-world bridge being injectable (it isn't on every page). Only if the value fails to stick
+      // — framework-controlled inputs — do we pay for the cross-world round trip.
+      ok = localSet(el, value);
+      if (!ok) ok = await bridgeCall(el, value, 'set');
     }
     if (DEBUG)
       console.log('[jh-repair]', combo ? 'COMBO' : 'set  ', String(value).slice(0, 18), '→', ok ? 'OK' : 'fail');

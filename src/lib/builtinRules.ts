@@ -46,6 +46,15 @@ export const BUILTIN_RULES: readonly UserRule[] = [
   { condition: '(portfolio) || (personal website) || (personal site)', key: 'website' },
   // "How did you hear about this role?"
   { condition: '(how did you hear) || (how did you find)', key: 'howHeard' },
+  // "Are you subject to any employment agreements / post-employment restrictions / a non-compete?"
+  // Owner decision: default NO. At any moment a candidate is bound to at most a couple of employers,
+  // so "no restrictions" is the right default for nearly everyone — and leaving a REQUIRED question
+  // blank blocks the submit button. It is a literal (not profile-backed) because no profile field
+  // covers it, it is outlined for review before submitting, and a user's own rule overrides it.
+  {
+    condition: '(employment agreement) || (non-compete) || (noncompete) || (post-employment) || (restrictive covenant)',
+    value: 'No',
+  },
 ];
 
 /** The user's own rules first (they always win), then ours. */

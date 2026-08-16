@@ -27,6 +27,7 @@ import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
 import { withBuiltinRules } from '../lib/builtinRules.js';
 import { repairFills, type Attempt } from '../lib/fillRepair.js';
+import { UNMAPPABLE } from '../lib/aiFieldMap.js';
 import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
@@ -230,6 +231,20 @@ function filledControlCount(): number {
     if (held) n++;
   }
   return n;
+}
+
+/** Best-effort visible label for a control — used to spot attestation questions we must not answer. */
+function describeField(el: HTMLElement): string {
+  const id = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+  return (
+    id?.textContent ||
+    el.getAttribute('aria-label') ||
+    el.closest('label')?.textContent ||
+    (el as HTMLInputElement).name ||
+    ''
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /** Set a field's value the way React/controlled inputs accept (native setter + input/change events). */
@@ -559,6 +574,30 @@ async function runAutofill(
       if (r.value) attempts.push({ el: r.field.el, value: String(r.value) });
     }
   }
+  // 2a) SAFETY: never answer an attestation on the user's behalf. The engine will happily match
+  //     "Do you consent to a background check?" to a profile "Yes" — observed live. Consents, criminal
+  //     history and certifications are the user's to give personally; a pre-ticked "Yes" they don't
+  //     notice is a real harm, so anything we wrote into such a field is cleared and flagged instead.
+  //     (Employment-agreement questions are exempt: the owner set a reviewed default of "No".)
+  for (const a of attempts.slice()) {
+    const el = a.el;
+    if (!(el instanceof HTMLElement)) continue;
+    const label = describeField(el);
+    if (!label || !UNMAPPABLE.test(label)) continue;
+    if (/employment agreement|non-?compete|post-?employment|restrictive covenant/i.test(label)) continue;
+    try {
+      const input = el as HTMLInputElement;
+      if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+      else Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch {
+      /* best effort — the flag below still tells the user to check it */
+    }
+    attempts.splice(attempts.indexOf(a), 1);
+    markReview(el); // outline it: this one needs a human answer
+  }
+
   // 2b) VERIFY the writes actually landed, and repair the ones the page threw away. React & co. own
   //     their inputs' values, so a plain assignment from this (isolated) world is discarded on the next
   //     render — measured live: 14 "filled", only 5 real. repairFills re-writes those through the

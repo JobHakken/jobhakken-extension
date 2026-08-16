@@ -30,7 +30,11 @@ export type FieldMap = Record<number, ProfileKey>;
  * about someone's legal/employment situation: no stored field genuinely answers them, and a confident
  * wrong answer is worse than a blank the user fills in themselves.
  */
-const UNMAPPABLE =
+// Questions no PROFILE FIELD can answer. Note this governs the AI mapper only — it maps a field onto a
+// profile key, so pointing it at "Are you subject to a non-compete?" can only ever produce nonsense
+// (it once proposed the user's employer name). Employment-agreement questions get their "No" from a
+// deterministic rule instead (see builtinRules), which is the owner's chosen default and overridable.
+export const UNMAPPABLE =
   /(non-?compete|employment agreement|post-?employment|restrictive covenant|convicted|felony|criminal|background check|drug (test|screen)|consent|certify|attest|acknowledge|agree to the|terms and conditions|privacy policy|accommodation)/i;
 
 /** Keep the prompt small and the model honest: only the keys the user has actually filled in. */
