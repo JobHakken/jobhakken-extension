@@ -571,7 +571,7 @@ async function runAutofill(
       // Anything the ENGINE resolved to a value is a repair candidate — including custom comboboxes it
       // can't write to. Using the engine's value (not our own re-resolution) keeps its rationalization
       // safety, which is what stops "employment agreements?" being answered with a company name.
-      if (r.value) attempts.push({ el: r.field.el, value: String(r.value) });
+      if (r.value) attempts.push({ el: r.field.el, value: String(r.value), source: r.resolution?.source });
     }
   }
   // 2a) SAFETY: never answer an attestation on the user's behalf. The engine will happily match
@@ -585,6 +585,11 @@ async function runAutofill(
     const label = describeField(el);
     if (!label || !UNMAPPABLE.test(label)) continue;
     if (/employment agreement|non-?compete|post-?employment|restrictive covenant/i.test(label)) continue;
+    // The user's OWN rule is explicit intent — if they've decided in advance how to answer consent
+    // questions, honour it. What we refuse is a COINCIDENCE: on a probe form the engine answered
+    // "Do you consent to a background check?" with the profile's workAuthorization "Yes" — the right
+    // word from the wrong question. Only heuristic/fuzzy matches are cleared.
+    if (a.source === 'user') continue;
     try {
       const input = el as HTMLInputElement;
       if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;

@@ -75,7 +75,12 @@ function bridgeCall(
   });
 }
 
-export type Attempt = { el: Element; value: string };
+export type Attempt = {
+  el: Element;
+  value: string;
+  /** How the engine decided this value — 'user' means the user's OWN rule, i.e. explicit intent. */
+  source?: string;
+};
 
 /**
  * For each field the engine believed it filled, confirm the value is really there; if not, repair it:
