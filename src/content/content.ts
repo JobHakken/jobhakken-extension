@@ -18,6 +18,7 @@ import {
   type FullProfile,
   type MappingStore,
   type Profile,
+  type ProfileKey,
 } from '@jobhakken/autofill';
 
 import { loadAnswerStore } from '../lib/answerStore.js';
@@ -26,6 +27,7 @@ import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
 import { withBuiltinRules } from '../lib/builtinRules.js';
 import { repairFills, type Attempt } from '../lib/fillRepair.js';
+import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -146,6 +148,69 @@ function injectPageBridge(): Promise<void> {
     }
   });
   return bridgeReady;
+}
+
+/**
+ * Fill what our rules couldn't, using AI to decide WHICH profile field answers each leftover question.
+ *
+ * Order matters: the per-site cache is consulted first, so the model is asked once per form shape and
+ * every later application on that ATS is instant and offline. Only genuinely-new labels cost a call.
+ *
+ * Privacy: we send the model the field LABELS and the NAMES of the user's profile fields — never a
+ * value (see aiFieldMap). Everything it maps is written locally and marked for review, because an
+ * inferred mapping deserves a human glance before submitting.
+ */
+async function aiMapUnfilled(fp: FullProfile, attempted: Set<Element>): Promise<number> {
+  const host = location.hostname.replace(/^www\./, '');
+  // Candidates: detected, visible, still empty, and not something the engine already handled.
+  const open: { id: number; label: string; kind?: string; el: HTMLElement }[] = [];
+  for (const f of detectFields(document)) {
+    const el = f.el;
+    if (!(el instanceof HTMLElement) || attempted.has(el)) continue;
+    if (String((el as HTMLInputElement).value ?? '').trim()) continue;
+    const label = (f.label ?? '').trim();
+    if (!label || label.length > 160) continue;
+    open.push({ id: open.length + 1, label, kind: f.kind, el });
+  }
+  if (!open.length) return 0;
+
+  const cached = await getCachedMap(host);
+  const resolved = new Map<number, string>(); // question id → profile key
+  const ask: { id: number; label: string; kind?: string; options?: string[] }[] = [];
+  for (const q of open) {
+    const hit = cached[labelKey(q.label)];
+    if (hit) resolved.set(q.id, hit);
+    else ask.push({ id: q.id, label: q.label, kind: q.kind });
+  }
+
+  // Ask the model only about labels we've never seen on this site.
+  if (ask.length) {
+    const res = (await chrome.runtime
+      .sendMessage({ type: 'f2a-ai', method: 'mapFields', params: { questions: ask, profile: fp.profile } })
+      .catch(() => null)) as { result?: { map?: Record<string, string> } } | undefined;
+    const learned: Record<string, ProfileKey> = {};
+    for (const [idStr, key] of Object.entries(res?.result?.map ?? {})) {
+      const q = open.find((o) => o.id === Number(idStr));
+      if (!q || !key) continue;
+      resolved.set(q.id, key);
+      learned[labelKey(q.label)] = key as ProfileKey;
+    }
+    if (Object.keys(learned).length) await cacheMap(host, learned);
+  }
+  if (!resolved.size) return 0;
+
+  // Write through the same verified path as everything else (combobox driver / page-world bridge).
+  const writes: Attempt[] = [];
+  for (const q of open) {
+    const key = resolved.get(q.id) as ProfileKey | undefined;
+    const value = key ? fp.profile[key] : undefined;
+    if (value) writes.push({ el: q.el, value: String(value) });
+  }
+  if (!writes.length) return 0;
+  const { confirmed } = await repairFills(writes, 6000);
+  // An AI-inferred mapping is a judgement call — outline it so the user checks before submitting.
+  for (const w of writes) if (w.el instanceof HTMLElement) markReview(w.el);
+  return confirmed;
 }
 
 /**
@@ -512,7 +577,10 @@ async function runAutofill(
       (async () => {
         const live = await autofillInteractive({ root: document, ...common });
         const uploaded = await uploadDocuments(mode);
-        return live.comboboxes + live.dates + uploaded;
+        // Last: let AI map the questions our rules didn't recognise (cache-first, so usually free).
+        // Deliberately AFTER everything deterministic — AI only ever sees what's still empty.
+        const aiMapped = await aiMapUnfilled(fp, new Set(attempts.map((a) => a.el)));
+        return live.comboboxes + live.dates + uploaded + aiMapped;
       })(),
       mode === 'ats' ? 45_000 : 20_000,
       signal,

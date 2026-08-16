@@ -9,6 +9,7 @@
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
 import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
+import { mapFieldsWithAi } from '../lib/aiFieldMap.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
 import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
 import { rpc } from '../lib/bridgeClient.js';
@@ -290,13 +291,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // key (session storage) and call the provider directly, so no desktop app is needed and the key never
 // enters the page/content world. Zero telemetry on this path (ADR-0009). Only our own contexts.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg?.type !== 'f2a-ai' || (msg.method !== 'answers' && msg.method !== 'parseResume')) return;
+  if (msg?.type !== 'f2a-ai' || !['answers', 'parseResume', 'mapFields'].includes(msg.method)) return;
   if (sender.id !== chrome.runtime.id) return;
   (async () => {
     try {
       const cfg = await getAiConfig();
       if (!cfg) {
         sendResponse({ error: 'no-key' });
+        return;
+      }
+      if (msg.method === 'mapFields') {
+        // Which profile field answers each unmatched form field. The model sees LABELS + our profile
+        // KEY NAMES only — never a profile value (see aiFieldMap). Cheap: one call for the whole form.
+        const mp = (msg.params ?? {}) as {
+          questions?: { id: number; label: string; kind?: string; options?: string[] }[];
+          profile?: Record<string, string>;
+        };
+        const map = await mapFieldsWithAi(cfg, mp.questions ?? [], mp.profile ?? {});
+        sendResponse({ result: { map } });
         return;
       }
       if (msg.method === 'parseResume') {

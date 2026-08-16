@@ -327,6 +327,31 @@ export async function parseResumeToProfile(
 }
 
 /** One batched call to the provider. Returns drafted answers aligned to `questions` + token usage. */
+/**
+ * One JSON-answering chat call, for callers that want structured output rather than prose. Goes through
+ * runChat so every BYOK provider (OpenAI-compatible, Anthropic, Gemini) and the optional host-permission
+ * check work exactly as they do elsewhere. Throws if the model returns nothing parseable.
+ */
+export async function chatJson(
+  cfg: AiConfig,
+  system: string,
+  user: string,
+  fetchImpl: typeof fetch = fetch,
+  maxTokens = 900,
+): Promise<unknown> {
+  if (!cfg.apiKey) throw new Error('No AI key');
+  const { content } = await runChat(cfg, { system, user, maxTokens, temperature: 0 }, fetchImpl, 25_000);
+  let text = content
+    .trim()
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/, '')
+    .trim();
+  const a = text.indexOf('{');
+  const b = text.lastIndexOf('}');
+  if (a >= 0 && b > a) text = text.slice(a, b + 1);
+  return JSON.parse(text);
+}
+
 export async function draftAnswers(
   cfg: AiConfig,
   context: string,
