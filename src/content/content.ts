@@ -475,6 +475,23 @@ function applyBadges(): void {
   }
 }
 
+/**
+ * Is this page worth scanning at all? Deliberately crude and fast — one selector, no label work.
+ * A job application has several fillable controls or a file upload; a dashboard or inbox does not.
+ * Known ATS hosts always qualify, so a slow-rendering application page isn't dismissed too early.
+ */
+function looksFormish(): boolean {
+  if (isAtsHost(location.hostname) || siteOptedIn) return true;
+  let fillable = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button' || t === 'search') continue;
+    if (t === 'file') return true; // résumé upload is a strong signal on its own
+    if (++fillable >= 3) return true;
+  }
+  return false;
+}
+
 function updateBadge(): void {
   const fields = detectFields(document);
   fieldCount = fields.length;
@@ -1385,6 +1402,12 @@ async function init() {
   const schedule = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
+      // CHEAP GATE FIRST. Since the content script runs on <all_urls>, this callback fires on every
+      // mutation burst of every page you visit — including apps like mail and docs that mutate
+      // constantly. Running the full detectFields + per-field resolution + badge passes there was
+      // continuous wasted work and a real risk to browser responsiveness. A single querySelectorAll
+      // costs nothing and rules out the overwhelming majority of pages.
+      if (!looksFormish()) return;
       updateBadge();
       applyBadges(); // re-run as you switch jobs
       void captureFlow();
