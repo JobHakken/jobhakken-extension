@@ -10,7 +10,7 @@ import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '@jobhakken/core
 
 import { DEFAULT_BASE } from '../lib/aiClient.js';
 import { connect, rpc } from '../lib/bridgeClient.js';
-import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { clearAiConfig, getAiConfigMeta, getRememberKey, setAiConfig, setRememberKey } from '../lib/aiKeyStore.js';
 import { ensureAiHostPermission, hasAiHostPermission } from '../lib/hostPerms.js';
 import { ACCOUNT_URL, clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
@@ -848,6 +848,13 @@ async function refreshAi(): Promise<void> {
   ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
 }
 
+void (async () => {
+  ($('aiRemember') as HTMLInputElement).checked = await getRememberKey();
+})();
+$('aiRemember').addEventListener('change', async (e) => {
+  await setRememberKey((e.currentTarget as HTMLInputElement).checked);
+  await refreshAi();
+});
 $('aiSave').addEventListener('click', async () => {
   const sel = $('aiProvider') as HTMLSelectElement;
   const p = getProvider(sel.value);
@@ -865,6 +872,7 @@ $('aiSave').addEventListener('click', async () => {
     return;
   }
   const apiKey = p.apiKeyless ? LOCAL_SENTINEL_KEY : typedKey;
+  await setRememberKey(($('aiRemember') as HTMLInputElement).checked);
   await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined, provider: p.id });
   ($('aiKey') as HTMLInputElement).value = '';
   // Request browser access to the chosen provider now (BYOK hosts are OPTIONAL — kept out of the
