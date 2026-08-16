@@ -1359,6 +1359,14 @@ async function init() {
   // Reflect setting changes from the options page without a reload.
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
+    // Saving the profile in Options must take effect on pages that are ALREADY open. Without this the
+    // content script kept the value it read at page load, so right after setting up a profile the popup
+    // still said "Profile not set up" until you reloaded the tab — reported from real use.
+    if ('f2a_full_profile' in changes) {
+      const fp = changes['f2a_full_profile'].newValue as FullProfile | undefined;
+      hasLocalProfile = !!fp && Object.keys(fp.profile ?? {}).length > 0;
+      updateBadge(); // refresh the toolbar count + "relevant page" state too
+    }
     if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
     if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
     if ('f2a_auto_capture' in changes) autoCaptureOn = !!changes['f2a_auto_capture'].newValue;
