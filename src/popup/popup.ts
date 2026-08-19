@@ -181,6 +181,19 @@ let h1bLoadedFor = '';
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
 $('setupCta').addEventListener('click', () => chrome.runtime.openOptionsPage());
+// Open the side panel (#140). The action has a default_popup, so chrome.action.onClicked never fires —
+// without an explicit control the panel is only reachable through Chrome's own side-panel menu, which
+// most people never find. A popup click is a user gesture, which sidePanel.open() requires.
+$('panel').addEventListener('click', async () => {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id != null) await chrome.sidePanel.open({ tabId: tab.id });
+    window.close(); // the popup would otherwise cover the panel it just opened
+  } catch {
+    /* older browser without sidePanel.open — Chrome's own side-panel menu still works */
+  }
+});
+
 void initThemeToggle($('theme'));
 
 async function render() {
