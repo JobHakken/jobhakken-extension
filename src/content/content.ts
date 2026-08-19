@@ -520,6 +520,12 @@ function pageCompany(): string {
 /** Snapshot of everything the toolbar popup renders. Queried fresh each time the popup opens. */
 function getState() {
   const verdict = getEligibilityVerdict();
+  // Count the fields LIVE rather than trusting `fieldCount` (#149). That variable is only refreshed
+  // inside updateBadge(), so on an SPA whose form renders after the last badge pass the popup read a
+  // stale zero — "0 fillable fields" on a page where autofill demonstrably fills 6–8 of them
+  // (measured on jobs.ashbyhq.com: detected 0, filled 6). Re-assign so the toolbar badge and the
+  // popup can never disagree about the same page.
+  fieldCount = detectFields(document).length;
   return {
     mode: mode(),
     fields: fieldCount,

@@ -95,6 +95,34 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
+// ── Re-inject the content script into an already-open tab (#150) ───────────────────────────
+// Chrome does NOT re-inject content scripts when an extension reloads or updates: the script
+// already running in an open tab keeps running but is severed from the extension, so every
+// message from the popup/panel goes nowhere. The user sees "0 fillable fields" with the status
+// stuck on "Checking…" and a fill button that hangs until its timeout — on a page that is
+// perfectly fine, with a profile that is perfectly saved.
+//
+// Callers hit this ON DEMAND (their RPC came back null) rather than us blanket-injecting into
+// every open tab on startup: the content script matches <all_urls>, so a mass re-injection
+// would touch every tab the user has open to fix the one they're looking at.
+async function reinjectContentScript(tabId: number): Promise<boolean> {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      files: ['content/content.js'],
+    });
+    return true;
+  } catch {
+    return false; // restricted page (chrome://, Web Store), or the tab went away
+  }
+}
+
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-reinject' || typeof msg.tabId !== 'number') return;
+  void reinjectContentScript(msg.tabId).then((ok) => sendResponse({ ok }));
+  return true; // async response
+});
+
 // ── H-1B sponsor lookup (bundled, standalone) ──────────────────────────────
 // Loaded once from the packaged compact list (normalizedName \t approvals, sorted). Matching
 // sums a company's exact + word-prefix entries ("emerson" → "emerson electric" + …) so a

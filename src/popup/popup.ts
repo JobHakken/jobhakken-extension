@@ -57,14 +57,25 @@ async function rpc<T>(method: string, params?: unknown): Promise<T | null> {
   const id = await activeTabId();
   if (id == null) return null;
   const frameId = await bestFrameId(id);
+  const send = async (fid: number | null | undefined) =>
+    (await chrome.tabs.sendMessage(id, { type: 'f2a-rpc', method, params }, fid != null ? { frameId: fid } : {})) as T;
   try {
-    return (await chrome.tabs.sendMessage(
-      id,
-      { type: 'f2a-rpc', method, params },
-      frameId != null ? { frameId } : {},
-    )) as T;
+    return await send(frameId);
   } catch {
-    return null;
+    // No content script answered. The usual cause is that this tab was open when the extension
+    // reloaded/updated — Chrome leaves the old script running but severed, so the page looks
+    // dead to us (#150). Re-inject once and retry before giving up; frameStore's remembered
+    // frameId belongs to the OLD injection, so retry against all frames.
+    const ok = await chrome.runtime
+      .sendMessage({ type: 'f2a-reinject', tabId: id })
+      .then((r: { ok?: boolean } | undefined) => !!r?.ok)
+      .catch(() => false);
+    if (!ok) return null;
+    try {
+      return await send(null);
+    } catch {
+      return null;
+    }
   }
 }
 
