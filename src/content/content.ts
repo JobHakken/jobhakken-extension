@@ -30,6 +30,9 @@ import { mountRail, unmountRail } from './rail.js';
 import { loadAnswerStore } from '../lib/answerStore.js';
 import { askedOnRecent, formId, recordForm, statsForHost } from '../lib/fieldStats.js';
 import {
+  editRemembered,
+  forgetRemembered,
+  getRemembered,
   lookupRemembered,
   noteRememberedUse,
   normalizeQuestion,
@@ -226,7 +229,7 @@ async function aiMapUnfilled(fp: FullProfile, attempted: Set<Element>): Promise<
   const host = location.hostname.replace(/^www\./, '');
   // Candidates: detected, visible, still empty, and not something the engine already handled.
   const open: { id: number; label: string; kind?: string; el: HTMLElement }[] = [];
-  for (const f of detectFields(document)) {
+  for (const f of pageFields()) {
     const el = f.el;
     if (!(el instanceof HTMLElement) || attempted.has(el)) continue;
     if (String((el as HTMLInputElement).value ?? '').trim()) continue;
@@ -534,7 +537,7 @@ function looksFormish(): boolean {
 }
 
 function updateBadge(): void {
-  const fields = detectFields(document);
+  const fields = pageFields();
   fieldCount = fields.length;
   const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
   const hasAppSignal = fields.some((f) => {
@@ -572,7 +575,7 @@ function pageCompany(): string {
  * the gap becomes a work item instead of a silent disappointment.
  */
 async function fillOne(signature: string, value: string): Promise<{ filled: boolean; reason?: string }> {
-  const field = detectFields(document).find((f) => f.signature === signature);
+  const field = pageFields().find((f) => f.signature === signature);
   if (!field) return { filled: false, reason: 'gone' }; // page re-rendered under us
   if (!value) return { filled: false, reason: 'empty' };
   try {
@@ -684,7 +687,7 @@ async function learnFromPage(): Promise<number> {
   const rules = withBuiltinRules(fp?.rules);
   const store = await answerStore();
   let learned = 0;
-  for (const field of detectFields(document)) {
+  for (const field of pageFields()) {
     const typed = currentValue(field).trim();
     if (!typed) continue;
     const label = field.label || field.name || field.id;
@@ -740,6 +743,9 @@ function syncRail(): void {
     unmountRail();
     return;
   }
+  void progressiveEnabled().then((on) => {
+    if (on) void startProgressive();
+  });
   mountRail({
     panelFields,
     fillOne,
@@ -752,6 +758,13 @@ function syncRail(): void {
     markFields,
     exportData,
     importData,
+    getProgressive: progressiveEnabled,
+    setProgressive,
+    getSiteDisabled: siteDisabled,
+    setSiteDisabled,
+    listRemembered: getRemembered,
+    forgetAnswer: forgetRemembered,
+    editAnswer: editRemembered,
     getFillSensitive: loadFillSensitive,
     setFillSensitive: saveFillSensitive,
     documents,
@@ -777,7 +790,7 @@ function syncRail(): void {
 async function fieldOptions(
   signature: string,
 ): Promise<{ options: { value: string; label: string }[]; note?: string }> {
-  const field = detectFields(document).find((f) => f.signature === signature);
+  const field = pageFields().find((f) => f.signature === signature);
   if (!field) return { options: [], note: 'the page changed' };
   if (field.options?.length) return { options: field.options };
   if (field.kind !== 'combobox') return { options: [] };
@@ -800,7 +813,7 @@ async function fieldOptions(
  */
 const MARK = 'data-jh-mark';
 function markFields(rows: PanelRow[], on: boolean): void {
-  const fields = new Map(detectFields(document).map((f) => [f.signature, f.el]));
+  const fields = new Map(pageFields().map((f) => [f.signature, f.el]));
   if (!on) {
     for (const el of fields.values()) {
       if (el.hasAttribute(MARK)) {
@@ -842,7 +855,7 @@ async function documents(): Promise<{
   ]);
   const fileInputs = detectFileInputs(document);
   const hasCoverFile = fileInputs.some((f) => f.kind === 'coverLetter');
-  const coverArea = detectFields(document).find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  const coverArea = pageFields().find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
   return {
     items: items.map((i) => ({ id: i.id, fileName: i.fileName, active: i.id === pick?.id })),
     hasTemplate: !!tpl,
@@ -896,7 +909,7 @@ async function coverLetter(): Promise<{ text: string; error?: string }> {
 async function attachCover(text: string): Promise<{ ok: boolean; how?: string }> {
   if (!text.trim()) return { ok: false };
   await setLastDraft({ text, company: pageCompany(), at: Date.now() });
-  const area = detectFields(document).find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  const area = pageFields().find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
   if (area) {
     await injectPageBridge();
     fillField(area, text);
@@ -942,13 +955,118 @@ async function importData(text: string): Promise<{ ok: boolean; summary?: string
   }
 }
 
+/**
+ * The page's fields, excluding our own. `detectFields` walks shadow roots, so the rail's cover-letter
+ * textarea was being reported as a form field to fill — visible as a "Need you" row labelled with our
+ * own placeholder. Anything inside the rail host is ours, never the application's.
+ */
+function pageFields(): ReturnType<typeof detectFields> {
+  return detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+}
+
+/** True when an element lives inside the rail's shadow tree (closest() cannot cross that boundary). */
+function insideRail(el: Element): boolean {
+  const root = el.getRootNode() as ShadowRoot | Document;
+  return (root as ShadowRoot).host?.id === 'jh-rail-host';
+}
+
+// ── Progressive fill (#136, #155) ──────────────────────────────────────────────────────────────────
+// Fill each field as it scrolls INTO VIEW, rather than sweeping the whole form on one click.
+//
+// This is not a nicety. Batch-filling a long form writes to controls all over the document and the
+// browser scrolls to each one -- that IS the "jumping up and down" of #136. And one shared repair budget
+// across ten dropdowns starves the tail (#155). Filling only what is on screen removes both: nothing to
+// scroll to, and each field gets the full budget because there are only ever one or two in flight.
+// Late-rendering SPA fields also just work, because we act when they exist rather than guessing a
+// settle time.
+//
+// Consent: every write used to be a click. This writes as you scroll, so it is OFF unless enabled, it
+// never touches the field you are typing in, and SENSITIVE fields are still gated on their own switch.
+const PROGRESSIVE_KEY = 'f2a_progressive';
+let progressiveObserver: IntersectionObserver | null = null;
+const progressiveDone = new Set<string>();
+
+export async function progressiveEnabled(): Promise<boolean> {
+  try {
+    return !!(await chrome.storage.local.get(PROGRESSIVE_KEY))[PROGRESSIVE_KEY];
+  } catch {
+    return false;
+  }
+}
+
+async function setProgressive(on: boolean): Promise<void> {
+  await chrome.storage.local.set({ [PROGRESSIVE_KEY]: on }).catch(() => {});
+  if (on) void startProgressive();
+  else stopProgressive();
+}
+
+function stopProgressive(): void {
+  progressiveObserver?.disconnect();
+  progressiveObserver = null;
+}
+
+async function startProgressive(): Promise<void> {
+  stopProgressive();
+  if (await siteDisabled()) return;
+  const data = await panelFields();
+  const fillSensitive = await loadFillSensitive();
+  const byEl = new Map(pageFields().map((f) => [f.el, f.signature]));
+  const wanted = new Map(
+    data.rows
+      .filter((r) => r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive)))
+      .map((r) => [r.signature, r]),
+  );
+
+  progressiveObserver = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const sig = byEl.get(e.target as HTMLElement);
+        const row = sig ? wanted.get(sig) : undefined;
+        if (!sig || !row || progressiveDone.has(sig)) continue;
+        // Never write into what the person is typing in, and never overwrite what they typed.
+        if (document.activeElement === e.target) continue;
+        const live = pageFields().find((f) => f.signature === sig);
+        if (!live || currentValue(live).trim()) {
+          progressiveDone.add(sig); // already answered, by us or by them
+          continue;
+        }
+        progressiveDone.add(sig);
+        void fillOne(sig, row.value);
+      }
+    },
+    { rootMargin: '0px 0px -15% 0px', threshold: 0.35 },
+  );
+  for (const [el, sig] of byEl) if (wanted.has(sig)) progressiveObserver.observe(el);
+}
+
+/** Per-site escape hatch: silence us on one employer's page without disabling the extension. */
+const OFF_SITES = 'f2a_off_sites';
+async function offSites(): Promise<string[]> {
+  try {
+    return ((await chrome.storage.local.get(OFF_SITES))[OFF_SITES] as string[] | undefined) ?? [];
+  } catch {
+    return [];
+  }
+}
+async function siteDisabled(): Promise<boolean> {
+  return (await offSites()).includes(location.hostname);
+}
+async function setSiteDisabled(on: boolean): Promise<void> {
+  const list = new Set(await offSites());
+  if (on) list.add(location.hostname);
+  else list.delete(location.hostname);
+  await chrome.storage.local.set({ [OFF_SITES]: [...list] }).catch(() => {});
+  if (on) stopProgressive();
+}
+
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);
   const store = await answerStore();
   const fillSensitive = await loadFillSensitive();
-  const fields = detectFields(document);
+  const fields = pageFields();
   const rows: PanelRow[] = [];
 
   for (const field of fields) {
@@ -1036,7 +1154,7 @@ function getState() {
   // stale zero — "0 fillable fields" on a page where autofill demonstrably fills 6–8 of them
   // (measured on jobs.ashbyhq.com: detected 0, filled 6). Re-assign so the toolbar badge and the
   // popup can never disagree about the same page.
-  fieldCount = detectFields(document).length;
+  fieldCount = pageFields().length;
   return {
     mode: mode(),
     fields: fieldCount,
@@ -1548,7 +1666,7 @@ async function capturePage(): Promise<{
 
 /** Smallest region containing the application's fields (keeps captures small). */
 function formRegion(): Element {
-  const els = detectFields(document)
+  const els = pageFields()
     .map((f) => f.el)
     .filter((e) => e instanceof HTMLElement && !e.closest('nav, header, footer'));
   if (!els.length) return document.body;
@@ -1635,7 +1753,7 @@ async function captureFlow(): Promise<void> {
   try {
     if (!(await loadAutoCapture())) return;
     if (!isAtsPage(document) && !(await isCaptureAllowed(location.hostname))) return;
-    const detected = detectFields(document);
+    const detected = pageFields();
     if (detected.length < 4) return; // only real application forms
     const report = captureCoverage(document, { url: location.href });
     const scrub = await scrubValues();

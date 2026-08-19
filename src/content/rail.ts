@@ -38,6 +38,15 @@ export type RailApi = {
   saveTemplate(text: string): Promise<void>;
   exportData(): Promise<{ ok: boolean; name?: string; summary?: string }>;
   importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }>;
+  getProgressive(): Promise<boolean>;
+  setProgressive(on: boolean): Promise<void>;
+  getSiteDisabled(): Promise<boolean>;
+  setSiteDisabled(on: boolean): Promise<void>;
+  listRemembered(): Promise<
+    Record<string, { value: string; host: string; at: number; uses: number; promoted?: boolean }>
+  >;
+  forgetAnswer(question: string): Promise<void>;
+  editAnswer(question: string, value: string): Promise<void>;
   getFillSensitive(): Promise<boolean>;
   setFillSensitive(on: boolean): Promise<void>;
   openOptions(): void;
@@ -170,6 +179,8 @@ main { flex: 1; overflow-y: auto; }
 .opt.pick { background: var(--soft); }
 .opt.pick .lbl { font-weight: 650; color: var(--accent-deep); }
 .opt .lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.taughtval { flex: 1; min-width: 0; font: inherit; font-size: 11.5px; padding: 3px 6px;
+  border: 1px solid var(--line); border-radius: 5px; background: var(--bg); color: var(--fg); }
 .optnote { padding: 4px 12px 6px; font-size: 10px; font-family: ui-monospace, Menlo, monospace; color: var(--muted); }
 .count { font-size: 10px; font-family: ui-monospace, Menlo, monospace; color: var(--muted); cursor: pointer; flex: none; }
 .count:hover { color: var(--fg); }
@@ -180,15 +191,18 @@ main { flex: 1; overflow-y: auto; }
 .grp.know .row { border-left-color: var(--accent); }
 .grp.ask .row { border-left-color: var(--clay); }
 .grp.remember .row { border-left-color: var(--slate); }
-.grp.sensitive .row { border-left-color: var(--clay); }
+.row.sens { border-left-color: var(--clay) !important; border-left-style: dotted; }
 .grp.sensitive .acc { color: var(--clay); }
+.switches { display: flex; gap: 10px; flex-wrap: wrap; }
 .sw { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 650;
   text-transform: none; letter-spacing: 0; color: var(--muted); }
 .sw i { width: 24px; height: 13px; border-radius: 99px; background: var(--line); position: relative;
   transition: background .12s ease; flex: none; }
 .sw i::after { content: ""; position: absolute; top: 1.5px; left: 1.5px; width: 10px; height: 10px;
   border-radius: 50%; background: var(--bg); transition: transform .12s ease; }
+.sw { cursor: pointer; }
 .sw.on i { background: var(--accent); }
+.sw.danger.on i { background: var(--clay); }
 .sw.on i::after { transform: translateX(11px); }
 .row.done { background: var(--soft); }
 .row.promote { background: var(--slate-soft); }
@@ -269,22 +283,25 @@ export function mountRail(api: RailApi): void {
           <span class="wm">Job<i>Hakken</i></span>
           <span class="ctx" id="ctx"></span>
           <span class="hbtns">
-            <button id="docs" title="Résumé and cover letter" aria-label="Résumé and cover letter">📎</button>
-            <button id="marks" title="Outline these fields on the page" aria-label="Outline fields on the page">▣</button>
-            <button id="insight" title="What we've learned here" aria-label="What we've learned here">◔</button>
+            <button id="taught" title="What I've learned" aria-label="What I've learned">🧠</button>
             <button id="gear" title="Settings" aria-label="Settings">⚙</button>
             <button id="close" title="Close" aria-label="Close">✕</button>
           </span>
         </div>
         <div class="badge" id="badge"><span class="dot"></span><b id="bname">Reading page…</b><span class="sub" id="bsub"></span></div>
         <div class="tally" id="tally"></div>
+        <div class="switches">
+          <span class="sw" id="progSw" title="Fill each field as you scroll to it"><i></i>fill as I scroll</span>
+          <span class="sw" id="offSw" title="Silence JobHakken on this site"><i></i>off here</span>
+        </div>
       </header>
       <main id="body"></main>
       <footer>
         <span class="note" id="note"></span>
         <span class="hbtns">
-          <button id="export" title="Save everything learned to a file">⤓</button>
-          <button id="import" title="Restore from a backup file">⤒</button>
+          <button id="marks" title="Outline these fields on the page">▣</button>
+          <button id="export" title="Back up everything this extension has learned, all sites">⤓</button>
+          <button id="import" title="Restore a backup">⤒</button>
         </span>
         <button class="cta" id="fillAll" hidden>Fill</button>
       </footer>
@@ -297,9 +314,12 @@ export function mountRail(api: RailApi): void {
   const drafted = new Map<string, string[]>();
   const expanded = new Set<string>();
   let insightMode = false;
-  let folds: Partial<Record<Group | 'docs', boolean>> = {};
+  let folds: Partial<Record<Group | 'docs' | 'insight', boolean>> = {};
   let marksOn = false;
   let sensitiveOn = true;
+  let progOn = false;
+  let siteOff = false;
+  let taughtMode = false;
 
   /** Push the page over instead of covering it — a panel about a form must not hide the form. */
   function reflow(open: boolean): void {
@@ -344,7 +364,7 @@ export function mountRail(api: RailApi): void {
     }
     if (r.asked && !r.memo) foot += `<span class="src">asked on ${r.asked.hits} of your last ${r.asked.of}</span>`;
 
-    return `<div class="row${asking ? ' promote' : ''}" data-sig="${sig}">
+    return `<div class="row${asking ? ' promote' : ''}${r.group === 'sensitive' ? ' sens' : ''}" data-sig="${sig}">
       <span class="k">${esc(r.label || '(unlabelled field)')}</span>
       <span class="v">
         <span class="val${shown ? '' : ' none'}">${shown ? esc(shown) : 'nothing to put here'}</span>
@@ -375,7 +395,13 @@ export function mountRail(api: RailApi): void {
     }
     $('ctx').textContent = `${d.rows.length} field${d.rows.length === 1 ? '' : 's'}`;
 
-    const by = (g: Group) => d.rows.filter((r) => r.group === g);
+    // Sensitive rows sit inside Filled rather than in a section of their own: when the switch is on they
+    // ARE filled, and a separate section for six rows split the one list people actually scan. They keep
+    // their own marker and the switch that governs them.
+    const by = (g: Group) =>
+      g === 'know'
+        ? [...d.rows.filter((r) => r.group === 'know'), ...d.rows.filter((r) => r.group === 'sensitive')]
+        : d.rows.filter((r) => r.group === g);
     const n = { know: by('know').length, ask: by('ask').length, remember: by('remember').length };
     $('tally').innerHTML =
       (n.know ? `<span class="chip k">${n.know} filled</span>` : '') +
@@ -390,6 +416,8 @@ export function mountRail(api: RailApi): void {
     cta.textContent = `Fill ${pending.length}`;
     $('note').textContent = n.ask ? `${n.ask} left for you` : 'learning from this form';
 
+    $('progSw').className = `sw${progOn ? ' on' : ''}`;
+    $('offSw').className = `sw danger${siteOff ? ' on' : ''}`;
     if (!d.rows.length) {
       $('body').innerHTML = `<p class="empty"><b>No form fields here</b>Open an application and this fills in.</p>`;
       return;
@@ -406,8 +434,7 @@ export function mountRail(api: RailApi): void {
       `</section>`;
 
     $('body').innerHTML =
-      docsSection +
-      (['ask', 'sensitive', 'remember', 'know'] as Group[])
+      (['know', 'ask', 'remember'] as Group[])
         .filter((g) => by(g).length)
         .map((g) => {
           const list = by(g);
@@ -420,7 +447,7 @@ export function mountRail(api: RailApi): void {
             `<section class="grp ${g}">` +
             `<button class="acc${folded ? ' closed' : ''}" data-fold="${g}">` +
             `<span class="chev">▾</span><span class="sp">${TITLES[g]}</span>` +
-            (g === 'sensitive'
+            (g === 'know' && d.rows.some((r) => r.group === 'sensitive')
               ? `<span class="sw${sensitiveOn ? ' on' : ''}" data-act="sw" title="Fill these automatically">` +
                 `<i></i>${sensitiveOn ? 'auto' : 'manual'}</span>`
               : '') +
@@ -432,7 +459,7 @@ export function mountRail(api: RailApi): void {
             `</section>`
           );
         })
-        .join('');
+        .join('') + docsSection;
     if (marksOn) api.markFields(d.rows, true);
   }
 
@@ -477,22 +504,57 @@ export function mountRail(api: RailApi): void {
     );
   }
 
-  async function refresh(): Promise<void> {
-    if (insightMode) {
-      const d = await api.siteInsight();
-      $('tally').innerHTML = '';
-      $<HTMLButtonElement>('fillAll').hidden = true;
-      $('note').textContent = 'structure only · no answers stored here';
-      $('body').innerHTML = d.rows.length
-        ? `<table><thead><tr><th>Question</th><th>Type</th><th class="n">Seen</th></tr></thead><tbody>` +
-          d.rows
+  /**
+   * What you've taught me — the answers we learned, with an undo.
+   *
+   * A system that learns WILL learn something wrong, and without a way to see and correct it people
+   * stop trusting the whole mechanism. Wiping everything is not an undo.
+   */
+  async function showTaught(): Promise<void> {
+    const all = await api.listRemembered();
+    const rows = Object.entries(all).sort((a, b) => (b[1].uses ?? 0) - (a[1].uses ?? 0));
+    $('tally').innerHTML = rows.length ? `<span class="chip r">${rows.length} learned</span>` : '';
+    $<HTMLButtonElement>('fillAll').hidden = true;
+    $('note').textContent = 'yours, on this device';
+    const site = await api.siteInsight().catch(() => null);
+    const siteTable =
+      site && site.rows.length
+        ? `<section class="grp"><button class="acc closed" data-fold="insight">` +
+          `<span class="chev">▾</span><span class="sp">Questions ${esc(site.host.replace(/^www\./, ''))} asks</span>` +
+          `<span class="n">${site.rows.length}</span></button>` +
+          (folds.insight === false
+            ? `<table><thead><tr><th>Question</th><th>Type</th><th class="n">Seen</th></tr></thead><tbody>` +
+              site.rows
+                .map(
+                  (r) =>
+                    `<tr><td>${esc(r.q)}</td><td><span class="type">${esc(r.kind)}</span></td><td class="n">${r.seen}</td></tr>`,
+                )
+                .join('') +
+              `</tbody></table><div class="optnote">structure only · no answers stored here</div>`
+            : '') +
+          `</section>`
+        : '';
+    $('body').innerHTML =
+      (rows.length
+        ? rows
             .map(
-              (r) =>
-                `<tr><td>${esc(r.q)}</td><td><span class="type">${esc(r.kind)}</span></td><td class="n">${r.seen}</td></tr>`,
+              ([q, v]) =>
+                `<div class="row" data-q="${esc(q)}" style="border-left-color:var(--slate)">
+                <span class="k">${esc(q)}</span>
+                <span class="v"><input class="taughtval" data-q="${esc(q)}" value="${esc(v.value)}" />
+                  <button data-act="save-taught" data-q="${esc(q)}">Save</button>
+                  <button data-act="forget" data-q="${esc(q)}">Forget</button></span>
+                <span class="src">used ${v.uses ?? 0}× · ${esc(v.host.replace(/^www\./, '').split('.')[0])}${v.promoted ? ' · always filled' : ''}</span>
+              </div>`,
             )
-            .join('') +
-          `</tbody></table>`
-        : `<p class="empty"><b>Nothing learned yet</b>The questions this site asks will collect here.</p>`;
+            .join('')
+        : `<p class="empty"><b>Nothing learned yet</b>Answer a question we left to you and it will appear here.</p>`) +
+      siteTable;
+  }
+
+  async function refresh(): Promise<void> {
+    if (taughtMode) {
+      await showTaught();
       return;
     }
     const [data, docs] = await Promise.all([api.panelFields(), api.documents().catch(() => null)]);
@@ -641,6 +703,18 @@ export function mountRail(api: RailApi): void {
       void refresh();
       return;
     }
+    const prog = t.closest<HTMLElement>('#progSw');
+    if (prog) {
+      progOn = !progOn;
+      void api.setProgressive(progOn).then(() => refresh());
+      return;
+    }
+    const off = t.closest<HTMLElement>('#offSw');
+    if (off) {
+      siteOff = !siteOff;
+      void api.setSiteDisabled(siteOff).then(() => refresh());
+      return;
+    }
     const sw = t.closest<HTMLElement>('[data-act="sw"]');
     if (sw) {
       sensitiveOn = !sensitiveOn;
@@ -649,9 +723,9 @@ export function mountRail(api: RailApi): void {
     }
     const fold = t.closest<HTMLElement>('[data-fold]');
     if (fold) {
-      const g = fold.dataset.fold as Group | 'docs';
+      const g = fold.dataset.fold as Group | 'docs' | 'insight';
       // Filled and Remembered are settled; what needs you, sensitive choices and documents open by default.
-      folds[g] = !(folds[g] ?? (g === 'know' || g === 'remember'));
+      folds[g] = !(folds[g] ?? (g === 'know' || g === 'remember' || g === 'insight'));
       void chrome.storage.local.set({ [FOLD_KEY]: folds }).catch(() => {});
       void refresh();
       return;
@@ -684,6 +758,12 @@ export function mountRail(api: RailApi): void {
     if (btn.id === 'launch') return void setOpen(true);
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
+    if (btn.id === 'taught') {
+      taughtMode = !taughtMode;
+      insightMode = false;
+      btn.style.background = taughtMode ? 'var(--slate-soft)' : '';
+      return void refresh();
+    }
     if (btn.id === 'export') {
       void api.exportData().then((r) => {
         $('note').textContent = r.ok ? (r.summary ?? 'saved') : 'could not export';
@@ -763,6 +843,18 @@ export function mountRail(api: RailApi): void {
       case 'add':
         api.openOptions();
         break;
+      case 'forget':
+        void api.forgetAnswer(btn.dataset.q ?? '').then(() => refresh());
+        break;
+      case 'save-taught': {
+        const q = btn.dataset.q ?? '';
+        const inp = root.querySelector<HTMLInputElement>(`.taughtval[data-q="${CSS_escape(q)}"]`);
+        if (inp?.value.trim())
+          void api.editAnswer(q, inp.value).then(() => {
+            btn.textContent = 'Saved';
+          });
+        break;
+      }
       case 'use':
         void api.attachResume(btn.dataset.id).then(() => refresh());
         break;
@@ -834,9 +926,11 @@ export function mountRail(api: RailApi): void {
       unknown
     >;
     const open = !!got[OPEN_KEY];
-    folds = (got[FOLD_KEY] as Partial<Record<Group | 'docs', boolean>>) ?? {};
+    folds = (got[FOLD_KEY] as Partial<Record<Group | 'docs' | 'insight', boolean>>) ?? {};
     marksOn = !!got[MARK_KEY];
     sensitiveOn = await api.getFillSensitive();
+    progOn = await api.getProgressive();
+    siteOff = await api.getSiteDisabled();
     await setOpen(open, false);
     if (!open) await updateLauncher();
   })();

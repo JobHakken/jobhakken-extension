@@ -127,3 +127,23 @@ export async function clearRemembered(): Promise<void> {
     /* ignore */
   }
 }
+
+/** Forget one answer. A system that learns needs an undo, or people stop trusting it. */
+export async function forgetRemembered(question: string): Promise<void> {
+  const q = normalizeQuestion(question);
+  const s = await read();
+  if (!(q in s)) return;
+  delete s[q];
+  await write(s);
+}
+
+/** Correct an answer in place, keeping its history. Editing is a new claim, so promotion resets. */
+export async function editRemembered(question: string, value: string): Promise<void> {
+  const q = normalizeQuestion(question);
+  const v = value.trim();
+  const s = await read();
+  const cur = s[q];
+  if (!cur || !v) return;
+  s[q] = { ...cur, value: v, at: Date.now(), promoted: cur.value === v ? cur.promoted : undefined };
+  await write(s);
+}

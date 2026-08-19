@@ -4,6 +4,20 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.33.0
+- **Fill as you scroll.** Turn on "fill as I scroll" and each field is filled as it comes into view,
+  instead of everything at once when you press a button. Nothing jumps around, because we only ever
+  touch what's already on your screen, and fields that appear later get filled when they appear.
+  Sensitive questions still wait for their own switch — scrolling past a visa question never answers it.
+- **Off here.** A switch to silence the extension on one site, for when it misbehaves on a particular
+  employer's page, without turning the whole thing off.
+- **What I've learned (🧠).** Every answer you've taught it, with the times used and where you wrote it
+  — editable and deletable. A tool that learns needs an undo. The questions each site asks live here too.
+- **A tidier sidebar.** Three buttons at the top instead of six. Filled comes first with sensitive
+  questions inside it, then what needs you, then résumé and cover letter.
+- **Fixed: the extension was treating its own cover-letter box as one of the form's fields**, which
+  inflated the field count and produced a nonsense "needs you" row.
+
 ## 0.32.0
 - **Your learned data can now leave and come back.** Two buttons at the bottom of the sidebar: **⤓**
   saves everything the extension has learned — your profile, the answers you've taught it, every
