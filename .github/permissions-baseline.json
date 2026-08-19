@@ -1,5 +1,5 @@
 {
-  "permissions": ["activeTab", "scripting", "sidePanel", "storage", "unlimitedStorage"],
+  "permissions": ["activeTab", "scripting", "storage", "unlimitedStorage"],
   "optional_permissions": [],
   "host_permissions": [
     "http://127.0.0.1/*",

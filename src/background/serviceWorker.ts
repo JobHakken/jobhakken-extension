@@ -90,6 +90,10 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
+  if (msg?.type === 'f2a-open-options') void chrome.runtime.openOptionsPage();
+});
+
+chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
     void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped
   }

@@ -24,6 +24,7 @@ import {
   type ProfileKey,
 } from '@jobhakken/autofill';
 
+import { mountRail, unmountRail } from './rail.js';
 import { loadAnswerStore } from '../lib/answerStore.js';
 import { askedOnRecent, formId, recordForm, statsForHost } from '../lib/fieldStats.js';
 import {
@@ -714,6 +715,29 @@ async function draftTwo(label: string): Promise<{ options: string[]; error?: str
   } catch {
     return { options: [], error: 'could not reach the drafting service' };
   }
+}
+
+/**
+ * Put the rail on the page (#140). Gated on the page actually being an application: a launcher tab on
+ * every page you browse would be noise, and the whole point of the launcher is that its presence MEANS
+ * something. Re-checked on SPA mutations, since an application form often renders after first paint.
+ */
+function syncRail(): void {
+  const wanted = isRelevantPage() || fieldCount >= 3;
+  if (!wanted) {
+    unmountRail();
+    return;
+  }
+  mountRail({
+    panelFields,
+    fillOne,
+    learnFromPage,
+    noteUse: (label) => noteRememberedUse(label),
+    promote: (label, on) => setPromoted(label, on),
+    draftTwo,
+    siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
+    openOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
+  });
 }
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
@@ -1677,6 +1701,7 @@ async function init() {
 
   updateBadge(); // toolbar-icon field count
   applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
+  syncRail(); // the rail + its launcher, once we know this page is an application
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -1690,6 +1715,7 @@ async function init() {
       // costs nothing and rules out the overwhelming majority of pages.
       if (!looksFormish()) return;
       updateBadge();
+      syncRail();
       applyBadges(); // re-run as you switch jobs
       void captureFlow();
     }, 800);
@@ -1755,6 +1781,13 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   if (msg?.type === 'f2a-run-autofill') {
     void runAutofill(); // legacy one-shot (kept for the popup's quick action)
     return; // no response
+  }
+  if (msg?.type === 'f2a-open-rail') {
+    syncRail(); // mount if needed, then reveal
+    void chrome.storage.local.set({ f2a_rail_open: true });
+    unmountRail();
+    syncRail();
+    return;
   }
   if (msg?.type !== 'f2a-rpc') return;
   (async () => {

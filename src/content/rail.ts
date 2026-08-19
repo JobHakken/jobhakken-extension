@@ -1,0 +1,529 @@
+/**
+ * The in-page rail (#140) — JobHakken docked into the application page itself, with a launcher tab on
+ * the page edge.
+ *
+ * Why in-page rather than Chrome's `sidePanel`: a native side panel lives in browser chrome and has to
+ * be found through a menu, so most people never see it. Every extension in this space — Simplify,
+ * JobWizard, Careerflow — injects its own rail and puts a launcher on the page edge, because the
+ * launcher is what tells the user the extension is here at all. It also drops the `sidePanel`
+ * permission from our manifest entirely.
+ *
+ * Isolation: everything renders inside a SHADOW ROOT. The host page's CSS is arbitrary and hostile to
+ * assumptions — a bare `div` would inherit whatever the ATS ships. Nothing here reads or trusts page
+ * styles, and the page cannot style us.
+ *
+ * The page REFLOWS rather than being covered: covering an application form with a panel about that form
+ * is self-defeating, and it's the difference between a rail and an overlay.
+ */
+export type RailApi = {
+  panelFields(): Promise<PanelData>;
+  fillOne(signature: string, value: string): Promise<FillResult>;
+  learnFromPage(): Promise<number>;
+  noteUse(label: string): Promise<number>;
+  promote(label: string, on: boolean): Promise<void>;
+  draftTwo(label: string): Promise<{ options: string[]; error?: string }>;
+  siteInsight(): Promise<{ host: string; rows: { q: string; kind: string; seen: number }[] }>;
+  openOptions(): void;
+};
+
+type Group = 'know' | 'ask' | 'remember';
+export type PanelRow = {
+  signature: string;
+  label: string;
+  kind: string;
+  group: Group;
+  value: string;
+  current: string;
+  source: string | null;
+  why?: string;
+  consequential: boolean;
+  memo?: { host: string; at: number; uses: number; promoted?: boolean };
+  asked?: { hits: number; of: number };
+  addable?: boolean;
+};
+export type PanelData = { rows: PanelRow[]; ats: string | null; host: string };
+type FillResult = { filled: boolean; reason?: string };
+
+const OPEN_KEY = 'f2a_rail_open';
+const WIDTH = 320;
+const ASK_AFTER = 3; // when we ASK about promoting — never when we promote
+const COLLAPSE_AT = 6;
+
+/** Escape for the one place we build HTML. The page DOM is untrusted input (CLAUDE.md). */
+function esc(s: string): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const CSS = `
+:host { all: initial; }
+*, *::before, *::after { box-sizing: border-box; }
+.wrap {
+  position: fixed; top: 0; right: 0; height: 100vh; z-index: 2147483646;
+  display: flex; align-items: flex-start; pointer-events: none;
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg:#F4F1E8; --card:#fff; --sunk:#EDE9DC; --fg:#1E241A; --muted:#7C856F;
+  --line:#DDD8C8; --line-soft:#E7E2D4; --accent:#5C7E48; --accent-deep:#4A6A38;
+  --soft:#EAF0E2; --clay:#BB6535; --clay-soft:#FAEDE3; --slate:#5A6B8C; --slate-soft:#E8ECF3;
+  --on-accent:#fff;
+}
+@media (prefers-color-scheme: dark) {
+  .wrap {
+    --bg:#12140F; --card:#1C2018; --sunk:#171A14; --fg:#EDEAE0; --muted:#8D9382;
+    --line:#2E3428; --line-soft:#252A20; --accent:#9DBE87; --accent-deep:#7CA268;
+    --soft:#1E2A19; --clay:#D0824F; --clay-soft:#2C1D12; --slate:#8FA3C4; --slate-soft:#191E28;
+    --on-accent:#12140F;
+  }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Launcher — the whole reason this is in-page: visible on every application, no menu to find. */
+.launch {
+  pointer-events: auto; margin-top: 84px; width: 34px; height: 38px;
+  border: 1px solid var(--accent-deep); border-right: 0; border-radius: 9px 0 0 9px;
+  background: var(--accent); color: var(--on-accent);
+  display: grid; place-items: center; cursor: pointer; box-shadow: -1px 2px 6px rgba(0,0,0,.16);
+}
+.launch:hover { filter: brightness(1.06); }
+.launch:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.launch .n {
+  position: absolute; transform: translate(13px,-15px);
+  background: var(--clay); color: #fff; border-radius: 99px;
+  font-size: 9.5px; font-weight: 700; padding: 0 4px; min-width: 15px; text-align: center;
+}
+
+.rail {
+  pointer-events: auto; width: ${WIDTH}px; height: 100vh; background: var(--bg); color: var(--fg);
+  border-left: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden;
+}
+.rail[hidden] { display: none; }
+
+header { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wm { font-weight: 800; letter-spacing: -.03em; font-size: 14px; }
+.wm i { font-style: normal; color: var(--accent); }
+.ctx { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hbtns { display: flex; gap: 4px; }
+.badge { display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--sunk); border-radius: 7px; padding: 5px 9px; }
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex: none; }
+.badge b { font-size: 11.5px; white-space: nowrap; }
+.badge .sub { font-size: 10px; color: var(--muted); font-family: ui-monospace, Menlo, monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge.named { background: var(--soft); border-color: var(--accent); }
+.badge.named .dot { background: var(--accent); }
+.badge.named b { color: var(--accent-deep); }
+.tally { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip { font-size: 11px; font-weight: 650; border-radius: 99px; padding: 2px 9px; border: 1px solid; font-variant-numeric: tabular-nums; }
+.chip.k { color: var(--accent-deep); background: var(--soft); border-color: var(--accent); }
+.chip.a { color: var(--clay); background: var(--clay-soft); border-color: var(--clay); }
+.chip.r { color: var(--slate); background: var(--slate-soft); border-color: var(--slate); }
+
+main { flex: 1; overflow-y: auto; }
+.grp h2 { margin: 0; padding: 11px 12px 5px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; display: flex; justify-content: space-between; }
+.grp.know h2 { color: var(--accent-deep); } .grp.ask h2 { color: var(--clay); } .grp.remember h2 { color: var(--slate); }
+.grp h2 .n { font-family: ui-monospace, Menlo, monospace; opacity: .7; }
+.row { padding: 7px 12px 8px; border-top: 1px solid var(--line); border-left: 3px solid transparent; display: flex; flex-direction: column; gap: 3px; }
+.grp.know .row { border-left-color: var(--accent); }
+.grp.ask .row { border-left-color: var(--clay); }
+.grp.remember .row { border-left-color: var(--slate); }
+.row.done { background: var(--soft); }
+.row.promote { background: var(--slate-soft); }
+.k { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.v { display: flex; align-items: center; gap: 6px; }
+.val { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.val.none { color: var(--muted); font-style: italic; font-family: inherit; }
+.why { font-size: 10.5px; color: var(--muted); font-style: italic; }
+.src { font-size: 10.5px; color: var(--muted); font-family: ui-monospace, Menlo, monospace; }
+.src.ask-promote { color: var(--slate); font-weight: 650; font-family: inherit; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.type { font-family: ui-monospace, Menlo, monospace; font-size: 9.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; flex: none; }
+.warn { color: var(--clay); font-weight: 700; font-size: 10px; flex: none; }
+button { font: inherit; font-size: 11px; font-weight: 650; border: 1px solid var(--line); background: var(--sunk); color: var(--fg); border-radius: 5px; padding: 2px 8px; cursor: pointer; flex: none; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button:disabled { opacity: .55; cursor: default; }
+button.fill, button.use { border-color: var(--slate); color: var(--slate); }
+button.draft { border-color: var(--clay); color: var(--clay); }
+button.yes { border-color: var(--accent); color: var(--accent-deep); background: var(--soft); }
+.more { padding: 7px 12px; font-size: 11px; color: var(--muted); font-style: italic; border-top: 1px solid var(--line); cursor: pointer; }
+.more:hover { color: var(--fg); }
+.variants { padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 7px; background: var(--slate-soft); border-top: 1px solid var(--line); }
+.variant { border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; background: var(--bg); display: flex; flex-direction: column; gap: 5px; }
+.vh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vt { font-size: 9.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.variant p { margin: 0; font-size: 11.5px; line-height: 1.45; }
+.drafting { padding: 10px 12px; font-size: 11px; color: var(--muted); background: var(--slate-soft); border-top: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+th, td { text-align: left; padding: 6px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); background: var(--sunk); }
+td.n { font-family: ui-monospace, Menlo, monospace; text-align: right; width: 3em; }
+.empty { padding: 28px 16px; color: var(--muted); text-align: center; }
+.empty b { display: block; color: var(--fg); margin-bottom: 4px; }
+footer { border-top: 1px solid var(--line); background: var(--sunk); padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.note { font-size: 10.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.note::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex: none; }
+.cta { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+`;
+
+const LOUPE = `<svg width="18" height="18" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+<path d="M40 10 L40 29" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+<circle cx="33" cy="40" r="12" stroke="currentColor" stroke-width="6"/>
+<line x1="42" y1="49" x2="54" y2="59" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>`;
+
+const TESTED: Record<string, string> = {
+  greenhouse: 'react-select · file upload',
+  lever: 'native selects · file upload',
+  ashby: 'react widgets · file upload',
+  workable: 'native selects',
+  recruitee: 'native selects',
+  successfactors: 'native selects',
+  bamboohr: 'iframed form',
+};
+const TITLES: Record<Group, string> = {
+  know: 'Filled — high confidence',
+  ask: "Need you — we won't guess",
+  remember: 'Remembered from you',
+};
+
+export function mountRail(api: RailApi): void {
+  if (document.getElementById('jh-rail-host')) return; // idempotent: SPA re-renders must not stack rails
+
+  const host = document.createElement('div');
+  host.id = 'jh-rail-host';
+  const root = host.attachShadow({ mode: 'open' });
+  const style = document.createElement('style');
+  style.textContent = CSS;
+  root.append(style);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'wrap';
+  wrap.innerHTML = `
+    <button class="launch" id="launch" title="JobHakken" aria-label="Open JobHakken">${LOUPE}<span class="n" id="lcount" hidden></span></button>
+    <section class="rail" id="rail" hidden aria-label="JobHakken">
+      <header>
+        <div class="top">
+          <span class="wm">Job<i>Hakken</i></span>
+          <span class="ctx" id="ctx"></span>
+          <span class="hbtns">
+            <button id="insight" title="What we've learned here" aria-label="What we've learned here">◔</button>
+            <button id="gear" title="Settings" aria-label="Settings">⚙</button>
+            <button id="close" title="Close" aria-label="Close">✕</button>
+          </span>
+        </div>
+        <div class="badge" id="badge"><span class="dot"></span><b id="bname">Reading page…</b><span class="sub" id="bsub"></span></div>
+        <div class="tally" id="tally"></div>
+      </header>
+      <main id="body"></main>
+      <footer><span class="note" id="note"></span><button class="cta" id="fillAll" hidden>Fill</button></footer>
+    </section>`;
+  root.append(wrap);
+  (document.body ?? document.documentElement).append(host);
+
+  const $ = <T extends HTMLElement>(id: string) => root.getElementById(id) as T;
+  let rows: PanelRow[] = [];
+  const drafted = new Map<string, string[]>();
+  const expanded = new Set<string>();
+  let insightMode = false;
+
+  /** Push the page over instead of covering it — a panel about a form must not hide the form. */
+  function reflow(open: boolean): void {
+    const el = document.documentElement;
+    el.style.transition = 'margin-right .15s ease';
+    el.style.marginRight = open ? `${WIDTH}px` : '';
+  }
+
+  async function setOpen(open: boolean, persist = true): Promise<void> {
+    $('rail').hidden = !open;
+    $<HTMLElement>('launch').style.display = open ? 'none' : '';
+    reflow(open);
+    if (persist) await chrome.storage.local.set({ [OPEN_KEY]: open }).catch(() => {});
+    if (open) await refresh();
+  }
+
+  const when = (at: number) => new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
+  function isOpen(r: PanelRow): boolean {
+    if (r.consequential) return false; // never draft an answer to something legally consequential
+    return r.kind === 'textarea' || (r.kind === 'text' && r.label.length > 45);
+  }
+
+  function rowHtml(r: PanelRow): string {
+    const has = !!r.value;
+    const shown = r.value || r.current;
+    const canFill = has && r.current.trim() !== r.value.trim();
+    const sig = esc(r.signature);
+    const asking = !!r.memo && !r.memo.promoted && r.memo.uses >= ASK_AFTER;
+
+    let foot = '';
+    if (asking && r.memo) {
+      foot = `<span class="src ask-promote">you've used this ${r.memo.uses}× — always fill it?
+        <button class="yes" data-act="promote" data-sig="${sig}">Always</button>
+        <button data-act="dismiss" data-sig="${sig}">Keep asking</button></span>`;
+    } else if (r.memo?.promoted) {
+      foot = `<span class="src">you wrote this · always filled</span>`;
+    } else if (r.memo) {
+      foot = `<span class="src">you wrote this · ${esc(when(r.memo.at))} · ${esc(r.memo.host.replace(/^www\./, '').split('.')[0])}</span>`;
+    } else if (r.why) {
+      foot = `<span class="why">${esc(r.why)}</span>`;
+    }
+    if (r.asked && !r.memo) foot += `<span class="src">asked on ${r.asked.hits} of your last ${r.asked.of}</span>`;
+
+    return `<div class="row${asking ? ' promote' : ''}" data-sig="${sig}">
+      <span class="k">${esc(r.label || '(unlabelled field)')}</span>
+      <span class="v">
+        <span class="val${shown ? '' : ' none'}">${shown ? esc(shown) : 'nothing to put here'}</span>
+        ${r.consequential ? '<span class="warn" title="A wrong answer here costs you something">!</span>' : ''}
+        <span class="type">${esc(r.kind)}</span>
+        ${canFill ? `<button class="fill" data-act="fill" data-sig="${sig}">Fill</button>` : ''}
+        ${has && !canFill ? `<button data-act="copy" data-sig="${sig}">Copy</button>` : ''}
+        ${!has && r.addable ? `<button data-act="add" data-sig="${sig}">Add</button>` : ''}
+        ${!has && !r.addable && isOpen(r) ? `<button class="draft" data-act="draft" data-sig="${sig}">✍ Draft 2</button>` : ''}
+      </span>
+      ${foot}
+    </div>`;
+  }
+
+  function render(d: PanelData): void {
+    rows = d.rows;
+    const badge = $('badge');
+    const tested = d.ats ? TESTED[d.ats] : undefined;
+    if (d.ats && tested) {
+      badge.className = 'badge named';
+      $('bname').textContent = d.ats.charAt(0).toUpperCase() + d.ats.slice(1);
+      $('bsub').textContent = tested;
+    } else {
+      badge.className = 'badge';
+      $('bname').textContent = d.ats ? 'Generic handling' : 'Unknown site';
+      $('bsub').textContent = d.ats ? `${d.ats} · not yet verified` : 'nothing claimed';
+    }
+    $('ctx').textContent = `${d.rows.length} field${d.rows.length === 1 ? '' : 's'}`;
+
+    const by = (g: Group) => d.rows.filter((r) => r.group === g);
+    const n = { know: by('know').length, ask: by('ask').length, remember: by('remember').length };
+    $('tally').innerHTML =
+      (n.know ? `<span class="chip k">${n.know} filled</span>` : '') +
+      (n.ask ? `<span class="chip a">${n.ask} need you</span>` : '') +
+      (n.remember ? `<span class="chip r">${n.remember} remembered</span>` : '');
+
+    const pending = d.rows.filter((r) => r.value && r.current.trim() !== r.value.trim());
+    const cta = $<HTMLButtonElement>('fillAll');
+    cta.hidden = !pending.length;
+    cta.textContent = `Fill ${pending.length}`;
+    $('note').textContent = n.ask ? `${n.ask} left for you` : 'learning from this form';
+
+    if (!d.rows.length) {
+      $('body').innerHTML = `<p class="empty"><b>No form fields here</b>Open an application and this fills in.</p>`;
+      return;
+    }
+    $('body').innerHTML = (['know', 'remember', 'ask'] as Group[])
+      .filter((g) => by(g).length)
+      .map((g) => {
+        const list = by(g);
+        // A long Filled list is reference material — keep "need you" and "remembered" above the fold.
+        const cut = g === 'know' && list.length > COLLAPSE_AT && !expanded.has(g);
+        const shown = cut ? list.slice(0, COLLAPSE_AT) : list;
+        return (
+          `<section class="grp ${g}"><h2><span>${TITLES[g]}</span><span class="n">${list.length}</span></h2>` +
+          shown.map(rowHtml).join('') +
+          (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '') +
+          `</section>`
+        );
+      })
+      .join('');
+  }
+
+  async function refresh(): Promise<void> {
+    if (insightMode) {
+      const d = await api.siteInsight();
+      $('tally').innerHTML = '';
+      $<HTMLButtonElement>('fillAll').hidden = true;
+      $('note').textContent = 'structure only · no answers stored here';
+      $('body').innerHTML = d.rows.length
+        ? `<table><thead><tr><th>Question</th><th>Type</th><th class="n">Seen</th></tr></thead><tbody>` +
+          d.rows
+            .map(
+              (r) =>
+                `<tr><td>${esc(r.q)}</td><td><span class="type">${esc(r.kind)}</span></td><td class="n">${r.seen}</td></tr>`,
+            )
+            .join('') +
+          `</tbody></table>`
+        : `<p class="empty"><b>Nothing learned yet</b>The questions this site asks will collect here.</p>`;
+      return;
+    }
+    render(await api.panelFields());
+  }
+
+  /** Badge the launcher with what needs the user, so a collapsed rail still communicates. */
+  async function updateLauncher(): Promise<void> {
+    try {
+      const d = await api.panelFields();
+      const need = d.rows.filter((r) => r.group === 'ask').length;
+      const c = $('lcount');
+      c.hidden = need === 0;
+      c.textContent = String(need);
+    } catch {
+      /* page not ready — the launcher just shows unbadged */
+    }
+  }
+
+  function markRow(sig: string, res: FillResult): void {
+    const el = root.querySelector<HTMLElement>(`.row[data-sig="${CSS_escape(sig)}"]`);
+    if (!el) return;
+    const btn = el.querySelector<HTMLButtonElement>('button[data-act="fill"]');
+    if (res.filled) {
+      el.classList.add('done');
+      if (btn) {
+        btn.textContent = 'Filled';
+        btn.disabled = true;
+      }
+      return;
+    }
+    if (btn) {
+      btn.textContent = 'Copy';
+      btn.dataset.act = 'copy';
+    }
+    const msg =
+      res.reason === 'widget'
+        ? "this control won't take a pasted value — copy it, we've scrolled to the field"
+        : res.reason === 'gone'
+          ? 'the page changed — reopen the rail'
+          : 'could not fill this one';
+    const why = el.querySelector('.why');
+    if (why) why.textContent = msg;
+    else el.insertAdjacentHTML('beforeend', `<span class="why">${esc(msg)}</span>`);
+  }
+
+  // CSS.escape isn't guaranteed in every page world; signatures are ours, so a conservative quote is fine.
+  function CSS_escape(s: string): string {
+    return s.replace(/["\\]/g, '\\$&');
+  }
+
+  async function fillRow(sig: string): Promise<void> {
+    const row = rows.find((r) => r.signature === sig);
+    if (!row) return;
+    const res = await api.fillOne(sig, row.value);
+    markRow(sig, res);
+    if (res.filled && row.memo) {
+      await api.noteUse(row.label); // the signal the promotion prompt reads
+      await refresh();
+    }
+  }
+
+  async function draftRow(sig: string): Promise<void> {
+    const row = rows.find((r) => r.signature === sig);
+    const el = root.querySelector<HTMLElement>(`.row[data-sig="${CSS_escape(sig)}"]`);
+    if (!row || !el) return;
+    // Clear any previous draft block for this row before requesting a new one.
+    const prev = el.nextElementSibling;
+    if (prev && (prev.classList.contains('variants') || prev.classList.contains('drafting'))) prev.remove();
+    el.insertAdjacentHTML('afterend', '<div class="drafting">drafting two options — one call…</div>');
+    const box = el.nextElementSibling as HTMLElement | null;
+    const res = await api.draftTwo(row.label);
+    if (!box) return;
+    if (!res.options.length) {
+      box.className = 'drafting';
+      box.textContent = res.error ?? 'nothing came back — try again';
+      return;
+    }
+    const titles = ['Option A · concise', 'Option B · specific'];
+    box.className = 'variants';
+    box.innerHTML = res.options
+      .map(
+        (o, i) =>
+          `<div class="variant"><div class="vh"><span class="vt">${esc(titles[i] ?? 'Option')}</span>` +
+          `<button class="use" data-act="usedraft" data-sig="${esc(sig)}" data-i="${i}">Fill</button></div><p>${esc(o)}</p></div>`,
+      )
+      .join('');
+    drafted.set(sig, res.options);
+  }
+
+  wrap.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const more = t.closest<HTMLElement>('[data-more]');
+    if (more) {
+      expanded.add(more.dataset.more ?? '');
+      void refresh();
+      return;
+    }
+    const btn = t.closest<HTMLButtonElement>('button');
+    if (!btn) return;
+    if (btn.id === 'launch') return void setOpen(true);
+    if (btn.id === 'close') return void setOpen(false);
+    if (btn.id === 'gear') return api.openOptions();
+    if (btn.id === 'insight') {
+      insightMode = !insightMode;
+      btn.textContent = insightMode ? '◑' : '◔';
+      return void refresh();
+    }
+    if (btn.id === 'fillAll') {
+      void (async () => {
+        btn.disabled = true;
+        const before = btn.textContent;
+        btn.textContent = 'Filling…';
+        // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
+        for (const r of rows.filter((x) => x.value && x.current.trim() !== x.value.trim())) {
+          markRow(r.signature, await api.fillOne(r.signature, r.value));
+        }
+        btn.textContent = before;
+        btn.disabled = false;
+        await refresh();
+      })();
+      return;
+    }
+    const sig = btn.dataset.sig ?? '';
+    const row = rows.find((r) => r.signature === sig);
+    switch (btn.dataset.act) {
+      case 'fill':
+        void fillRow(sig);
+        break;
+      case 'draft':
+        void draftRow(sig);
+        break;
+      case 'usedraft': {
+        const text = drafted.get(sig)?.[Number(btn.dataset.i ?? 0)];
+        if (text)
+          void api.fillOne(sig, text).then(async (r) => {
+            markRow(sig, r);
+            if (r.filled) {
+              await api.learnFromPage(); // what you accepted becomes yours
+              await refresh();
+            }
+          });
+        break;
+      }
+      case 'promote':
+        if (row) void api.promote(row.label, true).then(() => refresh());
+        break;
+      case 'dismiss':
+        btn.closest('.row')?.classList.remove('promote');
+        btn.closest('.src')?.remove();
+        break;
+      case 'add':
+        api.openOptions();
+        break;
+      case 'copy':
+        if (row?.value) void navigator.clipboard.writeText(row.value).catch(() => {});
+        break;
+    }
+  });
+
+  // Learn what the user typed whenever they come back to the rail, then re-read.
+  wrap.addEventListener('mouseenter', () => {
+    if (!$('rail').hidden) void api.learnFromPage().then(() => refresh());
+  });
+
+  void (async () => {
+    const got = (await chrome.storage.local.get(OPEN_KEY).catch(() => ({}))) as Record<string, unknown>;
+    const open = !!got[OPEN_KEY];
+    await setOpen(open, false);
+    if (!open) await updateLauncher();
+  })();
+}
+
+/** Remove the rail and undo the page reflow — used when a page turns out not to be an application. */
+export function unmountRail(): void {
+  document.getElementById('jh-rail-host')?.remove();
+  document.documentElement.style.marginRight = '';
+}

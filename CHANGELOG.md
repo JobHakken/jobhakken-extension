@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.28.0
+- **JobHakken now lives on the page, not behind a menu.** A small tab sits on the right edge of any
+  application page — click it and the sidebar slides in, pushing the page across rather than covering
+  the form you're trying to fill. The tab shows a count of the fields still waiting on you, so you can
+  see there's something to do without opening anything. Everything from 0.27.0 is inside it: what we
+  filled, what we're leaving to you and why, and what you taught us before.
+
 ## 0.27.0
 - **New side panel — see what we filled, what we're leaving to you, and why.** Open it with the ◫ button
   in the popup. Every field on the application in front of you is in one of three groups: filled with
