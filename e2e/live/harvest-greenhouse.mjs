@@ -1,4 +1,4 @@
-/* global document */
+/* global document, CSS */
 /**
  * Harvest the Greenhouse corpus: every question these forms ask, the control behind it, its options,
  * and the deterministic ids Greenhouse generates.
