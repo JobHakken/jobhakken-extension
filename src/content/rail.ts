@@ -36,6 +36,8 @@ export type RailApi = {
   attachCover(text: string): Promise<{ ok: boolean; how?: string }>;
   addResume(file: File): Promise<void>;
   saveTemplate(text: string): Promise<void>;
+  exportData(): Promise<{ ok: boolean; name?: string; summary?: string }>;
+  importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }>;
   getFillSensitive(): Promise<boolean>;
   setFillSensitive(on: boolean): Promise<void>;
   openOptions(): void;
@@ -278,7 +280,14 @@ export function mountRail(api: RailApi): void {
         <div class="tally" id="tally"></div>
       </header>
       <main id="body"></main>
-      <footer><span class="note" id="note"></span><button class="cta" id="fillAll" hidden>Fill</button></footer>
+      <footer>
+        <span class="note" id="note"></span>
+        <span class="hbtns">
+          <button id="export" title="Save everything learned to a file">⤓</button>
+          <button id="import" title="Restore from a backup file">⤒</button>
+        </span>
+        <button class="cta" id="fillAll" hidden>Fill</button>
+      </footer>
     </section>`;
   root.append(wrap);
   (document.body ?? document.documentElement).append(host);
@@ -675,6 +684,26 @@ export function mountRail(api: RailApi): void {
     if (btn.id === 'launch') return void setOpen(true);
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
+    if (btn.id === 'export') {
+      void api.exportData().then((r) => {
+        $('note').textContent = r.ok ? (r.summary ?? 'saved') : 'could not export';
+      });
+      return;
+    }
+    if (btn.id === 'import') {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'application/json,.json';
+      inp.addEventListener('change', async () => {
+        const f = inp.files?.[0];
+        if (!f) return;
+        const r = await api.importData(await f.text());
+        $('note').textContent = r.ok ? (r.summary ?? 'restored') : (r.error ?? 'could not restore');
+        if (r.ok) await refresh();
+      });
+      inp.click();
+      return;
+    }
     if (btn.id === 'docs') {
       // The section is always present now; this just takes you to it.
       root.querySelector('.docs-grp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -4,6 +4,15 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.32.0
+- **Your learned data can now leave and come back.** Two buttons at the bottom of the sidebar: **⤓**
+  saves everything the extension has learned — your profile, the answers you've taught it, every
+  question it has seen, your résumés and cover-letter template — to a single file on your machine. **⤒**
+  restores it. Reinstalling the extension no longer costs you weeks of answers, and you can carry the
+  same corpus to another machine. Restoring merges with whatever is already there rather than wiping it.
+- **Your API key is never included in a backup.** A file that quietly carries a credential is a
+  liability; the key takes seconds to re-enter.
+
 ## 0.31.0
 - **Sensitive questions are their own section, with a switch.** Work authorization, visa sponsorship,
   salary, gender, ethnicity, veteran and disability status no longer sit among the things we simply

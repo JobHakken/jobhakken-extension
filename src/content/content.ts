@@ -50,6 +50,7 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bytesToBase64, getResumeFile } from '../lib/resumeFileStore.js';
 import { addResume as addResumeToLibrary, chooseResume, listResumes, resumeFor } from '../lib/resumeLibrary.js';
 import { draftToFile, getLastDraft, getTemplate, setLastDraft, setTemplate } from '../lib/coverLetterStore.js';
+import { backupFileName, describeBackup, exportBackup, importBackup } from '../lib/backup.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
@@ -749,6 +750,8 @@ function syncRail(): void {
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
     fieldOptions,
     markFields,
+    exportData,
+    importData,
     getFillSensitive: loadFillSensitive,
     setFillSensitive: saveFillSensitive,
     documents,
@@ -903,6 +906,40 @@ async function attachCover(text: string): Promise<{ ok: boolean; how?: string }>
   const input = detectFileInputs(document).find((f) => f.kind === 'coverLetter');
   if (input && setInputFile(input.el, draftToFile(text))) return { ok: true, how: 'attached as a file' };
   return { ok: false };
+}
+
+/**
+ * Write everything learned to a file on disk. Uses a blob download rather than the `downloads` API so
+ * this needs no extra permission — the click that triggered it is the user gesture the browser wants.
+ */
+async function exportData(): Promise<{ ok: boolean; name?: string; summary?: string }> {
+  try {
+    const b = await exportBackup();
+    const name = backupFileName(b);
+    const url = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return { ok: true, name, summary: describeBackup(b) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** Restore from a file the user picked. Merges by default — see importBackup. */
+async function importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }> {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    const r = await importBackup(parsed);
+    return { ok: true, summary: `${r.restored} restored${r.skipped.length ? `, ${r.skipped.length} skipped` : ''}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'could not read that file' };
+  }
 }
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
@@ -1976,6 +2013,12 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'exportData':
+          sendResponse(await exportData());
+          break;
+        case 'importData':
+          sendResponse(await importData(String(msg.params?.value ?? '')));
           break;
         case 'documents':
           sendResponse(await documents());
