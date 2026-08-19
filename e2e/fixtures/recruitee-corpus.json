@@ -1,0 +1,444 @@
+{
+  "ats": "recruitee",
+  "schema": 2,
+  "boards": {
+    "channable": [
+      {
+        "url": "https://channable.recruitee.com/o/product-manager-core-ai/c/new",
+        "fields": 16
+      },
+      {
+        "url": "https://channable.recruitee.com/o/technical-customer-support-dach-german-speaking-3/c/new",
+        "fields": 16
+      },
+      {
+        "url": "https://channable.recruitee.com/o/technical-customer-support-dach-german-speaking-2/c/new",
+        "fields": 15
+      },
+      {
+        "url": "https://channable.recruitee.com/o/account-executive-north-america-1/c/new",
+        "fields": 14
+      }
+    ]
+  },
+  "questions": {
+    "full name": {
+      "label": "Full name",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.name-3"
+      ],
+      "options": []
+    },
+    "email address": {
+      "label": "Email address",
+      "kinds": {
+        "email": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.email-4"
+      ],
+      "options": []
+    },
+    "phone number": {
+      "label": "Phone number",
+      "kinds": {
+        "tel": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.phone-5"
+      ],
+      "options": []
+    },
+    "cv or resume": {
+      "label": "CV or resume",
+      "kinds": {
+        "file": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.cv-9"
+      ],
+      "options": []
+    },
+    "how did you find out about channable?": {
+      "label": "How did you find out about Channable?",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431213.content-11",
+        "input-candidate.openQuestionAnswers.7432454.content-17",
+        "input-candidate.openQuestionAnswers.7376523.content-12",
+        "input-candidate.openQuestionAnswers.7390338.content-11"
+      ],
+      "options": []
+    },
+    "valid work permit": {
+      "label": "Valid work permit",
+      "kinds": {
+        "radio": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431215.content-13-1",
+        "input-candidate.openQuestionAnswers.7432455.content-18-1",
+        "input-candidate.openQuestionAnswers.7376524.content-13-1",
+        "input-candidate.openQuestionAnswers.7390339.content-12-1"
+      ],
+      "options": []
+    },
+    "yes": {
+      "label": "Yes",
+      "kinds": {
+        "radio": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431217.flag-15-0",
+        "input-candidate.openQuestionAnswers.7432453.flag-16-0",
+        "input-candidate.openQuestionAnswers.7376522.flag-11-0",
+        "input-candidate.openQuestionAnswers.7390341.flag-14-0"
+      ],
+      "options": []
+    },
+    "no": {
+      "label": "No",
+      "kinds": {
+        "radio": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431217.flag-15-1",
+        "input-candidate.openQuestionAnswers.7432453.flag-16-1",
+        "input-candidate.openQuestionAnswers.7376522.flag-11-1",
+        "input-candidate.openQuestionAnswers.7390341.flag-14-1"
+      ],
+      "options": []
+    },
+    "candidate.agreements.0.consent": {
+      "label": "candidate.agreements.0.consent",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "channable"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "where do you live? (city)": {
+      "label": "Where do you live? (City)",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "channable"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431214.content-12",
+        "input-candidate.openQuestionAnswers.7432456.content-19",
+        "input-candidate.openQuestionAnswers.7390340.content-13"
+      ],
+      "options": []
+    },
+    "eu citizenship": {
+      "label": "EU citizenship",
+      "kinds": {
+        "radio": 3
+      },
+      "seen": 3,
+      "boards": [
+        "channable"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431215.content-13-0",
+        "input-candidate.openQuestionAnswers.7432455.content-18-0",
+        "input-candidate.openQuestionAnswers.7376524.content-13-0"
+      ],
+      "options": []
+    },
+    "which one of our company values resonates the most with you and why?": {
+      "label": "Which one of our company values resonates the most with you and why?",
+      "kinds": {
+        "text": 2,
+        "textarea": 1
+      },
+      "seen": 3,
+      "boards": [
+        "channable"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7432459.content-22",
+        "input-candidate.openQuestionAnswers.7376528.content-17",
+        "input-candidate.openQuestionAnswers.7390342.content-15"
+      ],
+      "options": []
+    },
+    "upload a file": {
+      "label": "Upload a file",
+      "kinds": {
+        "file": 2
+      },
+      "seen": 2,
+      "boards": [
+        "channable"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "how many hours per week are you available to work?": {
+      "label": "How many hours per week are you available to work?",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "channable"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7432458.content-21",
+        "input-candidate.openQuestionAnswers.7376527.content-16"
+      ],
+      "options": []
+    },
+    "can you please attach your motivational letter?": {
+      "label": "Can you please attach your motivational letter?",
+      "kinds": {
+        "file": 2
+      },
+      "seen": 2,
+      "boards": [
+        "channable"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7432460.file-23",
+        "input-candidate.openQuestionAnswers.7376529.file-18"
+      ],
+      "options": []
+    },
+    "if you selected valid work permit, please specify what type": {
+      "label": "If you selected valid work permit, please specify what type",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431216.content-14"
+      ],
+      "options": []
+    },
+    "which one of our company values resonates the most with you and why": {
+      "label": "Which one of our company values resonates the most with you and why",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431218.content-16"
+      ],
+      "options": []
+    },
+    "can you please attach your motivational letter": {
+      "label": "Can you please attach your motivational letter",
+      "kinds": {
+        "file": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431219.file-17"
+      ],
+      "options": []
+    },
+    "want to impress us even more? take your chance to introduce yourself to us (max. 2 mins)!": {
+      "label": "Want to impress us even more? Take your chance to introduce yourself to us (max. 2 mins)!",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7431220.content-20"
+      ],
+      "options": []
+    },
+    "cover letter": {
+      "label": "Cover letter",
+      "kinds": {
+        "file": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.coverLetterFile-15"
+      ],
+      "options": []
+    },
+    "i need sponsorship": {
+      "label": "I need sponsorship",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7432455.content-18-2"
+      ],
+      "options": []
+    },
+    "i need sponsorship provided by channable": {
+      "label": "I need sponsorship provided by Channable",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7376524.content-13-2"
+      ],
+      "options": []
+    },
+    "where do you live? (city and country)": {
+      "label": "Where do you live? (City and country)",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7376525.content-14"
+      ],
+      "options": []
+    },
+    "us citizenship": {
+      "label": "US citizenship",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7390339.content-12-0"
+      ],
+      "options": []
+    },
+    "no motivation letter is required; instead, take your chance to introduce yourself to us (max. 3 mins). it's obligatory and will leave a last": {
+      "label": "No motivation letter is required; instead, take your chance to introduce yourself to us (max. 3 mins). It's obligatory and will leave a lasting impression! 😎",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "channable"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "input-candidate.openQuestionAnswers.7390343.content-16"
+      ],
+      "options": []
+    }
+  },
+  "dropdownOpenRate": null
+}

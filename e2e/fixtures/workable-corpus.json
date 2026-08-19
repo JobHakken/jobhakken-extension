@@ -1,0 +1,604 @@
+{
+  "ats": "workable",
+  "schema": 2,
+  "boards": {
+    "persado": [
+      {
+        "url": "https://apply.workable.com/persado/j/EB98E75C30/apply/",
+        "fields": 17
+      },
+      {
+        "url": "https://apply.workable.com/persado/j/B9D91A4C0B/apply/",
+        "fields": 18
+      },
+      {
+        "url": "https://apply.workable.com/persado/j/D6FB457899/apply/",
+        "fields": 16
+      }
+    ],
+    "blueground": [
+      {
+        "url": "https://apply.workable.com/blueground/j/0FD01ABC66/apply/",
+        "fields": 15
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/186545F8C1/apply/",
+        "fields": 18
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/3C3D8183F6/apply/",
+        "fields": 17
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/90AF5EDC62/apply/",
+        "fields": 19
+      }
+    ],
+    "skroutz": [
+      {
+        "url": "https://apply.workable.com/skroutz/j/933DA8CE76/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/CFF550F9FE/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/78684A0661/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/4FFDCB70B4/apply/",
+        "fields": 6
+      }
+    ]
+  },
+  "questions": {
+    "first name": {
+      "label": "First name",
+      "kinds": {
+        "text": 11
+      },
+      "seen": 11,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "firstname"
+      ],
+      "options": []
+    },
+    "last name": {
+      "label": "Last name",
+      "kinds": {
+        "text": 11
+      },
+      "seen": 11,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "lastname"
+      ],
+      "options": []
+    },
+    "email": {
+      "label": "Email",
+      "kinds": {
+        "email": 11
+      },
+      "seen": 11,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "email"
+      ],
+      "options": []
+    },
+    "svgs not supported by this browser": {
+      "label": "SVGs not supported by this browser",
+      "kinds": {
+        "file": 11
+      },
+      "seen": 11,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 6,
+      "widgetIds": [],
+      "fieldIds": [
+        "input_files_input_bNcdghjfyjXGfMH3",
+        "input_files_input_dTSePXOlwu4JSjvE",
+        "input_files_input_h4RNrroPRrRhEtI5",
+        "input_files_input_RohX8rO1paFb51xg",
+        "input_files_input_ARIkakQsKoAvFw8j",
+        "input_files_input_m1W7vswnZTJWsZWJ",
+        "input_files_input_elemsitciIN9pRD1",
+        "input_files_input_nYyRAztf7hFY3z8B",
+        "input_files_input_y9Y0CS6drGBdW6zw",
+        "input_files_input_NB5jcDiDcbxTz3cF",
+        "input_files_input_GlMed9zHHCBzhbCh"
+      ],
+      "options": []
+    },
+    "cover letter (optional)": {
+      "label": "Cover letter (Optional)",
+      "kinds": {
+        "textarea": 10
+      },
+      "seen": 10,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "cover_letter"
+      ],
+      "options": []
+    },
+    "phone+1united states+1united kingdom+44canada+1germany+49australia+61afghanistan+93albania+355algeria+213american samoa+1andorra+376angola+2": {
+      "label": "Phone+1United States+1United Kingdom+44Canada+1Germany+49Australia+61Afghanistan+93Albania+355Algeria+213American Samoa+1Andorra+376Angola+244Anguilla+1Antigua & Barbuda+1Argentina+54Armenia+374Aruba+297Ascension Island+247Australia+61Austria+43Azerbaijan+994Bahamas+1Bahrain+973Bangladesh+880Barbados+1Belarus+375Belgium+32Belize+501Benin+229Bermuda+1Bhutan+975Bolivia+591Bosnia & Herzegovina+387Botswana+267Brazil+55British Indian Ocean Territory+246British Virgin Islands+1Brunei+673Bulgaria+359Burkina Faso+226Burundi+257Cambodia+855Cameroon+237Canada+1Cape Verde+238Caribbean Netherlands+599Cayman Islands+1Central African Republic+236Chad+235Chile+56China+86Christmas Island+61Cocos (Keeling) Islands+61Colombia+57Comoros+269Congo - Brazzaville+242Congo - Kinshasa+243Cook Islands+682Costa Rica+506Côte d’Ivoire+225Croatia+385Cuba+53Curaçao+599Cyprus+357Czech Republic+420Denmark+45Djibouti+253Dominica+1Dominican Republic+1Ecuador+593Egypt+20El Salvador+503Equatorial Guinea+240Eritrea+291Estonia+372Eswatini+268Ethiopia+251Falkland Islands+500Faroe Islands+298Fiji+679Finland+358France+33French Guiana+594French Polynesia+689Gabon+241Gambia+220Georgia+995Germany+49Ghana+233Gibraltar+350Greece+30Greenland+299Grenada+1Guadeloupe+590Guam+1Guatemala+502Guernsey+44Guinea+224Guinea-Bissau+245Guyana+592Haiti+509Honduras+504Hong Kong+852Hungary+36Iceland+354India+91Indonesia+62Iran+98Iraq+964Ireland+353Isle of Man+44Israel+972Italy+39Jamaica+1Japan+81Jersey+44Jordan+962Kazakhstan+7Kenya+254Kiribati+686Kosovo+383Kuwait+965Kyrgyzstan+996Laos+856Latvia+371Lebanon+961Lesotho+266Liberia+231Libya+218Liechtenstein+423Lithuania+370Luxembourg+352Macau+853Madagascar+261Malawi+265Malaysia+60Maldives+960Mali+223Malta+356Marshall Islands+692Martinique+596Mauritania+222Mauritius+230Mayotte+262Mexico+52Micronesia+691Moldova+373Monaco+377Mongolia+976Montenegro+382Montserrat+1Morocco+212Mozambique+258Myanmar (Burma)+95Namibia+264Nauru+674Nepal+977Netherlands+31New Caledonia+687New Zealand+64Nicaragua+505Niger+227Nigeria+234Niue+683Norfolk Island+672North Korea+850North Macedonia+389Northern Mariana Islands+1Norway+47Oman+968Pakistan+92Palau+680Palestine+970Panama+507Papua New Guinea+675Paraguay+595Peru+51Philippines+63Poland+48Portugal+351Puerto Rico+1Qatar+974Réunion+262Romania+40Russia+7Rwanda+250Samoa+685San Marino+378São Tomé & Príncipe+239Saudi Arabia+966Senegal+221Serbia+381Seychelles+248Sierra Leone+232Singapore+65Sint Maarten+1Slovakia+421Slovenia+386Solomon Islands+677Somalia+252South Africa+27South Korea+82South Sudan+211Spain+34Sri Lanka+94St Barthélemy+590St Helena+290St Kitts & Nevis+1St Lucia+1St Martin+590St Pierre & Miquelon+508St Vincent & Grenadines+1Sudan+249Suriname+597Svalbard & Jan Mayen+47Sweden+46Switzerland+41Syria+963Taiwan+886Tajikistan+992Tanzania+255Thailand+66Timor-Leste+670Togo+228Tokelau+690Tonga+676Trinidad & Tobago+1Tunisia+216Turkey+90Turkmenistan+993Turks & Caicos Islands+1Tuvalu+688Uganda+256Ukraine+380United Arab Emirates+971United Kingdom+44United States+1Uruguay+598US Virgin Islands+1Uzbekistan+998Vanuatu+678Vatican City+39Venezuela+58Vietnam+84Wallis & Futuna+681Western Sahara+212Yemen+967Zambia+260Zimbabwe+263Åland Islands+358",
+      "kinds": {
+        "tel": 9
+      },
+      "seen": 9,
+      "boards": [
+        "persado",
+        "blueground",
+        "skroutz"
+      ],
+      "required": 9,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "headline (optional)": {
+      "label": "Headline (Optional)",
+      "kinds": {
+        "text": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "headline"
+      ],
+      "options": []
+    },
+    "city": {
+      "label": "city",
+      "kinds": {
+        "text": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "city"
+      ],
+      "options": []
+    },
+    "postcode": {
+      "label": "postcode",
+      "kinds": {
+        "text": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "postcode"
+      ],
+      "options": []
+    },
+    "country": {
+      "label": "country",
+      "kinds": {
+        "text": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "country"
+      ],
+      "options": []
+    },
+    "summary (optional)": {
+      "label": "Summary (Optional)",
+      "kinds": {
+        "textarea": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "summary"
+      ],
+      "options": []
+    },
+    "yes": {
+      "label": "YES",
+      "kinds": {
+        "radio": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 7,
+      "widgetIds": [],
+      "fieldIds": [
+        "Inl0gidzh7DXe1yR",
+        "j2dTJScwOS4wDnSp",
+        "S1rX6jk5huYdv4zH",
+        "mmR6CjtcUhpZSyXx",
+        "M3nfaezBqLPDLrGJ",
+        "HnaMlnmKFHqVNzhu",
+        "H7gECRXvfIb2Zkir"
+      ],
+      "options": []
+    },
+    "no": {
+      "label": "NO",
+      "kinds": {
+        "radio": 7
+      },
+      "seen": 7,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 7,
+      "widgetIds": [],
+      "fieldIds": [
+        "zAQjyjBIEm7aAszS",
+        "iQA8sAwn3mAQDyXH",
+        "uQwKoLaRtaUfLNd5",
+        "U6nhHaDX1CCncwKf",
+        "yJrwNCtEx4aprPdd",
+        "FC630FGx0ZCn5RqJ",
+        "IUjsiBGLvypVF5Hj"
+      ],
+      "options": []
+    },
+    "addresssvgs not supported by this browser": {
+      "label": "AddressSVGs not supported by this browser",
+      "kinds": {
+        "text": 5
+      },
+      "seen": 5,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 5,
+      "widgetIds": [],
+      "fieldIds": [
+        "address"
+      ],
+      "options": []
+    },
+    "ca_6216": {
+      "label": "CA_6216",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "persado"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "are you legally authorized to work permanently in the country where you're applying for this position": {
+      "label": "Are you legally authorized to work permanently in the country where you're applying for this position",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "persado"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_42240"
+      ],
+      "options": []
+    },
+    "svgs not supported by this browser.svgs not supported by this browser.svgs not supported by this browser.i have read, understand and accept ": {
+      "label": "SVGs not supported by this browser.SVGs not supported by this browser.SVGs not supported by this browser.I have read, understand and accept the content of the Privacy Notice and consent to the processing of my data as part of this application",
+      "kinds": {
+        "checkbox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "what is your gross annual salary expectations for this role": {
+      "label": "What is your gross annual salary expectations for this role",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "blueground"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10591811",
+        "QA_9908175"
+      ],
+      "options": []
+    },
+    "phone (optional)+1united states+1united kingdom+44canada+1germany+49australia+61afghanistan+93albania+355algeria+213american samoa+1andorra+": {
+      "label": "Phone (Optional)+1United States+1United Kingdom+44Canada+1Germany+49Australia+61Afghanistan+93Albania+355Algeria+213American Samoa+1Andorra+376Angola+244Anguilla+1Antigua & Barbuda+1Argentina+54Armenia+374Aruba+297Ascension Island+247Australia+61Austria+43Azerbaijan+994Bahamas+1Bahrain+973Bangladesh+880Barbados+1Belarus+375Belgium+32Belize+501Benin+229Bermuda+1Bhutan+975Bolivia+591Bosnia & Herzegovina+387Botswana+267Brazil+55British Indian Ocean Territory+246British Virgin Islands+1Brunei+673Bulgaria+359Burkina Faso+226Burundi+257Cambodia+855Cameroon+237Canada+1Cape Verde+238Caribbean Netherlands+599Cayman Islands+1Central African Republic+236Chad+235Chile+56China+86Christmas Island+61Cocos (Keeling) Islands+61Colombia+57Comoros+269Congo - Brazzaville+242Congo - Kinshasa+243Cook Islands+682Costa Rica+506Côte d’Ivoire+225Croatia+385Cuba+53Curaçao+599Cyprus+357Czech Republic+420Denmark+45Djibouti+253Dominica+1Dominican Republic+1Ecuador+593Egypt+20El Salvador+503Equatorial Guinea+240Eritrea+291Estonia+372Eswatini+268Ethiopia+251Falkland Islands+500Faroe Islands+298Fiji+679Finland+358France+33French Guiana+594French Polynesia+689Gabon+241Gambia+220Georgia+995Germany+49Ghana+233Gibraltar+350Greece+30Greenland+299Grenada+1Guadeloupe+590Guam+1Guatemala+502Guernsey+44Guinea+224Guinea-Bissau+245Guyana+592Haiti+509Honduras+504Hong Kong+852Hungary+36Iceland+354India+91Indonesia+62Iran+98Iraq+964Ireland+353Isle of Man+44Israel+972Italy+39Jamaica+1Japan+81Jersey+44Jordan+962Kazakhstan+7Kenya+254Kiribati+686Kosovo+383Kuwait+965Kyrgyzstan+996Laos+856Latvia+371Lebanon+961Lesotho+266Liberia+231Libya+218Liechtenstein+423Lithuania+370Luxembourg+352Macau+853Madagascar+261Malawi+265Malaysia+60Maldives+960Mali+223Malta+356Marshall Islands+692Martinique+596Mauritania+222Mauritius+230Mayotte+262Mexico+52Micronesia+691Moldova+373Monaco+377Mongolia+976Montenegro+382Montserrat+1Morocco+212Mozambique+258Myanmar (Burma)+95Namibia+264Nauru+674Nepal+977Netherlands+31New Caledonia+687New Zealand+64Nicaragua+505Niger+227Nigeria+234Niue+683Norfolk Island+672North Korea+850North Macedonia+389Northern Mariana Islands+1Norway+47Oman+968Pakistan+92Palau+680Palestine+970Panama+507Papua New Guinea+675Paraguay+595Peru+51Philippines+63Poland+48Portugal+351Puerto Rico+1Qatar+974Réunion+262Romania+40Russia+7Rwanda+250Samoa+685San Marino+378São Tomé & Príncipe+239Saudi Arabia+966Senegal+221Serbia+381Seychelles+248Sierra Leone+232Singapore+65Sint Maarten+1Slovakia+421Slovenia+386Solomon Islands+677Somalia+252South Africa+27South Korea+82South Sudan+211Spain+34Sri Lanka+94St Barthélemy+590St Helena+290St Kitts & Nevis+1St Lucia+1St Martin+590St Pierre & Miquelon+508St Vincent & Grenadines+1Sudan+249Suriname+597Svalbard & Jan Mayen+47Sweden+46Switzerland+41Syria+963Taiwan+886Tajikistan+992Tanzania+255Thailand+66Timor-Leste+670Togo+228Tokelau+690Tonga+676Trinidad & Tobago+1Tunisia+216Turkey+90Turkmenistan+993Turks & Caicos Islands+1Tuvalu+688Uganda+256Ukraine+380United Arab Emirates+971United Kingdom+44United States+1Uruguay+598US Virgin Islands+1Uzbekistan+998Vanuatu+678Vatican City+39Venezuela+58Vietnam+84Wallis & Futuna+681Western Sahara+212Yemen+967Zambia+260Zimbabwe+263Åland Islands+358",
+      "kinds": {
+        "tel": 2
+      },
+      "seen": 2,
+      "boards": [
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "address (optional)svgs not supported by this browser": {
+      "label": "Address (Optional)SVGs not supported by this browser",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "address"
+      ],
+      "options": []
+    },
+    "do you have a background that includes experience in digital marketing and/or working with technical saas products (e.g., adobe, salesforce ": {
+      "label": "Do you have a background that includes experience in digital marketing and/or working with technical SaaS products (e.g., adobe, salesforce marketing cloud, etc.)",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12200264"
+      ],
+      "options": []
+    },
+    "please share some examples of digital marketing campaigns you have managed": {
+      "label": "Please share some examples of digital marketing campaigns you have managed",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11656515"
+      ],
+      "options": []
+    },
+    "can you please elaborate on your experience with email marketing campaigns": {
+      "label": "Can you please elaborate on your experience with email marketing campaigns",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11656516"
+      ],
+      "options": []
+    },
+    "what are your desired salary expectations excluding bonuses": {
+      "label": "What are your desired salary expectations excluding bonuses",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12299856"
+      ],
+      "options": []
+    },
+    "qa_10591812": {
+      "label": "QA_10591812",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "what other languages do you speak fluently": {
+      "label": "What other languages do you speak fluently",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10591813"
+      ],
+      "options": []
+    },
+    "annual gross salary expectations": {
+      "label": "Annual Gross Salary Expectations",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11321342"
+      ],
+      "options": []
+    },
+    "linkedin": {
+      "label": "LinkedIn",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11321343"
+      ],
+      "options": []
+    },
+    "svgs not supported by this browser.native/fluent": {
+      "label": "SVGs not supported by this browser.Native/Fluent",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "wIL9URXJw9Tgom7u"
+      ],
+      "options": []
+    },
+    "svgs not supported by this browser.intermediate": {
+      "label": "SVGs not supported by this browser.Intermediate",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "nmQsF1Oy06J8bj7J"
+      ],
+      "options": []
+    },
+    "svgs not supported by this browser.basic": {
+      "label": "SVGs not supported by this browser.Basic",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "zWcSmUv3jOEhzzZY"
+      ],
+      "options": []
+    },
+    "at skroutz, we value simplifying the complex. describe a process in your current work that is 'bloated.' how would you strip it down to its ": {
+      "label": "At Skroutz, we value simplifying the complex. Describe a process in your current work that is 'bloated.' How would you strip it down to its MVP (Minimum Viable Product) without losing quality",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "skroutz"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11387128"
+      ],
+      "options": []
+    }
+  },
+  "dropdownOpenRate": null
+}

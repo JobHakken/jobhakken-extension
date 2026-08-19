@@ -1,16 +1,18 @@
 /* global document, CSS */
 /**
- * Harvest the Greenhouse corpus: every question these forms ask, the control behind it, its options,
- * and the deterministic ids Greenhouse generates.
+ * Harvest a HIGH-QUALITY Greenhouse corpus: real questions, the control behind each, and — the
+ * expensive part — the actual option list for every dropdown, read by opening it.
  *
- * This is the honest version of what a competitor ships as a curated selector config. Those ids are
- * facts about Greenhouse's own DOM — publicly observable by loading the page — so we derive them
- * ourselves rather than copying anyone's compilation. It also stays current, and covers the forms we
- * actually target instead of theirs.
+ * Why the options matter: react-select renders nothing until it opens, so a cheap pass records the
+ * question and control but not what the field will ACCEPT. Without that there is no shape check, and
+ * "is our value one of these?" is the rule that prevents putting "6" in a yes/no field.
  *
- * Read-only. Loads public postings, records structure, never fills and never submits.
+ * These ids and options are facts about Greenhouse's own DOM, observable by loading a public posting.
+ * We read them ourselves rather than copying anyone's compilation.
  *
- *   node e2e/live/harvest-greenhouse.mjs [--boards 20] [--per 3] [--out e2e/fixtures/greenhouse-corpus.json]
+ * Read-only: loads public postings, records structure, never fills and never submits.
+ *
+ *   node e2e/live/harvest-greenhouse.mjs [--per 4] [--max 45] [--out e2e/fixtures/greenhouse-corpus.json]
  */
 import { writeFileSync } from 'fs';
 
@@ -18,66 +20,73 @@ const arg = (k, d) => {
   const i = process.argv.indexOf(k);
   return i > 0 ? process.argv[i + 1] : d;
 };
-const PER = Number(arg('--per', 3));
+const PER = Number(arg('--per', 4));
+const MAX = Number(arg('--max', 45));
 const OUT = arg('--out', 'e2e/fixtures/greenhouse-corpus.json');
-const TIMEOUT = 20_000;
+const T = 25_000;
 
-/** Public Greenhouse boards. Breadth matters more than any one company — the questions repeat. */
+/** Deliberately mixed: tech, fintech, health, retail, media, non-US — not just companies I recall. */
 const BOARDS = [
   'gitlab',
-  'stripe',
-  'airbnb',
   'reddit',
   'cloudflare',
-  'databricks',
   'discord',
   'figma',
-  'sofi',
-  'benchling',
-  'samsungsemiconductor',
   'anthropic',
-  'ramp',
-  'plaid',
-  'brex',
-  'coinbase',
   'robinhood',
   'affirm',
-  'instacart',
-  'doordash',
   'flexport',
   'gusto',
-  'lattice',
   'mixpanel',
-  'segment',
   'twilio',
-  'asana',
-  'dropbox',
-  'grammarly',
-  'hashicorp',
+  'samsungsemiconductor',
+  'sofi',
+  'benchling',
+  'oscarhealth',
+  'devoted',
+  'included',
+  'cedar',
+  'komodohealth',
+  'warbyparker',
+  'allbirds',
+  'peloton',
+  'sweetgreen',
+  'faire',
+  'vox',
+  'theathletic',
+  'axios',
+  'duolingo',
+  'chess',
+  'deliveroo',
+  'monzo',
+  'gocardless',
+  'wise',
+  'checkout',
+  'thoughtmachine',
+  'improbable',
+  'babylonhealth',
+  'trainline',
+  'depop',
 ];
 
 async function boardJobs(board) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), T);
   try {
     const r = await fetch(`https://boards-api.greenhouse.io/v1/boards/${board}/jobs`, {
-      signal: ctrl.signal,
+      signal: c.signal,
       headers: { accept: 'application/json' },
     });
     if (!r.ok) return [];
-    const j = await r.json();
-    return (j.jobs ?? []).map((x) => x.absolute_url).filter(Boolean);
+    return ((await r.json()).jobs ?? []).map((x) => x.absolute_url).filter(Boolean);
   } catch {
     return [];
   } finally {
-    clearTimeout(timer);
+    clearTimeout(t);
   }
 }
 
-/**
- * Read one form's structure in the page. Deliberately NOT using our own detection: the corpus should
- * describe what Greenhouse renders, so a detection bug can be seen against it rather than hidden by it.
- */
+/** Structure only. Deliberately not our own detector — the corpus must be able to expose OUR bugs. */
 function readForm() {
   const norm = (s) =>
     (s ?? '')
@@ -86,9 +95,9 @@ function readForm() {
       .replace(/[:?.]+$/g, '')
       .trim();
   const labelFor = (el) => {
-    const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+    const l = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
     return norm(
-      byFor?.textContent ||
+      l?.textContent ||
         el.getAttribute('aria-label') ||
         el.closest('label')?.textContent ||
         el.closest('[class*="field"]')?.querySelector('label')?.textContent ||
@@ -102,43 +111,22 @@ function readForm() {
   for (const el of document.querySelectorAll('input,select,textarea')) {
     const type = el.type;
     if (['hidden', 'submit', 'button', 'search'].includes(type)) continue;
-    const r = el.getBoundingClientRect();
-    if (r.height === 0 && type !== 'file') continue;
+    if (el.getBoundingClientRect().height === 0 && type !== 'file') continue;
     const label = labelFor(el);
     if (!label || label.length < 2) continue;
     const key = label.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-
-    // Greenhouse's react-select does NOT put its generated id on the input — the input carries the plain
-    // field name (id="country") and the generated id appears in aria-describedby:
-    //   aria-describedby="react-select-country-placeholder country-error"
-    // Both are deterministic and both are facts about Greenhouse's own DOM, observable by loading the
-    // page. `--0` on repeating rows (school--0, degree--0) is what indexes education/experience blocks.
     const described = el.getAttribute('aria-describedby') ?? '';
-    const rsId = described.split(/\s+/).find((t) => /^react-select-/.test(t)) ?? null;
-    const rowIndex = /--(\d+)/.exec(el.id ?? rsId ?? '')?.[1] ?? null;
-
     let kind = el.tagName === 'TEXTAREA' ? 'textarea' : el.tagName === 'SELECT' ? 'select' : type || 'text';
     if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox') kind = 'combobox';
-
-    const options =
-      el.tagName === 'SELECT'
-        ? [...el.options]
-            .map((o) => o.textContent.trim())
-            .filter(Boolean)
-            .slice(0, 60)
-        : [];
-
     out.push({
       label,
       kind,
       required: el.required || /\*/.test(el.closest('[class*="field"]')?.querySelector('label')?.textContent ?? ''),
-      name: el.name || null,
       id: el.id || null,
-      reactSelectId: rsId,
-      rowIndex,
-      options,
+      reactSelectId: described.split(/\s+/).find((t) => /^react-select-/.test(t)) ?? null,
+      options: el.tagName === 'SELECT' ? [...el.options].map((o) => o.textContent.trim()).filter(Boolean) : [],
     });
   }
   return out;
@@ -146,24 +134,79 @@ function readForm() {
 
 const { chromium } = await import('@playwright/test');
 const browser = await chromium.launch();
-const corpus = { ats: 'greenhouse', generatedAt: null, boards: {}, questions: {} };
+const corpus = { ats: 'greenhouse', schema: 2, boards: {}, questions: {} };
 let forms = 0;
 
-for (const board of BOARDS) {
+/** Open one combobox and read what it offers. This is the slow part, and the reason the corpus is useful. */
+/**
+ * Read what ONE dropdown offers, without trusting any selector to be scoped to it.
+ *
+ * First cut used a global `[class*="option"],[role="option"]` query and it was WRONG: Greenhouse
+ * permanently mounts a phone country-code picker (intl-tel-input) whose ~200 `<li>` items carry
+ * role="option" unconditionally, hidden or not, click or no click. That selector matched all of them
+ * regardless of which field was actually opened, so School/Degree/Discipline came back with
+ * "Afghanistan+93, Åland Islands+358, ..." ahead of the real answers -- caught by reading the captured
+ * VALUES, not by trusting the count.
+ *
+ * Fixed with a before/after diff: snapshot every option-like node before the click, snapshot again
+ * after, keep only what is NEW. That is universal across ATS DOM conventions -- it does not depend on
+ * knowing where any given vendor mounts its menu -- and it is immune to anything that was already
+ * sitting in the DOM before we touched this field.
+ */
+async function optionsFor(page, id) {
+  try {
+    // page.evaluate() does not reliably round-trip a Set through Playwright's serialization boundary —
+    // it comes back unusable in Node. Return a plain array and build the Set on this side.
+    const beforeArr = await page.evaluate(() =>
+      [...document.querySelectorAll('[class*="option"],[role="option"]')].map((o) => o.textContent.trim()),
+    );
+    const before = new Set(beforeArr);
+    await page.click(`[id="${id}"]`, { timeout: 2500 });
+    await page.waitForTimeout(700);
+    const after = await page.evaluate(() =>
+      [...document.querySelectorAll('[class*="option"],[role="option"]')]
+        .filter((o) => o.getBoundingClientRect().height > 0) // visible now, not just present
+        .map((o) => o.textContent.trim())
+        .filter((t) => t && t.length < 90),
+    );
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(200);
+    const fresh = [...new Set(after)].filter((t) => !before.has(t));
+    return fresh.slice(0, 300);
+  } catch {
+    return [];
+  }
+}
+
+outer: for (const board of BOARDS) {
+  if (forms >= MAX) break;
   const urls = (await boardJobs(board)).slice(0, PER);
   if (!urls.length) {
-    console.log(`  ⚠️  ${board}: no public jobs`);
+    console.log(`  –  ${board}: no public jobs`);
     continue;
   }
   const page = await browser.newPage();
+  await page.setViewportSize({ width: 1300, height: 950 });
   const kept = [];
   for (const url of urls) {
+    if (forms >= MAX) {
+      await page.close();
+      break outer;
+    }
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-      await page.waitForTimeout(2200);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: T });
+      await page.waitForSelector('input,select,textarea', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(3500); // real settle time, not a guess at 2.2s
       const fields = await page.evaluate(readForm);
-      if (fields.length < 4) continue;
-      kept.push({ url, fields: fields.length });
+      if (fields.length < 5) continue;
+
+      // Open each dropdown and record what it accepts.
+      for (const f of fields) {
+        if (f.kind !== 'combobox' || !f.id || f.options.length) continue;
+        f.options = await optionsFor(page, f.id);
+      }
+
+      kept.push({ url, fields: fields.length, withOptions: fields.filter((f) => f.options.length).length });
       forms++;
       for (const f of fields) {
         const k = f.label.toLowerCase().slice(0, 140);
@@ -176,15 +219,19 @@ for (const board of BOARDS) {
           reactSelectIds: [],
           fieldIds: [],
           options: [],
+          optionCounts: [],
         });
         q.seen++;
         q.kinds[f.kind] = (q.kinds[f.kind] ?? 0) + 1;
         if (f.required) q.required++;
         if (!q.boards.includes(board)) q.boards.push(board);
         if (f.reactSelectId && !q.reactSelectIds.includes(f.reactSelectId)) q.reactSelectIds.push(f.reactSelectId);
-        // The input's own id is the stable field name Greenhouse uses (country, school--0, degree--0).
         if (f.id && !/^\d/.test(f.id) && !q.fieldIds.includes(f.id)) q.fieldIds.push(f.id);
-        if (f.options.length && !q.options.length) q.options = f.options;
+        if (f.options.length) {
+          q.optionCounts.push(f.options.length);
+          // keep the LONGEST list seen — a truncated open would otherwise poison the record
+          if (f.options.length > q.options.length) q.options = f.options.slice(0, 300);
+        }
       }
     } catch {
       /* a posting can close between listing and load */
@@ -192,13 +239,16 @@ for (const board of BOARDS) {
   }
   await page.close();
   if (kept.length) corpus.boards[board] = kept;
+  const withOpts = Object.values(corpus.questions).filter((v) => v.options.length).length;
   console.log(
-    `  ✓ ${board.padEnd(20)} ${kept.length} form(s), ${Object.keys(corpus.questions).length} distinct questions so far`,
+    `  ✓ ${board.padEnd(20)} ${kept.length} form(s) · ${forms} total · ${Object.keys(corpus.questions).length} questions · ${withOpts} with options`,
   );
 }
 await browser.close();
 
-// Rank by how often a question actually appears — that is the build order.
 corpus.questions = Object.fromEntries(Object.entries(corpus.questions).sort((a, b) => b[1].seen - a[1].seen));
 writeFileSync(OUT, JSON.stringify(corpus, null, 2) + '\n');
-console.log(`\n${forms} forms · ${Object.keys(corpus.questions).length} distinct questions → ${OUT}`);
+const withOpts = Object.values(corpus.questions).filter((v) => v.options.length).length;
+console.log(
+  `\n${forms} forms · ${Object.keys(corpus.questions).length} questions · ${withOpts} with real option lists → ${OUT}`,
+);

@@ -1,0 +1,1776 @@
+{
+  "ats": "lever",
+  "schema": 2,
+  "boards": {
+    "palantir": [
+      {
+        "url": "https://jobs.lever.co/palantir/ac978161-6f46-4f6b-ad9e-a258e642751c/apply",
+        "fields": 53
+      },
+      {
+        "url": "https://jobs.lever.co/palantir/0bbfd4f4-41ff-4ec6-b73f-5200efd5d4d3/apply",
+        "fields": 54
+      },
+      {
+        "url": "https://jobs.lever.co/palantir/fe2a8c69-49b7-405f-816c-a6c6f894399a/apply",
+        "fields": 54
+      },
+      {
+        "url": "https://jobs.lever.co/palantir/a237973c-cb29-41fe-9c80-416e6f42e087/apply",
+        "fields": 54
+      }
+    ],
+    "spotify": [
+      {
+        "url": "https://jobs.lever.co/spotify/890b2c0f-f46f-4a4b-bb73-3a6af6e0edd5/apply",
+        "fields": 26
+      },
+      {
+        "url": "https://jobs.lever.co/spotify/a0fa7da3-4c3c-4fa2-97bd-7d6eb01eb9e5/apply",
+        "fields": 28
+      },
+      {
+        "url": "https://jobs.lever.co/spotify/2193db3f-77c5-43b8-b030-8f92c9882bf1/apply",
+        "fields": 33
+      },
+      {
+        "url": "https://jobs.lever.co/spotify/b4ad9572-e20f-4185-a284-99d9740d04f0/apply",
+        "fields": 27
+      }
+    ]
+  },
+  "questions": {
+    "resume/cv ✱attach resume/cvcouldn't auto-read resume.analyzing resume...success!": {
+      "label": "Resume/CV ✱ATTACH RESUME/CVCouldn't auto-read resume.Analyzing resume...Success!",
+      "kinds": {
+        "file": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "resume-upload-input"
+      ],
+      "options": []
+    },
+    "full name✱": {
+      "label": "Full name✱",
+      "kinds": {
+        "text": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "email✱": {
+      "label": "Email✱",
+      "kinds": {
+        "email": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "current location ✱no location found. try entering a different locationloading": {
+      "label": "Current location ✱No location found. Try entering a different locationLoading",
+      "kinds": {
+        "text": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [
+        "location-input"
+      ],
+      "options": []
+    },
+    "linkedin url": {
+      "label": "LinkedIn URL",
+      "kinds": {
+        "text": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "github url": {
+      "label": "GitHub URL",
+      "kinds": {
+        "text": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "portfolio url": {
+      "label": "Portfolio URL",
+      "kinds": {
+        "text": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "no": {
+      "label": "No",
+      "kinds": {
+        "radio": 4,
+        "checkbox": 4
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "yes": {
+      "label": "Yes",
+      "kinds": {
+        "radio": 6
+      },
+      "seen": 6,
+      "boards": [
+        "palantir",
+        "spotify"
+      ],
+      "required": 6,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "phone": {
+      "label": "Phone",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "current company": {
+      "label": "Current company",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "english (eng)": {
+      "label": "English (ENG)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "spanish (spa)": {
+      "label": "Spanish (SPA)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "french (fra)": {
+      "label": "French (FRA)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "german (deu)": {
+      "label": "German (DEU)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "japanese (jpn)": {
+      "label": "Japanese (JPN)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "cantonese (cant)": {
+      "label": "Cantonese (CANT)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "mandarin (man)": {
+      "label": "Mandarin (MAN)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "dutch (nld)": {
+      "label": "Dutch (NLD)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "hindi (hin)": {
+      "label": "Hindi (HIN)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "arabic (ara)": {
+      "label": "Arabic (ARA)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "danish (dan)": {
+      "label": "Danish (DAN)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "turkish (tur)": {
+      "label": "Turkish (TUR)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "portuguese (por)": {
+      "label": "Portuguese (POR)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "hebrew (heb)": {
+      "label": "Hebrew (HEB)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "swedish (swe)": {
+      "label": "Swedish (SWE)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "norwegian (nor)": {
+      "label": "Norwegian (NOR)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "italian (ita)": {
+      "label": "Italian (ITA)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "vietnamese (vie)": {
+      "label": "Vietnamese (VIE)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "tagalog (tgl)": {
+      "label": "Tagalog (TGL)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "khmer (khm)": {
+      "label": "Khmer (KHM)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "hmong (hmn)": {
+      "label": "Hmong (HMN)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "telugu (tel)": {
+      "label": "Telugu (TEL)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "bengali (bne)": {
+      "label": "Bengali (BNE)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "marathi (mar)": {
+      "label": "Marathi (MAR)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "urdu (urd)": {
+      "label": "Urdu (URD)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "gujarati (guj)": {
+      "label": "Gujarati (GUJ)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "lithuanian (lit)": {
+      "label": "Lithuanian (LIT)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "korean (kor)": {
+      "label": "Korean (KOR)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "american sign language (asl)": {
+      "label": "American Sign Language (ASL)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "british sign language (bsl)": {
+      "label": "British Sign Language (BSL)",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "choose not to disclose": {
+      "label": "Choose not to disclose",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "polish": {
+      "label": "Polish",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "other": {
+      "label": "Other",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "type your response": {
+      "label": "Type your response",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "cards[3da58b41-acf5-40a1-945e-c7f047ef8050][field0]": {
+      "label": "cards[3da58b41-acf5-40a1-945e-c7f047ef8050][field0]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Click Here (If you encounter an issue, make sure your browser is updated and try clearing cache & cookies)",
+        "Aalborg University",
+        "Aalto University",
+        "Aarhus University",
+        "Abdullah Gul University",
+        "Abertay University",
+        "Aberystwyth University",
+        "Abilene Christian University",
+        "Abo Akademi University",
+        "Abubakar Tafawa Balewa University",
+        "Academy of Art University",
+        "Academy of Economic Studies of Moldova",
+        "Academy of Fine Arts in Warsaw",
+        "Academy of Information Technology",
+        "Academy of Technology - AOT",
+        "Acharya Nagarjuna University",
+        "Adam Mickiewicz University in Poznan",
+        "Adams State College",
+        "Adana Science and Technology University",
+        "Addis Ababa Institute of Technology",
+        "Addis Ababa University",
+        "Adelphi University",
+        "Adi Shankara Institute of Engineering and Technology",
+        "Adina Institute of Science and Technology - AIST",
+        "Adiyaman University",
+        "Adnan Menderes University",
+        "Adolfo Ibanez University",
+        "African Leadership College, Mauritius",
+        "African Leadership University, Rwanda",
+        "African University of Science and Technology",
+        "Afyon Kocatepe University",
+        "AGH University of Science and Technology",
+        "Agro ParisTech",
+        "Ahmadu Bello University",
+        "Ahmedabad University",
+        "Ahmet Yesevi University",
+        "Aiken Technical College",
+        "Ain Shams University",
+        "Air Force Institute of Technology",
+        "Air University",
+        "Aix-Marseille University",
+        "Ajay Kumar Garg Engineering College",
+        "Akdeniz University",
+        "Aksaray University",
+        "Al Akhawayn University",
+        "Al Falah University",
+        "Al-Balqa Applied University",
+        "Ala-Too International University",
+        "Alabama A&M University",
+        "Alabama State University",
+        "Alagappa Chettiar College of Engineering and Technology",
+        "Albany College of Pharmacy & Health Sciences",
+        "Albany State University",
+        "Albion College",
+        "Albright College",
+        "Alcorn State University",
+        "Alderson Broaddus University",
+        "Aleppo University",
+        "Alexandria University",
+        "Alexandru Ioan Cuza University",
+        "Alfaisal University",
+        "Algoma University",
+        "Algonquin College",
+        "Allama Iqbal Open University",
+        "Allegheny College",
+        "Allen University",
+        "Alliance College of Engineering and Design",
+        "Alliant International University",
+        "Alma College",
+        "Alvernia University",
+        "AMA International University",
+        "AMA University",
+        "Amasya University",
+        "Amberton University",
+        "American College of Education",
+        "American InterContinental University",
+        "American International University Bangladesh - AIUB",
+        "American Military University",
+        "American Public University",
+        "American River College",
+        "American University",
+        "American University in Bulgaria",
+        "American University of Armenia",
+        "American University of Beirut",
+        "American University of Central Asia",
+        "American University of Nigeria",
+        "American University of Paris",
+        "American University of Sharjah",
+        "Amherst College",
+        "Amirkabir University of Technology",
+        "Amity University",
+        "Amrita Vishwa Vidyapeetham",
+        "Amsterdam University of Applied Sciences",
+        "An-Najah National University",
+        "Anadolu University",
+        "Anderson University",
+        "Andhra University",
+        "Andres Bello Catholic University",
+        "Andrews University",
+        "Anglia Ruskin University",
+        "Ankara Haci Bayram Veli University",
+        "Ankara University",
+        "Ankara Yildirim Beyazit University",
+        "Anna Maria College",
+        "Anna University",
+        "Antalya Akev University",
+        "Antalya International University",
+        "Antonio Jose Camacho University Institution",
+        "Appalachian State University",
+        "Aquinas College",
+        "Arab Academy for Science, Technology & Maritime Transport",
+        "Arcadia University",
+        "Argosy University",
+        "Ariel University",
+        "Aristotle University of Thessaloniki",
+        "Arizona Christian University",
+        "Arizona State University - Downtown Phoenix Campus",
+        "Arizona State University - Polytechnic Campus",
+        "Arizona State University - Tempe",
+        "Arkansas State University",
+        "Arkansas Tech University",
+        "Armstrong State University",
+        "Army Institute of Technology",
+        "Art Institute of Atlanta",
+        "Art Institute of Colorado",
+        "Art Institute of Fort Lauderdale",
+        "Art Institute of Pittsburgh",
+        "Art Institute of Salt Lake City",
+        "ArtCenter College of Design",
+        "Arts et Metiers ParisTech",
+        "Arts, Sciences and Technology University in Lebanon",
+        "Arya College of Engineering & IT",
+        "Ashesi University College",
+        "Ashford University",
+        "Ashworth College",
+        "Asia Pacific University",
+        "Asian University of Bangladesh",
+        "Assiut University",
+        "Assumption College",
+        "Aston University",
+        "Astrakhan State Technical University - ASTU",
+        "Ataturk University",
+        "Ateneo de Davao University",
+        "Ateneo de Manila University",
+        "Athabasca University",
+        "Athens State University",
+        "Athens University of Economics and Business",
+        "Athlone Institute of Technology",
+        "Atilim University",
+        "Atlantic University College",
+        "Auburn University",
+        "Auburn University - Montgomery",
+        "Auckland University of Technology",
+        "Augsburg College",
+        "Augustana College",
+        "Augustana University",
+        "Augusta State University",
+        "Aurora College",
+        "Aurora University",
+        "Aurora's Engineering College",
+        "Austin College",
+        "Austin Peay State University",
+        "Australian Catholic University",
+        "Australian National University",
+        "Autonomous University of Baja California",
+        "Autonomous University of Nuevo Leon",
+        "Autonomous University of San Luis Potosi",
+        "Ave Maria University",
+        "Averett University",
+        "Avrasya University",
+        "Azerbaijan State Oil Academy",
+        "Azerbaijan University of Languages",
+        "Azrieli College of Engineering Jerusalem",
+        "Azusa Pacific University",
+        "Babcock University",
+        "Babes-Bolyai University",
+        "Babson College",
+        "Babu Banarasi Das Northern India Institute of Technology - BBDNIIT",
+        "Baden-Wurttemberg Cooperative State University",
+        "Bahauddin Zakariya University",
+        "Bahcesehir University",
+        "Bahria University Islamabad",
+        "Baker College",
+        "Baku Engineering University",
+        "Baldwin Wallace University",
+        "Balikesir University",
+        "Ball State University",
+        "Banaras Hindu University",
+        "Bandirma Onyedi Eylul University",
+        "Bandung Institute of Technology",
+        "Bangalore University",
+        "Bangladesh University of Engineering Technology",
+        "Bangor University",
+        "Bank Street College of Education",
+        "Bansal Institute of Engineering and Technology - Lucknow",
+        "Bar Ilan University",
+        "Barcelona Graduate School of Economics - Barcelona GSE",
+        "Bard College",
+        "Barnard College",
+        "Barry University",
+        "Basaveshvara Engineering College",
+        "Bashkir State Pedagogical University",
+        "Baskent University",
+        "Bates College",
+        "Bauman Moscow State Technical University",
+        "Baylor College of Medicine",
+        "Baylor University",
+        "Beacon College",
+        "Becker College",
+        "Beihang University",
+        "Beijing Institute of Technology",
+        "Beijing Jiaotong University",
+        "Beijing University of Posts and Telecommunications",
+        "Belarusian State University",
+        "Belarusian State University of Informatics and Radioelectronics",
+        "Belfast Metropolitan College",
+        "Belgium Campus - Pretoria",
+        "Bellarmine University",
+        "Bellevue College",
+        "Bellevue University",
+        "Bells University of Technology",
+        "Belmont Abbey College",
+        "Belmont University",
+        "Beloit College",
+        "Bemidji State University",
+        "Ben-Gurion University of the Negev",
+        "Benedict College",
+        "Benedictine College",
+        "Benedictine University",
+        "Benha University",
+        "Beni Suef University",
+        "Benjamin Franklin Institute of Technology",
+        "Bennett College",
+        "Bennett University",
+        "Bennington College",
+        "Bentley University",
+        "Berea College",
+        "Berkeley College",
+        "Berklee College of Music",
+        "Bern University of Applied Sciences",
+        "Berry College",
+        "Bethany College",
+        "Bethel College",
+        "Bethel University",
+        "Bethesda University of California",
+        "Bethune-Cookman University",
+        "Beuth University of Applied Sciences Berlin",
+        "Beykent University",
+        "Bezalel Academy of Art and Design",
+        "Bhabha Institute Of Science And Technology",
+        "Bhagwant University",
+        "Bharathiar University",
+        "Bharathidasan University",
+        "Bharati Vidyapeeth’s Institute of Management Studies & Research",
+        "Bialystok University of Technology",
+        "Bielefeld University",
+        "Bilecik Seyh Edebali University",
+        "Bilkent University",
+        "Bina Nusantara University",
+        "Binghamton University",
+        "Bingol University",
+        "Binus University",
+        "Biola University",
+        "Birkbeck, University of London",
+        "Birla Institute of Technology and Science, Pilani",
+        "Birla Institute of Technology, Mesra",
+        "Birmingham City University",
+        "Birmingham-Southern College",
+        "Bitlis Eren University",
+        "Blekinge Institute of Technology",
+        "Bloomfield College",
+        "Bloomsburg University of Pennsylvania",
+        "Bluefield State University",
+        "Bluffton University",
+        "BMS Institute of Technology and Management",
+        "Bogazici University",
+        "Bogdan Petriceicu Hasdeu State University",
+        "Boise State University",
+        "Bond University",
+        "Boston College",
+        "Boston Conservatory",
+        "Boston University",
+        "Bournemouth University",
+        "Bowdoin College",
+        "Bowie State University",
+        "Bowling Green State University",
+        "BRAC University",
+        "Bradfield School of Computer Science",
+        "Bradley University",
+        "Brandeis University",
+        "Brescia University",
+        "Briar Cliff University",
+        "Briarcliffe College",
+        "Bridgewater State University",
+        "Brigham Young University - Hawaii",
+        "Brigham Young University - Idaho",
+        "Brigham Young University - Utah",
+        "British Columbia Institute of Technology",
+        "British University in Egypt",
+        "Brno University of Technology"
+      ]
+    },
+    "cards[a6197d84-549e-4a91-8bb0-6af972510013][field0]": {
+      "label": "cards[a6197d84-549e-4a91-8bb0-6af972510013][field0]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "Agency or Non-Palantir Recruiter",
+        "America's Job Exchange",
+        "BuiltIn",
+        "Campus Ambassador",
+        "Friend or Family",
+        "Glassdoor",
+        "Hackajob",
+        "Hallo",
+        "Handshake",
+        "Job Board (Indeed, Monster, etc.)",
+        "LinkedIn",
+        "Palantir Event",
+        "Palantir Medium Blog",
+        "Palantir Recruiter",
+        "Palantir Website",
+        "Rewriting the Code",
+        "Tapia",
+        "University Job Board",
+        "University or University Organization",
+        "Other"
+      ]
+    },
+    "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field0]": {
+      "label": "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field0]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field1]": {
+      "label": "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field1]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "yes, i consent": {
+      "label": "Yes, I consent",
+      "kinds": {
+        "radio": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "no, i do not consent": {
+      "label": "No, I do not consent",
+      "kinds": {
+        "radio": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "additional information": {
+      "label": "Additional information",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "additional-information"
+      ],
+      "options": []
+    },
+    "he/him": {
+      "label": "He/him",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "she/her": {
+      "label": "She/her",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "they/them": {
+      "label": "They/them",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "xe/xem": {
+      "label": "Xe/xem",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "ze/hir": {
+      "label": "Ze/hir",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "ey/em": {
+      "label": "Ey/em",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "hir/hir": {
+      "label": "Hir/hir",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "fae/faer": {
+      "label": "Fae/faer",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "hu/hu": {
+      "label": "Hu/hu",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "use name only": {
+      "label": "Use name only",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "useNameOnlyPronounsOption"
+      ],
+      "options": []
+    },
+    "custom": {
+      "label": "Custom",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "customPronounsOption"
+      ],
+      "options": []
+    },
+    "phone ✱": {
+      "label": "Phone ✱",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "current company ✱": {
+      "label": "Current company ✱",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "other website": {
+      "label": "Other website",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "yes - intern": {
+      "label": "Yes - Intern",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "yes - full time employment": {
+      "label": "Yes - Full Time Employment",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "what is your location?select...afghanistanalbaniaalgeriaamerican samoaandorraangolaanguillaantarcticaantigua and barbudaargentinaarmeniaarub": {
+      "label": "What is your location?Select...AfghanistanAlbaniaAlgeriaAmerican SamoaAndorraAngolaAnguillaAntarcticaAntigua and BarbudaArgentinaArmeniaArubaAustraliaAustriaAzerbaijanBahamasBahrainBangladeshBarbadosBelarusBelgiumBelizeBeninBermudaBhutanBoliviaBonaire, Sint Eustatius and SabaBosnia and HerzegovinaBotswanaBouvet IslandBrazilBritish Indian Ocean TerritoryBruneiBulgariaBurkina FasoBurundiCambodiaCameroonCanadaCape VerdeCayman IslandsCentral African RepublicChadChileChinaChristmas IslandCocos (Keeling) IslandsColombiaComorosCongoCongo, the Democratic Republic of theCook IslandsCosta RicaCroatiaCubaCuraçaoCyprusCzech RepublicDenmarkDjiboutiDominicaDominican RepublicEcuadorEgyptEl SalvadorEquatorial GuineaEritreaEstoniaEswatiniEthiopiaFalkland IslandsFaroe IslandsFijiFinlandFranceFrench GuianaFrench PolynesiaFrench Southern TerritoriesGabonGambiaGeorgiaGermanyGhanaGibraltarGreeceGreenlandGrenadaGuadeloupeGuamGuatemalaGuernseyGuineaGuinea-BissauGuyanaHaitiHeard Island and McDonald IslandsHoly See (Vatican City State)HondurasHong KongHungaryIcelandIndiaIndonesiaIranIraqIrelandIsle of ManIsraelItalyIvory CoastJamaicaJapanJerseyJordanKazakhstanKenyaKiribatiKosovoKuwaitKyrgyzstanLaosLatviaLebanonLesothoLiberiaLibyaLiechtensteinLithuaniaLuxembourgMacaoMacedonia, the Former Yugoslav Republic ofMadagascarMalawiMalaysiaMaldivesMaliMaltaMarshall IslandsMartiniqueMauritaniaMauritiusMayotteMexicoMicronesia, Federated States ofMoldovaMonacoMongoliaMontenegroMontserratMoroccoMozambiqueMyanmarNamibiaNauruNepalNetherlandsNew CaledoniaNew ZealandNicaraguaNigerNigeriaNiueNorfolk IslandNorth KoreaNorthern Mariana IslandsNorwayOmanPakistanPalauPalestine, State ofPanamaPapua New GuineaParaguayPeruPhilippinesPitcairnPolandPortugalPuerto RicoQatarRomaniaRussiaRwandaRéunionSaint BarthélemySaint Helena, Ascension and Tristan da CunhaSaint Kitts and NevisSaint LuciaSaint Martin (French part)Saint Pierre and MiquelonSaint Vincent and the GrenadinesSamoaSan MarinoSao Tome and PrincipeSaudi ArabiaSenegalSerbiaSeychellesSierra LeoneSingaporeSint Maarten (Dutch part)SlovakiaSloveniaSolomon IslandsSomaliaSouth AfricaSouth Georgia and the South Sandwich IslandsSouth KoreaSouth SudanSpainSri LankaSudanSurinameSvalbard and Jan MayenSwedenSwitzerlandSyriaTaiwanTajikistanTanzaniaThailandTimor-LesteTogoTokelauTongaTrinidad and TobagoTunisiaTurkeyTurkmenistanTurks and Caicos IslandsTuvaluUgandaUkraineUnited Arab EmiratesUnited KingdomUnited StatesUnited States Minor Outlying IslandsUruguayUzbekistanVanuatuVenezuelaVietnamVirgin Islands, BritishVirgin Islands, U.S.Wallis and FutunaWestern SaharaYemenZambiaZimbabweÅland Islands",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "Afghanistan",
+        "Albania",
+        "Algeria",
+        "American Samoa",
+        "Andorra",
+        "Angola",
+        "Anguilla",
+        "Antarctica",
+        "Antigua and Barbuda",
+        "Argentina",
+        "Armenia",
+        "Aruba",
+        "Australia",
+        "Austria",
+        "Azerbaijan",
+        "Bahamas",
+        "Bahrain",
+        "Bangladesh",
+        "Barbados",
+        "Belarus",
+        "Belgium",
+        "Belize",
+        "Benin",
+        "Bermuda",
+        "Bhutan",
+        "Bolivia",
+        "Bonaire, Sint Eustatius and Saba",
+        "Bosnia and Herzegovina",
+        "Botswana",
+        "Bouvet Island",
+        "Brazil",
+        "British Indian Ocean Territory",
+        "Brunei",
+        "Bulgaria",
+        "Burkina Faso",
+        "Burundi",
+        "Cambodia",
+        "Cameroon",
+        "Canada",
+        "Cape Verde",
+        "Cayman Islands",
+        "Central African Republic",
+        "Chad",
+        "Chile",
+        "China",
+        "Christmas Island",
+        "Cocos (Keeling) Islands",
+        "Colombia",
+        "Comoros",
+        "Congo",
+        "Congo, the Democratic Republic of the",
+        "Cook Islands",
+        "Costa Rica",
+        "Croatia",
+        "Cuba",
+        "Curaçao",
+        "Cyprus",
+        "Czech Republic",
+        "Denmark",
+        "Djibouti",
+        "Dominica",
+        "Dominican Republic",
+        "Ecuador",
+        "Egypt",
+        "El Salvador",
+        "Equatorial Guinea",
+        "Eritrea",
+        "Estonia",
+        "Eswatini",
+        "Ethiopia",
+        "Falkland Islands",
+        "Faroe Islands",
+        "Fiji",
+        "Finland",
+        "France",
+        "French Guiana",
+        "French Polynesia",
+        "French Southern Territories",
+        "Gabon",
+        "Gambia",
+        "Georgia",
+        "Germany",
+        "Ghana",
+        "Gibraltar",
+        "Greece",
+        "Greenland",
+        "Grenada",
+        "Guadeloupe",
+        "Guam",
+        "Guatemala",
+        "Guernsey",
+        "Guinea",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haiti",
+        "Heard Island and McDonald Islands",
+        "Holy See (Vatican City State)",
+        "Honduras",
+        "Hong Kong",
+        "Hungary",
+        "Iceland",
+        "India",
+        "Indonesia",
+        "Iran",
+        "Iraq",
+        "Ireland",
+        "Isle of Man",
+        "Israel",
+        "Italy",
+        "Ivory Coast",
+        "Jamaica",
+        "Japan",
+        "Jersey",
+        "Jordan",
+        "Kazakhstan",
+        "Kenya",
+        "Kiribati",
+        "Kosovo",
+        "Kuwait",
+        "Kyrgyzstan",
+        "Laos",
+        "Latvia",
+        "Lebanon",
+        "Lesotho",
+        "Liberia",
+        "Libya",
+        "Liechtenstein",
+        "Lithuania",
+        "Luxembourg",
+        "Macao",
+        "Macedonia, the Former Yugoslav Republic of",
+        "Madagascar",
+        "Malawi",
+        "Malaysia",
+        "Maldives",
+        "Mali",
+        "Malta",
+        "Marshall Islands",
+        "Martinique",
+        "Mauritania",
+        "Mauritius",
+        "Mayotte",
+        "Mexico",
+        "Micronesia, Federated States of",
+        "Moldova",
+        "Monaco",
+        "Mongolia",
+        "Montenegro",
+        "Montserrat",
+        "Morocco",
+        "Mozambique",
+        "Myanmar",
+        "Namibia",
+        "Nauru",
+        "Nepal",
+        "Netherlands",
+        "New Caledonia",
+        "New Zealand",
+        "Nicaragua",
+        "Niger",
+        "Nigeria",
+        "Niue",
+        "Norfolk Island",
+        "North Korea",
+        "Northern Mariana Islands",
+        "Norway",
+        "Oman",
+        "Pakistan",
+        "Palau",
+        "Palestine, State of",
+        "Panama",
+        "Papua New Guinea",
+        "Paraguay",
+        "Peru",
+        "Philippines",
+        "Pitcairn",
+        "Poland",
+        "Portugal",
+        "Puerto Rico",
+        "Qatar",
+        "Romania",
+        "Russia",
+        "Rwanda",
+        "Réunion",
+        "Saint Barthélemy",
+        "Saint Helena, Ascension and Tristan da Cunha",
+        "Saint Kitts and Nevis",
+        "Saint Lucia",
+        "Saint Martin (French part)",
+        "Saint Pierre and Miquelon",
+        "Saint Vincent and the Grenadines",
+        "Samoa",
+        "San Marino",
+        "Sao Tome and Principe",
+        "Saudi Arabia",
+        "Senegal",
+        "Serbia",
+        "Seychelles",
+        "Sierra Leone",
+        "Singapore",
+        "Sint Maarten (Dutch part)",
+        "Slovakia",
+        "Slovenia",
+        "Solomon Islands",
+        "Somalia",
+        "South Africa",
+        "South Georgia and the South Sandwich Islands",
+        "South Korea",
+        "South Sudan",
+        "Spain",
+        "Sri Lanka",
+        "Sudan",
+        "Suriname",
+        "Svalbard and Jan Mayen",
+        "Sweden",
+        "Switzerland",
+        "Syria",
+        "Taiwan",
+        "Tajikistan",
+        "Tanzania",
+        "Thailand",
+        "Timor-Leste",
+        "Togo",
+        "Tokelau",
+        "Tonga",
+        "Trinidad and Tobago",
+        "Tunisia",
+        "Turkey",
+        "Turkmenistan",
+        "Turks and Caicos Islands",
+        "Tuvalu",
+        "Uganda",
+        "Ukraine",
+        "United Arab Emirates",
+        "United Kingdom",
+        "United States",
+        "United States Minor Outlying Islands",
+        "Uruguay",
+        "Uzbekistan",
+        "Vanuatu",
+        "Venezuela",
+        "Vietnam",
+        "Virgin Islands, British",
+        "Virgin Islands, U.S.",
+        "Wallis and Futuna",
+        "Western Sahara",
+        "Yemen",
+        "Zambia",
+        "Zimbabwe",
+        "Åland Islands"
+      ]
+    },
+    "spotify has my consent to contact me about future job opportunities": {
+      "label": "Spotify has my consent to contact me about future job opportunities",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "veteran statusselect ...i identify as one or more of the classifications of protected veteran listed abovei am not a protected veterani decl": {
+      "label": "Veteran statusSelect ...I identify as one or more of the classifications of protected veteran listed aboveI am not a protected veteranI decline to self-identify for protected veteran status",
+      "kinds": {
+        "select": 3
+      },
+      "seen": 3,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select ...",
+        "I identify as one or more of the classifications of protected veteran listed above",
+        "I am not a protected veteran",
+        "I decline to self-identify for protected veteran status"
+      ]
+    },
+    "disability statusselect ...yes, i have a disability, or have had one in the pastno, i do not have a disability and have not had one in the p": {
+      "label": "Disability statusSelect ...Yes, I have a disability, or have had one in the pastNo, I do not have a disability and have not had one in the pastI do not want to answer",
+      "kinds": {
+        "select": 3
+      },
+      "seen": 3,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "disabilitySelectElement"
+      ],
+      "options": [
+        "Select ...",
+        "Yes, I have a disability, or have had one in the past",
+        "No, I do not have a disability and have not had one in the past",
+        "I do not want to answer"
+      ]
+    },
+    "opportunitylocationid": {
+      "label": "opportunityLocationId",
+      "kinds": {
+        "select": 2
+      },
+      "seen": 2,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "London",
+        "Stockholm"
+      ]
+    },
+    "palantir technologies has my consent to contact me about future job opportunities": {
+      "label": "Palantir Technologies has my consent to contact me about future job opportunities",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field2]": {
+      "label": "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field2]",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "n/a (i’m currently based in stockholm or london)": {
+      "label": "N/A (I’m currently based in Stockholm or London)",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "0-4": {
+      "label": "0-4",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "4-6": {
+      "label": "4-6",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "6-9": {
+      "label": "6-9",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    },
+    "9+": {
+      "label": "9+",
+      "kinds": {
+        "radio": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": []
+    }
+  },
+  "dropdownOpenRate": null
+}
