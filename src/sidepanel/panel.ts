@@ -111,6 +111,20 @@ function renderBadge(d: PanelData): void {
 /** How many uses before we ASK about promoting. Not a promotion threshold — nothing self-promotes. */
 const ASK_AFTER = 3;
 
+/** Rows shown before the Filled group collapses. */
+const COLLAPSE_AT = 6;
+const expanded = new Set<string>();
+
+/**
+ * An open-ended question — a free-text answer no profile field can supply ("what draws you to this
+ * role?"). Those are the only rows where AI drafting earns its cost; a dropdown or a short text field
+ * has a right answer we should either know or ask for.
+ */
+function isOpenQuestion(r: PanelRow): boolean {
+  if (r.consequential) return false; // never draft an answer to something legally consequential
+  return r.kind === 'textarea' || (r.kind === 'text' && r.label.length > 45);
+}
+
 const when = (at: number) => new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 
 function rowHtml(r: PanelRow): string {
@@ -147,6 +161,7 @@ function rowHtml(r: PanelRow): string {
       ${canFill ? `<button class="fill" data-act="fill" data-sig="${sig}">Fill</button>` : ''}
       ${has && !canFill ? `<button data-act="copy" data-sig="${sig}">Copy</button>` : ''}
       ${!has && r.addable ? `<button data-act="add" data-sig="${sig}">Add</button>` : ''}
+      ${!has && !r.addable && isOpenQuestion(r) ? `<button class="draft" data-act="draft" data-sig="${sig}">✍ Draft 2</button>` : ''}
     </span>
     ${foot}
   </div>`;
@@ -188,12 +203,19 @@ function render(d: PanelData | null): void {
 
   groups.innerHTML = (['know', 'remember', 'ask'] as Group[])
     .filter((g) => by(g).length)
-    .map(
-      (g) =>
-        `<section class="grp ${g}"><h2><span>${GROUP_TITLES[g]}</span><span class="n">${by(g).length}</span></h2>` +
-        by(g).map(rowHtml).join('') +
-        `</section>`,
-    )
+    .map((g) => {
+      const list = by(g);
+      // A long Filled list is reference material, not something to scroll past to reach what needs you.
+      // Collapse it so 'need you' and 'remembered' stay above the fold.
+      const cut = g === 'know' && list.length > COLLAPSE_AT && !expanded.has(g);
+      const shown = cut ? list.slice(0, COLLAPSE_AT) : list;
+      return (
+        `<section class="grp ${g}"><h2><span>${GROUP_TITLES[g]}</span><span class="n">${list.length}</span></h2>` +
+        shown.map(rowHtml).join('') +
+        (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '') +
+        `</section>`
+      );
+    })
     .join('');
 }
 
@@ -249,6 +271,56 @@ async function fillRow(sig: string): Promise<void> {
   }
 }
 
+/** Ask for two options for one question and render them under the row for the user to choose. */
+async function draftRow(sig: string): Promise<void> {
+  const row = rows.find((r) => r.signature === sig);
+  const el = document.querySelector<HTMLElement>(`.row[data-sig="${CSS.escape(sig)}"]`);
+  if (!row || !el) return;
+  el.querySelector('.variants,.drafting')?.remove();
+  el.insertAdjacentHTML('afterend', '<div class="drafting">drafting two options — one call…</div>');
+  const box = el.nextElementSibling;
+  const res = (await rpc<{ options: string[]; error?: string }>('draftTwo', { label: row.label })) ?? {
+    options: [],
+    error: 'no answer',
+  };
+  if (!box) return;
+  if (!res.options.length) {
+    box.className = 'drafting';
+    box.textContent = res.error ?? 'nothing came back — try again';
+    return;
+  }
+  const titles = ['Option A · concise', 'Option B · specific'];
+  box.className = 'variants';
+  box.innerHTML = res.options
+    .map(
+      (o, i) =>
+        `<div class="variant"><div class="vh"><span class="vt">${esc(titles[i] ?? 'Option')}</span>` +
+        `<button class="use" data-act="usedraft" data-sig="${esc(sig)}" data-i="${i}">Fill</button></div>` +
+        `<p>${esc(o)}</p></div>`,
+    )
+    .join('');
+  drafted.set(sig, res.options);
+}
+
+/** Drafts held per row until the user picks one. */
+const drafted = new Map<string, string[]>();
+
+/**
+ * Fill a chosen draft, then BANK it. That's the loop that matters: what the user accepted becomes a
+ * remembered answer, so the same question never costs another model call.
+ */
+async function useDraft(sig: string, i: number): Promise<void> {
+  const row = rows.find((r) => r.signature === sig);
+  const text = drafted.get(sig)?.[i];
+  if (!row || !text) return;
+  const res = (await rpc<FillResult>('fillOne', { signature: sig, value: text })) ?? { filled: false };
+  markRow(sig, res);
+  if (res.filled) {
+    await rpc('learnFromPage'); // the page now holds it → banked as the user's own answer
+    await refresh();
+  }
+}
+
 async function copyRow(sig: string): Promise<void> {
   const row = rows.find((r) => r.signature === sig);
   if (!row?.value) return;
@@ -264,7 +336,42 @@ async function copyRow(sig: string): Promise<void> {
   }
 }
 
+/**
+ * Site insight — everything structure capture holds for this host, rendered verbatim.
+ *
+ * This view IS the disclosure for always-on capture (#141/#142): what's stored is exactly what's on
+ * screen — question, control kind, how many recent forms asked it — and there are no answers in it to
+ * hide. That's auditable by the user, which a policy paragraph is not.
+ */
+async function showInsight(): Promise<void> {
+  const d = await rpc<{ host: string; rows: { q: string; kind: string; seen: number }[] }>('siteInsight');
+  const groups = $('groups');
+  $('ctx').textContent = d ? `learned on ${d.host}` : 'no page';
+  $('tally').innerHTML = '';
+  $<HTMLButtonElement>('fillAll').hidden = true;
+  $('note').textContent = 'structure only · no answers stored here';
+  if (!d?.rows.length) {
+    groups.innerHTML = `<p class="empty"><b>Nothing learned yet</b>Open a few applications and the questions they ask will collect here.</p>`;
+    return;
+  }
+  groups.innerHTML =
+    `<table class="insight"><thead><tr><th>Question</th><th>Type</th><th class="n">Seen</th></tr></thead><tbody>` +
+    d.rows
+      .map(
+        (r) =>
+          `<tr><td>${esc(r.q)}</td><td><span class="type">${esc(r.kind)}</span></td><td class="n">${r.seen}</td></tr>`,
+      )
+      .join('') +
+    `</tbody></table>`;
+}
+
+let showingInsight = false;
+
 async function refresh(): Promise<void> {
+  if (showingInsight) {
+    await showInsight();
+    return;
+  }
   render(await rpc<PanelData>('panelFields'));
 }
 
@@ -280,6 +387,12 @@ async function learnThenRefresh(): Promise<void> {
 
 // One delegated listener: rows are re-rendered wholesale, so per-button listeners would leak.
 $('groups').addEventListener('click', (e) => {
+  const more = (e.target as HTMLElement).closest<HTMLElement>('[data-more]');
+  if (more) {
+    expanded.add(more.dataset.more ?? '');
+    void refresh();
+    return;
+  }
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-sig]');
   if (!btn) return;
   const sig = btn.dataset.sig ?? '';
@@ -296,6 +409,12 @@ $('groups').addEventListener('click', (e) => {
       // "Keep asking" — leave it an offer. We simply stop nagging this session.
       btn.closest('.row')?.classList.remove('promote');
       btn.closest('.src')?.remove();
+      break;
+    case 'draft':
+      void draftRow(sig);
+      break;
+    case 'usedraft':
+      void useDraft(sig, Number(btn.dataset.i ?? 0));
       break;
     case 'add':
       // Send them to the profile field that would answer this permanently.
@@ -323,6 +442,12 @@ $<HTMLButtonElement>('fillAll').addEventListener('click', async (e) => {
   btn.textContent = before;
   btn.disabled = false;
   await refresh(); // re-read the page so the counts reflect what actually landed
+});
+
+$('insight').addEventListener('click', () => {
+  showingInsight = !showingInsight;
+  $('insight').textContent = showingInsight ? '◑' : '◔';
+  void refresh();
 });
 
 void initTheme();

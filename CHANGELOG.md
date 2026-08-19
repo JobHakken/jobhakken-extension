@@ -4,6 +4,34 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.27.0
+- **New side panel — see what we filled, what we're leaving to you, and why.** Open it with the ◫ button
+  in the popup. Every field on the application in front of you is in one of three groups: filled with
+  high confidence, needs you, or remembered from your own earlier answers.
+- **It remembers what you type.** Answer a question we couldn't, and the next form that asks the same
+  thing offers your answer back — with where and when you wrote it. It works across different job sites,
+  because it matches on the question, not the page. Nothing is filled automatically from memory: after
+  you've used an answer a few times it *asks* whether to always fill it. Your answers stay on your device.
+- **Nothing we won't stand behind gets guessed.** Work authorization, sponsorship, salary, notice period
+  and EEO questions need a strong match or they're handed back to you with the reason. Equal-opportunity
+  questions are never auto-filled at all.
+- **Two draft answers for open questions, on request.** Press ✍ Draft 2 on a "why this role?" style
+  question and your own AI key writes two options to choose from — one call, never automatic. What you
+  pick becomes a remembered answer, so it costs nothing next time.
+- **See what we've learned about a site.** The ◔ button lists the questions that site asks, the kind of
+  control each uses and how often it comes up. Questions and field types only — never your answers.
+- **Honest about what we support.** The panel names the system it recognises only where we've verified
+  our handling, and otherwise says "generic handling" rather than implying support we can't back.
+
+- **New side panel: see what we filled, what we're leaving to you, and why.** It lists every field on
+  the application in front of you in three groups — filled with high confidence, needs you, and
+  remembered from your own earlier answers. Anything we won't fill now says *why* ("not in your profile
+  yet", "matched only loosely — too important to guess") instead of just sitting there empty. Questions
+  where a wrong answer costs you something — work authorization, sponsorship, salary, notice period,
+  EEO — need a strong match or they're handed back to you. The panel also names the system it
+  recognises, and says "generic handling" when we haven't verified that one yet rather than implying
+  support we can't stand behind.
+
 ## 0.25.3
 - **The popup no longer says "0 fillable fields" on pages it can actually fill.** Two separate causes,
   both fixed. On single-page apps (Ashby and similar) the field count was read from a cache that only
@@ -35,16 +63,6 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 - **Fixes:** saving your profile or AI provider no longer needs a page reload; your API key survives an
   extension reload when you tick "remember"; employment-agreement and non-compete questions answer "No"
   by default rather than being guessed at.
-## 0.26.0
-- **New side panel: see what we filled, what we're leaving to you, and why.** It lists every field on
-  the application in front of you in three groups — filled with high confidence, needs you, and
-  remembered from your own earlier answers. Anything we won't fill now says *why* ("not in your profile
-  yet", "matched only loosely — too important to guess") instead of just sitting there empty. Questions
-  where a wrong answer costs you something — work authorization, sponsorship, salary, notice period,
-  EEO — need a strong match or they're handed back to you. The panel also names the system it
-  recognises, and says "generic handling" when we haven't verified that one yet rather than implying
-  support we can't stand behind.
-
 ## 0.24.2
 - **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
   GitHub issue with everything we'd otherwise have to ask for: the page URL and job, **which ATS the page

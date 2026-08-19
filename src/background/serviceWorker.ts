@@ -18,7 +18,7 @@ import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStor
 import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
 import { initPosthogSink } from '../lib/posthogSink.js';
-import { saveFullProfile } from '../lib/profileStore.js';
+import { loadFullProfile, saveFullProfile } from '../lib/profileStore.js';
 import { acceptsResumeSchema, resumeDataToProfile } from '../lib/resumeReceive.js';
 import { track } from '../lib/telemetry.js';
 
@@ -93,6 +93,39 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
     void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped
   }
+});
+
+// ── Two draft answers in ONE call (#147) ───────────────────────────────────────────────────────────
+// The panel asks for two options so the user can choose a voice rather than accept whatever the model
+// produced. Deliberately a single completion: two round trips would double the token cost for no gain,
+// and the user named token cost as a live constraint.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-draft-two') return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg?.apiKey) {
+        sendResponse({ options: [], error: 'Add your AI key in Settings to draft answers' });
+        return;
+      }
+      const fp = await loadFullProfile();
+      const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 3) }) : '';
+      const q = String(msg.question ?? '');
+      // Ask for BOTH variants in one completion, tagged so they can be split apart reliably.
+      const r = await draftAnswers(cfg, ctx, msg.job ?? {}, [
+        `${q}\n\nGive TWO alternative answers, each under 60 words, in this exact format:\nA: <concise answer>\nB: <more specific answer>`,
+      ]);
+      const raw = r.answers?.[0] ?? '';
+      const a = /(?:^|\n)\s*A[:.]\s*([\s\S]*?)(?=\n\s*B[:.]|$)/i.exec(raw)?.[1]?.trim();
+      const b = /(?:^|\n)\s*B[:.]\s*([\s\S]*)$/i.exec(raw)?.[1]?.trim();
+      const options = [a, b].filter((x): x is string => !!x && x.length > 1);
+      // If the model ignored the A/B format, still offer what it wrote rather than nothing.
+      sendResponse({ options: options.length ? options : raw ? [raw.trim()] : [] });
+    } catch (e) {
+      sendResponse({ options: [], error: e instanceof Error ? e.message : 'drafting failed' });
+    }
+  })();
+  return true; // async
 });
 
 // ── MAIN-world bridge injection (#145) ─────────────────────────────────────────────────────────────

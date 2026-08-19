@@ -327,6 +327,89 @@
         flex-wrap: wrap;
       }
 
+      /* Draft options — a choice of voice, not a single take-it-or-leave-it answer. */
+      .variants {
+        padding: 8px 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        background: var(--slate-soft);
+        border-top: 1px solid var(--line);
+      }
+      .variant {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 7px 9px;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .variant .vh {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .variant .vt {
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .variant p {
+        margin: 0;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: var(--fg);
+      }
+      .drafting {
+        padding: 10px 12px;
+        font-size: 11px;
+        color: var(--muted);
+        background: var(--slate-soft);
+        border-top: 1px solid var(--line);
+      }
+
+      /* Site insight — this store's own disclosure: what's on screen IS what's stored. */
+      table.insight {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11.5px;
+      }
+      table.insight th,
+      table.insight td {
+        text-align: left;
+        padding: 6px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      table.insight th {
+        font-size: 9.5px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--surf);
+      }
+      table.insight td.n {
+        font-family: ui-monospace, Menlo, monospace;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        width: 3em;
+      }
+      .more {
+        padding: 7px 12px;
+        font-size: 11px;
+        color: var(--muted);
+        font-style: italic;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .more:hover {
+        color: var(--fg);
+      }
+
       .empty {
         padding: 28px 16px;
         color: var(--muted);
@@ -379,6 +462,9 @@
       </div>
       <div class="badge" id="badge">
         <span class="dot"></span><b id="badgeName">Checking site…</b><span class="sub" id="badgeSub"></span>
+        <button id="insight" title="What we've learned on this site" aria-label="What we've learned on this site">
+          ◔
+        </button>
       </div>
       <div class="tally" id="tally"></div>
     </header>

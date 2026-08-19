@@ -25,7 +25,7 @@ import {
 } from '@jobhakken/autofill';
 
 import { loadAnswerStore } from '../lib/answerStore.js';
-import { askedOnRecent, formId, recordForm } from '../lib/fieldStats.js';
+import { askedOnRecent, formId, recordForm, statsForHost } from '../lib/fieldStats.js';
 import {
   lookupRemembered,
   noteRememberedUse,
@@ -690,6 +690,30 @@ async function learnFromPage(): Promise<number> {
     learned++;
   }
   return learned;
+}
+
+/**
+ * Two draft answers for ONE open question, in a single model call (#147).
+ *
+ * One call, not two: the user flagged token cost as a real constraint, and asking for both variants in
+ * the same completion is strictly cheaper than two round trips. Runs ONLY on an explicit click — AI is
+ * never part of a fill pass.
+ *
+ * Whatever the user picks is banked as a remembered answer, so the same question never costs a call
+ * again. AI is the bootstrap for a question we haven't met, not a standing dependency.
+ */
+async function draftTwo(label: string): Promise<{ options: string[]; error?: string }> {
+  if (!label) return { options: [], error: 'no question' };
+  try {
+    const r = (await chrome.runtime.sendMessage({
+      type: 'f2a-draft-two',
+      question: label,
+      job: { title: cleanTitle(document.title), company: pageCompany() },
+    })) as { options?: string[]; error?: string } | undefined;
+    return { options: r?.options ?? [], error: r?.error };
+  } catch {
+    return { options: [], error: 'could not reach the drafting service' };
+  }
 }
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
@@ -1744,6 +1768,12 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'draftTwo':
+          sendResponse(await draftTwo(String(msg.params?.label ?? '')));
+          break;
+        case 'siteInsight':
+          sendResponse({ host: location.hostname, rows: await statsForHost(location.hostname) });
           break;
         case 'learnFromPage':
           sendResponse({ learned: await learnFromPage() });
