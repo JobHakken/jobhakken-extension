@@ -4,7 +4,7 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
-## 0.24.3
+## 0.25.3
 - **The popup no longer says "0 fillable fields" on pages it can actually fill.** Two separate causes,
   both fixed. On single-page apps (Ashby and similar) the field count was read from a cache that only
   refreshed when the toolbar badge updated, so a form that rendered *after* that pass showed as empty
@@ -12,6 +12,29 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
   fresh whenever the popup asks. Separately, when a tab was already open while the extension reloaded or
   updated, Chrome left the old content script running but disconnected, so the popup got no answer at all
   and sat on "Checking…" with a fill button that hung. It now reconnects that tab and retries once.
+
+## 0.25.2
+- **Dropdowns on Greenhouse and other React-based forms now actually get filled.** Previously the
+  extension typed into them and the page threw the value away, so menus like Location or "Are you
+  authorized to work…" stayed empty. It now sets the value the way the page's own code does. On a live
+  Greenhouse application this took dropdown fill from 23% to 83%.
+- **Works on every site, not a fixed list.** The extension used to only wake up on ~40 known job
+  boards, so a company's own careers page or a less common system did nothing at all. It now looks at
+  any page you open, with a cheap check that skips anything without a form so normal browsing is
+  unaffected.
+- **Long résumés now import.** Résumés past about two pages were being cut off mid-import and failed
+  with "nothing extracted". The limit is raised, and a truncated response is repaired rather than
+  discarded.
+- **Fewer wasted clicks while filling.** Single-page forms were being filled up to four times over,
+  which is what caused the visible jumping up and down. One pass now, with fields revealed later
+  (after answering a gate question) filled as they appear.
+- **Questions our rules don't recognise can be matched by AI, using your own key.** Only the field
+  *labels* and the *names* of your profile fields are sent — never your actual answers. Results are
+  remembered per site so the same form costs nothing next time. Legal attestations, consent and
+  background-check questions are never matched this way.
+- **Fixes:** saving your profile or AI provider no longer needs a page reload; your API key survives an
+  extension reload when you tick "remember"; employment-agreement and non-compete questions answer "No"
+  by default rather than being guessed at.
 
 ## 0.24.2
 - **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
