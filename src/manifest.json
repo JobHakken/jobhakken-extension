@@ -46,7 +46,7 @@
       "description": "Autofill this application"
     }
   },
-  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "sidePanel"],
   "externally_connectable": {
     "matches": ["https://jobhakken.com/*", "https://www.jobhakken.com/*", "https://app.jobhakken.com/*"]
   },
@@ -76,5 +76,8 @@
       "resources": ["content/pageBridge.js"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/panel.html"
+  }
 }
