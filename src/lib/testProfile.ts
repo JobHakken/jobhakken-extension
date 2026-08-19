@@ -39,7 +39,9 @@ export const TEST_PROFILE: FullProfile = {
     willingToRelocate: 'Yes',
     // sensitive — placeholder answers (never auto-submitted; you review on the page)
     workAuthorization: 'Yes',
-    requiresSponsorship: 'No',
+    // Demo data models a candidate who DOES need sponsorship — that's the harder, more common case
+    // for our users, and it exercises the visa/H-1B signals end to end.
+    requiresSponsorship: 'Yes',
     salaryExpectation: '150,000 USD',
     currentSalary: '135,000 USD',
     gender: 'Prefer not to say',

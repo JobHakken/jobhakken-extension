@@ -11,19 +11,40 @@
  */
 import type { AiConfig } from './aiClient.js';
 
-const KEY_SESSION = 'f2a_ai_key'; // secret → session only
+const KEY_SESSION = 'f2a_ai_key'; // secret → session by default (wiped on browser close)
+const KEY_LOCAL = 'f2a_ai_key_kept'; // secret → only when the user opts in to remembering it
+const REMEMBER = 'f2a_ai_remember';
 const CFG_LOCAL = 'f2a_ai_cfg'; // { model, baseUrl } → local (non-secret)
+
+/** Is the user opting to keep their key across browser restarts / extension reloads? */
+export async function getRememberKey(): Promise<boolean> {
+  return !!(await chrome.storage.local.get(REMEMBER))[REMEMBER];
+}
+
+export async function setRememberKey(on: boolean): Promise<void> {
+  await chrome.storage.local.set({ [REMEMBER]: on });
+  if (on) {
+    // carry whatever is in memory now into durable storage, so ticking the box doesn't lose the key
+    const cur = (await chrome.storage.session.get(KEY_SESSION))[KEY_SESSION] as string | undefined;
+    if (cur) await chrome.storage.local.set({ [KEY_LOCAL]: cur });
+  } else {
+    await chrome.storage.local.remove(KEY_LOCAL);
+  }
+}
 
 export async function setAiConfig(cfg: AiConfig): Promise<void> {
   await chrome.storage.session.set({ [KEY_SESSION]: cfg.apiKey ?? '' });
+  // Chrome clears session storage on every extension reload and browser restart, so without this the
+  // key has to be retyped constantly — the single most-reported annoyance while testing. Opt-in only:
+  // the default is still "no secret at rest" (ADR-0009).
+  if (await getRememberKey()) await chrome.storage.local.set({ [KEY_LOCAL]: cfg.apiKey ?? '' });
   await chrome.storage.local.set({
     [CFG_LOCAL]: { model: cfg.model ?? '', baseUrl: cfg.baseUrl ?? '', provider: cfg.provider ?? '' },
   });
 }
 
 export async function getAiConfig(): Promise<AiConfig | null> {
-  const s = await chrome.storage.session.get(KEY_SESSION);
-  const apiKey = (s[KEY_SESSION] as string) ?? '';
+  const apiKey = await readKey();
   if (!apiKey) return null;
   const l = await chrome.storage.local.get(CFG_LOCAL);
   const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string; provider?: string }) ?? {};
@@ -42,22 +63,34 @@ export async function getAiConfigMeta(): Promise<{
   baseUrl: string;
   hasKey: boolean;
 }> {
-  const [s, l] = await Promise.all([chrome.storage.session.get(KEY_SESSION), chrome.storage.local.get(CFG_LOCAL)]);
+  const [key, l] = await Promise.all([readKey(), chrome.storage.local.get(CFG_LOCAL)]);
   const cfg = (l[CFG_LOCAL] as { model?: string; baseUrl?: string; provider?: string }) ?? {};
   return {
     provider: cfg.provider ?? '',
     model: cfg.model ?? '',
     baseUrl: cfg.baseUrl ?? '',
-    hasKey: !!(s[KEY_SESSION] as string),
+    hasKey: !!key,
   };
 }
 
+/** The key from memory, falling back to the remembered copy (re-warming memory when found there). */
+async function readKey(): Promise<string> {
+  const inMemory = (await chrome.storage.session.get(KEY_SESSION))[KEY_SESSION] as string | undefined;
+  if (inMemory) return inMemory;
+  const kept = (await chrome.storage.local.get(KEY_LOCAL))[KEY_LOCAL] as string | undefined;
+  if (kept) {
+    await chrome.storage.session.set({ [KEY_SESSION]: kept }); // survive the rest of this session cheaply
+    return kept;
+  }
+  return '';
+}
+
 export async function hasAiKey(): Promise<boolean> {
-  const s = await chrome.storage.session.get(KEY_SESSION);
-  return !!(s[KEY_SESSION] as string);
+  return !!(await readKey());
 }
 
 export async function clearAiConfig(): Promise<void> {
   await chrome.storage.session.remove(KEY_SESSION);
+  await chrome.storage.local.remove(KEY_LOCAL);
   await chrome.storage.local.remove(CFG_LOCAL);
 }

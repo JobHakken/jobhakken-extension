@@ -18,12 +18,17 @@ import {
   type FullProfile,
   type MappingStore,
   type Profile,
+  type ProfileKey,
 } from '@jobhakken/autofill';
 
 import { loadAnswerStore } from '../lib/answerStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
+import { withBuiltinRules } from '../lib/builtinRules.js';
+import { repairFills, type Attempt } from '../lib/fillRepair.js';
+import { UNMAPPABLE } from '../lib/aiFieldMap.js';
+import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
@@ -64,6 +69,40 @@ let autofillAbort: AbortController | null = null; // lets the popup cancel a run
 // What autofill wrote, kept in the isolated world (NOT page-readable data-* attrs) so a later capture
 // can distinguish autofill from manual entry without leaking the values to the page (#12).
 const filledValues = new WeakMap<Element, string>();
+
+/** Fields nobody needs to double-check: if we got the label right at all, the value is simply theirs. */
+const OBVIOUS_KEYS = new Set<string>([
+  'firstName',
+  'middleName',
+  'lastName',
+  'fullName',
+  'preferredName',
+  'email',
+  'phone',
+  'addressLine1',
+  'addressLine2',
+  'city',
+  'state',
+  'zipCode',
+  'country',
+  'location',
+  'linkedin',
+  'github',
+  'website',
+  'currentCompany',
+  'currentTitle',
+  'school',
+  'degree',
+  'fieldOfStudy',
+]);
+
+// Which wizard step we've already grown repeated sections for (#136). Clicking "Add another" is real
+// page interaction, so it must happen once per step — not once per fill pass.
+let expandedFor = '';
+
+// How many fields the AI mapper resolved on the last run — surfaced in the popup so the feature is
+// observable when testing it by hand (otherwise it works silently and looks like nothing happened).
+let aiMappedCount = 0;
 
 // Visually flag the fields the user should review (filled at review-confidence, or AI-drafted) so
 // "N to review" is actionable — an amber outline + hover hint, cleared on the next fill. Tracking
@@ -111,6 +150,131 @@ function markReview(el: HTMLElement): void {
   if (!t.getAttribute('title')) t.setAttribute('title', REVIEW_HINT);
   reviewMarked.add(t);
   reviewedEls.push(t);
+}
+
+/**
+ * Load the page-world value bridge (pageBridge.ts) into the page's OWN JS world.
+ *
+ * It has to run there to reach React's per-world expandos (`__reactProps`, `_valueTracker`) — a content
+ * script literally cannot see them. We inject it as a <script src> from web_accessible_resources rather
+ * than declaring a `"world": "MAIN"` content script: that manifest key made Chrome reject the whole
+ * extension in our test browser (every golden went red because NOTHING was injected), and this form
+ * works on the same Chrome versions we already support. Injected once, lazily, on first use.
+ */
+let bridgeReady: Promise<void> | null = null;
+function injectPageBridge(): Promise<void> {
+  if (bridgeReady) return bridgeReady;
+  bridgeReady = new Promise<void>((resolve) => {
+    try {
+      const s = document.createElement('script');
+      s.src = chrome.runtime.getURL('content/pageBridge.js');
+      s.onload = () => {
+        s.remove(); // the listener stays registered; the tag itself is noise
+        resolve();
+      };
+      s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
+      (document.head ?? document.documentElement).appendChild(s);
+    } catch {
+      resolve();
+    }
+  });
+  return bridgeReady;
+}
+
+/**
+ * Fill what our rules couldn't, using AI to decide WHICH profile field answers each leftover question.
+ *
+ * Order matters: the per-site cache is consulted first, so the model is asked once per form shape and
+ * every later application on that ATS is instant and offline. Only genuinely-new labels cost a call.
+ *
+ * Privacy: we send the model the field LABELS and the NAMES of the user's profile fields — never a
+ * value (see aiFieldMap). Everything it maps is written locally and marked for review, because an
+ * inferred mapping deserves a human glance before submitting.
+ */
+async function aiMapUnfilled(fp: FullProfile, attempted: Set<Element>): Promise<number> {
+  const host = location.hostname.replace(/^www\./, '');
+  // Candidates: detected, visible, still empty, and not something the engine already handled.
+  const open: { id: number; label: string; kind?: string; el: HTMLElement }[] = [];
+  for (const f of detectFields(document)) {
+    const el = f.el;
+    if (!(el instanceof HTMLElement) || attempted.has(el)) continue;
+    if (String((el as HTMLInputElement).value ?? '').trim()) continue;
+    const label = (f.label ?? '').trim();
+    if (!label || label.length > 160) continue;
+    open.push({ id: open.length + 1, label, kind: f.kind, el });
+  }
+  if (!open.length) return 0;
+
+  const cached = await getCachedMap(host);
+  const resolved = new Map<number, string>(); // question id → profile key
+  const ask: { id: number; label: string; kind?: string; options?: string[] }[] = [];
+  for (const q of open) {
+    const hit = cached[labelKey(q.label)];
+    if (hit) resolved.set(q.id, hit);
+    else ask.push({ id: q.id, label: q.label, kind: q.kind });
+  }
+
+  // Ask the model only about labels we've never seen on this site.
+  if (ask.length) {
+    const res = (await chrome.runtime
+      .sendMessage({ type: 'f2a-ai', method: 'mapFields', params: { questions: ask, profile: fp.profile } })
+      .catch(() => null)) as { result?: { map?: Record<string, string> } } | undefined;
+    const learned: Record<string, ProfileKey> = {};
+    for (const [idStr, key] of Object.entries(res?.result?.map ?? {})) {
+      const q = open.find((o) => o.id === Number(idStr));
+      if (!q || !key) continue;
+      resolved.set(q.id, key);
+      learned[labelKey(q.label)] = key as ProfileKey;
+    }
+    if (Object.keys(learned).length) await cacheMap(host, learned);
+  }
+  if (!resolved.size) return 0;
+
+  // Write through the same verified path as everything else (combobox driver / page-world bridge).
+  const writes: Attempt[] = [];
+  for (const q of open) {
+    const key = resolved.get(q.id) as ProfileKey | undefined;
+    const value = key ? fp.profile[key] : undefined;
+    if (value) writes.push({ el: q.el, value: String(value) });
+  }
+  if (!writes.length) return 0;
+  const { confirmed } = await repairFills(writes, 6000);
+  // An AI-inferred mapping is a judgement call — outline it so the user checks before submitting.
+  for (const w of writes) if (w.el instanceof HTMLElement) markReview(w.el);
+  return confirmed;
+}
+
+/**
+ * How many fillable controls currently hold a value — the DOM's own answer, used to report what
+ * autofill ACTUALLY landed rather than what it attempted (#136). Counts hidden controls too, since
+ * several ATS keep the real <select> off-screen behind a custom widget.
+ */
+function filledControlCount(): number {
+  let n = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button') continue;
+    const held =
+      t === 'checkbox' || t === 'radio'
+        ? (el as HTMLInputElement).checked
+        : String((el as HTMLInputElement).value ?? '').trim() !== '';
+    if (held) n++;
+  }
+  return n;
+}
+
+/** Best-effort visible label for a control — used to spot attestation questions we must not answer. */
+function describeField(el: HTMLElement): string {
+  const id = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+  return (
+    id?.textContent ||
+    el.getAttribute('aria-label') ||
+    el.closest('label')?.textContent ||
+    (el as HTMLInputElement).name ||
+    ''
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /** Set a field's value the way React/controlled inputs accept (native setter + input/change events). */
@@ -168,7 +332,7 @@ const answerStore = () => (answerStoreP ??= loadAnswerStore());
 /** Remember answers the user typed into questions the profile couldn't fill (auto-capture). */
 function captureLearnable(fp: FullProfile, store: MappingStore): void {
   try {
-    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: fp.rules, store })) {
+    for (const a of learnableAnswers(document, { profile: fp.profile, userRules: withBuiltinRules(fp.rules), store })) {
       // reuse-at-review confidence; a user rule/profile value always outranks it
       store.put(a.signature, { value: a.value, source: 'user', confidence: 0.7 });
     }
@@ -311,6 +475,23 @@ function applyBadges(): void {
   }
 }
 
+/**
+ * Is this page worth scanning at all? Deliberately crude and fast — one selector, no label work.
+ * A job application has several fillable controls or a file upload; a dashboard or inbox does not.
+ * Known ATS hosts always qualify, so a slow-rendering application page isn't dismissed too early.
+ */
+function looksFormish(): boolean {
+  if (isAtsHost(location.hostname) || siteOptedIn) return true;
+  let fillable = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button' || t === 'search') continue;
+    if (t === 'file') return true; // résumé upload is a strong signal on its own
+    if (++fillable >= 3) return true;
+  }
+  return false;
+}
+
 function updateBadge(): void {
   const fields = detectFields(document);
   fieldCount = fields.length;
@@ -388,6 +569,10 @@ async function runAutofill(
   signal?: AbortSignal,
 ): Promise<{
   filled: number;
+  claimed: number;
+  aiMapped: number;
+  sync: number;
+  interactive: number;
   review: number;
   total: number;
   partial?: boolean;
@@ -404,12 +589,19 @@ async function runAutofill(
     profile: fp.profile,
     experience: fp.experience,
     education: fp.education,
-    userRules: fp.rules,
+    userRules: withBuiltinRules(fp.rules),
     fillSensitive,
     store,
   };
-  // 1) grow repeated sections so there's a row per role/school ("Add another")
-  await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
+  const heldBefore = filledControlCount(); // DOM truth baseline — see the honest count below
+  // 1) grow repeated sections so there's a row per role/school ("Add another") — ONCE per page (#136).
+  // This clicks real "Add another" buttons, so repeating it on every pass was the bulk of the ~25 clicks
+  // a single run dispatched, and each click makes the browser scroll to it (the "up and down" churn).
+  // A wizard step change resets the guard (see stepSignature below) so a later step still expands.
+  if (expandedFor !== stepSignature()) {
+    expandedFor = stepSignature();
+    await expandRepeatingSections(document, { experience: fp.experience?.length, education: fp.education?.length });
+  }
   // 2) synchronous fill (text/select/radio + multi-row groups) — fast, always completes.
   // NB: fill runs against the whole document — scoping to formRegion() was tried (#13) but broke
   // Workday, whose fields span wider than the detected-field common ancestor. The engine gates the
@@ -418,12 +610,59 @@ async function runAutofill(
   // Remember what WE filled — in an isolated-world WeakMap, NOT page-readable data-* attributes (#12) —
   // so a later capture can tell autofill from manual entry without exposing the values to the page.
   clearReviewMarks(); // fresh run → drop last run's outlines
+  const attempts: Attempt[] = [];
   for (const r of report.results) {
     if (r.field.el instanceof HTMLElement) {
-      if (r.status === 'filled') filledValues.set(r.field.el, String(r.value));
-      else if (r.status === 'review') markReview(r.field.el); // outline it so the user can find it
+      if (r.status === 'filled') {
+        filledValues.set(r.field.el, String(r.value));
+      } else if (r.status === 'review' && !OBVIOUS_KEYS.has(r.resolution?.key ?? '')) {
+        // Outline only what genuinely needs a human look. Basic contact details are unambiguous even
+        // when the engine reports low confidence, and ringing every one of them in violet made the
+        // whole form look like it needed re-checking — which trains people to ignore the marks.
+        markReview(r.field.el);
+      }
+      // Anything the ENGINE resolved to a value is a repair candidate — including custom comboboxes it
+      // can't write to. Using the engine's value (not our own re-resolution) keeps its rationalization
+      // safety, which is what stops "employment agreements?" being answered with a company name.
+      if (r.value) attempts.push({ el: r.field.el, value: String(r.value), source: r.resolution?.source });
     }
   }
+  // 2a) SAFETY: never answer an attestation on the user's behalf. The engine will happily match
+  //     "Do you consent to a background check?" to a profile "Yes" — observed live. Consents, criminal
+  //     history and certifications are the user's to give personally; a pre-ticked "Yes" they don't
+  //     notice is a real harm, so anything we wrote into such a field is cleared and flagged instead.
+  //     (Employment-agreement questions are exempt: the owner set a reviewed default of "No".)
+  for (const a of attempts.slice()) {
+    const el = a.el;
+    if (!(el instanceof HTMLElement)) continue;
+    const label = describeField(el);
+    if (!label || !UNMAPPABLE.test(label)) continue;
+    if (/employment agreement|non-?compete|post-?employment|restrictive covenant/i.test(label)) continue;
+    // The user's OWN rule is explicit intent — if they've decided in advance how to answer consent
+    // questions, honour it. What we refuse is a COINCIDENCE: on a probe form the engine answered
+    // "Do you consent to a background check?" with the profile's workAuthorization "Yes" — the right
+    // word from the wrong question. Only heuristic/fuzzy matches are cleared.
+    if (a.source === 'user') continue;
+    try {
+      const input = el as HTMLInputElement;
+      if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+      else Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch {
+      /* best effort — the flag below still tells the user to check it */
+    }
+    attempts.splice(attempts.indexOf(a), 1);
+    markReview(el); // outline it: this one needs a human answer
+  }
+
+  // 2b) VERIFY the writes actually landed, and repair the ones the page threw away. React & co. own
+  //     their inputs' values, so a plain assignment from this (isolated) world is discarded on the next
+  //     render — measured live: 14 "filled", only 5 real. repairFills re-writes those through the
+  //     page-world bridge and returns the count the DOM confirms, so `filled` stops lying.
+  await injectPageBridge();
+  const { confirmed, repaired } = await repairFills(attempts);
+  if (repaired) report.filled = confirmed;
   // 3+4) the SLOW part — live widgets (Workday comboboxes/dates) + résumé/cover-letter
   //      upload (ATS mode renders a tailored résumé via the desktop AI, which can be slow).
   //      Bound it so the button never hangs forever, and honor Cancel. On timeout/cancel we
@@ -435,7 +674,11 @@ async function runAutofill(
       (async () => {
         const live = await autofillInteractive({ root: document, ...common });
         const uploaded = await uploadDocuments(mode);
-        return live.comboboxes + live.dates + uploaded;
+        // Last: let AI map the questions our rules didn't recognise (cache-first, so usually free).
+        // Deliberately AFTER everything deterministic — AI only ever sees what's still empty.
+        aiMappedCount = await aiMapUnfilled(fp, new Set(attempts.map((a) => a.el)));
+        const aiMapped = aiMappedCount;
+        return live.comboboxes + live.dates + uploaded + aiMapped;
       })(),
       mode === 'ats' ? 45_000 : 20_000,
       signal,
@@ -446,8 +689,19 @@ async function runAutofill(
   void captureFlow(); // record the autofilled state into the corpus
   // Coverage (Layer 1, #105): which TYPES of field we detected but couldn't fill — bounded enum only,
   // no label text or values (see coverage.ts). Feeds "where is autofill weak?" telemetry.
+  // HONEST COUNT (#136): report what the DOM actually holds, not what we attempted. The interactive
+  // widget pass self-reports successes that frequently don't land on custom dropdowns — measured live:
+  // it claimed 9 fills on a Greenhouse form where the page gained none. Counting the real delta stops
+  // the popup telling the user "14 filled" when 5 landed, and makes every future fix measurable.
+  const landed = Math.max(0, filledControlCount() - heldBefore);
   return {
-    filled: report.filled + extra,
+    filled: landed,
+    claimed: report.filled + extra,
+    // Attribution: synchronous engine (verified + repaired against the DOM) vs the interactive widget
+    // pass (comboboxes/dates/uploads), which is where the claimed-vs-landed gap lives.
+    sync: report.filled,
+    interactive: extra,
+    aiMapped: aiMappedCount,
     review: report.review,
     total: report.total,
     partial,
@@ -527,11 +781,17 @@ async function autofillWholeApplication(
   review: number;
   total: number;
   partial?: boolean;
+  sync: number;
+  interactive: number;
+  aiMapped: number;
   steps: number;
   stopped: string;
   missedTypes: MissedFieldType[];
 }> {
   let filled = 0;
+  let sync = 0;
+  let interactive = 0;
+  let aiMapped = 0;
   let review = 0;
   let total = 0;
   let steps = 0;
@@ -542,22 +802,27 @@ async function autofillWholeApplication(
       stopped = 'cancelled';
       break;
     }
-    // Two re-detecting passes per step: a step can have more lazy comboboxes than one interactive
-    // budget reaches, and framework re-renders (Taleo JSF partial postbacks, BrassRing/Oracle
-    // Angular/Knockout) mutate the DOM mid-fill — which can THROW on stale element refs. Each pass
-    // re-detects (runAutofill calls detectFields fresh) and refills; wrapping each pass so a mid-fill
-    // re-render never aborts the whole run means the 2nd pass simply re-detects and completes.
+    // ONE pass per step, retried ONLY if it threw (#136). A framework re-render (Taleo JSF postbacks,
+    // BrassRing/Oracle Angular/Knockout) can invalidate element refs mid-fill and throw; that case
+    // genuinely needs a fresh re-detect. But retrying unconditionally meant every single-page form got
+    // two full detect+fill passes — doubling the real clicks we dispatch into the page for no gain
+    // (measured: pass 2 added 0 fills on a live Greenhouse form). Newly-revealed fields are handled by
+    // the DOM-change watcher below instead of by blind repetition.
     let r: Awaited<ReturnType<typeof runAutofill>> = null;
     for (let pass = 0; pass < 2; pass++) {
       if (signal?.aborted) break;
       try {
         r = await runAutofill(mode, signal);
+        break; // succeeded → no blind second pass (#136)
       } catch {
-        await sleep(400); // DOM re-rendered mid-pass — let it settle; the next pass re-detects
+        await sleep(400); // DOM re-rendered mid-pass — let it settle, then re-detect once
       }
     }
     if (r) {
       filled += r.filled;
+      sync += r.sync;
+      interactive += r.interactive;
+      aiMapped += r.aiMapped;
       review += r.review;
       total += r.total;
       r.missedTypes.forEach((t) => missed.add(t));
@@ -591,7 +856,68 @@ async function autofillWholeApplication(
       break;
     }
   }
-  return { filled, review, total, steps, stopped, missedTypes: [...missed].sort() };
+  return { filled, sync, interactive, aiMapped, review, total, steps, stopped, missedTypes: [...missed].sort() };
+}
+
+/** How many fillable, visible controls the page currently shows — the signal for "the form grew". */
+function fillableCount(): number {
+  let n = 0;
+  for (const el of document.querySelectorAll('input,textarea,select')) {
+    const t = (el as HTMLInputElement).type;
+    if (t === 'hidden' || t === 'submit' || t === 'button') continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && r.width > 0) n++;
+  }
+  return n;
+}
+
+/**
+ * Fill fields that appear AFTER an explicit autofill (#136).
+ *
+ * Some flows reveal a form only once something is filled or a gate is passed (Jobvite's residence
+ * consent, lazy sections). The popup used to handle that by blindly re-running the whole fill whenever
+ * `fields > filled + 3` — a condition that is true on any page we fill poorly, so it fired constantly
+ * and (measured on a live Greenhouse form) added ZERO fills while doubling the clicks we dispatch.
+ *
+ * Instead, watch the DOM for a short window after the run and fill again ONLY if the page genuinely
+ * grew new fillable fields — debounced so a burst of mutations triggers one fill, not dozens. This is
+ * the model the mature autofill extensions use (observe + debounce) rather than blind repetition.
+ * Still user-initiated: the watcher only exists in the seconds following a fill the user asked for.
+ */
+async function fillRevealedFields(mode: 'default' | 'ats', signal?: AbortSignal): Promise<number> {
+  const WINDOW_MS = 4000; // hard cap: never hold the UI longer than this
+  const QUIET_MS = 1200; // a page that stops mutating isn't going to reveal anything — stop early
+  const SETTLE_MS = 400; // debounce: a burst of mutations triggers ONE fill, not dozens
+  const baseline = fillableCount();
+  return new Promise<number>((resolve) => {
+    let done = false;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const finish = (n: number) => {
+      if (done) return;
+      done = true;
+      clearTimeout(settle);
+      clearTimeout(quiet);
+      clearTimeout(deadline);
+      obs.disconnect();
+      resolve(n);
+    };
+    // Restarted on every mutation: if the DOM goes quiet, nothing more is coming.
+    let quiet = setTimeout(() => finish(0), QUIET_MS);
+    const obs = new MutationObserver(() => {
+      clearTimeout(quiet);
+      quiet = setTimeout(() => finish(0), QUIET_MS);
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        if (signal?.aborted) return finish(0);
+        if (fillableCount() <= baseline) return; // no NEW fields — keep watching, never blind-refill
+        void runAutofill(mode, signal)
+          .then((r) => finish(r?.filled ?? 0))
+          .catch(() => finish(0));
+      }, SETTLE_MS);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    const deadline = setTimeout(() => finish(0), WINDOW_MS);
+  });
 }
 
 /**
@@ -939,7 +1265,7 @@ async function draftAnswer(): Promise<{ ok: boolean; filled?: number; usage?: Ai
   if (!fp || Object.keys(fp.profile).length === 0) return { ok: false, error: 'No profile' };
   const test = await isTestActive();
   const store = await answerStore();
-  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: fp.rules, store });
+  const questions = unmappedQuestions(document, { profile: fp.profile, userRules: withBuiltinRules(fp.rules), store });
   if (!questions.length) return { ok: false, error: 'No question field' };
   const job = pageJob();
   const qs = questions.slice(0, 6); // cap: don't spam a form with many essays
@@ -1036,7 +1362,11 @@ async function init() {
   const local = await loadFullProfile();
   hasLocalProfile = !!local && Object.keys(local.profile ?? {}).length > 0;
   testMode = await loadTestMode();
-  await checkBridge(); // live reachability + app sandbox state
+  // NOT awaited: probing the desktop bridge walks 5 localhost ports at 1.5s each, and with no app
+  // running that blocked the rest of init() — including the RPC listener registered below — for up to
+  // 7.5s. During that window the popup asked "how many fields?" and got no answer at all, so a perfectly
+  // fillable page reported "0 fillable fields". Connection status just updates a moment later instead.
+  void checkBridge();
   captureMode = await loadCaptureMode();
   autoCaptureOn = await loadAutoCapture();
   needsSponsorship = await loadNeedsSponsorship();
@@ -1046,6 +1376,14 @@ async function init() {
   // Reflect setting changes from the options page without a reload.
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
+    // Saving the profile in Options must take effect on pages that are ALREADY open. Without this the
+    // content script kept the value it read at page load, so right after setting up a profile the popup
+    // still said "Profile not set up" until you reloaded the tab — reported from real use.
+    if ('f2a_full_profile' in changes) {
+      const fp = changes['f2a_full_profile'].newValue as FullProfile | undefined;
+      hasLocalProfile = !!fp && Object.keys(fp.profile ?? {}).length > 0;
+      updateBadge(); // refresh the toolbar count + "relevant page" state too
+    }
     if ('f2a_test_mode' in changes) testMode = !!changes['f2a_test_mode'].newValue;
     if ('f2a_capture_mode' in changes) captureMode = !!changes['f2a_capture_mode'].newValue;
     if ('f2a_auto_capture' in changes) autoCaptureOn = !!changes['f2a_auto_capture'].newValue;
@@ -1064,6 +1402,12 @@ async function init() {
   const schedule = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
+      // CHEAP GATE FIRST. Since the content script runs on <all_urls>, this callback fires on every
+      // mutation burst of every page you visit — including apps like mail and docs that mutate
+      // constantly. Running the full detectFields + per-field resolution + badge passes there was
+      // continuous wasted work and a real risk to browser responsiveness. A single querySelectorAll
+      // costs nothing and rules out the overwhelming majority of pages.
+      if (!looksFormish()) return;
       updateBadge();
       applyBadges(); // re-run as you switch jobs
       void captureFlow();
@@ -1108,100 +1452,115 @@ async function init() {
     }
   });
   startBridgePolling();
-
-  // ── RPC: the toolbar popup drives everything through the active tab's content script ──
-  type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
-  chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
-    const msg = raw as Rpc;
-    if (msg?.type === 'f2a-run-autofill') {
-      void runAutofill(); // legacy one-shot (kept for the popup's quick action)
-      return; // no response
-    }
-    if (msg?.type !== 'f2a-rpc') return;
-    (async () => {
-      // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
-      // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
-      // result. Wrap the whole dispatch so the channel always resolves.
-      try {
-        switch (msg.method) {
-          case 'getState':
-            sendResponse(getState());
-            break;
-          case 'autofill': {
-            autofillAbort?.abort(); // supersede any in-flight run
-            const ctrl = (autofillAbort = new AbortController());
-            // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
-            // step by step, never submitting; single-page forms just fill once.
-            const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
-            // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
-            // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
-            // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a
-            // sorted CSV of the bounded enum, capped so the emitted string stays low-cardinality.
-            report('autofill_run', {
-              ok: !!r && r.filled > 0,
-              fields_filled: bucket(r?.filled ?? 0),
-              fields_total: bucket(r?.total ?? 0),
-              ats_platform: detectAts(document) ?? 'generic',
-              missed_types: (r?.missedTypes ?? []).slice(0, 10).join(','),
-            });
-            sendResponse(r);
-            // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
-            // and break its Cancel.
-            if (autofillAbort === ctrl) autofillAbort = null;
-            break;
-          }
-          case 'cancelAutofill':
-            autofillAbort?.abort();
-            sendResponse({ ok: true });
-            break;
-          case 'analyze': {
-            const res = await analyzeJob();
-            report('match_scored', { ok: res?.ats != null });
-            sendResponse(res);
-            break;
-          }
-          case 'draft':
-            sendResponse(await draftAnswer());
-            break;
-          case 'draftedList':
-            sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
-            break;
-          case 'redraft': {
-            const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
-            sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
-            break;
-          }
-          case 'scrollToReview': {
-            const first = reviewedEls.find((el) => el.isConnected);
-            first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
-            break;
-          }
-          case 'save':
-            sendResponse(await saveJob());
-            break;
-          case 'capture':
-            sendResponse(await capturePage());
-            break;
-          case 'toggleSite':
-            siteOptedIn = !!msg.params?.on;
-            await setSiteOptIn(location.hostname, siteOptedIn);
-            if (siteOptedIn) void captureFlow();
-            sendResponse({ ok: true });
-            break;
-          default:
-            sendResponse({ error: 'unknown method' });
-        }
-      } catch (e) {
-        try {
-          sendResponse({ error: e instanceof Error ? e.message : String(e) });
-        } catch {
-          /* channel already closed by the caller — nothing to do */
-        }
-      }
-    })();
-    return true; // async sendResponse
-  });
 }
+
+/**
+ * Wire the popup's RPC IMMEDIATELY, at module load — never behind init()'s awaits.
+ *
+ * This used to live at the end of init(), so any slow or failing step before it (a desktop-bridge probe
+ * walking five localhost ports, a storage read on a fresh install) left the content script deaf. The
+ * popup would ask "how many fields are here?", get no answer at all, and show "0 fillable fields" on a
+ * page full of them — the extension looked broken on exactly the pages it should handle. Registering
+ * first means we always answer; handlers read module state that init() fills in a moment later.
+ */
+// ── RPC: the toolbar popup drives everything through the active tab's content script ──
+type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
+chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
+  const msg = raw as Rpc;
+  if (msg?.type === 'f2a-run-autofill') {
+    void runAutofill(); // legacy one-shot (kept for the popup's quick action)
+    return; // no response
+  }
+  if (msg?.type !== 'f2a-rpc') return;
+  (async () => {
+    // Always send SOME response: an uncaught throw here (e.g. a page re-render invalidating the
+    // context mid-run) would otherwise leave the caller with "message channel closed" instead of a
+    // result. Wrap the whole dispatch so the channel always resolves.
+    try {
+      switch (msg.method) {
+        case 'getState':
+          sendResponse(getState());
+          break;
+        case 'autofill': {
+          autofillAbort?.abort(); // supersede any in-flight run
+          const ctrl = (autofillAbort = new AbortController());
+          // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
+          // step by step, never submitting; single-page forms just fill once.
+          const r = await autofillWholeApplication(msg.params?.mode ?? 'default', ctrl.signal);
+          // A gate/lazy section can reveal more fields right after the fill. Wait briefly and fill
+          // only what genuinely appeared (#136) — replaces the popup's blind whole-form re-run.
+          if (r && !ctrl.signal.aborted) {
+            const extra = await fillRevealedFields(msg.params?.mode ?? 'default', ctrl.signal);
+            r.filled += extra;
+          }
+          // Coverage telemetry (Layer 1, #105): which ATS + how many fields + which TYPES we missed.
+          // All metadata-only — a bounded platform enum, coarse count buckets, and a fixed field-type
+          // vocabulary (coverage.ts). Never the URL, company, labels, or values. `missed_types` is a
+          // sorted CSV of the bounded enum, capped so the emitted string stays low-cardinality.
+          report('autofill_run', {
+            ok: !!r && r.filled > 0,
+            fields_filled: bucket(r?.filled ?? 0),
+            fields_total: bucket(r?.total ?? 0),
+            ats_platform: detectAts(document) ?? 'generic',
+            missed_types: (r?.missedTypes ?? []).slice(0, 10).join(','),
+          });
+          sendResponse(r);
+          // Only clear if a newer run hasn't superseded us — else we'd wipe ITS controller
+          // and break its Cancel.
+          if (autofillAbort === ctrl) autofillAbort = null;
+          break;
+        }
+        case 'cancelAutofill':
+          autofillAbort?.abort();
+          sendResponse({ ok: true });
+          break;
+        case 'analyze': {
+          const res = await analyzeJob();
+          report('match_scored', { ok: res?.ats != null });
+          sendResponse(res);
+          break;
+        }
+        case 'draft':
+          sendResponse(await draftAnswer());
+          break;
+        case 'draftedList':
+          sendResponse({ items: draftedFields.filter((d) => d.el.isConnected).map((d) => ({ label: d.label })) });
+          break;
+        case 'redraft': {
+          const rp = (msg.params ?? {}) as { label?: string; instruction?: string };
+          sendResponse(await redraftField(String(rp.label ?? ''), String(rp.instruction ?? '')));
+          break;
+        }
+        case 'scrollToReview': {
+          const first = reviewedEls.find((el) => el.isConnected);
+          first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          sendResponse({ ok: !!first, count: reviewedEls.filter((el) => el.isConnected).length });
+          break;
+        }
+        case 'save':
+          sendResponse(await saveJob());
+          break;
+        case 'capture':
+          sendResponse(await capturePage());
+          break;
+        case 'toggleSite':
+          siteOptedIn = !!msg.params?.on;
+          await setSiteOptIn(location.hostname, siteOptedIn);
+          if (siteOptedIn) void captureFlow();
+          sendResponse({ ok: true });
+          break;
+        default:
+          sendResponse({ error: 'unknown method' });
+      }
+    } catch (e) {
+      try {
+        sendResponse({ error: e instanceof Error ? e.message : String(e) });
+      } catch {
+        /* channel already closed by the caller — nothing to do */
+      }
+    }
+  })();
+  return true; // async sendResponse
+});
 
 void init();

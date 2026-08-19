@@ -186,6 +186,38 @@ export function buildResumeParseMessages(resumeText: string): { role: 'system' |
 }
 
 /** Extract the JSON object from a model reply, whitelist profile keys, and coerce the arrays. */
+/**
+ * Close an object/array that a model stopped emitting mid-way. Truncation is normal on long résumés,
+ * and recovering the fields that DID arrive beats discarding the whole reply.
+ */
+function repairTruncatedJson(text: string): string {
+  // drop a dangling partial value, then balance the brackets we opened
+  let t = text.replace(/,\s*"[^"]*"\s*:\s*("(?:[^"\\]|\\.)*)?$/, '').replace(/,\s*$/, '');
+  const stack: string[] = [];
+  let inStr = false;
+  let esc = false;
+  for (const ch of t) {
+    if (esc) {
+      esc = false;
+      continue;
+    }
+    if (ch === '\\') {
+      esc = true;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = !inStr;
+      continue;
+    }
+    if (inStr) continue;
+    if (ch === '{' || ch === '[') stack.push(ch);
+    else if (ch === '}' || ch === ']') stack.pop();
+  }
+  if (inStr) t += '"';
+  while (stack.length) t += stack.pop() === '{' ? '}' : ']';
+  return t;
+}
+
 export function parseResumeJson(content: string): ParsedResume {
   let text = content
     .trim()
@@ -194,13 +226,20 @@ export function parseResumeJson(content: string): ParsedResume {
     .trim();
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
+  const whole = start >= 0 ? text.slice(start) : text; // first '{' → end, for the truncated case
   if (start >= 0 && end > start) text = text.slice(start, end + 1);
   const out: ParsedResume = { profile: {}, experience: [], education: [] };
   let obj: Record<string, unknown>;
   try {
     obj = JSON.parse(text) as Record<string, unknown>;
   } catch {
-    return out;
+    // The model ran out of output budget mid-object. Recover the fields that did arrive rather than
+    // discarding the whole reply — the alternative is a bare "Nothing extracted" for a long résumé.
+    try {
+      obj = JSON.parse(repairTruncatedJson(whole)) as Record<string, unknown>;
+    } catch {
+      return out;
+    }
   }
   const rawP = (obj.profile ?? {}) as Record<string, unknown>;
   for (const k of RESUME_PROFILE_KEYS) {
@@ -319,7 +358,9 @@ export async function parseResumeToProfile(
   const [sys, usr] = buildResumeParseMessages(resumeText);
   const { content, usage } = await runChat(
     cfg,
-    { system: sys.content, user: usr.content, maxTokens: 1600, temperature: 0.1 },
+    // A 3-page résumé's JSON runs well past 1600 tokens; at that cap the output was cut off
+    // mid-object and silently parsed to nothing ("Nothing extracted"). Sized for a long CV.
+    { system: sys.content, user: usr.content, maxTokens: 4000, temperature: 0.1 },
     fetchImpl,
     45_000,
   );
@@ -327,6 +368,31 @@ export async function parseResumeToProfile(
 }
 
 /** One batched call to the provider. Returns drafted answers aligned to `questions` + token usage. */
+/**
+ * One JSON-answering chat call, for callers that want structured output rather than prose. Goes through
+ * runChat so every BYOK provider (OpenAI-compatible, Anthropic, Gemini) and the optional host-permission
+ * check work exactly as they do elsewhere. Throws if the model returns nothing parseable.
+ */
+export async function chatJson(
+  cfg: AiConfig,
+  system: string,
+  user: string,
+  fetchImpl: typeof fetch = fetch,
+  maxTokens = 900,
+): Promise<unknown> {
+  if (!cfg.apiKey) throw new Error('No AI key');
+  const { content } = await runChat(cfg, { system, user, maxTokens, temperature: 0 }, fetchImpl, 25_000);
+  let text = content
+    .trim()
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/, '')
+    .trim();
+  const a = text.indexOf('{');
+  const b = text.lastIndexOf('}');
+  if (a >= 0 && b > a) text = text.slice(a, b + 1);
+  return JSON.parse(text);
+}
+
 export async function draftAnswers(
   cfg: AiConfig,
   context: string,

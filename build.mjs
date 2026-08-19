@@ -42,7 +42,11 @@ await esbuild.build({
 // Content scripts → IIFE (content scripts don't support ESM imports). content = autofill on ATS
 // hosts; auth = the sign-in bridge on app.jobhakken.com.
 await esbuild.build({
-  entryPoints: { 'content/content': 'src/content/content.ts', 'content/auth': 'src/content/auth.ts' },
+  entryPoints: {
+    'content/content': 'src/content/content.ts',
+    'content/auth': 'src/content/auth.ts',
+    'content/pageBridge': 'src/content/pageBridge.ts',
+  },
   outdir,
   format: 'iife',
   ...shared,
@@ -79,6 +83,11 @@ if (e2eBuild) {
   const mPath = path.join(outdir, 'manifest.json');
   const m = JSON.parse(readFileSync(mPath, 'utf8'));
   m.content_scripts[0].matches = [...new Set([...m.content_scripts[0].matches, '*://127.0.0.1/*', '*://localhost/*'])];
+  // the page-world bridge is loaded as a <script src> from web_accessible_resources, so its match list
+  // needs the fixture host as well or the fill path silently loses its cross-world half under test
+  for (const w of m.web_accessible_resources ?? [])
+    if ((w.resources ?? []).some((r) => r.includes('pageBridge')))
+      w.matches = [...new Set([...(w.matches ?? []), '*://127.0.0.1/*', '*://localhost/*'])];
   writeFileSync(mPath, JSON.stringify(m, null, 2));
   console.log('  [E2E] added localhost content-script matches to dist/manifest.json (test-only)');
 }
