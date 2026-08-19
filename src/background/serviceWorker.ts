@@ -8,7 +8,7 @@
  */
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
-import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
+import { chatText, draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { mapFieldsWithAi } from '../lib/aiFieldMap.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
 import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
@@ -114,14 +114,18 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       const fp = await loadFullProfile();
       const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 4) }) : '';
       const tpl = String(msg.template ?? '').trim();
-      const ask = tpl
-        ? `Rewrite this cover letter for the role below, keeping the writer's voice, structure and any
-specifics they already chose. Replace bracketed or obviously generic parts with details from the role.
-Return ONLY the letter.\n\nTHEIR TEMPLATE:\n${tpl}`
-        : `Write a cover letter for the role below from this person's background. Under 250 words,
-concrete, no clichés, no invented facts. Return ONLY the letter.`;
-      const r = await draftAnswers(cfg, ctx, msg.job ?? {}, [ask]);
-      const text = (r.answers?.[0] ?? '').trim();
+      const job = (msg.job ?? {}) as { title?: string; company?: string };
+      const sys =
+        'You write job-application cover letters. Return ONLY the letter body — no preamble, no ' +
+        'commentary, no markdown fences. Never invent employers, dates or qualifications.';
+      const usr = tpl
+        ? `Adapt this cover letter for the role, keeping the writer's voice, structure and any specifics ` +
+          `they already chose. Replace bracketed or generic parts with details from the role.\n\n` +
+          `ROLE: ${job.title ?? ''} at ${job.company ?? ''}\n\nTHEIR LETTER:\n${tpl}\n\nTHEIR BACKGROUND:\n${ctx}`
+        : `Write a cover letter for this role from the background below. Under 250 words, concrete, ` +
+          `no clichés, nothing invented.\n\nROLE: ${job.title ?? ''} at ${job.company ?? ''}\n\n` +
+          `BACKGROUND:\n${ctx}`;
+      const text = (await chatText(cfg, sys, usr)).trim();
       sendResponse(text ? { text } : { text: '', error: 'nothing came back — try again' });
     } catch (e) {
       sendResponse({ text: '', error: e instanceof Error ? e.message : 'drafting failed' });
@@ -146,16 +150,15 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       const fp = await loadFullProfile();
       const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 3) }) : '';
       const q = String(msg.question ?? '');
-      // Ask for BOTH variants in one completion, tagged so they can be split apart reliably.
+      // draftAnswers returns one answer PER question and parses a JSON array, so asking the same
+      // question twice with different framings gets two options out of a single completion — which is
+      // exactly the "one call, two options" requirement, using machinery that already works.
       const r = await draftAnswers(cfg, ctx, msg.job ?? {}, [
-        `${q}\n\nGive TWO alternative answers, each under 60 words, in this exact format:\nA: <concise answer>\nB: <more specific answer>`,
+        `${q} — answer concisely, under 60 words.`,
+        `${q} — answer with a specific detail from this person's background, under 60 words.`,
       ]);
-      const raw = r.answers?.[0] ?? '';
-      const a = /(?:^|\n)\s*A[:.]\s*([\s\S]*?)(?=\n\s*B[:.]|$)/i.exec(raw)?.[1]?.trim();
-      const b = /(?:^|\n)\s*B[:.]\s*([\s\S]*)$/i.exec(raw)?.[1]?.trim();
-      const options = [a, b].filter((x): x is string => !!x && x.length > 1);
-      // If the model ignored the A/B format, still offer what it wrote rather than nothing.
-      sendResponse({ options: options.length ? options : raw ? [raw.trim()] : [] });
+      const options = (r.answers ?? []).map((a) => String(a ?? '').trim()).filter((a) => a.length > 1);
+      sendResponse({ options });
     } catch (e) {
       sendResponse({ options: [], error: e instanceof Error ? e.message : 'drafting failed' });
     }

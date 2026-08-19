@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.30.1
+- **Cover letters and drafted answers actually come back now.** Both were being run through a parser
+  built for a different response shape, so a perfectly good letter arrived as "nothing came back". A
+  cover letter now returns as written, and Draft 2 returns two genuinely different options rather than
+  none.
+
 ## 0.30.0
 - **You can see what we filled, straight after filling it.** Press Fill and the fields we touched are
   outlined on the form itself — no toggle to find. Green where we filled it, blue where it came from
