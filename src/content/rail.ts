@@ -194,6 +194,10 @@ main { flex: 1; overflow-y: auto; }
 .row.sens { border-left-color: var(--clay) !important; border-left-style: dotted; }
 .grp.sensitive .acc { color: var(--clay); }
 .switches { display: flex; gap: 10px; flex-wrap: wrap; }
+.switches.muted { opacity: .4; pointer-events: none; }
+.switches.muted #offSw { opacity: 1; pointer-events: auto; }
+.offbar { background: var(--clay-soft); border: 1px solid var(--clay); color: var(--clay);
+  border-radius: 6px; padding: 6px 9px; font-size: 10.5px; font-weight: 650; }
 .sw { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 650;
   text-transform: none; letter-spacing: 0; color: var(--muted); }
 .sw i { width: 24px; height: 13px; border-radius: 99px; background: var(--line); position: relative;
@@ -292,8 +296,9 @@ export function mountRail(api: RailApi): void {
         <div class="tally" id="tally"></div>
         <div class="switches">
           <span class="sw" id="progSw" title="Fill each field as you scroll to it"><i></i>fill as I scroll</span>
-          <span class="sw" id="offSw" title="Silence JobHakken on this site"><i></i>off here</span>
+          <span class="sw danger" id="offSw" title="Silence JobHakken on this site"><i></i>off here</span>
         </div>
+        <div class="offbar" id="offbar" hidden>Off on this site — nothing will be filled. Turn "off here" back on to resume.</div>
       </header>
       <main id="body"></main>
       <footer>
@@ -416,8 +421,12 @@ export function mountRail(api: RailApi): void {
     cta.textContent = `Fill ${pending.length}`;
     $('note').textContent = n.ask ? `${n.ask} left for you` : 'learning from this form';
 
+    // 'off here' overrides everything, so grey the rest out rather than showing two contradictory "on"
+    // switches — which is exactly how 'fill as I scroll' looked broken when the site was simply off.
     $('progSw').className = `sw${progOn ? ' on' : ''}`;
     $('offSw').className = `sw danger${siteOff ? ' on' : ''}`;
+    $('offbar').hidden = !siteOff;
+    (root.querySelector('.switches') as HTMLElement).className = `switches${siteOff ? ' muted' : ''}`;
     if (!d.rows.length) {
       $('body').innerHTML = `<p class="empty"><b>No form fields here</b>Open an application and this fills in.</p>`;
       return;

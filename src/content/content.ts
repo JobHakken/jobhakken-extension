@@ -682,6 +682,11 @@ const TRUSTED: ReadonlySet<MappingSource> = new Set<MappingSource>(['user', 'see
  * because we will never offer to fill them anyway, so keeping them buys nothing and risks something.
  */
 async function learnFromPage(): Promise<number> {
+  // Only learn from real application forms. Without this, any page with a few inputs contributes junk:
+  // a dashboard filter banked "monthly case volume = 2026" from a site that is not an ATS at all, and a
+  // polluted bank is worse than an empty one because it gets OFFERED on real applications.
+  if (await siteDisabled()) return 0;
+  if (!isRelevantPage() && pageFields().length < 6) return 0;
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);
@@ -691,7 +696,9 @@ async function learnFromPage(): Promise<number> {
     const typed = currentValue(field).trim();
     if (!typed) continue;
     const label = field.label || field.name || field.id;
-    if (!label) continue;
+    // A question we can offer back needs a real question as its key. A bare name/id ("q3", "input-2")
+    // will never match anywhere else, so banking it only grows the store.
+    if (!label || label.length < 8 || !/[a-z]{3}.*[a-z]{3}/i.test(label)) continue;
     const res = resolveField(field, { userRules: rules, store });
     if (res?.key && EEO.has(res.key)) continue; // never bank a demographic answer
     // Only learn what we COULDN'T answer. If the profile already supplies a value for this field, a

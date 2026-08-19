@@ -4,6 +4,19 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.34.0
+- **A ready-made demo file to import.** `e2e/fixtures/demo-import.json` seeds a full placeholder profile,
+  a résumé, a cover-letter template and a couple of remembered answers, so testing no longer starts with
+  typing everything in again. Import it from the ⤒ button.
+- **"Off here" now looks like what it does.** When a site is switched off, the other switches grey out and
+  a line says nothing will be filled. Previously "fill as I scroll" and "off here" could both show as on,
+  which made scroll-filling look broken when the site was simply silenced.
+- **Backups now carry your settings too** — fill-as-you-scroll, silenced sites and section folds. They
+  were being dropped on restore, so a restored backup quietly came back with scroll-filling off.
+- **It no longer learns from pages that aren't applications.** A dashboard filter on an unrelated site was
+  being banked as an answer ("monthly case volume"), and a polluted bank is worse than an empty one
+  because it gets offered on real applications.
+
 ## 0.33.0
 - **Fill as you scroll.** Turn on "fill as I scroll" and each field is filled as it comes into view,
   instead of everything at once when you press a button. Nothing jumps around, because we only ever

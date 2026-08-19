@@ -28,6 +28,10 @@ const BACKUP_KEYS = [
   'f2a_unfillable', // widgets we could not drive
   'f2a_capture_sites',
   'f2a_fill_sensitive',
+  'f2a_progressive', // fill-as-you-scroll — a preference, and one people will not think to re-enable
+  'f2a_off_sites', // sites you've silenced
+  'f2a_rail_folds',
+  'f2a_rail_marks',
   'f2a_needs_sponsorship',
   'f2a_hide_unsponsored',
 ] as const;
