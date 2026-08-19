@@ -35,6 +35,15 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 - **Fixes:** saving your profile or AI provider no longer needs a page reload; your API key survives an
   extension reload when you tick "remember"; employment-agreement and non-compete questions answer "No"
   by default rather than being guessed at.
+## 0.26.0
+- **New side panel: see what we filled, what we're leaving to you, and why.** It lists every field on
+  the application in front of you in three groups — filled with high confidence, needs you, and
+  remembered from your own earlier answers. Anything we won't fill now says *why* ("not in your profile
+  yet", "matched only loosely — too important to guess") instead of just sitting there empty. Questions
+  where a wrong answer costs you something — work authorization, sponsorship, salary, notice period,
+  EEO — need a strong match or they're handed back to you. The panel also names the system it
+  recognises, and says "generic handling" when we haven't verified that one yet rather than implying
+  support we can't stand behind.
 
 ## 0.24.2
 - **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
