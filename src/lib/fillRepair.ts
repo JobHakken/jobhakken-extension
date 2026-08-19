@@ -43,7 +43,20 @@ function localSet(el: Element, value: string): boolean {
 
 /** Current value of a fillable control, normalized for comparison. */
 function valueOf(el: Element): string {
-  return String((el as HTMLInputElement).value ?? '').trim();
+  const v = String((el as HTMLInputElement).value ?? '').trim();
+  if (v) return v;
+  // react-select and friends CLEAR their search input once an option is chosen and render the
+  // selection as text in the control container. Reading `.value` alone therefore reports every
+  // successfully-filled dropdown as empty — which is what made us tell users "6 filled" on a form
+  // where 14 fields actually held values.
+  if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox') {
+    const box = el.closest('[class*="control"],[class*="select"],[class*="Select"]');
+    const txt = (box?.textContent ?? '')
+      .replace(/select\s*\.{2,}/i, '') // react-select's "Select..." placeholder
+      .trim();
+    if (txt) return txt;
+  }
+  return '';
 }
 
 /** Ask the page-world bridge to write `value` into `el`. Resolves false if the bridge never answers. */
@@ -113,7 +126,15 @@ export async function repairFills(
       // Handled entirely in the page world: the component's own setValue() via React's fiber, with a
       // click-the-menu fallback (pageBridge.driveCombobox). 4s covers the fallback's open+settle.
       ok = await bridgeCall(el, value, 'combo', 4000);
-      if (ok) comboboxes++;
+      // Count a successful dropdown as CONFIRMED, not merely as a combobox statistic. Skipping
+      // `confirmed++` here meant callers checking `confirmed > 0` treated every filled dropdown as a
+      // failure — the panel then said "this control won't take a pasted value" about fields it had
+      // just filled, and recorded them as unfillable widgets.
+      if (ok) {
+        comboboxes++;
+        confirmed++;
+        repaired++;
+      }
       continue;
     } else {
       // Local write first: it works for ordinary inputs, costs nothing, and doesn't depend on the

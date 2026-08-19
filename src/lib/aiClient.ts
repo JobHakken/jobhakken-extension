@@ -373,6 +373,28 @@ export async function parseResumeToProfile(
  * runChat so every BYOK provider (OpenAI-compatible, Anthropic, Gemini) and the optional host-permission
  * check work exactly as they do elsewhere. Throws if the model returns nothing parseable.
  */
+
+/**
+ * A plain prose completion. `draftAnswers` runs its output through `parseAnswers`, which expects a JSON
+ * ARRAY — so anything free-form (a cover letter) parses to nothing and looks like the model failed.
+ * Prose needs its own path.
+ */
+export async function chatText(
+  cfg: AiConfig,
+  system: string,
+  user: string,
+  fetchImpl: typeof fetch = fetch,
+  maxTokens = 700,
+): Promise<string> {
+  if (!cfg.apiKey) throw new Error('No AI key');
+  const { content } = await runChat(cfg, { system, user, maxTokens, temperature: 0.5 }, fetchImpl, 30_000);
+  return content
+    .trim()
+    .replace(/^```(?:\w+)?/i, '')
+    .replace(/```$/, '')
+    .trim();
+}
+
 export async function chatJson(
   cfg: AiConfig,
   system: string,

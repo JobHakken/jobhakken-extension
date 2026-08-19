@@ -8,20 +8,38 @@ import {
   detectFileInputs,
   detectFields,
   expandRepeatingSections,
+  fillField,
   isAtsPage,
+  isSensitiveLabel,
   learnableAnswers,
   readLazyOptions,
+  currentValue,
   resolveField,
+  SENSITIVE_KEYS,
   setInputFile,
   unmappedQuestions,
   type CoverageReport,
   type FullProfile,
+  type MappingSource,
   type MappingStore,
   type Profile,
   type ProfileKey,
 } from '@jobhakken/autofill';
 
+import { mountRail, unmountRail } from './rail.js';
 import { loadAnswerStore } from '../lib/answerStore.js';
+import { askedOnRecent, formId, recordForm, statsForHost } from '../lib/fieldStats.js';
+import {
+  editRemembered,
+  forgetRemembered,
+  getRemembered,
+  lookupRemembered,
+  noteRememberedUse,
+  normalizeQuestion,
+  rememberAnswer,
+  setPromoted,
+  type Remembered,
+} from '../lib/rememberedStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
@@ -32,11 +50,15 @@ import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { getResumeFile } from '../lib/resumeFileStore.js';
+import { bytesToBase64, getResumeFile } from '../lib/resumeFileStore.js';
+import { addResume as addResumeToLibrary, chooseResume, listResumes, resumeFor } from '../lib/resumeLibrary.js';
+import { draftToFile, getLastDraft, getTemplate, setLastDraft, setTemplate } from '../lib/coverLetterStore.js';
+import { backupFileName, describeBackup, exportBackup, importBackup } from '../lib/backup.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
   loadFillSensitive,
+  saveFillSensitive,
   loadFullProfile,
   loadHideUnsponsored,
   loadNeedsSponsorship,
@@ -164,20 +186,32 @@ function markReview(el: HTMLElement): void {
 let bridgeReady: Promise<void> | null = null;
 function injectPageBridge(): Promise<void> {
   if (bridgeReady) return bridgeReady;
-  bridgeReady = new Promise<void>((resolve) => {
-    try {
-      const s = document.createElement('script');
-      s.src = chrome.runtime.getURL('content/pageBridge.js');
-      s.onload = () => {
-        s.remove(); // the listener stays registered; the tag itself is noise
+  bridgeReady = (async () => {
+    // Preferred path: have the service worker put it in the MAIN world via chrome.scripting. A
+    // <script src> from web_accessible_resources is subject to PAGE CSP, and real ATS pages block it
+    // (Greenhouse: `script-src 'self' …` with no chrome-extension:), which silently cost us every
+    // combobox on the form. executeScript({ world: 'MAIN' }) is not subject to page CSP.
+    const viaSw = await chrome.runtime
+      .sendMessage({ type: 'f2a-ensure-bridge' })
+      .then((r: { ok?: boolean } | undefined) => !!r?.ok)
+      .catch(() => false);
+    if (viaSw) return;
+    // Fallback: the tag. Works on permissive pages, and costs nothing to try when the SW path failed.
+    await new Promise<void>((resolve) => {
+      try {
+        const s = document.createElement('script');
+        s.src = chrome.runtime.getURL('content/pageBridge.js');
+        s.onload = () => {
+          s.remove(); // the listener stays registered; the tag itself is noise
+          resolve();
+        };
+        s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
+        (document.head ?? document.documentElement).appendChild(s);
+      } catch {
         resolve();
-      };
-      s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
-      (document.head ?? document.documentElement).appendChild(s);
-    } catch {
-      resolve();
-    }
-  });
+      }
+    });
+  })();
   return bridgeReady;
 }
 
@@ -195,7 +229,7 @@ async function aiMapUnfilled(fp: FullProfile, attempted: Set<Element>): Promise<
   const host = location.hostname.replace(/^www\./, '');
   // Candidates: detected, visible, still empty, and not something the engine already handled.
   const open: { id: number; label: string; kind?: string; el: HTMLElement }[] = [];
-  for (const f of detectFields(document)) {
+  for (const f of pageFields()) {
     const el = f.el;
     if (!(el instanceof HTMLElement) || attempted.has(el)) continue;
     if (String((el as HTMLInputElement).value ?? '').trim()) continue;
@@ -254,10 +288,20 @@ function filledControlCount(): number {
   for (const el of document.querySelectorAll('input,textarea,select')) {
     const t = (el as HTMLInputElement).type;
     if (t === 'hidden' || t === 'submit' || t === 'button') continue;
-    const held =
-      t === 'checkbox' || t === 'radio'
-        ? (el as HTMLInputElement).checked
-        : String((el as HTMLInputElement).value ?? '').trim() !== '';
+    let held: boolean;
+    if (t === 'checkbox' || t === 'radio') {
+      held = (el as HTMLInputElement).checked;
+    } else {
+      held = String((el as HTMLInputElement).value ?? '').trim() !== '';
+      // A react-select CLEARS its search input once an option is chosen and renders the selection as
+      // text in the control container, so `.value` reports empty on a dropdown that is plainly filled.
+      // Counting only `.value` is what made us tell users "6 filled" on a Greenhouse form holding 14
+      // real values — and made live coverage read 0.29-0.35 when it was ~0.82.
+      if (!held && (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox')) {
+        const box = el.closest('[class*="control"],[class*="select"],[class*="Select"]');
+        held = !!(box?.textContent ?? '').replace(/select\s*\.{2,}/i, '').trim();
+      }
+    }
     if (held) n++;
   }
   return n;
@@ -493,7 +537,7 @@ function looksFormish(): boolean {
 }
 
 function updateBadge(): void {
-  const fields = detectFields(document);
+  const fields = pageFields();
   fieldCount = fields.length;
   const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
   const hasAppSignal = fields.some((f) => {
@@ -517,6 +561,598 @@ function pageCompany(): string {
   return location.hostname.replace(/^www\./, '').split('.')[0];
 }
 
+/**
+ * Fill ONE field from the panel (#145). The user clicked a specific row, so this is explicit intent —
+ * the click IS the confirmation, which is why the panel can offer values it would refuse to fill
+ * unprompted.
+ *
+ * Runs the same chain a full pass uses so a panel click is never weaker than a bulk fill:
+ * `fillField` (native setter + events) → `repairFills` (MAIN-world bridge for React's value tracker,
+ * or drive a custom combobox like a person would).
+ *
+ * Returns `filled:false` with `reason:'widget'` when the control refuses a programmatic value — the
+ * panel then falls back to copy + reveal rather than pretending it worked, and records the widget so
+ * the gap becomes a work item instead of a silent disappointment.
+ */
+async function fillOne(signature: string, value: string): Promise<{ filled: boolean; reason?: string }> {
+  const field = pageFields().find((f) => f.signature === signature);
+  if (!field) return { filled: false, reason: 'gone' }; // page re-rendered under us
+  if (!value) return { filled: false, reason: 'empty' };
+  try {
+    // The MAIN-world bridge is what reaches React's value tracker and drives custom comboboxes. The
+    // full autofill pass injects it; a single panel fill has to do the same or every react-select on
+    // the page reports "widget refused" for no reason but our own omission.
+    await injectPageBridge();
+    fillField(field, value);
+    const r = await repairFills([{ el: field.el, value, source: 'user' }], 4000);
+    if (r.confirmed > 0) return { filled: true };
+    // Nothing took. Reveal it so the user can paste, and remember the widget shape we can't drive.
+    field.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    void recordUnfillable(field);
+    return { filled: false, reason: 'widget' };
+  } catch {
+    return { filled: false, reason: 'error' };
+  }
+}
+
+/** Widgets we could not fill programmatically, per host + field kind. Metadata only — no values. */
+async function recordUnfillable(field: { kind: string; label: string }): Promise<void> {
+  const KEY = 'f2a_unfillable';
+  try {
+    const got = ((await chrome.storage.local.get(KEY))[KEY] ?? {}) as Record<string, number>;
+    const k = `${location.hostname}|${field.kind}`;
+    got[k] = (got[k] ?? 0) + 1;
+    const kept = Object.entries(got)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 200);
+    await chrome.storage.local.set({ [KEY]: Object.fromEntries(kept) });
+  } catch {
+    /* diagnostics only — never break a fill */
+  }
+}
+
+// ── Side panel data (#140) ─────────────────────────────────────────────────────────────────────────
+/**
+ * What the side panel renders: every field on THIS form, grouped by how much we trust our answer.
+ *
+ * Deliberately scoped to the form rather than the ATS — two GitLab postings on the same Greenhouse
+ * board carried 23 and 30 fields, so a per-ATS list would name fields that aren't here and miss ones
+ * that are. Read-only: this resolves and reports, it never writes to the page (that's `fillOne`).
+ *
+ * `group` is the panel's three-state model:
+ *   know     — we have a value and the resolution is trustworthy
+ *   ask      — no value, or a resolution too weak to act on; the panel shows `why`
+ *   remember — the value came from an answer the user typed before (answerStore)
+ */
+export type PanelRow = {
+  signature: string;
+  label: string;
+  kind: string;
+  group: 'know' | 'ask' | 'remember' | 'sensitive';
+  value: string;
+  current: string;
+  source: MappingSource | null;
+  why?: string;
+  consequential: boolean;
+  /** Provenance for a remembered answer — "you wrote this · 4 Aug · Ashby". */
+  memo?: { host: string; at: number; uses: number; promoted?: boolean };
+  /** "asked on 6 of your last 10 applications" — from metadata-only structure capture. */
+  asked?: { hits: number; of: number };
+  /** True when the profile simply has no value for a key we DID recognise → offer to add it. */
+  addable?: boolean;
+  /**
+   * Whether this control offers a fixed set of answers, and how many when that's free to know.
+   * A native <select> lists its options in the DOM; a react-select usually doesn't until it opens and a
+   * typeahead has to query a server — so those report `count: null` and load only when the user expands.
+   */
+  choices?: { count: number | null; searchable: boolean };
+};
+
+/** Fields where a WRONG answer costs more than a blank one, so they demand a stronger resolution. */
+const CONSEQUENTIAL: ReadonlySet<ProfileKey> = new Set<ProfileKey>([
+  'workAuthorization',
+  'requiresSponsorship',
+  'salaryExpectation',
+  'currentSalary',
+  'noticePeriod',
+  'gender',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+]);
+
+/** EEO/demographic questions. Ours to surface, never ours to answer on someone's behalf. */
+const EEO: ReadonlySet<ProfileKey> = new Set<ProfileKey>([
+  'gender',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+]);
+
+/** Sources we'll act on unprompted. Anything weaker is shown, explained, and left to the user. */
+const TRUSTED: ReadonlySet<MappingSource> = new Set<MappingSource>(['user', 'seed', 'learned']);
+
+/**
+ * Learn from what the user typed (#143). Called when the panel refreshes and on user input: any field
+ * we DIDN'T fill but which now holds a value was answered by hand, and that answer is worth keeping.
+ *
+ * Stays strictly on-device. Skips EEO/demographic questions — we don't store those even locally,
+ * because we will never offer to fill them anyway, so keeping them buys nothing and risks something.
+ */
+async function learnFromPage(): Promise<number> {
+  // Only learn from real application forms. Without this, any page with a few inputs contributes junk:
+  // a dashboard filter banked "monthly case volume = 2026" from a site that is not an ATS at all, and a
+  // polluted bank is worse than an empty one because it gets OFFERED on real applications.
+  if (await siteDisabled()) return 0;
+  if (!isRelevantPage() && pageFields().length < 6) return 0;
+  const fp = await getFullProfile();
+  const profile: Profile = fp?.profile ?? {};
+  const rules = withBuiltinRules(fp?.rules);
+  const store = await answerStore();
+  let learned = 0;
+  for (const field of pageFields()) {
+    const typed = currentValue(field).trim();
+    if (!typed) continue;
+    const label = field.label || field.name || field.id;
+    // A question we can offer back needs a real question as its key. A bare name/id ("q3", "input-2")
+    // will never match anywhere else, so banking it only grows the store.
+    if (!label || label.length < 8 || !/[a-z]{3}.*[a-z]{3}/i.test(label)) continue;
+    const res = resolveField(field, { userRules: rules, store });
+    if (res?.key && EEO.has(res.key)) continue; // never bank a demographic answer
+    // Only learn what we COULDN'T answer. If the profile already supplies a value for this field, a
+    // remembered answer would never be offered anyway (the profile wins in panelFields), so banking it
+    // is dead weight — and it would quietly fill the store with values that never surface.
+    //
+    // NB a user CORRECTING one of our fills is real signal, but it's a different mechanism (which of
+    // our answers are wrong) and it needs its own treatment rather than being smuggled in here.
+    const ours = res?.literal ?? (res?.key ? (profile[res.key] ?? '') : '');
+    if (ours.trim()) continue;
+    await rememberAnswer(label, typed, location.hostname);
+    learned++;
+  }
+  return learned;
+}
+
+/**
+ * Two draft answers for ONE open question, in a single model call (#147).
+ *
+ * One call, not two: the user flagged token cost as a real constraint, and asking for both variants in
+ * the same completion is strictly cheaper than two round trips. Runs ONLY on an explicit click — AI is
+ * never part of a fill pass.
+ *
+ * Whatever the user picks is banked as a remembered answer, so the same question never costs a call
+ * again. AI is the bootstrap for a question we haven't met, not a standing dependency.
+ */
+async function draftTwo(label: string): Promise<{ options: string[]; error?: string }> {
+  if (!label) return { options: [], error: 'no question' };
+  try {
+    const r = (await chrome.runtime.sendMessage({
+      type: 'f2a-draft-two',
+      question: label,
+      job: { title: cleanTitle(document.title), company: pageCompany() },
+    })) as { options?: string[]; error?: string } | undefined;
+    return { options: r?.options ?? [], error: r?.error };
+  } catch {
+    return { options: [], error: 'could not reach the drafting service' };
+  }
+}
+
+/**
+ * Put the rail on the page (#140). Gated on the page actually being an application: a launcher tab on
+ * every page you browse would be noise, and the whole point of the launcher is that its presence MEANS
+ * something. Re-checked on SPA mutations, since an application form often renders after first paint.
+ */
+function syncRail(): void {
+  const wanted = isRelevantPage() || fieldCount >= 3;
+  if (!wanted) {
+    unmountRail();
+    return;
+  }
+  void progressiveEnabled().then((on) => {
+    if (on) void startProgressive();
+  });
+  mountRail({
+    panelFields,
+    fillOne,
+    learnFromPage,
+    noteUse: (label) => noteRememberedUse(label),
+    promote: (label, on) => setPromoted(label, on),
+    draftTwo,
+    siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
+    fieldOptions,
+    markFields,
+    exportData,
+    importData,
+    getProgressive: progressiveEnabled,
+    setProgressive,
+    getSiteDisabled: siteDisabled,
+    setSiteDisabled,
+    listRemembered: getRemembered,
+    forgetAnswer: forgetRemembered,
+    editAnswer: editRemembered,
+    getFillSensitive: loadFillSensitive,
+    setFillSensitive: saveFillSensitive,
+    documents,
+    attachResume,
+    addResume: addResumeFile,
+    saveTemplate: setTemplate,
+    coverLetter,
+    attachCover,
+    openOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
+  });
+}
+
+/**
+ * The options a field actually accepts (#140 round two).
+ *
+ * Read on demand, never on page load: a native <select> is free, but a react-select's options usually
+ * don't exist in the DOM until it opens, and a typeahead queries a server. Paying that for every
+ * dropdown on a 31-field form would make opening the rail slow for information nobody asked for.
+ *
+ * Letting the user pick from this list also sidesteps the widget entirely — no menu is opened on the
+ * page, which is what leaves dropdowns hanging half-driven today.
+ */
+async function fieldOptions(
+  signature: string,
+): Promise<{ options: { value: string; label: string }[]; note?: string }> {
+  const field = pageFields().find((f) => f.signature === signature);
+  if (!field) return { options: [], note: 'the page changed' };
+  if (field.options?.length) return { options: field.options };
+  if (field.kind !== 'combobox') return { options: [] };
+  try {
+    await injectPageBridge();
+    const opts = await readLazyOptions(field.el, 2500);
+    return opts.length ? { options: opts } : { options: [], note: 'this field searches as you type' };
+  } catch {
+    return { options: [], note: 'could not read this widget' };
+  }
+}
+
+/**
+ * Outline each control on the PAGE in its group's colour, so the form itself says what happened.
+ *
+ * `outline` rather than `border` deliberately: a border participates in layout and would shift the whole
+ * form by a pixel or two per field. Line STYLE carries the meaning alongside hue (solid / dashed),
+ * because green-vs-amber is the most common colour-vision confusion and colour alone would exclude
+ * people. Everything is removable, and cleared on unmount.
+ */
+const MARK = 'data-jh-mark';
+function markFields(rows: PanelRow[], on: boolean): void {
+  const fields = new Map(pageFields().map((f) => [f.signature, f.el]));
+  if (!on) {
+    for (const el of fields.values()) {
+      if (el.hasAttribute(MARK)) {
+        el.style.outline = '';
+        el.style.outlineOffset = '';
+        el.removeAttribute(MARK);
+      }
+    }
+    return;
+  }
+  const style: Record<string, string> = {
+    know: '2px solid #5C7E48',
+    remember: '2px solid #5A6B8C',
+    ask: '2px dashed #BB6535',
+    sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
+  };
+  for (const r of rows) {
+    const el = fields.get(r.signature);
+    if (!el) continue;
+    el.style.outline = style[r.group] ?? '';
+    el.style.outlineOffset = '1px';
+    el.setAttribute(MARK, r.group);
+  }
+}
+
+/** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
+async function documents(): Promise<{
+  items: { id: string; fileName: string; active: boolean }[];
+  hasTemplate: boolean;
+  lastDraft: string;
+  coverField: 'file' | 'textarea' | null;
+}> {
+  const company = pageCompany();
+  const [{ items }, pick, tpl, last] = await Promise.all([
+    listResumes(),
+    resumeFor(company),
+    getTemplate(),
+    getLastDraft(),
+  ]);
+  const fileInputs = detectFileInputs(document);
+  const hasCoverFile = fileInputs.some((f) => f.kind === 'coverLetter');
+  const coverArea = pageFields().find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  return {
+    items: items.map((i) => ({ id: i.id, fileName: i.fileName, active: i.id === pick?.id })),
+    hasTemplate: !!tpl,
+    lastDraft: last?.text ?? '',
+    coverField: hasCoverFile ? 'file' : coverArea ? 'textarea' : null,
+  };
+}
+
+/** Attach the chosen résumé to this form's résumé input. */
+async function attachResume(id?: string): Promise<{ ok: boolean; name?: string }> {
+  const company = pageCompany();
+  if (id) await chooseResume(id, company);
+  const pick = await resumeFor(company);
+  if (!pick) return { ok: false };
+  const input = detectFileInputs(document).find((f) => f.kind === 'resume');
+  if (!input) return { ok: false };
+  const bytes = Uint8Array.from(atob(pick.base64), (c) => c.charCodeAt(0));
+  const file = new File([bytes], pick.fileName, { type: pick.mimeType });
+  return { ok: setInputFile(input.el, file), name: pick.fileName };
+}
+
+/** Store an uploaded résumé in the library and make it the one this company gets. */
+async function addResumeFile(file: File): Promise<void> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const item = await addResumeToLibrary({
+    base64: bytesToBase64(bytes),
+    fileName: file.name,
+    mimeType: file.type || 'application/octet-stream',
+  });
+  await chooseResume(item.id, pageCompany());
+}
+
+/** Ask for a cover letter (one call), keeping the user's template voice when they have one. */
+async function coverLetter(): Promise<{ text: string; error?: string }> {
+  const template = await getTemplate();
+  try {
+    const r = (await chrome.runtime.sendMessage({
+      type: 'f2a-cover-letter',
+      template,
+      job: { title: cleanTitle(document.title), company: pageCompany() },
+    })) as { text?: string; error?: string } | undefined;
+    const text = r?.text ?? '';
+    if (text) await setLastDraft({ text, company: pageCompany(), at: Date.now() });
+    return { text, error: r?.error };
+  } catch {
+    return { text: '', error: 'could not reach the drafting service' };
+  }
+}
+
+/** Put the letter where this form wants it — a textarea if there is one, otherwise a file upload. */
+async function attachCover(text: string): Promise<{ ok: boolean; how?: string }> {
+  if (!text.trim()) return { ok: false };
+  await setLastDraft({ text, company: pageCompany(), at: Date.now() });
+  const area = pageFields().find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  if (area) {
+    await injectPageBridge();
+    fillField(area, text);
+    const r = await repairFills([{ el: area.el, value: text, source: 'user' }], 3000);
+    if (r.confirmed > 0) return { ok: true, how: 'typed into the form' };
+  }
+  const input = detectFileInputs(document).find((f) => f.kind === 'coverLetter');
+  if (input && setInputFile(input.el, draftToFile(text))) return { ok: true, how: 'attached as a file' };
+  return { ok: false };
+}
+
+/**
+ * Write everything learned to a file on disk. Uses a blob download rather than the `downloads` API so
+ * this needs no extra permission — the click that triggered it is the user gesture the browser wants.
+ */
+async function exportData(): Promise<{ ok: boolean; name?: string; summary?: string }> {
+  try {
+    const b = await exportBackup();
+    const name = backupFileName(b);
+    const url = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return { ok: true, name, summary: describeBackup(b) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** Restore from a file the user picked. Merges by default — see importBackup. */
+async function importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }> {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    const r = await importBackup(parsed);
+    return { ok: true, summary: `${r.restored} restored${r.skipped.length ? `, ${r.skipped.length} skipped` : ''}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'could not read that file' };
+  }
+}
+
+/**
+ * The page's fields, excluding our own. `detectFields` walks shadow roots, so the rail's cover-letter
+ * textarea was being reported as a form field to fill — visible as a "Need you" row labelled with our
+ * own placeholder. Anything inside the rail host is ours, never the application's.
+ */
+function pageFields(): ReturnType<typeof detectFields> {
+  return detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+}
+
+/** True when an element lives inside the rail's shadow tree (closest() cannot cross that boundary). */
+function insideRail(el: Element): boolean {
+  const root = el.getRootNode() as ShadowRoot | Document;
+  return (root as ShadowRoot).host?.id === 'jh-rail-host';
+}
+
+// ── Progressive fill (#136, #155) ──────────────────────────────────────────────────────────────────
+// Fill each field as it scrolls INTO VIEW, rather than sweeping the whole form on one click.
+//
+// This is not a nicety. Batch-filling a long form writes to controls all over the document and the
+// browser scrolls to each one -- that IS the "jumping up and down" of #136. And one shared repair budget
+// across ten dropdowns starves the tail (#155). Filling only what is on screen removes both: nothing to
+// scroll to, and each field gets the full budget because there are only ever one or two in flight.
+// Late-rendering SPA fields also just work, because we act when they exist rather than guessing a
+// settle time.
+//
+// Consent: every write used to be a click. This writes as you scroll, so it is OFF unless enabled, it
+// never touches the field you are typing in, and SENSITIVE fields are still gated on their own switch.
+const PROGRESSIVE_KEY = 'f2a_progressive';
+let progressiveObserver: IntersectionObserver | null = null;
+const progressiveDone = new Set<string>();
+
+export async function progressiveEnabled(): Promise<boolean> {
+  try {
+    return !!(await chrome.storage.local.get(PROGRESSIVE_KEY))[PROGRESSIVE_KEY];
+  } catch {
+    return false;
+  }
+}
+
+async function setProgressive(on: boolean): Promise<void> {
+  await chrome.storage.local.set({ [PROGRESSIVE_KEY]: on }).catch(() => {});
+  if (on) void startProgressive();
+  else stopProgressive();
+}
+
+function stopProgressive(): void {
+  progressiveObserver?.disconnect();
+  progressiveObserver = null;
+}
+
+async function startProgressive(): Promise<void> {
+  stopProgressive();
+  if (await siteDisabled()) return;
+  const data = await panelFields();
+  const fillSensitive = await loadFillSensitive();
+  const byEl = new Map(pageFields().map((f) => [f.el, f.signature]));
+  const wanted = new Map(
+    data.rows
+      .filter((r) => r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive)))
+      .map((r) => [r.signature, r]),
+  );
+
+  progressiveObserver = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const sig = byEl.get(e.target as HTMLElement);
+        const row = sig ? wanted.get(sig) : undefined;
+        if (!sig || !row || progressiveDone.has(sig)) continue;
+        // Never write into what the person is typing in, and never overwrite what they typed.
+        if (document.activeElement === e.target) continue;
+        const live = pageFields().find((f) => f.signature === sig);
+        if (!live || currentValue(live).trim()) {
+          progressiveDone.add(sig); // already answered, by us or by them
+          continue;
+        }
+        progressiveDone.add(sig);
+        void fillOne(sig, row.value);
+      }
+    },
+    { rootMargin: '0px 0px -15% 0px', threshold: 0.35 },
+  );
+  for (const [el, sig] of byEl) if (wanted.has(sig)) progressiveObserver.observe(el);
+}
+
+/** Per-site escape hatch: silence us on one employer's page without disabling the extension. */
+const OFF_SITES = 'f2a_off_sites';
+async function offSites(): Promise<string[]> {
+  try {
+    return ((await chrome.storage.local.get(OFF_SITES))[OFF_SITES] as string[] | undefined) ?? [];
+  } catch {
+    return [];
+  }
+}
+async function siteDisabled(): Promise<boolean> {
+  return (await offSites()).includes(location.hostname);
+}
+async function setSiteDisabled(on: boolean): Promise<void> {
+  const list = new Set(await offSites());
+  if (on) list.add(location.hostname);
+  else list.delete(location.hostname);
+  await chrome.storage.local.set({ [OFF_SITES]: [...list] }).catch(() => {});
+  if (on) stopProgressive();
+}
+
+async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
+  const fp = await getFullProfile();
+  const profile: Profile = fp?.profile ?? {};
+  const rules = withBuiltinRules(fp?.rules);
+  const store = await answerStore();
+  const fillSensitive = await loadFillSensitive();
+  const fields = pageFields();
+  const rows: PanelRow[] = [];
+
+  for (const field of fields) {
+    const label = field.label || field.name || field.id;
+    const q = normalizeQuestion(label);
+    const res = resolveField(field, { userRules: rules, store });
+    const key = res?.key;
+    const profileValue = res?.literal ?? (key ? (profile[key] ?? '') : '');
+    const consequential = !!key && CONSEQUENTIAL.has(key);
+    const isEeo = !!key && EEO.has(key);
+    const source = res?.source ?? null;
+
+    // What the user typed into this question before, on ANY site.
+    const memo: Remembered | undefined = await lookupRemembered(label);
+
+    let group: PanelRow['group'] = 'ask';
+    let value = profileValue;
+    let why: string | undefined;
+    let addable = false;
+
+    // Sensitive questions get their OWN section rather than being folded into "need you". They are not
+    // a coverage gap — they are the user's to decide, and burying them among things we merely failed to
+    // resolve makes a deliberate choice look like a failure. Whether we fill them is a setting.
+    const sensitive = (!!key && (SENSITIVE_KEYS.has(key) || EEO.has(key))) || isSensitiveLabel(label);
+    if (sensitive) {
+      group = 'sensitive';
+      why = fillSensitive ? undefined : 'you fill these — turn the switch on to let us';
+    } else if (memo && !profileValue) {
+      // A remembered answer is an OFFER, not a fill — until the user promotes it (#144).
+      group = 'remember';
+      value = memo.value;
+    } else if (!res) {
+      why = 'we could not tell what this field wants';
+    } else if (!profileValue) {
+      why = key ? 'not in your profile' : 'nothing in your profile matches this';
+      addable = !!key;
+    } else if (TRUSTED.has(source as MappingSource)) {
+      group = 'know';
+    } else if (consequential) {
+      why = `matched only loosely (${source}) — too important to guess`;
+    } else {
+      group = 'know';
+    }
+
+    // Frequency only where it helps a decision: a gap the user could close by editing their profile.
+    const asked = group === 'ask' && !isEeo ? await askedOnRecent(q) : undefined;
+
+    const optCount = field.options?.length ?? 0;
+    const choosy = field.kind === 'select' || field.kind === 'radio' || field.kind === 'combobox';
+    rows.push({
+      choices: choosy
+        ? { count: optCount > 0 ? optCount : null, searchable: field.kind === 'combobox' && optCount === 0 }
+        : undefined,
+      signature: field.signature,
+      label,
+      kind: field.kind,
+      group,
+      value,
+      current: currentValue(field),
+      source: group === 'remember' ? 'learned' : source,
+      why,
+      consequential,
+      memo: memo ? { host: memo.host, at: memo.at, uses: memo.uses, promoted: memo.promoted } : undefined,
+      asked: asked && asked.hits > 0 ? asked : undefined,
+      addable,
+    });
+  }
+
+  // Structure capture — metadata only (question + control kind), never a value. Fire and forget so a
+  // storage hiccup can never delay the panel.
+  void recordForm(
+    formId(location.href),
+    location.hostname,
+    rows.map((r) => ({ q: normalizeQuestion(r.label), kind: r.kind })),
+  );
+
+  return { rows, ats: detectAts(document) ?? null, host: location.hostname };
+}
+
 /** Snapshot of everything the toolbar popup renders. Queried fresh each time the popup opens. */
 function getState() {
   const verdict = getEligibilityVerdict();
@@ -525,7 +1161,7 @@ function getState() {
   // stale zero — "0 fillable fields" on a page where autofill demonstrably fills 6–8 of them
   // (measured on jobs.ashbyhq.com: detected 0, filled 6). Re-assign so the toolbar badge and the
   // popup can never disagree about the same page.
-  fieldCount = detectFields(document).length;
+  fieldCount = pageFields().length;
   return {
     mode: mode(),
     fields: fieldCount,
@@ -1037,7 +1673,7 @@ async function capturePage(): Promise<{
 
 /** Smallest region containing the application's fields (keeps captures small). */
 function formRegion(): Element {
-  const els = detectFields(document)
+  const els = pageFields()
     .map((f) => f.el)
     .filter((e) => e instanceof HTMLElement && !e.closest('nav, header, footer'));
   if (!els.length) return document.body;
@@ -1124,7 +1760,7 @@ async function captureFlow(): Promise<void> {
   try {
     if (!(await loadAutoCapture())) return;
     if (!isAtsPage(document) && !(await isCaptureAllowed(location.hostname))) return;
-    const detected = detectFields(document);
+    const detected = pageFields();
     if (detected.length < 4) return; // only real application forms
     const report = captureCoverage(document, { url: location.href });
     const scrub = await scrubValues();
@@ -1402,6 +2038,7 @@ async function init() {
 
   updateBadge(); // toolbar-icon field count
   applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
+  syncRail(); // the rail + its launcher, once we know this page is an application
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -1415,6 +2052,7 @@ async function init() {
       // costs nothing and rules out the overwhelming majority of pages.
       if (!looksFormish()) return;
       updateBadge();
+      syncRail();
       applyBadges(); // re-run as you switch jobs
       void captureFlow();
     }, 800);
@@ -1470,12 +2108,23 @@ async function init() {
  * first means we always answer; handlers read module state that init() fills in a moment later.
  */
 // ── RPC: the toolbar popup drives everything through the active tab's content script ──
-type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
+type Rpc = {
+  type?: string;
+  method?: string;
+  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string; label?: string; id?: string };
+};
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   const msg = raw as Rpc;
   if (msg?.type === 'f2a-run-autofill') {
     void runAutofill(); // legacy one-shot (kept for the popup's quick action)
     return; // no response
+  }
+  if (msg?.type === 'f2a-open-rail') {
+    syncRail(); // mount if needed, then reveal
+    void chrome.storage.local.set({ f2a_rail_open: true });
+    unmountRail();
+    syncRail();
+    return;
   }
   if (msg?.type !== 'f2a-rpc') return;
   (async () => {
@@ -1486,6 +2135,49 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
       switch (msg.method) {
         case 'getState':
           sendResponse(getState());
+          break;
+        case 'panelFields':
+          sendResponse(await panelFields());
+          break;
+        case 'exportData':
+          sendResponse(await exportData());
+          break;
+        case 'importData':
+          sendResponse(await importData(String(msg.params?.value ?? '')));
+          break;
+        case 'documents':
+          sendResponse(await documents());
+          break;
+        case 'attachResume':
+          sendResponse(await attachResume(msg.params?.id));
+          break;
+        case 'coverLetter':
+          sendResponse(await coverLetter());
+          break;
+        case 'attachCover':
+          sendResponse(await attachCover(String(msg.params?.value ?? '')));
+          break;
+        case 'fieldOptions':
+          sendResponse(await fieldOptions(String(msg.params?.signature ?? '')));
+          break;
+        case 'draftTwo':
+          sendResponse(await draftTwo(String(msg.params?.label ?? '')));
+          break;
+        case 'siteInsight':
+          sendResponse({ host: location.hostname, rows: await statsForHost(location.hostname) });
+          break;
+        case 'learnFromPage':
+          sendResponse({ learned: await learnFromPage() });
+          break;
+        case 'noteUse':
+          sendResponse({ uses: await noteRememberedUse(String(msg.params?.label ?? '')) });
+          break;
+        case 'promote':
+          await setPromoted(String(msg.params?.label ?? ''), msg.params?.on !== false);
+          sendResponse({ ok: true });
+          break;
+        case 'fillOne':
+          sendResponse(await fillOne(String(msg.params?.signature ?? ''), String(msg.params?.value ?? '')));
           break;
         case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run

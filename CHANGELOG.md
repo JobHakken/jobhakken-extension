@@ -4,6 +4,116 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.34.0
+- **A ready-made demo file to import.** `e2e/fixtures/demo-import.json` seeds a full placeholder profile,
+  a résumé, a cover-letter template and a couple of remembered answers, so testing no longer starts with
+  typing everything in again. Import it from the ⤒ button.
+- **"Off here" now looks like what it does.** When a site is switched off, the other switches grey out and
+  a line says nothing will be filled. Previously "fill as I scroll" and "off here" could both show as on,
+  which made scroll-filling look broken when the site was simply silenced.
+- **Backups now carry your settings too** — fill-as-you-scroll, silenced sites and section folds. They
+  were being dropped on restore, so a restored backup quietly came back with scroll-filling off.
+- **It no longer learns from pages that aren't applications.** A dashboard filter on an unrelated site was
+  being banked as an answer ("monthly case volume"), and a polluted bank is worse than an empty one
+  because it gets offered on real applications.
+
+## 0.33.0
+- **Fill as you scroll.** Turn on "fill as I scroll" and each field is filled as it comes into view,
+  instead of everything at once when you press a button. Nothing jumps around, because we only ever
+  touch what's already on your screen, and fields that appear later get filled when they appear.
+  Sensitive questions still wait for their own switch — scrolling past a visa question never answers it.
+- **Off here.** A switch to silence the extension on one site, for when it misbehaves on a particular
+  employer's page, without turning the whole thing off.
+- **What I've learned (🧠).** Every answer you've taught it, with the times used and where you wrote it
+  — editable and deletable. A tool that learns needs an undo. The questions each site asks live here too.
+- **A tidier sidebar.** Three buttons at the top instead of six. Filled comes first with sensitive
+  questions inside it, then what needs you, then résumé and cover letter.
+- **Fixed: the extension was treating its own cover-letter box as one of the form's fields**, which
+  inflated the field count and produced a nonsense "needs you" row.
+
+## 0.32.0
+- **Your learned data can now leave and come back.** Two buttons at the bottom of the sidebar: **⤓**
+  saves everything the extension has learned — your profile, the answers you've taught it, every
+  question it has seen, your résumés and cover-letter template — to a single file on your machine. **⤒**
+  restores it. Reinstalling the extension no longer costs you weeks of answers, and you can carry the
+  same corpus to another machine. Restoring merges with whatever is already there rather than wiping it.
+- **Your API key is never included in a backup.** A file that quietly carries a credential is a
+  liability; the key takes seconds to re-enter.
+
+## 0.31.0
+- **Sensitive questions are their own section, with a switch.** Work authorization, visa sponsorship,
+  salary, gender, ethnicity, veteran and disability status no longer sit among the things we simply
+  couldn't work out. They have their own **Sensitive — your call** section with an **auto / manual**
+  switch: leave it on and we fill them from your profile, turn it off and they're yours to answer.
+  Either way you can see what we'd put there.
+- **Résumé and cover letter are a section in the sidebar**, not a screen you have to go find — open by
+  default, right above the fields, because choosing a résumé is part of filling the application.
+- The sidebar now leads with what needs you: **Need you**, then **Sensitive**, then **Remembered**, with
+  **Filled** collapsed at the bottom.
+
+## 0.30.1
+- **Cover letters and drafted answers actually come back now.** Both were being run through a parser
+  built for a different response shape, so a perfectly good letter arrived as "nothing came back". A
+  cover letter now returns as written, and Draft 2 returns two genuinely different options rather than
+  none.
+
+## 0.30.0
+- **You can see what we filled, straight after filling it.** Press Fill and the fields we touched are
+  outlined on the form itself — no toggle to find. Green where we filled it, blue where it came from
+  your own earlier answer, dashed amber where we left it to you.
+- **Keep several résumés and pick one per application.** The new 📎 section lists your résumés, marks
+  the one being used, and lets you upload another without leaving the form. Your choice is remembered
+  per company, so the same employer gets the same résumé next time.
+- **Cover letters.** Write one from your profile, or keep your own template and have it adapted to the
+  role so it still sounds like you. Always editable before it goes anywhere, and it lands wherever the
+  form wants it — typed into the text box, or attached as a file.
+
+## 0.29.0
+- **The sidebar folds.** Filled and Remembered start closed, so a 31-field application shows you the
+  9 things that still need you instead of everything at once. Your choice sticks per section.
+- **See a dropdown's choices without opening it.** Any select or dropdown row can expand to list what
+  the field accepts, with ours ticked. Picking from the sidebar sets the value directly — the page's own
+  menu never opens, which is also why it can't get left hanging half-open. If your saved answer isn't one
+  of the choices, it says so rather than putting it in anyway.
+- **See what we touched, on the form itself.** A new ▣ button outlines every field: solid green where we
+  filled it, solid blue where it came from your own earlier answer, dashed amber where we've left it to
+  you. Solid versus dashed carries the meaning as well as the colour, and it's off until you ask for it.
+
+## 0.28.0
+- **JobHakken now lives on the page, not behind a menu.** A small tab sits on the right edge of any
+  application page — click it and the sidebar slides in, pushing the page across rather than covering
+  the form you're trying to fill. The tab shows a count of the fields still waiting on you, so you can
+  see there's something to do without opening anything. Everything from 0.27.0 is inside it: what we
+  filled, what we're leaving to you and why, and what you taught us before.
+
+## 0.27.0
+- **New side panel — see what we filled, what we're leaving to you, and why.** Open it with the ◫ button
+  in the popup. Every field on the application in front of you is in one of three groups: filled with
+  high confidence, needs you, or remembered from your own earlier answers.
+- **It remembers what you type.** Answer a question we couldn't, and the next form that asks the same
+  thing offers your answer back — with where and when you wrote it. It works across different job sites,
+  because it matches on the question, not the page. Nothing is filled automatically from memory: after
+  you've used an answer a few times it *asks* whether to always fill it. Your answers stay on your device.
+- **Nothing we won't stand behind gets guessed.** Work authorization, sponsorship, salary, notice period
+  and EEO questions need a strong match or they're handed back to you with the reason. Equal-opportunity
+  questions are never auto-filled at all.
+- **Two draft answers for open questions, on request.** Press ✍ Draft 2 on a "why this role?" style
+  question and your own AI key writes two options to choose from — one call, never automatic. What you
+  pick becomes a remembered answer, so it costs nothing next time.
+- **See what we've learned about a site.** The ◔ button lists the questions that site asks, the kind of
+  control each uses and how often it comes up. Questions and field types only — never your answers.
+- **Honest about what we support.** The panel names the system it recognises only where we've verified
+  our handling, and otherwise says "generic handling" rather than implying support we can't back.
+
+- **New side panel: see what we filled, what we're leaving to you, and why.** It lists every field on
+  the application in front of you in three groups — filled with high confidence, needs you, and
+  remembered from your own earlier answers. Anything we won't fill now says *why* ("not in your profile
+  yet", "matched only loosely — too important to guess") instead of just sitting there empty. Questions
+  where a wrong answer costs you something — work authorization, sponsorship, salary, notice period,
+  EEO — need a strong match or they're handed back to you. The panel also names the system it
+  recognises, and says "generic handling" when we haven't verified that one yet rather than implying
+  support we can't stand behind.
+
 ## 0.25.3
 - **The popup no longer says "0 fillable fields" on pages it can actually fill.** Two separate causes,
   both fixed. On single-page apps (Ashby and similar) the field count was read from a cache that only
@@ -35,7 +145,6 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 - **Fixes:** saving your profile or AI provider no longer needs a page reload; your API key survives an
   extension reload when you tick "remember"; employment-agreement and non-compete questions answer "No"
   by default rather than being guessed at.
-
 ## 0.24.2
 - **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
   GitHub issue with everything we'd otherwise have to ask for: the page URL and job, **which ATS the page

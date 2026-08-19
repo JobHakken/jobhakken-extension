@@ -8,7 +8,7 @@
  */
 import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
 
-import { draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
+import { chatText, draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { mapFieldsWithAi } from '../lib/aiFieldMap.js';
 import { getAiConfig } from '../lib/aiKeyStore.js';
 import { clearIdentity, fetchEntitlement, saveIdentity, WEB_APP_ORIGIN, type Identity } from '../lib/authStore.js';
@@ -18,7 +18,7 @@ import { bestFrameId, clearTabFrames, recordFrameFields } from '../lib/frameStor
 import { mergeH1bRows } from '../lib/h1bLookup.js';
 import { initGaSink } from '../lib/gaSink.js';
 import { initPosthogSink } from '../lib/posthogSink.js';
-import { saveFullProfile } from '../lib/profileStore.js';
+import { loadFullProfile, saveFullProfile } from '../lib/profileStore.js';
 import { acceptsResumeSchema, resumeDataToProfile } from '../lib/resumeReceive.js';
 import { track } from '../lib/telemetry.js';
 
@@ -90,9 +90,112 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
+  if (msg?.type === 'f2a-open-options') void chrome.runtime.openOptionsPage();
+});
+
+chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'jh-telemetry' && typeof msg.event === 'string') {
     void track(msg.event, msg.params ?? {}); // track() sanitizes: unknown events/params are dropped
   }
+});
+
+// ── Cover letter (#147) ────────────────────────────────────────────────────────────────────────────
+// One call, on an explicit click, same as Draft 2. If the user keeps a template we fill ITS gaps rather
+// than writing something new — a letter that sounds like them beats a better-written one that doesn't.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-cover-letter') return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg?.apiKey) {
+        sendResponse({ text: '', error: 'Add your AI key in Settings to write a cover letter' });
+        return;
+      }
+      const fp = await loadFullProfile();
+      const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 4) }) : '';
+      const tpl = String(msg.template ?? '').trim();
+      const job = (msg.job ?? {}) as { title?: string; company?: string };
+      const sys =
+        'You write job-application cover letters. Return ONLY the letter body — no preamble, no ' +
+        'commentary, no markdown fences. Never invent employers, dates or qualifications.';
+      const usr = tpl
+        ? `Adapt this cover letter for the role, keeping the writer's voice, structure and any specifics ` +
+          `they already chose. Replace bracketed or generic parts with details from the role.\n\n` +
+          `ROLE: ${job.title ?? ''} at ${job.company ?? ''}\n\nTHEIR LETTER:\n${tpl}\n\nTHEIR BACKGROUND:\n${ctx}`
+        : `Write a cover letter for this role from the background below. Under 250 words, concrete, ` +
+          `no clichés, nothing invented.\n\nROLE: ${job.title ?? ''} at ${job.company ?? ''}\n\n` +
+          `BACKGROUND:\n${ctx}`;
+      const text = (await chatText(cfg, sys, usr)).trim();
+      sendResponse(text ? { text } : { text: '', error: 'nothing came back — try again' });
+    } catch (e) {
+      sendResponse({ text: '', error: e instanceof Error ? e.message : 'drafting failed' });
+    }
+  })();
+  return true; // async
+});
+
+// ── Two draft answers in ONE call (#147) ───────────────────────────────────────────────────────────
+// The panel asks for two options so the user can choose a voice rather than accept whatever the model
+// produced. Deliberately a single completion: two round trips would double the token cost for no gain,
+// and the user named token cost as a live constraint.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-draft-two') return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg?.apiKey) {
+        sendResponse({ options: [], error: 'Add your AI key in Settings to draft answers' });
+        return;
+      }
+      const fp = await loadFullProfile();
+      const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 3) }) : '';
+      const q = String(msg.question ?? '');
+      // draftAnswers returns one answer PER question and parses a JSON array, so asking the same
+      // question twice with different framings gets two options out of a single completion — which is
+      // exactly the "one call, two options" requirement, using machinery that already works.
+      const r = await draftAnswers(cfg, ctx, msg.job ?? {}, [
+        `${q} — answer concisely, under 60 words.`,
+        `${q} — answer with a specific detail from this person's background, under 60 words.`,
+      ]);
+      const options = (r.answers ?? []).map((a) => String(a ?? '').trim()).filter((a) => a.length > 1);
+      sendResponse({ options });
+    } catch (e) {
+      sendResponse({ options: [], error: e instanceof Error ? e.message : 'drafting failed' });
+    }
+  })();
+  return true; // async
+});
+
+// ── MAIN-world bridge injection (#145) ─────────────────────────────────────────────────────────────
+// The page-world bridge (pageBridge.js) must run in the page's OWN JS world to reach React's per-world
+// expandos (`__reactFiber`, `_valueTracker`) — a content script cannot see them.
+//
+// It used to be injected by the content script as a <script src> from web_accessible_resources, which
+// PAGE CSP is entitled to refuse. Greenhouse ships `script-src 'self' 'unsafe-inline' 'unsafe-eval' …`
+// with no `chrome-extension:`, so the tag was blocked, `s.onerror` resolved quietly, every bridgeCall
+// then timed out, and ALL TEN comboboxes on the form failed — Country, sponsorship, veteran status,
+// disability. Precisely the fields where a blank or a wrong answer matters most.
+//
+// executeScript with `world: 'MAIN'` is not subject to page CSP, so this works on any site.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-ensure-bridge') return;
+  const tabId = sender.tab?.id;
+  if (tabId == null) {
+    sendResponse({ ok: false });
+    return;
+  }
+  // Inject into the SENDING frame only: the form often lives in an iframe, and the bridge is only
+  // useful in the same frame as the fields it has to reach.
+  const frameIds = typeof sender.frameId === 'number' ? [sender.frameId] : undefined;
+  chrome.scripting
+    .executeScript({
+      target: frameIds ? { tabId, frameIds } : { tabId },
+      files: ['content/pageBridge.js'],
+      world: 'MAIN',
+    })
+    .then(() => sendResponse({ ok: true }))
+    .catch(() => sendResponse({ ok: false })); // restricted page, or the frame went away
+  return true; // async response
 });
 
 // ── Re-inject the content script into an already-open tab (#150) ───────────────────────────

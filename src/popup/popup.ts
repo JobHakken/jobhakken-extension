@@ -181,6 +181,18 @@ let h1bLoadedFor = '';
 $('ver').textContent = `v${chrome.runtime.getManifest().version}`;
 $('gear').addEventListener('click', () => chrome.runtime.openOptionsPage());
 $('setupCta').addEventListener('click', () => chrome.runtime.openOptionsPage());
+// Open the in-page rail (#140). The rail lives in the PAGE, not in browser chrome, so this just asks
+// the content script to show it — and the launcher tab on the page edge is the primary way in anyway.
+$('panel').addEventListener('click', async () => {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id != null) await chrome.tabs.sendMessage(tab.id, { type: 'f2a-open-rail' });
+    window.close();
+  } catch {
+    /* no content script here (chrome://, store pages) — nothing to open */
+  }
+});
+
 void initThemeToggle($('theme'));
 
 async function render() {

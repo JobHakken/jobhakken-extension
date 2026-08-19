@@ -17,7 +17,16 @@ import { bridgeDomClick, bridgeReactClick } from './fillRepair.js';
 function optionNodes(el: HTMLElement): HTMLElement[] {
   const id = el.getAttribute('aria-controls') || el.getAttribute('aria-owns');
   const scope = (id && document.getElementById(id)) || document;
-  const nodes = [...scope.querySelectorAll<HTMLElement>('[role="option"], [role="listbox"] li, ul[role] li')];
+  // react-select renders options as `.react-select__option` and does NOT always set role=option, so a
+  // role-only query misses them entirely. Simplify's shipped config keys on exactly these class names
+  // (`react-select__option` / `react-select__control`), which is the evidence this is the right hook —
+  // and Greenhouse generates deterministic ids like `react-select-<field>-placeholder`, with `--0`
+  // indexing repeating rows (school--0, degree--0), which is why education rows were unreachable.
+  const nodes = [
+    ...scope.querySelectorAll<HTMLElement>(
+      '[role="option"], [role="listbox"] li, ul[role] li, [class*="react-select__option"], [class*="select__option"]',
+    ),
+  ];
   // Only offer things the user could actually click.
   return nodes.filter((n) => {
     const r = n.getBoundingClientRect();
