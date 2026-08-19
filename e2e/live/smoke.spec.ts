@@ -72,14 +72,21 @@ const test = base.extend<{ context: BrowserContext; extensionId: string }>({
  * in all_frames, so a bare sendMessage lands in every frame and the empty top frame's reply can win.
  * This mirrors the popup's frameStore targeting; without it, coverage on iframed ATS (iCIMS/Taleo)
  * is measured against the wrong frame and is meaningless.
+ *
+ * Returns a DISCRIMINATED result, not just `T | null` (#149). The old shape collapsed "no content
+ * script answered" and "the content script answered, and saw nothing" into the same `null`, so every
+ * report of a detection gap was ambiguous — we could not tell a real detection bug from a page the
+ * script never attached to. Callers must handle `answered: false` separately.
  */
-async function rpc<T>(context: BrowserContext, method: string, params: unknown = {}): Promise<T | null> {
+type Rpc<T> = { answered: true; value: T } | { answered: false; why: 'no-tab' | 'no-script' };
+
+async function rpc<T>(context: BrowserContext, method: string, params: unknown = {}): Promise<Rpc<T>> {
   let [sw] = context.serviceWorkers();
   if (!sw) sw = await context.waitForEvent('serviceworker');
   return (await sw.evaluate(
     async ({ method, params }) => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) return null;
+      if (!tab?.id) return { answered: false, why: 'no-tab' };
       // Pick the form frame the same way frameStore does: highest fillable-field count for this tab.
       let frameId: number | undefined;
       try {
@@ -98,13 +105,16 @@ async function rpc<T>(context: BrowserContext, method: string, params: unknown =
       }
       try {
         const opts = frameId != null ? { frameId } : {};
-        return await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method, params }, opts);
+        const value = await chrome.tabs.sendMessage(tab.id, { type: 'f2a-rpc', method, params }, opts);
+        return { answered: true, value };
       } catch {
-        return null; // no content script on this page (e.g. it didn't match / didn't load)
+        // Nothing received the message: the script did not match, has not attached yet, or was
+        // orphaned by an extension reload (#150). NOT the same as "it looked and found nothing".
+        return { answered: false, why: 'no-script' };
       }
     },
     { method, params },
-  )) as T | null;
+  )) as Rpc<T>;
 }
 
 test.describe('live robustness smoke', () => {
@@ -144,20 +154,23 @@ test.describe('live robustness smoke', () => {
         const fill = await rpc<{ filled: number; review: number; total: number }>(context, 'autofill', {
           mode: 'default',
         });
-        const detected = state?.fields ?? 0;
-        const filled = fill?.filled ?? 0;
+        const attached = state.answered;
+        const detected = state.answered ? (state.value?.fields ?? 0) : 0;
+        const filled = fill.answered ? (fill.value?.filled ?? 0) : 0;
         // Denominator = the most complete field count we have (getState vs the autofill pass can differ,
         // and multi-row fills can push `filled` above a single count) — clamp so coverage never exceeds 100%.
-        const denom = Math.max(detected, fill?.total ?? 0, filled);
+        const denom = Math.max(detected, (fill.answered ? fill.value?.total : 0) ?? 0, filled);
         const coverage = denom > 0 ? Math.min(1, Math.round((filled / denom) * 100) / 100) : null;
         const note =
           pageInputs < 3
             ? 'no form on page (expired / blocked?)'
-            : detected === 0
-              ? '⚠ DETECTION GAP — form present, extension saw nothing'
-              : coverage != null && coverage < threshold
-                ? '⚠ FIXTURE CANDIDATE'
-                : 'ok';
+            : !attached
+              ? '✖ NO CONTENT SCRIPT — never attached, nothing measured (not a detection bug)'
+              : detected === 0
+                ? '⚠ DETECTION GAP — form present, content script attached and saw nothing'
+                : coverage != null && coverage < threshold
+                  ? '⚠ FIXTURE CANDIDATE'
+                  : 'ok';
         rows.push({ ats: t.ats, url: t.url, pageInputs, detected, filled, coverage, note });
       } catch (e) {
         rows.push({

@@ -4,6 +4,15 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.24.3
+- **The popup no longer says "0 fillable fields" on pages it can actually fill.** Two separate causes,
+  both fixed. On single-page apps (Ashby and similar) the field count was read from a cache that only
+  refreshed when the toolbar badge updated, so a form that rendered *after* that pass showed as empty
+  forever — measured on a live Ashby application: 0 reported, 6 actually filled. The count is now taken
+  fresh whenever the popup asks. Separately, when a tab was already open while the extension reloaded or
+  updated, Chrome left the old content script running but disconnected, so the popup got no answer at all
+  and sat on "Checking…" with a fill button that hung. It now reconnects that tab and retries once.
+
 ## 0.24.2
 - **"Report this page" now fills in the details for you.** Filing a bug from the popup pre-fills the
   GitHub issue with everything we'd otherwise have to ask for: the page URL and job, **which ATS the page
