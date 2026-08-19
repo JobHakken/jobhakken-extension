@@ -8,6 +8,7 @@ import {
   detectFileInputs,
   detectFields,
   expandRepeatingSections,
+  fillField,
   isAtsPage,
   learnableAnswers,
   readLazyOptions,
@@ -517,6 +518,52 @@ function pageCompany(): string {
     .filter(Boolean);
   if (parts.length >= 3) return parts[parts.length - 2]; // …| Company | LinkedIn
   return location.hostname.replace(/^www\./, '').split('.')[0];
+}
+
+/**
+ * Fill ONE field from the panel (#145). The user clicked a specific row, so this is explicit intent —
+ * the click IS the confirmation, which is why the panel can offer values it would refuse to fill
+ * unprompted.
+ *
+ * Runs the same chain a full pass uses so a panel click is never weaker than a bulk fill:
+ * `fillField` (native setter + events) → `repairFills` (MAIN-world bridge for React's value tracker,
+ * or drive a custom combobox like a person would).
+ *
+ * Returns `filled:false` with `reason:'widget'` when the control refuses a programmatic value — the
+ * panel then falls back to copy + reveal rather than pretending it worked, and records the widget so
+ * the gap becomes a work item instead of a silent disappointment.
+ */
+async function fillOne(signature: string, value: string): Promise<{ filled: boolean; reason?: string }> {
+  const field = detectFields(document).find((f) => f.signature === signature);
+  if (!field) return { filled: false, reason: 'gone' }; // page re-rendered under us
+  if (!value) return { filled: false, reason: 'empty' };
+  try {
+    fillField(field, value);
+    const r = await repairFills([{ el: field.el, value, source: 'user' }], 4000);
+    if (r.confirmed > 0) return { filled: true };
+    // Nothing took. Reveal it so the user can paste, and remember the widget shape we can't drive.
+    field.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    void recordUnfillable(field);
+    return { filled: false, reason: 'widget' };
+  } catch {
+    return { filled: false, reason: 'error' };
+  }
+}
+
+/** Widgets we could not fill programmatically, per host + field kind. Metadata only — no values. */
+async function recordUnfillable(field: { kind: string; label: string }): Promise<void> {
+  const KEY = 'f2a_unfillable';
+  try {
+    const got = ((await chrome.storage.local.get(KEY))[KEY] ?? {}) as Record<string, number>;
+    const k = `${location.hostname}|${field.kind}`;
+    got[k] = (got[k] ?? 0) + 1;
+    const kept = Object.entries(got)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 200);
+    await chrome.storage.local.set({ [KEY]: Object.fromEntries(kept) });
+  } catch {
+    /* diagnostics only — never break a fill */
+  }
 }
 
 // ── Side panel data (#140) ─────────────────────────────────────────────────────────────────────────
@@ -1552,7 +1599,11 @@ async function init() {
  * first means we always answer; handlers read module state that init() fills in a moment later.
  */
 // ── RPC: the toolbar popup drives everything through the active tab's content script ──
-type Rpc = { type?: string; method?: string; params?: { mode?: 'default' | 'ats'; on?: boolean } };
+type Rpc = {
+  type?: string;
+  method?: string;
+  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string };
+};
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   const msg = raw as Rpc;
   if (msg?.type === 'f2a-run-autofill') {
@@ -1571,6 +1622,9 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'fillOne':
+          sendResponse(await fillOne(String(msg.params?.signature ?? ''), String(msg.params?.value ?? '')));
           break;
         case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run

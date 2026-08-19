@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>JobHakken</title>
     <style>
-      /* Same token names as popup.html so the two surfaces cannot drift apart. */
+      /* Same token NAMES as popup.html so the two surfaces cannot drift apart. */
       :root {
         --bg: hsl(45 40% 98%);
         --fg: hsl(48 6.2% 15.9%);
@@ -19,11 +19,12 @@
         --surf: hsl(40 33.3% 94.7%);
         --soft: hsl(133.3 20% 91.2%);
         --soft-fg: hsl(145.9 22% 39.2%);
-        --slate: hsl(220 22% 45%);
-        --slate-soft: hsl(220 30% 94%);
+        --slate: hsl(220 26% 42%);
+        --slate-soft: hsl(220 32% 94%);
+        --amber-soft: hsl(38 60% 95%);
       }
       @media (prefers-color-scheme: dark) {
-        :root {
+        :root:not([data-theme='light']) {
           --bg: hsl(36 13.5% 14.5%);
           --fg: hsl(40 28.3% 89.6%);
           --muted: hsl(38.8 6.8% 51.2%);
@@ -36,25 +37,10 @@
           --surf: hsl(36 14% 17%);
           --soft: hsl(140 12% 22%);
           --soft-fg: hsl(142 24% 70%);
-          --slate: hsl(220 30% 70%);
-          --slate-soft: hsl(220 20% 20%);
+          --slate: hsl(220 32% 72%);
+          --slate-soft: hsl(220 18% 20%);
+          --amber-soft: hsl(36 25% 19%);
         }
-      }
-      :root[data-theme='light'] {
-        --bg: hsl(45 40% 98%);
-        --fg: hsl(48 6.2% 15.9%);
-        --muted: hsl(44 6.1% 51.6%);
-        --line: hsl(40 20% 85.3%);
-        --accent: hsl(144.8 19.7% 45.9%);
-        --accent-fg: hsl(45 40% 98%);
-        --green: hsl(144.8 19.7% 45.9%);
-        --amber: #b8791f;
-        --red: hsl(12.5 43.8% 47.5%);
-        --surf: hsl(40 33.3% 94.7%);
-        --soft: hsl(133.3 20% 91.2%);
-        --soft-fg: hsl(145.9 22% 39.2%);
-        --slate: hsl(220 22% 45%);
-        --slate-soft: hsl(220 30% 94%);
       }
       :root[data-theme='dark'] {
         --bg: hsl(36 13.5% 14.5%);
@@ -69,8 +55,9 @@
         --surf: hsl(36 14% 17%);
         --soft: hsl(140 12% 22%);
         --soft-fg: hsl(142 24% 70%);
-        --slate: hsl(220 30% 70%);
-        --slate-soft: hsl(220 20% 20%);
+        --slate: hsl(220 32% 72%);
+        --slate-soft: hsl(220 18% 20%);
+        --amber-soft: hsl(36 25% 19%);
       }
 
       * {
@@ -84,7 +71,16 @@
           13px/1.5 system-ui,
           -apple-system,
           sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+
+      /* ── Header ──────────────────────────────────────────────────────── */
       header {
         padding: 10px 12px;
         border-bottom: 1px solid var(--line);
@@ -93,6 +89,7 @@
         gap: 8px;
         position: sticky;
         top: 0;
+        z-index: 2;
         background: var(--bg);
       }
       .top {
@@ -118,12 +115,11 @@
       .badge {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 7px;
         border: 1px solid var(--line);
         background: var(--surf);
-        border-radius: 6px;
-        padding: 5px 8px;
-        font-size: 11px;
+        border-radius: 7px;
+        padding: 5px 9px;
       }
       .badge .dot {
         width: 6px;
@@ -132,6 +128,20 @@
         background: var(--muted);
         flex: none;
       }
+      .badge b {
+        font-size: 11.5px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .badge .sub {
+        font-size: 10px;
+        color: var(--muted);
+        font-family: ui-monospace, Menlo, monospace;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+      }
       .badge.named {
         background: var(--soft);
         border-color: var(--accent);
@@ -139,8 +149,8 @@
       .badge.named .dot {
         background: var(--green);
       }
-      .badge b {
-        font-weight: 700;
+      .badge.named b {
+        color: var(--soft-fg);
       }
       .tally {
         display: flex;
@@ -151,7 +161,7 @@
         font-size: 11px;
         font-weight: 650;
         border-radius: 99px;
-        padding: 2px 8px;
+        padding: 2px 9px;
         border: 1px solid;
         font-variant-numeric: tabular-nums;
       }
@@ -162,7 +172,7 @@
       }
       .chip.a {
         color: var(--amber);
-        background: transparent;
+        background: var(--amber-soft);
         border-color: var(--amber);
       }
       .chip.r {
@@ -171,15 +181,21 @@
         border-color: var(--slate);
       }
 
+      /* ── Groups ──────────────────────────────────────────────────────── */
       .grp h2 {
         margin: 0;
-        padding: 10px 12px 5px;
+        padding: 11px 12px 5px;
         font-size: 10.5px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         font-weight: 700;
         display: flex;
         justify-content: space-between;
+        gap: 8px;
+      }
+      .grp h2 .n {
+        font-family: ui-monospace, Menlo, monospace;
+        opacity: 0.7;
       }
       .grp.know h2 {
         color: var(--soft-fg);
@@ -190,13 +206,14 @@
       .grp.remember h2 {
         color: var(--slate);
       }
+
       .row {
         padding: 7px 12px 8px;
         border-top: 1px solid var(--line);
         border-left: 3px solid transparent;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
       }
       .grp.know .row {
         border-left-color: var(--green);
@@ -207,22 +224,32 @@
       .grp.remember .row {
         border-left-color: var(--slate);
       }
-      .k {
+      .row.done {
+        background: var(--soft);
+      }
+      .row .k {
         font-size: 11.5px;
         color: var(--muted);
+        line-height: 1.35;
       }
-      .v {
+      .row .v {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 6px;
       }
-      .v span {
+      .row .v .val {
         font-family: ui-monospace, Menlo, monospace;
         font-size: 11.5px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+      }
+      .row .v .val.none {
+        color: var(--muted);
+        font-style: italic;
+        font-family: inherit;
       }
       .why {
         font-size: 10.5px;
@@ -235,9 +262,16 @@
         color: var(--muted);
         border: 1px solid var(--line);
         border-radius: 3px;
-        padding: 0 3px;
+        padding: 0 4px;
         flex: none;
       }
+      .warn {
+        color: var(--red);
+        font-weight: 700;
+        flex: none;
+        font-size: 10px;
+      }
+
       button {
         font: inherit;
         font-size: 11px;
@@ -246,22 +280,41 @@
         background: var(--surf);
         color: var(--fg);
         border-radius: 5px;
-        padding: 2px 8px;
+        padding: 2px 9px;
         cursor: pointer;
         flex: none;
       }
-      button:hover {
+      button:hover:not(:disabled) {
         border-color: var(--accent);
       }
       button:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 1px;
       }
+      button:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      button.fill {
+        border-color: var(--slate);
+        color: var(--slate);
+      }
+      button.copy {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+
       .empty {
-        padding: 24px 14px;
+        padding: 28px 16px;
         color: var(--muted);
         text-align: center;
       }
+      .empty b {
+        display: block;
+        color: var(--fg);
+        margin-bottom: 4px;
+      }
+
       footer {
         border-top: 1px solid var(--line);
         background: var(--surf);
@@ -273,14 +326,25 @@
         position: sticky;
         bottom: 0;
       }
+      .note {
+        font-size: 10.5px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .note::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+        flex: none;
+      }
       .cta {
         background: var(--accent);
         color: var(--accent-fg);
         border-color: var(--accent);
-      }
-      .note {
-        font-size: 10.5px;
-        color: var(--muted);
       }
     </style>
   </head>
@@ -290,7 +354,9 @@
         <span class="wm">Job<i>Hakken</i></span>
         <span class="ctx" id="ctx">reading this page…</span>
       </div>
-      <div class="badge" id="badge"><span class="dot"></span><b id="badgeName">Checking site…</b></div>
+      <div class="badge" id="badge">
+        <span class="dot"></span><b id="badgeName">Checking site…</b><span class="sub" id="badgeSub"></span>
+      </div>
       <div class="tally" id="tally"></div>
     </header>
 
@@ -298,7 +364,7 @@
 
     <footer>
       <span class="note" id="note"></span>
-      <button class="cta" id="refresh">Refresh</button>
+      <button class="cta" id="fillAll">Fill confident</button>
     </footer>
 
     <script type="module" src="panel.js"></script>
