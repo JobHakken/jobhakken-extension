@@ -11,11 +11,13 @@ import {
   isAtsPage,
   learnableAnswers,
   readLazyOptions,
+  currentValue,
   resolveField,
   setInputFile,
   unmappedQuestions,
   type CoverageReport,
   type FullProfile,
+  type MappingSource,
   type MappingStore,
   type Profile,
   type ProfileKey,
@@ -515,6 +517,86 @@ function pageCompany(): string {
     .filter(Boolean);
   if (parts.length >= 3) return parts[parts.length - 2]; // …| Company | LinkedIn
   return location.hostname.replace(/^www\./, '').split('.')[0];
+}
+
+// ── Side panel data (#140) ─────────────────────────────────────────────────────────────────────────
+/**
+ * What the side panel renders: every field on THIS form, grouped by how much we trust our answer.
+ *
+ * Deliberately scoped to the form rather than the ATS — two GitLab postings on the same Greenhouse
+ * board carried 23 and 30 fields, so a per-ATS list would name fields that aren't here and miss ones
+ * that are. Read-only: this resolves and reports, it never writes to the page (that's `fillOne`).
+ *
+ * `group` is the panel's three-state model:
+ *   know     — we have a value and the resolution is trustworthy
+ *   ask      — no value, or a resolution too weak to act on; the panel shows `why`
+ *   remember — the value came from an answer the user typed before (answerStore)
+ */
+export type PanelRow = {
+  signature: string;
+  label: string;
+  kind: string;
+  group: 'know' | 'ask' | 'remember';
+  value: string;
+  current: string;
+  source: MappingSource | null;
+  why?: string;
+  consequential: boolean;
+};
+
+/** Fields where a WRONG answer costs more than a blank one, so they demand a stronger resolution. */
+const CONSEQUENTIAL: ReadonlySet<ProfileKey> = new Set<ProfileKey>([
+  'workAuthorization',
+  'requiresSponsorship',
+  'salaryExpectation',
+  'currentSalary',
+  'noticePeriod',
+  'gender',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+]);
+
+/** Sources we'll act on unprompted. Anything weaker is shown, explained, and left to the user. */
+const TRUSTED: ReadonlySet<MappingSource> = new Set<MappingSource>(['user', 'seed', 'learned']);
+
+async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
+  const fp = await getFullProfile();
+  const profile: Profile = fp?.profile ?? {};
+  const rules = withBuiltinRules(fp?.rules);
+  const store = await answerStore();
+  const rows: PanelRow[] = [];
+
+  for (const field of detectFields(document)) {
+    const res = resolveField(field, { userRules: rules, store });
+    const key = res?.key;
+    const value = res?.literal ?? (key ? (profile[key] ?? '') : '');
+    const consequential = !!key && CONSEQUENTIAL.has(key);
+    const source = res?.source ?? null;
+
+    let group: PanelRow['group'] = 'ask';
+    let why: string | undefined;
+    if (!res) why = 'we could not tell what this field wants';
+    else if (!value) why = key ? 'not in your profile yet' : 'nothing in your profile matches this';
+    else if (source === 'learned') group = 'remember';
+    else if (TRUSTED.has(source as MappingSource)) group = 'know';
+    else if (consequential) why = `matched only loosely (${source}) — too important to guess`;
+    else group = 'know';
+
+    rows.push({
+      signature: field.signature,
+      label: field.label || field.name || field.id,
+      kind: field.kind,
+      group,
+      value,
+      current: currentValue(field),
+      source,
+      why,
+      consequential,
+    });
+  }
+  return { rows, ats: detectAts(document) ?? null, host: location.hostname };
 }
 
 /** Snapshot of everything the toolbar popup renders. Queried fresh each time the popup opens. */

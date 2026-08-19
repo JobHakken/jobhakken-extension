@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JobHakken</title>
+    <style>
+      /* Same token names as popup.html so the two surfaces cannot drift apart. */
+      :root {
+        --bg: hsl(45 40% 98%);
+        --fg: hsl(48 6.2% 15.9%);
+        --muted: hsl(44 6.1% 51.6%);
+        --line: hsl(40 20% 85.3%);
+        --accent: hsl(144.8 19.7% 45.9%);
+        --accent-fg: hsl(45 40% 98%);
+        --green: hsl(144.8 19.7% 45.9%);
+        --amber: #b8791f;
+        --red: hsl(12.5 43.8% 47.5%);
+        --surf: hsl(40 33.3% 94.7%);
+        --soft: hsl(133.3 20% 91.2%);
+        --soft-fg: hsl(145.9 22% 39.2%);
+        --slate: hsl(220 22% 45%);
+        --slate-soft: hsl(220 30% 94%);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: hsl(36 13.5% 14.5%);
+          --fg: hsl(40 28.3% 89.6%);
+          --muted: hsl(38.8 6.8% 51.2%);
+          --line: hsl(36 15.5% 19%);
+          --accent: hsl(142.4 23.9% 58.2%);
+          --accent-fg: hsl(36 13.5% 14.5%);
+          --green: hsl(142.4 23.9% 58.2%);
+          --amber: #d99a3f;
+          --red: hsl(12 45% 60%);
+          --surf: hsl(36 14% 17%);
+          --soft: hsl(140 12% 22%);
+          --soft-fg: hsl(142 24% 70%);
+          --slate: hsl(220 30% 70%);
+          --slate-soft: hsl(220 20% 20%);
+        }
+      }
+      :root[data-theme='light'] {
+        --bg: hsl(45 40% 98%);
+        --fg: hsl(48 6.2% 15.9%);
+        --muted: hsl(44 6.1% 51.6%);
+        --line: hsl(40 20% 85.3%);
+        --accent: hsl(144.8 19.7% 45.9%);
+        --accent-fg: hsl(45 40% 98%);
+        --green: hsl(144.8 19.7% 45.9%);
+        --amber: #b8791f;
+        --red: hsl(12.5 43.8% 47.5%);
+        --surf: hsl(40 33.3% 94.7%);
+        --soft: hsl(133.3 20% 91.2%);
+        --soft-fg: hsl(145.9 22% 39.2%);
+        --slate: hsl(220 22% 45%);
+        --slate-soft: hsl(220 30% 94%);
+      }
+      :root[data-theme='dark'] {
+        --bg: hsl(36 13.5% 14.5%);
+        --fg: hsl(40 28.3% 89.6%);
+        --muted: hsl(38.8 6.8% 51.2%);
+        --line: hsl(36 15.5% 19%);
+        --accent: hsl(142.4 23.9% 58.2%);
+        --accent-fg: hsl(36 13.5% 14.5%);
+        --green: hsl(142.4 23.9% 58.2%);
+        --amber: #d99a3f;
+        --red: hsl(12 45% 60%);
+        --surf: hsl(36 14% 17%);
+        --soft: hsl(140 12% 22%);
+        --soft-fg: hsl(142 24% 70%);
+        --slate: hsl(220 30% 70%);
+        --slate-soft: hsl(220 20% 20%);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.5 system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      header {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .wm {
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        font-size: 14px;
+      }
+      .wm i {
+        font-style: normal;
+        color: var(--accent);
+      }
+      .ctx {
+        font-size: 11px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        background: var(--surf);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+      .badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--muted);
+        flex: none;
+      }
+      .badge.named {
+        background: var(--soft);
+        border-color: var(--accent);
+      }
+      .badge.named .dot {
+        background: var(--green);
+      }
+      .badge b {
+        font-weight: 700;
+      }
+      .tally {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 11px;
+        font-weight: 650;
+        border-radius: 99px;
+        padding: 2px 8px;
+        border: 1px solid;
+        font-variant-numeric: tabular-nums;
+      }
+      .chip.k {
+        color: var(--soft-fg);
+        background: var(--soft);
+        border-color: var(--accent);
+      }
+      .chip.a {
+        color: var(--amber);
+        background: transparent;
+        border-color: var(--amber);
+      }
+      .chip.r {
+        color: var(--slate);
+        background: var(--slate-soft);
+        border-color: var(--slate);
+      }
+
+      .grp h2 {
+        margin: 0;
+        padding: 10px 12px 5px;
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+      }
+      .grp.know h2 {
+        color: var(--soft-fg);
+      }
+      .grp.ask h2 {
+        color: var(--amber);
+      }
+      .grp.remember h2 {
+        color: var(--slate);
+      }
+      .row {
+        padding: 7px 12px 8px;
+        border-top: 1px solid var(--line);
+        border-left: 3px solid transparent;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .grp.know .row {
+        border-left-color: var(--green);
+      }
+      .grp.ask .row {
+        border-left-color: var(--amber);
+      }
+      .grp.remember .row {
+        border-left-color: var(--slate);
+      }
+      .k {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .v {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      .v span {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .why {
+        font-size: 10.5px;
+        color: var(--muted);
+        font-style: italic;
+      }
+      .type {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 9.5px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 0 3px;
+        flex: none;
+      }
+      button {
+        font: inherit;
+        font-size: 11px;
+        font-weight: 650;
+        border: 1px solid var(--line);
+        background: var(--surf);
+        color: var(--fg);
+        border-radius: 5px;
+        padding: 2px 8px;
+        cursor: pointer;
+        flex: none;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+      .empty {
+        padding: 24px 14px;
+        color: var(--muted);
+        text-align: center;
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        background: var(--surf);
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        position: sticky;
+        bottom: 0;
+      }
+      .cta {
+        background: var(--accent);
+        color: var(--accent-fg);
+        border-color: var(--accent);
+      }
+      .note {
+        font-size: 10.5px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="top">
+        <span class="wm">Job<i>Hakken</i></span>
+        <span class="ctx" id="ctx">reading this page…</span>
+      </div>
+      <div class="badge" id="badge"><span class="dot"></span><b id="badgeName">Checking site…</b></div>
+      <div class="tally" id="tally"></div>
+    </header>
+
+    <main id="groups"></main>
+
+    <footer>
+      <span class="note" id="note"></span>
+      <button class="cta" id="refresh">Refresh</button>
+    </footer>
+
+    <script type="module" src="panel.js"></script>
+  </body>
+</html>

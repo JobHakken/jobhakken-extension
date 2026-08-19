@@ -33,6 +33,7 @@ await esbuild.build({
     'background/serviceWorker': 'src/background/serviceWorker.ts',
     'options/options': 'src/options/options.ts',
     'popup/popup': 'src/popup/popup.ts',
+    'sidepanel/panel': 'src/sidepanel/panel.ts',
   },
   outdir,
   format: 'esm',
@@ -95,6 +96,7 @@ cpSync('src/data/h1b-sponsors.txt', path.join(outdir, 'data', 'h1b-sponsors.txt'
 cpSync('src/data/h1b-roles.txt', path.join(outdir, 'data', 'h1b-roles.txt')); // per-company H-1B insights (roles/wages/filings)
 cpSync('src/options/options.html', path.join(outdir, 'options', 'options.html'));
 cpSync('src/popup/popup.html', path.join(outdir, 'popup', 'popup.html'));
+cpSync('src/sidepanel/panel.html', path.join(outdir, 'sidepanel', 'panel.html'));
 
 // Sanity-check the manifest we just shipped so a malformed edit fails the build,
 // not the Chrome Web Store review. (Full store-compliance checks come in Phase 6.)
