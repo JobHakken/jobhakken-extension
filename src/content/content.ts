@@ -25,6 +25,15 @@ import {
 } from '@jobhakken/autofill';
 
 import { loadAnswerStore } from '../lib/answerStore.js';
+import { askedOnRecent, formId, recordForm } from '../lib/fieldStats.js';
+import {
+  lookupRemembered,
+  noteRememberedUse,
+  normalizeQuestion,
+  rememberAnswer,
+  setPromoted,
+  type Remembered,
+} from '../lib/rememberedStore.js';
 import { type BridgeConnection } from '../lib/bridgeClient.js';
 import { bucket, report } from '../lib/telemetryClient.js';
 import { missedFieldTypes, type MissedFieldType } from '../lib/coverage.js';
@@ -615,6 +624,12 @@ export type PanelRow = {
   source: MappingSource | null;
   why?: string;
   consequential: boolean;
+  /** Provenance for a remembered answer — "you wrote this · 4 Aug · Ashby". */
+  memo?: { host: string; at: number; uses: number; promoted?: boolean };
+  /** "asked on 6 of your last 10 applications" — from metadata-only structure capture. */
+  asked?: { hits: number; of: number };
+  /** True when the profile simply has no value for a key we DID recognise → offer to add it. */
+  addable?: boolean;
 };
 
 /** Fields where a WRONG answer costs more than a blank one, so they demand a stronger resolution. */
@@ -631,44 +646,125 @@ const CONSEQUENTIAL: ReadonlySet<ProfileKey> = new Set<ProfileKey>([
   'disabilityStatus',
 ]);
 
+/** EEO/demographic questions. Ours to surface, never ours to answer on someone's behalf. */
+const EEO: ReadonlySet<ProfileKey> = new Set<ProfileKey>([
+  'gender',
+  'raceEthnicity',
+  'hispanicLatino',
+  'veteranStatus',
+  'disabilityStatus',
+]);
+
 /** Sources we'll act on unprompted. Anything weaker is shown, explained, and left to the user. */
 const TRUSTED: ReadonlySet<MappingSource> = new Set<MappingSource>(['user', 'seed', 'learned']);
+
+/**
+ * Learn from what the user typed (#143). Called when the panel refreshes and on user input: any field
+ * we DIDN'T fill but which now holds a value was answered by hand, and that answer is worth keeping.
+ *
+ * Stays strictly on-device. Skips EEO/demographic questions — we don't store those even locally,
+ * because we will never offer to fill them anyway, so keeping them buys nothing and risks something.
+ */
+async function learnFromPage(): Promise<number> {
+  const fp = await getFullProfile();
+  const profile: Profile = fp?.profile ?? {};
+  const rules = withBuiltinRules(fp?.rules);
+  const store = await answerStore();
+  let learned = 0;
+  for (const field of detectFields(document)) {
+    const typed = currentValue(field).trim();
+    if (!typed) continue;
+    const label = field.label || field.name || field.id;
+    if (!label) continue;
+    const res = resolveField(field, { userRules: rules, store });
+    if (res?.key && EEO.has(res.key)) continue; // never bank a demographic answer
+    // Only learn what we COULDN'T answer. If the profile already supplies a value for this field, a
+    // remembered answer would never be offered anyway (the profile wins in panelFields), so banking it
+    // is dead weight — and it would quietly fill the store with values that never surface.
+    //
+    // NB a user CORRECTING one of our fills is real signal, but it's a different mechanism (which of
+    // our answers are wrong) and it needs its own treatment rather than being smuggled in here.
+    const ours = res?.literal ?? (res?.key ? (profile[res.key] ?? '') : '');
+    if (ours.trim()) continue;
+    await rememberAnswer(label, typed, location.hostname);
+    learned++;
+  }
+  return learned;
+}
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);
   const store = await answerStore();
+  const fields = detectFields(document);
   const rows: PanelRow[] = [];
 
-  for (const field of detectFields(document)) {
+  for (const field of fields) {
+    const label = field.label || field.name || field.id;
+    const q = normalizeQuestion(label);
     const res = resolveField(field, { userRules: rules, store });
     const key = res?.key;
-    const value = res?.literal ?? (key ? (profile[key] ?? '') : '');
+    const profileValue = res?.literal ?? (key ? (profile[key] ?? '') : '');
     const consequential = !!key && CONSEQUENTIAL.has(key);
+    const isEeo = !!key && EEO.has(key);
     const source = res?.source ?? null;
 
+    // What the user typed into this question before, on ANY site.
+    const memo: Remembered | undefined = await lookupRemembered(label);
+
     let group: PanelRow['group'] = 'ask';
+    let value = profileValue;
     let why: string | undefined;
-    if (!res) why = 'we could not tell what this field wants';
-    else if (!value) why = key ? 'not in your profile yet' : 'nothing in your profile matches this';
-    else if (source === 'learned') group = 'remember';
-    else if (TRUSTED.has(source as MappingSource)) group = 'know';
-    else if (consequential) why = `matched only loosely (${source}) — too important to guess`;
-    else group = 'know';
+    let addable = false;
+
+    if (isEeo) {
+      // Never ours to answer, whatever the profile holds.
+      why = 'EEO · never auto-filled';
+    } else if (memo && !profileValue) {
+      // A remembered answer is an OFFER, not a fill — until the user promotes it (#144).
+      group = 'remember';
+      value = memo.value;
+    } else if (!res) {
+      why = 'we could not tell what this field wants';
+    } else if (!profileValue) {
+      why = key ? 'not in your profile' : 'nothing in your profile matches this';
+      addable = !!key;
+    } else if (TRUSTED.has(source as MappingSource)) {
+      group = 'know';
+    } else if (consequential) {
+      why = `matched only loosely (${source}) — too important to guess`;
+    } else {
+      group = 'know';
+    }
+
+    // Frequency only where it helps a decision: a gap the user could close by editing their profile.
+    const asked = group === 'ask' && !isEeo ? await askedOnRecent(q) : undefined;
 
     rows.push({
       signature: field.signature,
-      label: field.label || field.name || field.id,
+      label,
       kind: field.kind,
       group,
       value,
       current: currentValue(field),
-      source,
+      source: group === 'remember' ? 'learned' : source,
       why,
       consequential,
+      memo: memo ? { host: memo.host, at: memo.at, uses: memo.uses, promoted: memo.promoted } : undefined,
+      asked: asked && asked.hits > 0 ? asked : undefined,
+      addable,
     });
   }
+
+  // Structure capture — metadata only (question + control kind), never a value. Fire and forget so a
+  // storage hiccup can never delay the panel.
+  void recordForm(
+    formId(location.href),
+    location.hostname,
+    rows.map((r) => ({ q: normalizeQuestion(r.label), kind: r.kind })),
+  );
+
   return { rows, ats: detectAts(document) ?? null, host: location.hostname };
 }
 
@@ -1628,7 +1724,7 @@ async function init() {
 type Rpc = {
   type?: string;
   method?: string;
-  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string };
+  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string; label?: string };
 };
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   const msg = raw as Rpc;
@@ -1648,6 +1744,16 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'learnFromPage':
+          sendResponse({ learned: await learnFromPage() });
+          break;
+        case 'noteUse':
+          sendResponse({ uses: await noteRememberedUse(String(msg.params?.label ?? '')) });
+          break;
+        case 'promote':
+          await setPromoted(String(msg.params?.label ?? ''), msg.params?.on !== false);
+          sendResponse({ ok: true });
           break;
         case 'fillOne':
           sendResponse(await fillOne(String(msg.params?.signature ?? ''), String(msg.params?.value ?? '')));

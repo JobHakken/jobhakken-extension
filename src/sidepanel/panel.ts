@@ -25,6 +25,9 @@ type PanelRow = {
   source: string | null;
   why?: string;
   consequential: boolean;
+  memo?: { host: string; at: number; uses: number; promoted?: boolean };
+  asked?: { hits: number; of: number };
+  addable?: boolean;
 };
 type PanelData = { rows: PanelRow[]; ats: string | null; host: string };
 type FillResult = { filled: boolean; reason?: string };
@@ -105,21 +108,47 @@ function renderBadge(d: PanelData): void {
   }
 }
 
+/** How many uses before we ASK about promoting. Not a promotion threshold — nothing self-promotes. */
+const ASK_AFTER = 3;
+
+const when = (at: number) => new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
 function rowHtml(r: PanelRow): string {
   const has = !!r.value;
   const shown = r.value || r.current;
   // A row only offers Fill when we have something to put there AND the page doesn't already hold it.
   const canFill = has && r.current.trim() !== r.value.trim();
-  return `<div class="row" data-sig="${esc(r.signature)}">
+  const sig = esc(r.signature);
+
+  // Provenance / reason line, in priority order: the promotion ask, then memory provenance, then the
+  // reason we declined, then how often this question comes up.
+  let foot = '';
+  if (r.memo && !r.memo.promoted && r.memo.uses >= ASK_AFTER) {
+    foot = `<span class="src promote-ask">you've used this ${r.memo.uses}× — always fill it?
+      <button class="yes" data-act="promote" data-sig="${sig}">Always</button>
+      <button data-act="dismiss" data-sig="${sig}">Keep asking</button></span>`;
+  } else if (r.memo?.promoted) {
+    foot = `<span class="src">you wrote this · always filled</span>`;
+  } else if (r.memo) {
+    foot = `<span class="src">you wrote this · ${esc(when(r.memo.at))} · ${esc(r.memo.host.replace(/^www\./, '').split('.')[0])}</span>`;
+  } else if (r.why) {
+    foot = `<span class="why">${esc(r.why)}</span>`;
+  }
+  if (r.asked && !r.memo) {
+    foot += `<span class="src">asked on ${r.asked.hits} of your last ${r.asked.of} applications</span>`;
+  }
+
+  return `<div class="row${r.memo && !r.memo.promoted && r.memo.uses >= ASK_AFTER ? ' promote' : ''}" data-sig="${sig}">
     <span class="k">${esc(r.label || '(unlabelled field)')}</span>
     <span class="v">
       <span class="val${shown ? '' : ' none'}">${shown ? esc(shown) : 'nothing to put here'}</span>
       ${r.consequential ? '<span class="warn" title="A wrong answer here costs you something">!</span>' : ''}
       <span class="type">${esc(r.kind)}</span>
-      ${canFill ? `<button class="fill" data-act="fill" data-sig="${esc(r.signature)}">Fill</button>` : ''}
-      ${has && !canFill ? `<button data-act="copy" data-sig="${esc(r.signature)}">Copy</button>` : ''}
+      ${canFill ? `<button class="fill" data-act="fill" data-sig="${sig}">Fill</button>` : ''}
+      ${has && !canFill ? `<button data-act="copy" data-sig="${sig}">Copy</button>` : ''}
+      ${!has && r.addable ? `<button data-act="add" data-sig="${sig}">Add</button>` : ''}
     </span>
-    ${r.why ? `<span class="why">${esc(r.why)}</span>` : ''}
+    ${foot}
   </div>`;
 }
 
@@ -213,6 +242,11 @@ async function fillRow(sig: string): Promise<void> {
   };
   if (btn) btn.disabled = false;
   markRow(sig, res);
+  // Filling FROM memory is the signal the promotion prompt reads (#144). Only count a real success.
+  if (res.filled && row.memo) {
+    await rpc('noteUse', { label: row.label });
+    await refresh(); // may now cross ASK_AFTER and surface the "always fill it?" prompt
+  }
 }
 
 async function copyRow(sig: string): Promise<void> {
@@ -234,13 +268,42 @@ async function refresh(): Promise<void> {
   render(await rpc<PanelData>('panelFields'));
 }
 
+/**
+ * Bank anything the user typed by hand, then re-read. This is the "learn by doing" half: a question we
+ * declined to answer becomes a remembered answer the moment the user answers it themselves, and it will
+ * be offered on the next form that asks the same thing — on any site.
+ */
+async function learnThenRefresh(): Promise<void> {
+  await rpc<{ learned: number }>('learnFromPage');
+  await refresh();
+}
+
 // One delegated listener: rows are re-rendered wholesale, so per-button listeners would leak.
 $('groups').addEventListener('click', (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-sig]');
   if (!btn) return;
   const sig = btn.dataset.sig ?? '';
-  if (btn.dataset.act === 'fill') void fillRow(sig);
-  else void copyRow(sig);
+  const row = rows.find((r) => r.signature === sig);
+  switch (btn.dataset.act) {
+    case 'fill':
+      void fillRow(sig);
+      break;
+    case 'promote':
+      // Explicit, user-initiated promotion. Nothing here ever happens on its own.
+      if (row) void rpc('promote', { label: row.label, on: true }).then(() => refresh());
+      break;
+    case 'dismiss':
+      // "Keep asking" — leave it an offer. We simply stop nagging this session.
+      btn.closest('.row')?.classList.remove('promote');
+      btn.closest('.src')?.remove();
+      break;
+    case 'add':
+      // Send them to the profile field that would answer this permanently.
+      void chrome.runtime.openOptionsPage();
+      break;
+    default:
+      void copyRow(sig);
+  }
 });
 
 $<HTMLButtonElement>('fillAll').addEventListener('click', async (e) => {
@@ -269,4 +332,6 @@ chrome.tabs.onActivated.addListener(() => void refresh());
 chrome.tabs.onUpdated.addListener((_id, info) => {
   if (info.status === 'complete') void refresh();
 });
-void refresh();
+// Learn when the panel regains focus: the user has typically just been typing in the form.
+window.addEventListener('focus', () => void learnThenRefresh());
+void learnThenRefresh();
