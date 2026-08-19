@@ -167,20 +167,32 @@ function markReview(el: HTMLElement): void {
 let bridgeReady: Promise<void> | null = null;
 function injectPageBridge(): Promise<void> {
   if (bridgeReady) return bridgeReady;
-  bridgeReady = new Promise<void>((resolve) => {
-    try {
-      const s = document.createElement('script');
-      s.src = chrome.runtime.getURL('content/pageBridge.js');
-      s.onload = () => {
-        s.remove(); // the listener stays registered; the tag itself is noise
+  bridgeReady = (async () => {
+    // Preferred path: have the service worker put it in the MAIN world via chrome.scripting. A
+    // <script src> from web_accessible_resources is subject to PAGE CSP, and real ATS pages block it
+    // (Greenhouse: `script-src 'self' …` with no chrome-extension:), which silently cost us every
+    // combobox on the form. executeScript({ world: 'MAIN' }) is not subject to page CSP.
+    const viaSw = await chrome.runtime
+      .sendMessage({ type: 'f2a-ensure-bridge' })
+      .then((r: { ok?: boolean } | undefined) => !!r?.ok)
+      .catch(() => false);
+    if (viaSw) return;
+    // Fallback: the tag. Works on permissive pages, and costs nothing to try when the SW path failed.
+    await new Promise<void>((resolve) => {
+      try {
+        const s = document.createElement('script');
+        s.src = chrome.runtime.getURL('content/pageBridge.js');
+        s.onload = () => {
+          s.remove(); // the listener stays registered; the tag itself is noise
+          resolve();
+        };
+        s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
+        (document.head ?? document.documentElement).appendChild(s);
+      } catch {
         resolve();
-      };
-      s.onerror = () => resolve(); // no bridge → callers fall back to plain assignment
-      (document.head ?? document.documentElement).appendChild(s);
-    } catch {
-      resolve();
-    }
-  });
+      }
+    });
+  })();
   return bridgeReady;
 }
 
@@ -257,10 +269,20 @@ function filledControlCount(): number {
   for (const el of document.querySelectorAll('input,textarea,select')) {
     const t = (el as HTMLInputElement).type;
     if (t === 'hidden' || t === 'submit' || t === 'button') continue;
-    const held =
-      t === 'checkbox' || t === 'radio'
-        ? (el as HTMLInputElement).checked
-        : String((el as HTMLInputElement).value ?? '').trim() !== '';
+    let held: boolean;
+    if (t === 'checkbox' || t === 'radio') {
+      held = (el as HTMLInputElement).checked;
+    } else {
+      held = String((el as HTMLInputElement).value ?? '').trim() !== '';
+      // A react-select CLEARS its search input once an option is chosen and renders the selection as
+      // text in the control container, so `.value` reports empty on a dropdown that is plainly filled.
+      // Counting only `.value` is what made us tell users "6 filled" on a Greenhouse form holding 14
+      // real values — and made live coverage read 0.29-0.35 when it was ~0.82.
+      if (!held && (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox')) {
+        const box = el.closest('[class*="control"],[class*="select"],[class*="Select"]');
+        held = !!(box?.textContent ?? '').replace(/select\s*\.{2,}/i, '').trim();
+      }
+    }
     if (held) n++;
   }
   return n;
@@ -538,6 +560,10 @@ async function fillOne(signature: string, value: string): Promise<{ filled: bool
   if (!field) return { filled: false, reason: 'gone' }; // page re-rendered under us
   if (!value) return { filled: false, reason: 'empty' };
   try {
+    // The MAIN-world bridge is what reaches React's value tracker and drives custom comboboxes. The
+    // full autofill pass injects it; a single panel fill has to do the same or every react-select on
+    // the page reports "widget refused" for no reason but our own omission.
+    await injectPageBridge();
     fillField(field, value);
     const r = await repairFills([{ el: field.el, value, source: 'user' }], 4000);
     if (r.confirmed > 0) return { filled: true };

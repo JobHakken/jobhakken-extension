@@ -95,6 +95,38 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
+// ── MAIN-world bridge injection (#145) ─────────────────────────────────────────────────────────────
+// The page-world bridge (pageBridge.js) must run in the page's OWN JS world to reach React's per-world
+// expandos (`__reactFiber`, `_valueTracker`) — a content script cannot see them.
+//
+// It used to be injected by the content script as a <script src> from web_accessible_resources, which
+// PAGE CSP is entitled to refuse. Greenhouse ships `script-src 'self' 'unsafe-inline' 'unsafe-eval' …`
+// with no `chrome-extension:`, so the tag was blocked, `s.onerror` resolved quietly, every bridgeCall
+// then timed out, and ALL TEN comboboxes on the form failed — Country, sponsorship, veteran status,
+// disability. Precisely the fields where a blank or a wrong answer matters most.
+//
+// executeScript with `world: 'MAIN'` is not subject to page CSP, so this works on any site.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'f2a-ensure-bridge') return;
+  const tabId = sender.tab?.id;
+  if (tabId == null) {
+    sendResponse({ ok: false });
+    return;
+  }
+  // Inject into the SENDING frame only: the form often lives in an iframe, and the bridge is only
+  // useful in the same frame as the fields it has to reach.
+  const frameIds = typeof sender.frameId === 'number' ? [sender.frameId] : undefined;
+  chrome.scripting
+    .executeScript({
+      target: frameIds ? { tabId, frameIds } : { tabId },
+      files: ['content/pageBridge.js'],
+      world: 'MAIN',
+    })
+    .then(() => sendResponse({ ok: true }))
+    .catch(() => sendResponse({ ok: false })); // restricted page, or the frame went away
+  return true; // async response
+});
+
 // ── Re-inject the content script into an already-open tab (#150) ───────────────────────────
 // Chrome does NOT re-inject content scripts when an extension reloads or updates: the script
 // already running in an open tab keeps running but is severed from the extension, so every
