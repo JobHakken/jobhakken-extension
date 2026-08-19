@@ -1569,6 +1569,9 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
         case 'getState':
           sendResponse(getState());
           break;
+        case 'panelFields':
+          sendResponse(await panelFields());
+          break;
         case 'autofill': {
           autofillAbort?.abort(); // supersede any in-flight run
           const ctrl = (autofillAbort = new AbortController());
