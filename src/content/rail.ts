@@ -36,10 +36,12 @@ export type RailApi = {
   attachCover(text: string): Promise<{ ok: boolean; how?: string }>;
   addResume(file: File): Promise<void>;
   saveTemplate(text: string): Promise<void>;
+  getFillSensitive(): Promise<boolean>;
+  setFillSensitive(on: boolean): Promise<void>;
   openOptions(): void;
 };
 
-type Group = 'know' | 'ask' | 'remember';
+type Group = 'know' | 'ask' | 'remember' | 'sensitive';
 export type PanelRow = {
   signature: string;
   label: string;
@@ -176,6 +178,16 @@ main { flex: 1; overflow-y: auto; }
 .grp.know .row { border-left-color: var(--accent); }
 .grp.ask .row { border-left-color: var(--clay); }
 .grp.remember .row { border-left-color: var(--slate); }
+.grp.sensitive .row { border-left-color: var(--clay); }
+.grp.sensitive .acc { color: var(--clay); }
+.sw { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 650;
+  text-transform: none; letter-spacing: 0; color: var(--muted); }
+.sw i { width: 24px; height: 13px; border-radius: 99px; background: var(--line); position: relative;
+  transition: background .12s ease; flex: none; }
+.sw i::after { content: ""; position: absolute; top: 1.5px; left: 1.5px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--bg); transition: transform .12s ease; }
+.sw.on i { background: var(--accent); }
+.sw.on i::after { transform: translateX(11px); }
 .row.done { background: var(--soft); }
 .row.promote { background: var(--slate-soft); }
 .k { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
@@ -232,6 +244,7 @@ const TITLES: Record<Group, string> = {
   know: 'Filled — high confidence',
   ask: "Need you — we won't guess",
   remember: 'Remembered from you',
+  sensitive: 'Sensitive — your call',
 };
 
 export function mountRail(api: RailApi): void {
@@ -275,9 +288,9 @@ export function mountRail(api: RailApi): void {
   const drafted = new Map<string, string[]>();
   const expanded = new Set<string>();
   let insightMode = false;
-  let docsMode = false;
-  let folds: Partial<Record<Group, boolean>> = {};
+  let folds: Partial<Record<Group | 'docs', boolean>> = {};
   let marksOn = false;
+  let sensitiveOn = true;
 
   /** Push the page over instead of covering it — a panel about a form must not hide the form. */
   function reflow(open: boolean): void {
@@ -360,7 +373,9 @@ export function mountRail(api: RailApi): void {
       (n.ask ? `<span class="chip a">${n.ask} need you</span>` : '') +
       (n.remember ? `<span class="chip r">${n.remember} remembered</span>` : '');
 
-    const pending = d.rows.filter((r) => r.value && r.current.trim() !== r.value.trim());
+    const pending = d.rows.filter(
+      (r) => r.value && r.current.trim() !== r.value.trim() && (sensitiveOn || r.group !== 'sensitive'),
+    );
     const cta = $<HTMLButtonElement>('fillAll');
     cta.hidden = !pending.length;
     cta.textContent = `Fill ${pending.length}`;
@@ -370,27 +385,45 @@ export function mountRail(api: RailApi): void {
       $('body').innerHTML = `<p class="empty"><b>No form fields here</b>Open an application and this fills in.</p>`;
       return;
     }
-    $('body').innerHTML = (['know', 'remember', 'ask'] as Group[])
-      .filter((g) => by(g).length)
-      .map((g) => {
-        const list = by(g);
-        // A long Filled list is reference material — keep "need you" and "remembered" above the fold.
-        const cut = g === 'know' && list.length > COLLAPSE_AT && !expanded.has(g);
-        const shown = cut ? list.slice(0, COLLAPSE_AT) : list;
-        // Filled and Remembered are settled information; what needs the user stays open and on top.
-        const folded = folds[g] ?? g !== 'ask';
-        return (
-          `<section class="grp ${g}">` +
-          `<button class="acc${folded ? ' closed' : ''}" data-fold="${g}">` +
-          `<span class="chev">▾</span><span class="sp">${TITLES[g]}</span><span class="n">${list.length}</span></button>` +
-          (folded
-            ? ''
-            : shown.map(rowHtml).join('') +
-              (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '')) +
-          `</section>`
-        );
-      })
-      .join('');
+    // Documents is a SECTION, not a hidden view: choosing a résumé and writing a letter are part of
+    // filling the application, not settings you go looking for.
+    const docsFolded = folds.docs ?? false;
+    const docsSection =
+      `<section class="grp docs-grp">` +
+      `<button class="acc${docsFolded ? ' closed' : ''}" data-fold="docs">` +
+      `<span class="chev">▾</span><span class="sp">Résumé &amp; cover letter</span>` +
+      `<span class="n">${docState ? docState.items.length : '·'}</span></button>` +
+      (docsFolded ? '' : docsHtml()) +
+      `</section>`;
+
+    $('body').innerHTML =
+      docsSection +
+      (['ask', 'sensitive', 'remember', 'know'] as Group[])
+        .filter((g) => by(g).length)
+        .map((g) => {
+          const list = by(g);
+          // A long Filled list is reference material — keep "need you" and "remembered" above the fold.
+          const cut = g === 'know' && list.length > COLLAPSE_AT && !expanded.has(g);
+          const shown = cut ? list.slice(0, COLLAPSE_AT) : list;
+          // Filled and Remembered are settled information; what needs the user stays open and on top.
+          const folded = folds[g] ?? (g === 'know' || g === 'remember');
+          return (
+            `<section class="grp ${g}">` +
+            `<button class="acc${folded ? ' closed' : ''}" data-fold="${g}">` +
+            `<span class="chev">▾</span><span class="sp">${TITLES[g]}</span>` +
+            (g === 'sensitive'
+              ? `<span class="sw${sensitiveOn ? ' on' : ''}" data-act="sw" title="Fill these automatically">` +
+                `<i></i>${sensitiveOn ? 'auto' : 'manual'}</span>`
+              : '') +
+            `<span class="n">${list.length}</span></button>` +
+            (folded
+              ? ''
+              : shown.map(rowHtml).join('') +
+                (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '')) +
+            `</section>`
+          );
+        })
+        .join('');
     if (marksOn) api.markFields(d.rows, true);
   }
 
@@ -399,13 +432,12 @@ export function mountRail(api: RailApi): void {
    * moment the decision is being made — which résumé for this job — and sending someone to a settings
    * page mid-application is how a tool loses them.
    */
-  async function showDocs(): Promise<void> {
-    const d = await api.documents();
-    $('tally').innerHTML = '';
-    $<HTMLButtonElement>('fillAll').hidden = true;
-    $('note').textContent = 'résumé choice is remembered per company';
-    const draft = d.lastDraft;
-    $('body').innerHTML =
+  let docState: Awaited<ReturnType<RailApi['documents']>> | null = null;
+
+  function docsHtml(): string {
+    const d = docState;
+    if (!d) return `<div class="optnote">reading documents…</div>`;
+    return (
       `<div class="docs">` +
       (d.items.length
         ? d.items
@@ -421,19 +453,22 @@ export function mountRail(api: RailApi): void {
         : `<div class="optnote">No résumé stored yet.</div>`) +
       `<div class="doc add" data-act="upload">＋ Upload a résumé</div></div>` +
       `<div class="cover">` +
-      `<div class="rowbtns"><span class="sp">${d.coverField ? `cover letter · ${d.coverField === 'file' ? 'upload' : 'text box'} on this form` : 'no cover letter field here'}</span>` +
-      `<button class="draft" data-act="writecover">✍ ${draft ? 'Rewrite' : 'Write'}</button></div>` +
-      `<textarea id="coverText" placeholder="${d.hasTemplate ? 'Uses your template — press Write' : 'No template saved; it will write from your profile'}">${esc(draft)}</textarea>` +
+      `<div class="rowbtns"><span class="sp">${
+        d.coverField
+          ? `cover letter · ${d.coverField === 'file' ? 'upload' : 'text box'} on this form`
+          : 'no cover letter field here'
+      }</span>` +
+      `<button class="draft" data-act="writecover">✍ ${d.lastDraft ? 'Rewrite' : 'Write'}</button></div>` +
+      `<textarea id="coverText" placeholder="${
+        d.hasTemplate ? 'Uses your template — press Write' : 'No template saved; it will write from your profile'
+      }">${esc(d.lastDraft)}</textarea>` +
       `<div class="rowbtns"><span class="sp">editable before it goes anywhere</span>` +
       `<button data-act="savetpl">Save as template</button>` +
-      `<button class="use" data-act="attachcover">Attach</button></div></div>`;
+      `<button class="use" data-act="attachcover">Attach</button></div></div>`
+    );
   }
 
   async function refresh(): Promise<void> {
-    if (docsMode) {
-      await showDocs();
-      return;
-    }
     if (insightMode) {
       const d = await api.siteInsight();
       $('tally').innerHTML = '';
@@ -451,7 +486,9 @@ export function mountRail(api: RailApi): void {
         : `<p class="empty"><b>Nothing learned yet</b>The questions this site asks will collect here.</p>`;
       return;
     }
-    render(await api.panelFields());
+    const [data, docs] = await Promise.all([api.panelFields(), api.documents().catch(() => null)]);
+    docState = docs;
+    render(data);
   }
 
   /** Badge the launcher with what needs the user, so a collapsed rail still communicates. */
@@ -595,10 +632,17 @@ export function mountRail(api: RailApi): void {
       void refresh();
       return;
     }
+    const sw = t.closest<HTMLElement>('[data-act="sw"]');
+    if (sw) {
+      sensitiveOn = !sensitiveOn;
+      void api.setFillSensitive(sensitiveOn).then(() => refresh());
+      return;
+    }
     const fold = t.closest<HTMLElement>('[data-fold]');
     if (fold) {
-      const g = fold.dataset.fold as Group;
-      folds[g] = !(folds[g] ?? g !== 'ask');
+      const g = fold.dataset.fold as Group | 'docs';
+      // Filled and Remembered are settled; what needs you, sensitive choices and documents open by default.
+      folds[g] = !(folds[g] ?? (g === 'know' || g === 'remember'));
       void chrome.storage.local.set({ [FOLD_KEY]: folds }).catch(() => {});
       void refresh();
       return;
@@ -632,10 +676,9 @@ export function mountRail(api: RailApi): void {
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
     if (btn.id === 'docs') {
-      docsMode = !docsMode;
-      insightMode = false;
-      btn.style.background = docsMode ? 'var(--soft)' : '';
-      return void refresh();
+      // The section is always present now; this just takes you to it.
+      root.querySelector('.docs-grp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
     }
     if (btn.id === 'insight') {
       insightMode = !insightMode;
@@ -648,7 +691,9 @@ export function mountRail(api: RailApi): void {
         const before = btn.textContent;
         btn.textContent = 'Filling…';
         // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
-        for (const r of rows.filter((x) => x.value && x.current.trim() !== x.value.trim())) {
+        for (const r of rows.filter(
+          (x) => x.value && x.current.trim() !== x.value.trim() && (sensitiveOn || x.group !== 'sensitive'),
+        )) {
           markRow(r.signature, await api.fillOne(r.signature, r.value));
         }
         markAfterFill(); // show what just happened on the form itself
@@ -760,8 +805,9 @@ export function mountRail(api: RailApi): void {
       unknown
     >;
     const open = !!got[OPEN_KEY];
-    folds = (got[FOLD_KEY] as Partial<Record<Group, boolean>>) ?? {};
+    folds = (got[FOLD_KEY] as Partial<Record<Group | 'docs', boolean>>) ?? {};
     marksOn = !!got[MARK_KEY];
+    sensitiveOn = await api.getFillSensitive();
     await setOpen(open, false);
     if (!open) await updateLauncher();
   })();

@@ -10,10 +10,12 @@ import {
   expandRepeatingSections,
   fillField,
   isAtsPage,
+  isSensitiveLabel,
   learnableAnswers,
   readLazyOptions,
   currentValue,
   resolveField,
+  SENSITIVE_KEYS,
   setInputFile,
   unmappedQuestions,
   type CoverageReport,
@@ -52,6 +54,7 @@ import {
   loadAutoCapture,
   loadCaptureMode,
   loadFillSensitive,
+  saveFillSensitive,
   loadFullProfile,
   loadHideUnsponsored,
   loadNeedsSponsorship,
@@ -621,7 +624,7 @@ export type PanelRow = {
   signature: string;
   label: string;
   kind: string;
-  group: 'know' | 'ask' | 'remember';
+  group: 'know' | 'ask' | 'remember' | 'sensitive';
   value: string;
   current: string;
   source: MappingSource | null;
@@ -746,6 +749,8 @@ function syncRail(): void {
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
     fieldOptions,
     markFields,
+    getFillSensitive: loadFillSensitive,
+    setFillSensitive: saveFillSensitive,
     documents,
     attachResume,
     addResume: addResumeFile,
@@ -807,6 +812,7 @@ function markFields(rows: PanelRow[], on: boolean): void {
     know: '2px solid #5C7E48',
     remember: '2px solid #5A6B8C',
     ask: '2px dashed #BB6535',
+    sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
   };
   for (const r of rows) {
     const el = fields.get(r.signature);
@@ -904,6 +910,7 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);
   const store = await answerStore();
+  const fillSensitive = await loadFillSensitive();
   const fields = detectFields(document);
   const rows: PanelRow[] = [];
 
@@ -925,9 +932,13 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
     let why: string | undefined;
     let addable = false;
 
-    if (isEeo) {
-      // Never ours to answer, whatever the profile holds.
-      why = 'EEO · never auto-filled';
+    // Sensitive questions get their OWN section rather than being folded into "need you". They are not
+    // a coverage gap — they are the user's to decide, and burying them among things we merely failed to
+    // resolve makes a deliberate choice look like a failure. Whether we fill them is a setting.
+    const sensitive = (!!key && (SENSITIVE_KEYS.has(key) || EEO.has(key))) || isSensitiveLabel(label);
+    if (sensitive) {
+      group = 'sensitive';
+      why = fillSensitive ? undefined : 'you fill these — turn the switch on to let us';
     } else if (memo && !profileValue) {
       // A remembered answer is an OFFER, not a fill — until the user promotes it (#144).
       group = 'remember';

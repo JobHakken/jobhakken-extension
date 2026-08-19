@@ -1,0 +1,650 @@
+{
+  "generatedAt": null,
+  "ats": "greenhouse",
+  "mode": "demo",
+  "forms": {
+    "samsung": {
+      "url": "https://job-boards.greenhouse.io/samsungsemiconductor/jobs/7780482003",
+      "fields": 31,
+      "groups": {
+        "know": 20,
+        "ask": 5,
+        "sensitive": 6
+      },
+      "rows": [
+        {
+          "label": "First Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Jordan",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Last Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Rivera",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Email*",
+          "kind": "text",
+          "group": "know",
+          "fills": "jordan.rivera@example.com",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Phone*",
+          "kind": "text",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "heuristic",
+          "why": null
+        },
+        {
+          "label": "Company name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Globex Corp",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Title*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Senior Engineer",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Start date year*",
+          "kind": "text",
+          "group": "know",
+          "fills": "2025-09",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "End date year*",
+          "kind": "text",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants"
+        },
+        {
+          "label": "Start date year*",
+          "kind": "text",
+          "group": "know",
+          "fills": "2025-09",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "End date year*",
+          "kind": "text",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants"
+        },
+        {
+          "label": "LinkedIn Profile",
+          "kind": "text",
+          "group": "know",
+          "fills": "https://www.linkedin.com/in/jordan-rivera",
+          "source": "user",
+          "why": null
+        },
+        {
+          "label": "Website",
+          "kind": "text",
+          "group": "know",
+          "fills": "https://jordanrivera.dev",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Physical Address*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Austin, TX",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "End date year*",
+          "kind": "radio",
+          "group": "know",
+          "fills": "Senior Engineer",
+          "source": "seed",
+          "why": null,
+          "options": 1
+        },
+        {
+          "label": "How did you learn about Samsung Semiconductor Inc.? Select all that apply. *",
+          "kind": "radio",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": 7
+        },
+        {
+          "label": "Country*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "United States",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Phone",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "seed",
+          "why": null,
+          "options": 244
+        },
+        {
+          "label": "Start date month*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "2025-09",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "End date month*",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "School*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "The University of Texas at Austin",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Degree*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "Masters",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Discipline*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "Computer Science",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Start date month*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "2025-09",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "End date month*",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Have you previously been employed at Samsung Semiconductor or one of our other subsidiarie",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you legally authorized to work in the United States? *",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Yes",
+          "source": "user",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Will you now or in the future require visa sponsorship? *",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Yes",
+          "source": "user",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Gender*",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Prefer not to say",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you Hispanic/Latino?*",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Veteran Status*",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "I am not a protected veteran",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Disability Status*",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No, I do not have a disability",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        }
+      ]
+    },
+    "gitlab-22": {
+      "url": "https://job-boards.greenhouse.io/gitlab/jobs/8503792002",
+      "fields": 17,
+      "groups": {
+        "know": 11,
+        "ask": 1,
+        "sensitive": 5
+      },
+      "rows": [
+        {
+          "label": "First Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Jordan",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Last Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Rivera",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Email*",
+          "kind": "text",
+          "group": "know",
+          "fills": "jordan.rivera@example.com",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Phone",
+          "kind": "text",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "heuristic",
+          "why": null
+        },
+        {
+          "label": "LinkedIn Profile",
+          "kind": "text",
+          "group": "know",
+          "fills": "https://www.linkedin.com/in/jordan-rivera",
+          "source": "user",
+          "why": null
+        },
+        {
+          "label": "What's the name you'd prefer us to use throughout the interview process?",
+          "kind": "text",
+          "group": "know",
+          "fills": "Jordan",
+          "source": "user",
+          "why": null
+        },
+        {
+          "label": "It is important to us to create an accessible and inclusive interview experience. Please l",
+          "kind": "text",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants"
+        },
+        {
+          "label": "Country",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "United States",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Phone",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "seed",
+          "why": null,
+          "options": 244
+        },
+        {
+          "label": "Are you subject to any employment agreements and/or post-employment restrictions with your",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "No",
+          "source": "user",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Will you now or in the future require sponsorship for a visa to remain in your current loc",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Yes",
+          "source": "user",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Have you previously worked at or consulted for GitLab?*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "What is your current country of residence?*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "United States",
+          "source": "user",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Gender",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Prefer not to say",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you Hispanic/Latino?",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Veteran Status",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "I am not a protected veteran",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Disability Status",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No, I do not have a disability",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        }
+      ]
+    },
+    "gitlab-29": {
+      "url": "https://job-boards.greenhouse.io/gitlab/jobs/8556658002",
+      "fields": 21,
+      "groups": {
+        "know": 11,
+        "ask": 5,
+        "sensitive": 5
+      },
+      "rows": [
+        {
+          "label": "First Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Jordan",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Last Name*",
+          "kind": "text",
+          "group": "know",
+          "fills": "Rivera",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Email*",
+          "kind": "text",
+          "group": "know",
+          "fills": "jordan.rivera@example.com",
+          "source": "seed",
+          "why": null
+        },
+        {
+          "label": "Phone",
+          "kind": "text",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "heuristic",
+          "why": null
+        },
+        {
+          "label": "LinkedIn Profile",
+          "kind": "text",
+          "group": "know",
+          "fills": "https://www.linkedin.com/in/jordan-rivera",
+          "source": "user",
+          "why": null
+        },
+        {
+          "label": "What's the name you'd prefer us to use throughout the interview process?",
+          "kind": "text",
+          "group": "know",
+          "fills": "Jordan",
+          "source": "user",
+          "why": null
+        },
+        {
+          "label": "It is important to us to create an accessible and inclusive interview experience. Please l",
+          "kind": "text",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants"
+        },
+        {
+          "label": "Country",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "United States",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Phone",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "(201) 555-0123",
+          "source": "seed",
+          "why": null,
+          "options": 244
+        },
+        {
+          "label": "Please choose the country in which you are located.",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "What is your current country of residence?*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "United States",
+          "source": "user",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you currently located in Bangalore? *",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Do you have strong proficiency in at least one modern scripting language (Python, JavaScri",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Do you have practical fluency across the LLM ecosystem? hands-on experience with models fr",
+          "kind": "combobox",
+          "group": "ask",
+          "fills": null,
+          "source": null,
+          "why": "we could not tell what this field wants",
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you subject to any employment agreements and/or post-employment restrictions with your",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "No",
+          "source": "user",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Will you now or in the future require sponsorship for a visa to remain in your current loc",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Yes",
+          "source": "user",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Have you previously worked at or consulted for GitLab?*",
+          "kind": "combobox",
+          "group": "know",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Gender",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "Prefer not to say",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Are you Hispanic/Latino?",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Veteran Status",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "I am not a protected veteran",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        },
+        {
+          "label": "Disability Status",
+          "kind": "combobox",
+          "group": "sensitive",
+          "fills": "No, I do not have a disability",
+          "source": "seed",
+          "why": null,
+          "consequential": true,
+          "options": "load-on-demand"
+        }
+      ]
+    }
+  }
+}

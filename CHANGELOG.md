@@ -4,6 +4,17 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.31.0
+- **Sensitive questions are their own section, with a switch.** Work authorization, visa sponsorship,
+  salary, gender, ethnicity, veteran and disability status no longer sit among the things we simply
+  couldn't work out. They have their own **Sensitive — your call** section with an **auto / manual**
+  switch: leave it on and we fill them from your profile, turn it off and they're yours to answer.
+  Either way you can see what we'd put there.
+- **Résumé and cover letter are a section in the sidebar**, not a screen you have to go find — open by
+  default, right above the fields, because choosing a résumé is part of filling the application.
+- The sidebar now leads with what needs you: **Need you**, then **Sensitive**, then **Remembered**, with
+  **Filled** collapsed at the bottom.
+
 ## 0.30.1
 - **Cover letters and drafted answers actually come back now.** Both were being run through a parser
   built for a different response shape, so a perfectly good letter arrived as "nothing came back". A
