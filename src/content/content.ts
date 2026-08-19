@@ -763,8 +763,6 @@ function syncRail(): void {
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
     fieldOptions,
     markFields,
-    exportData,
-    importData,
     getProgressive: progressiveEnabled,
     setProgressive,
     getSiteDisabled: siteDisabled,

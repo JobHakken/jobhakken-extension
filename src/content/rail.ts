@@ -36,8 +36,6 @@ export type RailApi = {
   attachCover(text: string): Promise<{ ok: boolean; how?: string }>;
   addResume(file: File): Promise<void>;
   saveTemplate(text: string): Promise<void>;
-  exportData(): Promise<{ ok: boolean; name?: string; summary?: string }>;
-  importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }>;
   getProgressive(): Promise<boolean>;
   setProgressive(on: boolean): Promise<void>;
   getSiteDisabled(): Promise<boolean>;
@@ -267,6 +265,20 @@ const TITLES: Record<Group, string> = {
   sensitive: 'Sensitive — your call',
 };
 
+/**
+ * True when this content script has been severed from the extension — which happens the moment the
+ * extension is reloaded while a page stays open. `chrome.storage` then reads as undefined, and any call
+ * throws "Cannot read properties of undefined (reading 'local')" at whatever the user just clicked.
+ * Better to say so and offer the fix than to surface a TypeError.
+ */
+function orphaned(): boolean {
+  try {
+    return !chrome?.runtime?.id || !chrome?.storage?.local;
+  } catch {
+    return true;
+  }
+}
+
 export function mountRail(api: RailApi): void {
   if (document.getElementById('jh-rail-host')) return; // idempotent: SPA re-renders must not stack rails
 
@@ -305,8 +317,6 @@ export function mountRail(api: RailApi): void {
         <span class="note" id="note"></span>
         <span class="hbtns">
           <button id="marks" title="Outline these fields on the page">▣</button>
-          <button id="export" title="Back up everything this extension has learned, all sites">⤓</button>
-          <button id="import" title="Restore a backup">⤒</button>
         </span>
         <button class="cta" id="fillAll" hidden>Fill</button>
       </footer>
@@ -705,6 +715,10 @@ export function mountRail(api: RailApi): void {
   }
 
   wrap.addEventListener('click', (e) => {
+    if (orphaned()) {
+      $('note').textContent = 'Extension was reloaded — refresh this page to reconnect';
+      return;
+    }
     const t = e.target as HTMLElement;
     const more = t.closest<HTMLElement>('[data-more]');
     if (more) {
@@ -772,26 +786,6 @@ export function mountRail(api: RailApi): void {
       insightMode = false;
       btn.style.background = taughtMode ? 'var(--slate-soft)' : '';
       return void refresh();
-    }
-    if (btn.id === 'export') {
-      void api.exportData().then((r) => {
-        $('note').textContent = r.ok ? (r.summary ?? 'saved') : 'could not export';
-      });
-      return;
-    }
-    if (btn.id === 'import') {
-      const inp = document.createElement('input');
-      inp.type = 'file';
-      inp.accept = 'application/json,.json';
-      inp.addEventListener('change', async () => {
-        const f = inp.files?.[0];
-        if (!f) return;
-        const r = await api.importData(await f.text());
-        $('note').textContent = r.ok ? (r.summary ?? 'restored') : (r.error ?? 'could not restore');
-        if (r.ok) await refresh();
-      });
-      inp.click();
-      return;
     }
     if (btn.id === 'docs') {
       // The section is always present now; this just takes you to it.

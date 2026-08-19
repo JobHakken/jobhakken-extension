@@ -9,9 +9,13 @@
  * It also turns the learned corpus into something portable: a file that can seed a second machine, be
  * diffed between versions, or drive tests against real questions instead of invented ones.
  *
- * Everything here is LOCAL. This produces a file on the user's disk; nothing is uploaded. The AI key is
- * deliberately excluded — a backup that quietly carries a credential is a liability, and the key is
- * re-enterable in seconds.
+ * Everything here is LOCAL. This produces a file on the user's disk; nothing is uploaded.
+ *
+ * The AI key IS included, by explicit owner decision: re-entering it after every reinstall was costing
+ * more than it protected against, and the file never leaves the machine unless the user moves it. The
+ * tradeoff is real though — this file is now a credential. It should not be committed to a repository,
+ * attached to an issue, or shared. `describeBackup` says so, and the exported filename does not hint at
+ * a secret, so treat any backup as sensitive.
  */
 
 /** Keys worth carrying. Anything not listed is either derived, ephemeral, or a secret. */
@@ -34,10 +38,13 @@ const BACKUP_KEYS = [
   'f2a_rail_marks',
   'f2a_needs_sponsorship',
   'f2a_hide_unsponsored',
+  'f2a_ai_cfg', // provider + model (not secret)
+  'f2a_ai_key_kept', // the key itself — see the note at the top of this file
+  'f2a_ai_remember',
 ] as const;
 
-/** Never exported, whatever else changes: a backup file must not be a credential. */
-const NEVER = ['f2a_ai_key', 'f2a_ai_key_kept'];
+/** Nothing is force-stripped now that the key is carried deliberately. */
+const NEVER: string[] = [];
 
 export type Backup = {
   kind: 'jobhakken-backup';
@@ -128,5 +135,7 @@ export function describeBackup(b: Backup): string {
     `${questions} question${questions === 1 ? '' : 's'} seen`,
     `${resumes} résumé${resumes === 1 ? '' : 's'}`,
   ];
-  return `${parts.join(' · ')} — from ${b.at.slice(0, 10)}, v${b.extVersion}`;
+  // Say it plainly: this file can be pasted into a chat or an issue by accident.
+  const secret = 'f2a_ai_key_kept' in (b.data ?? {}) ? ' · contains your API key — keep it private' : '';
+  return `${parts.join(' · ')} — from ${b.at.slice(0, 10)}, v${b.extVersion}${secret}`;
 }

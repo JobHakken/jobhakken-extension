@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.0
+- **Back up & restore moved to Settings**, under Account & settings, where it belongs — it's account-level,
+  not per-site, and not part of filling a form. The two icons are gone from the sidebar.
+- **Fixed: backup and restore threw an error in the sidebar.** After reloading the extension, an open page
+  keeps a disconnected copy of the sidebar, and anything you clicked failed with a raw error. The sidebar
+  now says *"Extension was reloaded — refresh this page to reconnect"* instead, and backup lives on a page
+  that can't be disconnected that way.
+- **Backups now include your AI key**, so you don't re-enter it after every reinstall. The summary warns
+  you that the file is private — don't attach it to an issue or paste it into a chat.
+
 ## 0.34.0
 - **A ready-made demo file to import.** `e2e/fixtures/demo-import.json` seeds a full placeholder profile,
   a résumé, a cover-letter template and a couple of remembered answers, so testing no longer starts with
