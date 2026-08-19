@@ -4,6 +4,17 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.30.0
+- **You can see what we filled, straight after filling it.** Press Fill and the fields we touched are
+  outlined on the form itself — no toggle to find. Green where we filled it, blue where it came from
+  your own earlier answer, dashed amber where we left it to you.
+- **Keep several résumés and pick one per application.** The new 📎 section lists your résumés, marks
+  the one being used, and lets you upload another without leaving the form. Your choice is remembered
+  per company, so the same employer gets the same résumé next time.
+- **Cover letters.** Write one from your profile, or keep your own template and have it adapted to the
+  role so it still sounds like you. Always editable before it goes anywhere, and it lands wherever the
+  form wants it — typed into the text box, or attached as a file.
+
 ## 0.29.0
 - **The sidebar folds.** Filled and Remembered start closed, so a 31-field application shows you the
   9 things that still need you instead of everything at once. Your choice sticks per section.

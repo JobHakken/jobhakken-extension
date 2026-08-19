@@ -25,6 +25,17 @@ export type RailApi = {
   siteInsight(): Promise<{ host: string; rows: { q: string; kind: string; seen: number }[] }>;
   fieldOptions(signature: string): Promise<{ options: { value: string; label: string }[]; note?: string }>;
   markFields(rows: PanelRow[], on: boolean): void;
+  documents(): Promise<{
+    items: { id: string; fileName: string; active: boolean }[];
+    hasTemplate: boolean;
+    lastDraft: string;
+    coverField: 'file' | 'textarea' | null;
+  }>;
+  attachResume(id?: string): Promise<{ ok: boolean; name?: string }>;
+  coverLetter(): Promise<{ text: string; error?: string }>;
+  attachCover(text: string): Promise<{ ok: boolean; how?: string }>;
+  addResume(file: File): Promise<void>;
+  saveTemplate(text: string): Promise<void>;
   openOptions(): void;
 };
 
@@ -137,6 +148,17 @@ main { flex: 1; overflow-y: auto; }
 .grp.know .acc { color: var(--accent-deep); }
 .grp.ask .acc { color: var(--clay); }
 .grp.remember .acc { color: var(--slate); }
+.docs { border-bottom: 1px solid var(--line); background: var(--sunk); padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; }
+.doc { display: flex; align-items: center; gap: 8px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.doc.on { border-color: var(--accent); background: var(--soft); }
+.doc .nm { flex: 1; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc.add { border-style: dashed; justify-content: center; color: var(--muted); font-size: 11px; cursor: pointer; }
+.doc.add:hover { color: var(--fg); border-color: var(--accent); }
+.cover { padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 6px; background: var(--slate-soft); border-bottom: 1px solid var(--line); }
+.cover textarea { width: 100%; min-height: 90px; font: inherit; font-size: 11.5px; line-height: 1.45; padding: 7px 8px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); resize: vertical; }
+.cover .rowbtns { display: flex; gap: 5px; align-items: center; }
+.cover .rowbtns .sp { flex: 1; font-size: 10px; color: var(--muted); font-family: ui-monospace, Menlo, monospace; }
 .opts { background: var(--sunk); border-top: 1px solid var(--line-soft); padding: 4px 0; }
 .opt { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 15px; font-size: 11.5px; cursor: pointer; }
 .opt:hover { background: var(--card); }
@@ -232,6 +254,7 @@ export function mountRail(api: RailApi): void {
           <span class="wm">Job<i>Hakken</i></span>
           <span class="ctx" id="ctx"></span>
           <span class="hbtns">
+            <button id="docs" title="Résumé and cover letter" aria-label="Résumé and cover letter">📎</button>
             <button id="marks" title="Outline these fields on the page" aria-label="Outline fields on the page">▣</button>
             <button id="insight" title="What we've learned here" aria-label="What we've learned here">◔</button>
             <button id="gear" title="Settings" aria-label="Settings">⚙</button>
@@ -252,6 +275,7 @@ export function mountRail(api: RailApi): void {
   const drafted = new Map<string, string[]>();
   const expanded = new Set<string>();
   let insightMode = false;
+  let docsMode = false;
   let folds: Partial<Record<Group, boolean>> = {};
   let marksOn = false;
 
@@ -370,7 +394,46 @@ export function mountRail(api: RailApi): void {
     if (marksOn) api.markFields(d.rows, true);
   }
 
+  /**
+   * Documents for this application. Uploading lives HERE rather than in Settings because this is the
+   * moment the decision is being made — which résumé for this job — and sending someone to a settings
+   * page mid-application is how a tool loses them.
+   */
+  async function showDocs(): Promise<void> {
+    const d = await api.documents();
+    $('tally').innerHTML = '';
+    $<HTMLButtonElement>('fillAll').hidden = true;
+    $('note').textContent = 'résumé choice is remembered per company';
+    const draft = d.lastDraft;
+    $('body').innerHTML =
+      `<div class="docs">` +
+      (d.items.length
+        ? d.items
+            .map(
+              (i) =>
+                `<div class="doc${i.active ? ' on' : ''}"><span class="nm">${esc(i.fileName)}</span>` +
+                (i.active
+                  ? `<button data-act="attach" data-id="${esc(i.id)}">Attach</button>`
+                  : `<button data-act="use" data-id="${esc(i.id)}">Use</button>`) +
+                `</div>`,
+            )
+            .join('')
+        : `<div class="optnote">No résumé stored yet.</div>`) +
+      `<div class="doc add" data-act="upload">＋ Upload a résumé</div></div>` +
+      `<div class="cover">` +
+      `<div class="rowbtns"><span class="sp">${d.coverField ? `cover letter · ${d.coverField === 'file' ? 'upload' : 'text box'} on this form` : 'no cover letter field here'}</span>` +
+      `<button class="draft" data-act="writecover">✍ ${draft ? 'Rewrite' : 'Write'}</button></div>` +
+      `<textarea id="coverText" placeholder="${d.hasTemplate ? 'Uses your template — press Write' : 'No template saved; it will write from your profile'}">${esc(draft)}</textarea>` +
+      `<div class="rowbtns"><span class="sp">editable before it goes anywhere</span>` +
+      `<button data-act="savetpl">Save as template</button>` +
+      `<button class="use" data-act="attachcover">Attach</button></div></div>`;
+  }
+
   async function refresh(): Promise<void> {
+    if (docsMode) {
+      await showDocs();
+      return;
+    }
     if (insightMode) {
       const d = await api.siteInsight();
       $('tally').innerHTML = '';
@@ -436,11 +499,25 @@ export function mountRail(api: RailApi): void {
     return s.replace(/["\\]/g, '\\$&');
   }
 
+  /**
+   * Turn page marking on after a fill, without being asked. Someone who has just pressed Fill wants to
+   * see WHAT was filled — leaving that behind a toggle means the work is invisible at the moment it
+   * matters most. It stays on afterwards (and remains switchable from the header).
+   */
+  function markAfterFill(): void {
+    if (marksOn) return;
+    marksOn = true;
+    const btn = root.getElementById('marks');
+    if (btn) btn.style.background = 'var(--soft)';
+    void chrome.storage.local.set({ [MARK_KEY]: true }).catch(() => {});
+  }
+
   async function fillRow(sig: string): Promise<void> {
     const row = rows.find((r) => r.signature === sig);
     if (!row) return;
     const res = await api.fillOne(sig, row.value);
     markRow(sig, res);
+    if (res.filled) markAfterFill();
     if (res.filled && row.memo) {
       await api.noteUse(row.label); // the signal the promotion prompt reads
       await refresh();
@@ -530,7 +607,11 @@ export function mountRail(api: RailApi): void {
     if (pick) {
       const sig = pick.dataset.sig ?? '';
       const v = pick.dataset.v ?? '';
-      if (v) void api.fillOne(sig, v).then((r) => markRow(sig, r));
+      if (v)
+        void api.fillOne(sig, v).then((r) => {
+          markRow(sig, r);
+          if (r.filled) markAfterFill();
+        });
       return;
     }
     const optToggle = t.closest<HTMLElement>('[data-act="opts"]');
@@ -550,6 +631,12 @@ export function mountRail(api: RailApi): void {
     if (btn.id === 'launch') return void setOpen(true);
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
+    if (btn.id === 'docs') {
+      docsMode = !docsMode;
+      insightMode = false;
+      btn.style.background = docsMode ? 'var(--soft)' : '';
+      return void refresh();
+    }
     if (btn.id === 'insight') {
       insightMode = !insightMode;
       btn.textContent = insightMode ? '◑' : '◔';
@@ -564,6 +651,7 @@ export function mountRail(api: RailApi): void {
         for (const r of rows.filter((x) => x.value && x.current.trim() !== x.value.trim())) {
           markRow(r.signature, await api.fillOne(r.signature, r.value));
         }
+        markAfterFill(); // show what just happened on the form itself
         btn.textContent = before;
         btn.disabled = false;
         await refresh();
@@ -601,6 +689,55 @@ export function mountRail(api: RailApi): void {
       case 'add':
         api.openOptions();
         break;
+      case 'use':
+        void api.attachResume(btn.dataset.id).then(() => refresh());
+        break;
+      case 'attach':
+        void api.attachResume(btn.dataset.id).then((r) => {
+          btn.textContent = r.ok ? 'Attached' : 'No résumé field';
+          btn.disabled = r.ok;
+        });
+        break;
+      case 'upload': {
+        // A file input inside the shadow root: the picker is a user gesture we already have.
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.pdf,.doc,.docx,.txt,.rtf';
+        inp.addEventListener('change', () => {
+          const f = inp.files?.[0];
+          if (f) void api.addResume(f).then(() => refresh());
+        });
+        inp.click();
+        break;
+      }
+      case 'writecover': {
+        const ta = root.getElementById('coverText') as HTMLTextAreaElement | null;
+        if (ta) ta.placeholder = 'writing…';
+        btn.disabled = true;
+        void api.coverLetter().then((r) => {
+          btn.disabled = false;
+          if (!ta) return;
+          if (r.text) ta.value = r.text;
+          else ta.placeholder = r.error ?? 'nothing came back';
+        });
+        break;
+      }
+      case 'savetpl': {
+        const ta = root.getElementById('coverText') as HTMLTextAreaElement | null;
+        if (ta?.value.trim()) {
+          void api.saveTemplate(ta.value);
+          btn.textContent = 'Saved';
+        }
+        break;
+      }
+      case 'attachcover': {
+        const ta = root.getElementById('coverText') as HTMLTextAreaElement | null;
+        if (ta?.value.trim())
+          void api.attachCover(ta.value).then((r) => {
+            btn.textContent = r.ok ? (r.how ?? 'Attached') : 'No cover field';
+          });
+        break;
+      }
       case 'pick': {
         const v = btn.dataset.v ?? '';
         if (v) void api.fillOne(sig, v).then((r) => markRow(sig, r));

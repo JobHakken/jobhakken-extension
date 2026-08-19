@@ -99,6 +99,37 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
+// ── Cover letter (#147) ────────────────────────────────────────────────────────────────────────────
+// One call, on an explicit click, same as Draft 2. If the user keeps a template we fill ITS gaps rather
+// than writing something new — a letter that sounds like them beats a better-written one that doesn't.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'f2a-cover-letter') return;
+  (async () => {
+    try {
+      const cfg = await getAiConfig();
+      if (!cfg?.apiKey) {
+        sendResponse({ text: '', error: 'Add your AI key in Settings to write a cover letter' });
+        return;
+      }
+      const fp = await loadFullProfile();
+      const ctx = fp ? JSON.stringify({ profile: fp.profile, experience: fp.experience?.slice(0, 4) }) : '';
+      const tpl = String(msg.template ?? '').trim();
+      const ask = tpl
+        ? `Rewrite this cover letter for the role below, keeping the writer's voice, structure and any
+specifics they already chose. Replace bracketed or obviously generic parts with details from the role.
+Return ONLY the letter.\n\nTHEIR TEMPLATE:\n${tpl}`
+        : `Write a cover letter for the role below from this person's background. Under 250 words,
+concrete, no clichés, no invented facts. Return ONLY the letter.`;
+      const r = await draftAnswers(cfg, ctx, msg.job ?? {}, [ask]);
+      const text = (r.answers?.[0] ?? '').trim();
+      sendResponse(text ? { text } : { text: '', error: 'nothing came back — try again' });
+    } catch (e) {
+      sendResponse({ text: '', error: e instanceof Error ? e.message : 'drafting failed' });
+    }
+  })();
+  return true; // async
+});
+
 // ── Two draft answers in ONE call (#147) ───────────────────────────────────────────────────────────
 // The panel asks for two options so the user can choose a voice rather than accept whatever the model
 // produced. Deliberately a single completion: two round trips would double the token cost for no gain,

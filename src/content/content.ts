@@ -45,7 +45,9 @@ import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
-import { getResumeFile } from '../lib/resumeFileStore.js';
+import { bytesToBase64, getResumeFile } from '../lib/resumeFileStore.js';
+import { addResume as addResumeToLibrary, chooseResume, listResumes, resumeFor } from '../lib/resumeLibrary.js';
+import { draftToFile, getLastDraft, getTemplate, setLastDraft, setTemplate } from '../lib/coverLetterStore.js';
 import {
   loadAutoCapture,
   loadCaptureMode,
@@ -744,6 +746,12 @@ function syncRail(): void {
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
     fieldOptions,
     markFields,
+    documents,
+    attachResume,
+    addResume: addResumeFile,
+    saveTemplate: setTemplate,
+    coverLetter,
+    attachCover,
     openOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
 }
@@ -807,6 +815,88 @@ function markFields(rows: PanelRow[], on: boolean): void {
     el.style.outlineOffset = '1px';
     el.setAttribute(MARK, r.group);
   }
+}
+
+/** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
+async function documents(): Promise<{
+  items: { id: string; fileName: string; active: boolean }[];
+  hasTemplate: boolean;
+  lastDraft: string;
+  coverField: 'file' | 'textarea' | null;
+}> {
+  const company = pageCompany();
+  const [{ items }, pick, tpl, last] = await Promise.all([
+    listResumes(),
+    resumeFor(company),
+    getTemplate(),
+    getLastDraft(),
+  ]);
+  const fileInputs = detectFileInputs(document);
+  const hasCoverFile = fileInputs.some((f) => f.kind === 'coverLetter');
+  const coverArea = detectFields(document).find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  return {
+    items: items.map((i) => ({ id: i.id, fileName: i.fileName, active: i.id === pick?.id })),
+    hasTemplate: !!tpl,
+    lastDraft: last?.text ?? '',
+    coverField: hasCoverFile ? 'file' : coverArea ? 'textarea' : null,
+  };
+}
+
+/** Attach the chosen résumé to this form's résumé input. */
+async function attachResume(id?: string): Promise<{ ok: boolean; name?: string }> {
+  const company = pageCompany();
+  if (id) await chooseResume(id, company);
+  const pick = await resumeFor(company);
+  if (!pick) return { ok: false };
+  const input = detectFileInputs(document).find((f) => f.kind === 'resume');
+  if (!input) return { ok: false };
+  const bytes = Uint8Array.from(atob(pick.base64), (c) => c.charCodeAt(0));
+  const file = new File([bytes], pick.fileName, { type: pick.mimeType });
+  return { ok: setInputFile(input.el, file), name: pick.fileName };
+}
+
+/** Store an uploaded résumé in the library and make it the one this company gets. */
+async function addResumeFile(file: File): Promise<void> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const item = await addResumeToLibrary({
+    base64: bytesToBase64(bytes),
+    fileName: file.name,
+    mimeType: file.type || 'application/octet-stream',
+  });
+  await chooseResume(item.id, pageCompany());
+}
+
+/** Ask for a cover letter (one call), keeping the user's template voice when they have one. */
+async function coverLetter(): Promise<{ text: string; error?: string }> {
+  const template = await getTemplate();
+  try {
+    const r = (await chrome.runtime.sendMessage({
+      type: 'f2a-cover-letter',
+      template,
+      job: { title: cleanTitle(document.title), company: pageCompany() },
+    })) as { text?: string; error?: string } | undefined;
+    const text = r?.text ?? '';
+    if (text) await setLastDraft({ text, company: pageCompany(), at: Date.now() });
+    return { text, error: r?.error };
+  } catch {
+    return { text: '', error: 'could not reach the drafting service' };
+  }
+}
+
+/** Put the letter where this form wants it — a textarea if there is one, otherwise a file upload. */
+async function attachCover(text: string): Promise<{ ok: boolean; how?: string }> {
+  if (!text.trim()) return { ok: false };
+  await setLastDraft({ text, company: pageCompany(), at: Date.now() });
+  const area = detectFields(document).find((f) => f.kind === 'textarea' && /cover\s*letter/i.test(f.label));
+  if (area) {
+    await injectPageBridge();
+    fillField(area, text);
+    const r = await repairFills([{ el: area.el, value: text, source: 'user' }], 3000);
+    if (r.confirmed > 0) return { ok: true, how: 'typed into the form' };
+  }
+  const input = detectFileInputs(document).find((f) => f.kind === 'coverLetter');
+  if (input && setInputFile(input.el, draftToFile(text))) return { ok: true, how: 'attached as a file' };
+  return { ok: false };
 }
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
@@ -1848,7 +1938,7 @@ async function init() {
 type Rpc = {
   type?: string;
   method?: string;
-  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string; label?: string };
+  params?: { mode?: 'default' | 'ats'; on?: boolean; signature?: string; value?: string; label?: string; id?: string };
 };
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   const msg = raw as Rpc;
@@ -1875,6 +1965,18 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'documents':
+          sendResponse(await documents());
+          break;
+        case 'attachResume':
+          sendResponse(await attachResume(msg.params?.id));
+          break;
+        case 'coverLetter':
+          sendResponse(await coverLetter());
+          break;
+        case 'attachCover':
+          sendResponse(await attachCover(String(msg.params?.value ?? '')));
           break;
         case 'fieldOptions':
           sendResponse(await fieldOptions(String(msg.params?.signature ?? '')));
