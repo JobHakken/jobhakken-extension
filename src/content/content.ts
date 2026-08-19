@@ -631,6 +631,12 @@ export type PanelRow = {
   asked?: { hits: number; of: number };
   /** True when the profile simply has no value for a key we DID recognise → offer to add it. */
   addable?: boolean;
+  /**
+   * Whether this control offers a fixed set of answers, and how many when that's free to know.
+   * A native <select> lists its options in the DOM; a react-select usually doesn't until it opens and a
+   * typeahead has to query a server — so those report `count: null` and load only when the user expands.
+   */
+  choices?: { count: number | null; searchable: boolean };
 };
 
 /** Fields where a WRONG answer costs more than a blank one, so they demand a stronger resolution. */
@@ -736,8 +742,71 @@ function syncRail(): void {
     promote: (label, on) => setPromoted(label, on),
     draftTwo,
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
+    fieldOptions,
+    markFields,
     openOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
   });
+}
+
+/**
+ * The options a field actually accepts (#140 round two).
+ *
+ * Read on demand, never on page load: a native <select> is free, but a react-select's options usually
+ * don't exist in the DOM until it opens, and a typeahead queries a server. Paying that for every
+ * dropdown on a 31-field form would make opening the rail slow for information nobody asked for.
+ *
+ * Letting the user pick from this list also sidesteps the widget entirely — no menu is opened on the
+ * page, which is what leaves dropdowns hanging half-driven today.
+ */
+async function fieldOptions(
+  signature: string,
+): Promise<{ options: { value: string; label: string }[]; note?: string }> {
+  const field = detectFields(document).find((f) => f.signature === signature);
+  if (!field) return { options: [], note: 'the page changed' };
+  if (field.options?.length) return { options: field.options };
+  if (field.kind !== 'combobox') return { options: [] };
+  try {
+    await injectPageBridge();
+    const opts = await readLazyOptions(field.el, 2500);
+    return opts.length ? { options: opts } : { options: [], note: 'this field searches as you type' };
+  } catch {
+    return { options: [], note: 'could not read this widget' };
+  }
+}
+
+/**
+ * Outline each control on the PAGE in its group's colour, so the form itself says what happened.
+ *
+ * `outline` rather than `border` deliberately: a border participates in layout and would shift the whole
+ * form by a pixel or two per field. Line STYLE carries the meaning alongside hue (solid / dashed),
+ * because green-vs-amber is the most common colour-vision confusion and colour alone would exclude
+ * people. Everything is removable, and cleared on unmount.
+ */
+const MARK = 'data-jh-mark';
+function markFields(rows: PanelRow[], on: boolean): void {
+  const fields = new Map(detectFields(document).map((f) => [f.signature, f.el]));
+  if (!on) {
+    for (const el of fields.values()) {
+      if (el.hasAttribute(MARK)) {
+        el.style.outline = '';
+        el.style.outlineOffset = '';
+        el.removeAttribute(MARK);
+      }
+    }
+    return;
+  }
+  const style: Record<string, string> = {
+    know: '2px solid #5C7E48',
+    remember: '2px solid #5A6B8C',
+    ask: '2px dashed #BB6535',
+  };
+  for (const r of rows) {
+    const el = fields.get(r.signature);
+    if (!el) continue;
+    el.style.outline = style[r.group] ?? '';
+    el.style.outlineOffset = '1px';
+    el.setAttribute(MARK, r.group);
+  }
 }
 
 async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
@@ -789,7 +858,12 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
     // Frequency only where it helps a decision: a gap the user could close by editing their profile.
     const asked = group === 'ask' && !isEeo ? await askedOnRecent(q) : undefined;
 
+    const optCount = field.options?.length ?? 0;
+    const choosy = field.kind === 'select' || field.kind === 'radio' || field.kind === 'combobox';
     rows.push({
+      choices: choosy
+        ? { count: optCount > 0 ? optCount : null, searchable: field.kind === 'combobox' && optCount === 0 }
+        : undefined,
       signature: field.signature,
       label,
       kind: field.kind,
@@ -1801,6 +1875,9 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           break;
         case 'panelFields':
           sendResponse(await panelFields());
+          break;
+        case 'fieldOptions':
+          sendResponse(await fieldOptions(String(msg.params?.signature ?? '')));
           break;
         case 'draftTwo':
           sendResponse(await draftTwo(String(msg.params?.label ?? '')));

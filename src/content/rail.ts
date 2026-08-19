@@ -23,6 +23,8 @@ export type RailApi = {
   promote(label: string, on: boolean): Promise<void>;
   draftTwo(label: string): Promise<{ options: string[]; error?: string }>;
   siteInsight(): Promise<{ host: string; rows: { q: string; kind: string; seen: number }[] }>;
+  fieldOptions(signature: string): Promise<{ options: { value: string; label: string }[]; note?: string }>;
+  markFields(rows: PanelRow[], on: boolean): void;
   openOptions(): void;
 };
 
@@ -40,11 +42,14 @@ export type PanelRow = {
   memo?: { host: string; at: number; uses: number; promoted?: boolean };
   asked?: { hits: number; of: number };
   addable?: boolean;
+  choices?: { count: number | null; searchable: boolean };
 };
 export type PanelData = { rows: PanelRow[]; ats: string | null; host: string };
 type FillResult = { filled: boolean; reason?: string };
 
 const OPEN_KEY = 'f2a_rail_open';
+const FOLD_KEY = 'f2a_rail_folds';
+const MARK_KEY = 'f2a_rail_marks';
 const WIDTH = 320;
 const ASK_AFTER = 3; // when we ASK about promoting — never when we promote
 const COLLAPSE_AT = 6;
@@ -122,6 +127,26 @@ header { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex
 .chip.r { color: var(--slate); background: var(--slate-soft); border-color: var(--slate); }
 
 main { flex: 1; overflow-y: auto; }
+.acc { display: flex; align-items: center; gap: 7px; width: 100%; cursor: pointer; text-align: left;
+  border: 0; background: none; padding: 11px 12px 5px; font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; font-weight: 700; font-family: inherit; }
+.acc .chev { transition: transform .12s ease; font-size: 10px; }
+.acc.closed .chev { transform: rotate(-90deg); }
+.acc .sp { flex: 1; }
+.acc .n { font-family: ui-monospace, Menlo, monospace; opacity: .7; }
+.grp.know .acc { color: var(--accent-deep); }
+.grp.ask .acc { color: var(--clay); }
+.grp.remember .acc { color: var(--slate); }
+.opts { background: var(--sunk); border-top: 1px solid var(--line-soft); padding: 4px 0; }
+.opt { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 15px; font-size: 11.5px; cursor: pointer; }
+.opt:hover { background: var(--card); }
+.opt .mk { width: 11px; flex: none; color: var(--accent-deep); font-weight: 700; }
+.opt.pick { background: var(--soft); }
+.opt.pick .lbl { font-weight: 650; color: var(--accent-deep); }
+.opt .lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.optnote { padding: 4px 12px 6px; font-size: 10px; font-family: ui-monospace, Menlo, monospace; color: var(--muted); }
+.count { font-size: 10px; font-family: ui-monospace, Menlo, monospace; color: var(--muted); cursor: pointer; flex: none; }
+.count:hover { color: var(--fg); }
 .grp h2 { margin: 0; padding: 11px 12px 5px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; display: flex; justify-content: space-between; }
 .grp.know h2 { color: var(--accent-deep); } .grp.ask h2 { color: var(--clay); } .grp.remember h2 { color: var(--slate); }
 .grp h2 .n { font-family: ui-monospace, Menlo, monospace; opacity: .7; }
@@ -207,6 +232,7 @@ export function mountRail(api: RailApi): void {
           <span class="wm">Job<i>Hakken</i></span>
           <span class="ctx" id="ctx"></span>
           <span class="hbtns">
+            <button id="marks" title="Outline these fields on the page" aria-label="Outline fields on the page">▣</button>
             <button id="insight" title="What we've learned here" aria-label="What we've learned here">◔</button>
             <button id="gear" title="Settings" aria-label="Settings">⚙</button>
             <button id="close" title="Close" aria-label="Close">✕</button>
@@ -226,6 +252,8 @@ export function mountRail(api: RailApi): void {
   const drafted = new Map<string, string[]>();
   const expanded = new Set<string>();
   let insightMode = false;
+  let folds: Partial<Record<Group, boolean>> = {};
+  let marksOn = false;
 
   /** Push the page over instead of covering it — a panel about a form must not hide the form. */
   function reflow(open: boolean): void {
@@ -280,6 +308,7 @@ export function mountRail(api: RailApi): void {
         ${has && !canFill ? `<button data-act="copy" data-sig="${sig}">Copy</button>` : ''}
         ${!has && r.addable ? `<button data-act="add" data-sig="${sig}">Add</button>` : ''}
         ${!has && !r.addable && isOpen(r) ? `<button class="draft" data-act="draft" data-sig="${sig}">✍ Draft 2</button>` : ''}
+        ${r.choices ? `<span class="count" data-act="opts" data-sig="${sig}">${r.choices.count ?? (r.choices.searchable ? 'search' : 'options')} ${r.choices.count ? 'options' : ''} ▾</span>` : ''}
       </span>
       ${foot}
     </div>`;
@@ -324,14 +353,21 @@ export function mountRail(api: RailApi): void {
         // A long Filled list is reference material — keep "need you" and "remembered" above the fold.
         const cut = g === 'know' && list.length > COLLAPSE_AT && !expanded.has(g);
         const shown = cut ? list.slice(0, COLLAPSE_AT) : list;
+        // Filled and Remembered are settled information; what needs the user stays open and on top.
+        const folded = folds[g] ?? g !== 'ask';
         return (
-          `<section class="grp ${g}"><h2><span>${TITLES[g]}</span><span class="n">${list.length}</span></h2>` +
-          shown.map(rowHtml).join('') +
-          (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '') +
+          `<section class="grp ${g}">` +
+          `<button class="acc${folded ? ' closed' : ''}" data-fold="${g}">` +
+          `<span class="chev">▾</span><span class="sp">${TITLES[g]}</span><span class="n">${list.length}</span></button>` +
+          (folded
+            ? ''
+            : shown.map(rowHtml).join('') +
+              (cut ? `<div class="more" data-more="${g}">+ ${list.length - COLLAPSE_AT} more filled</div>` : '')) +
           `</section>`
         );
       })
       .join('');
+    if (marksOn) api.markFields(d.rows, true);
   }
 
   async function refresh(): Promise<void> {
@@ -411,6 +447,41 @@ export function mountRail(api: RailApi): void {
     }
   }
 
+  /**
+   * List what a field accepts, ours marked. Picking here sets the value through the component, so the
+   * page's own menu never opens — which is also why this cannot leave a dropdown stuck half-driven.
+   */
+  async function showOptions(sig: string): Promise<void> {
+    const el = root.querySelector<HTMLElement>(`.row[data-sig="${CSS_escape(sig)}"]`);
+    const row = rows.find((r) => r.signature === sig);
+    if (!el || !row) return;
+    const next = el.nextElementSibling;
+    if (next?.classList.contains('opts')) return next.remove(); // toggle closed
+    el.insertAdjacentHTML('afterend', '<div class="opts"><div class="optnote">reading options…</div></div>');
+    const box = el.nextElementSibling as HTMLElement | null;
+    const { options, note } = await api.fieldOptions(sig);
+    if (!box) return;
+    if (!options.length) {
+      box.innerHTML = `<div class="optnote">${esc(note ?? 'no fixed options — type into the field')}</div>`;
+      return;
+    }
+    const mine = row.value.trim().toLowerCase();
+    box.innerHTML =
+      options
+        .slice(0, 40)
+        .map((o) => {
+          const picked = !!mine && o.label.trim().toLowerCase() === mine;
+          return `<div class="opt${picked ? ' pick' : ''}" data-act="pick" data-sig="${esc(sig)}" data-v="${esc(o.label)}">
+            <span class="mk">${picked ? '✓' : ''}</span><span class="lbl">${esc(o.label)}</span></div>`;
+        })
+        .join('') +
+      (options.length > 40 ? `<div class="optnote">showing 40 of ${options.length}</div>` : '') +
+      // If our value isn't among the options, say so plainly instead of offering it anyway (#153).
+      (mine && !options.some((o) => o.label.trim().toLowerCase() === mine)
+        ? `<div class="optnote">your value "${esc(row.value)}" isn't one of these — pick one</div>`
+        : '');
+  }
+
   async function draftRow(sig: string): Promise<void> {
     const row = rows.find((r) => r.signature === sig);
     const el = root.querySelector<HTMLElement>(`.row[data-sig="${CSS_escape(sig)}"]`);
@@ -447,8 +518,35 @@ export function mountRail(api: RailApi): void {
       void refresh();
       return;
     }
+    const fold = t.closest<HTMLElement>('[data-fold]');
+    if (fold) {
+      const g = fold.dataset.fold as Group;
+      folds[g] = !(folds[g] ?? g !== 'ask');
+      void chrome.storage.local.set({ [FOLD_KEY]: folds }).catch(() => {});
+      void refresh();
+      return;
+    }
+    const pick = t.closest<HTMLElement>('[data-act="pick"]');
+    if (pick) {
+      const sig = pick.dataset.sig ?? '';
+      const v = pick.dataset.v ?? '';
+      if (v) void api.fillOne(sig, v).then((r) => markRow(sig, r));
+      return;
+    }
+    const optToggle = t.closest<HTMLElement>('[data-act="opts"]');
+    if (optToggle) {
+      void showOptions(optToggle.dataset.sig ?? '');
+      return;
+    }
     const btn = t.closest<HTMLButtonElement>('button');
     if (!btn) return;
+    if (btn.id === 'marks') {
+      marksOn = !marksOn;
+      btn.style.background = marksOn ? 'var(--soft)' : '';
+      api.markFields(rows, marksOn);
+      void chrome.storage.local.set({ [MARK_KEY]: marksOn }).catch(() => {});
+      return;
+    }
     if (btn.id === 'launch') return void setOpen(true);
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
@@ -503,6 +601,11 @@ export function mountRail(api: RailApi): void {
       case 'add':
         api.openOptions();
         break;
+      case 'pick': {
+        const v = btn.dataset.v ?? '';
+        if (v) void api.fillOne(sig, v).then((r) => markRow(sig, r));
+        break;
+      }
       case 'copy':
         if (row?.value) void navigator.clipboard.writeText(row.value).catch(() => {});
         break;
@@ -515,8 +618,13 @@ export function mountRail(api: RailApi): void {
   });
 
   void (async () => {
-    const got = (await chrome.storage.local.get(OPEN_KEY).catch(() => ({}))) as Record<string, unknown>;
+    const got = (await chrome.storage.local.get([OPEN_KEY, FOLD_KEY, MARK_KEY]).catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     const open = !!got[OPEN_KEY];
+    folds = (got[FOLD_KEY] as Partial<Record<Group, boolean>>) ?? {};
+    marksOn = !!got[MARK_KEY];
     await setOpen(open, false);
     if (!open) await updateLauncher();
   })();

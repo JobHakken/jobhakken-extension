@@ -4,6 +4,17 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.29.0
+- **The sidebar folds.** Filled and Remembered start closed, so a 31-field application shows you the
+  9 things that still need you instead of everything at once. Your choice sticks per section.
+- **See a dropdown's choices without opening it.** Any select or dropdown row can expand to list what
+  the field accepts, with ours ticked. Picking from the sidebar sets the value directly — the page's own
+  menu never opens, which is also why it can't get left hanging half-open. If your saved answer isn't one
+  of the choices, it says so rather than putting it in anyway.
+- **See what we touched, on the form itself.** A new ▣ button outlines every field: solid green where we
+  filled it, solid blue where it came from your own earlier answer, dashed amber where we've left it to
+  you. Solid versus dashed carries the meaning as well as the colour, and it's off until you ask for it.
+
 ## 0.28.0
 - **JobHakken now lives on the page, not behind a menu.** A small tab sits on the right edge of any
   application page — click it and the sidebar slides in, pushing the page across rather than covering
