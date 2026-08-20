@@ -82,6 +82,20 @@ for (const x of contaminated) console.log(`   ✗ ${x.label.slice(0, 50)} (${x.c
 console.log(`\n2. HIT THE 300-CAP (worth a manual look — genuine or still unbounded?): ${truncated.length}`);
 for (const x of truncated) console.log(`   ⚠ ${x.label.slice(0, 50)}`);
 
+// The harvester now classifies `searchable` by whether the option count is still growing when
+// scrolling stops (or starts empty), not by count alone — verified against Country (244, plateaus,
+// correctly non-searchable), Discipline (72, plateaus), and School (still growing at the cap, correctly
+// searchable). A field that hits the option cap should ALWAYS end up marked searchable by construction
+// (hitCap is one of the OR conditions) — if one doesn't, that's a real regression in the harvester, not
+// a size heuristic.
+const OPTION_CAP = 300;
+const cappedNotSearchable = comboLabels
+  .map(([, v]) => v)
+  .filter((v) => !v.searchable && v.options.length >= OPTION_CAP);
+console.log(`\n2b. HIT THE CAP BUT NOT MARKED SEARCHABLE (harvester regression): ${cappedNotSearchable.length}`);
+for (const x of cappedNotSearchable)
+  console.log(`   ✗ ${x.label.slice(0, 50)} — ${x.options.length} options, searchable=false`);
+
 console.log(`\n3. COMBOBOX, SEEN 3+ TIMES, ZERO OPTIONS EVER CAPTURED (probable miss): ${suspiciousEmpty.length}`);
 for (const x of suspiciousEmpty) console.log(`   ⚠ ${x.label.slice(0, 50)} — seen ${x.seen}x on ${x.boards.join(',')}`);
 
@@ -91,7 +105,7 @@ for (const x of genericOnly) console.log(`   ⚠ ${x.label.slice(0, 50)} — got
 // Only #1 and #2 are hard fails now that #3 is understood to include legitimate field-type cases and
 // is downgraded to informational. #3 (always-empty) still needs a human/live check per item — it is
 // not auto-cleared, but it does not fail the build the way real contamination should.
-const hardFail = contaminated.length > 0;
+const hardFail = contaminated.length > 0 || cappedNotSearchable.length > 0;
 console.log(`\n${hardFail ? '❌ contamination found — see above' : '✅ no contamination detected'}`);
 console.log(`${suspiciousEmpty.length} always-empty combobox(es) need a live check each (not auto-failed — see note).`);
 console.log(`${genericOnly.length} generic-only lists are informational; spot-checked, found correct so far.`);

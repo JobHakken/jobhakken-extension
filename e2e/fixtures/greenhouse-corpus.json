@@ -2,16 +2,33 @@
   "ats": "greenhouse",
   "schema": 2,
   "boards": {
+    "reddit": [
+      {
+        "url": "https://job-boards.greenhouse.io/reddit/jobs/8015018",
+        "fields": 16,
+        "withOptions": 5
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/reddit/jobs/7792848",
+        "fields": 23,
+        "withOptions": 10
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/reddit/jobs/8089959",
+        "fields": 23,
+        "withOptions": 11
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/reddit/jobs/7617155",
+        "fields": 23,
+        "withOptions": 11
+      }
+    ],
     "gitlab": [
       {
         "url": "https://job-boards.greenhouse.io/gitlab/jobs/8503792002",
         "fields": 17,
         "withOptions": 9
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/gitlab/jobs/8556658002",
-        "fields": 21,
-        "withOptions": 13
       },
       {
         "url": "https://job-boards.greenhouse.io/gitlab/jobs/8638232002",
@@ -22,28 +39,11 @@
         "url": "https://job-boards.greenhouse.io/gitlab/jobs/8716179002",
         "fields": 18,
         "withOptions": 10
-      }
-    ],
-    "reddit": [
-      {
-        "url": "https://job-boards.greenhouse.io/reddit/jobs/7617155",
-        "fields": 23,
-        "withOptions": 11
       },
       {
-        "url": "https://job-boards.greenhouse.io/reddit/jobs/8089959",
-        "fields": 23,
-        "withOptions": 11
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/reddit/jobs/7792848",
-        "fields": 23,
-        "withOptions": 10
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/reddit/jobs/8015018",
-        "fields": 16,
-        "withOptions": 5
+        "url": "https://job-boards.greenhouse.io/gitlab/jobs/8556658002",
+        "fields": 21,
+        "withOptions": 13
       }
     ],
     "cloudflare": [
@@ -68,28 +68,6 @@
         "withOptions": 8
       }
     ],
-    "discord": [
-      {
-        "url": "https://job-boards.greenhouse.io/discord/jobs/8599937002",
-        "fields": 24,
-        "withOptions": 14
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/discord/jobs/8686353002",
-        "fields": 24,
-        "withOptions": 14
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/discord/jobs/8625545002",
-        "fields": 25,
-        "withOptions": 14
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/discord/jobs/8680047002",
-        "fields": 24,
-        "withOptions": 14
-      }
-    ],
     "figma": [
       {
         "url": "https://boards.greenhouse.io/figma/jobs/5364702004?gh_jid=5364702004",
@@ -97,12 +75,12 @@
         "withOptions": 4
       },
       {
-        "url": "https://boards.greenhouse.io/figma/jobs/5426468004?gh_jid=5426468004",
+        "url": "https://boards.greenhouse.io/figma/jobs/5579204004?gh_jid=5579204004",
         "fields": 20,
         "withOptions": 8
       },
       {
-        "url": "https://boards.greenhouse.io/figma/jobs/5579204004?gh_jid=5579204004",
+        "url": "https://boards.greenhouse.io/figma/jobs/5426468004?gh_jid=5426468004",
         "fields": 20,
         "withOptions": 8
       },
@@ -110,6 +88,28 @@
         "url": "https://boards.greenhouse.io/figma/jobs/5783812004?gh_jid=5783812004",
         "fields": 20,
         "withOptions": 8
+      }
+    ],
+    "discord": [
+      {
+        "url": "https://job-boards.greenhouse.io/discord/jobs/8686353002",
+        "fields": 24,
+        "withOptions": 14
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/discord/jobs/8680047002",
+        "fields": 24,
+        "withOptions": 14
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/discord/jobs/8599937002",
+        "fields": 24,
+        "withOptions": 14
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/discord/jobs/8625545002",
+        "fields": 25,
+        "withOptions": 14
       }
     ],
     "anthropic": [
@@ -136,14 +136,14 @@
     ],
     "robinhood": [
       {
+        "url": "https://boards.greenhouse.io/robinhood/jobs/8093267?t=gh_src=&gh_jid=8093267",
+        "fields": 17,
+        "withOptions": 7
+      },
+      {
         "url": "https://boards.greenhouse.io/robinhood/jobs/8114351?t=gh_src=&gh_jid=8114351",
         "fields": 25,
         "withOptions": 14
-      },
-      {
-        "url": "https://boards.greenhouse.io/robinhood/jobs/6669758?t=gh_src=&gh_jid=6669758",
-        "fields": 27,
-        "withOptions": 16
       },
       {
         "url": "https://boards.greenhouse.io/robinhood/jobs/7350823?t=gh_src=&gh_jid=7350823",
@@ -151,24 +151,14 @@
         "withOptions": 15
       },
       {
-        "url": "https://boards.greenhouse.io/robinhood/jobs/8093267?t=gh_src=&gh_jid=8093267",
-        "fields": 17,
-        "withOptions": 7
+        "url": "https://boards.greenhouse.io/robinhood/jobs/6669758?t=gh_src=&gh_jid=6669758",
+        "fields": 27,
+        "withOptions": 16
       }
     ],
     "affirm": [
       {
-        "url": "https://job-boards.greenhouse.io/affirm/jobs/7850544003",
-        "fields": 26,
-        "withOptions": 13
-      },
-      {
         "url": "https://job-boards.greenhouse.io/affirm/jobs/7812990003",
-        "fields": 22,
-        "withOptions": 9
-      },
-      {
-        "url": "https://job-boards.greenhouse.io/affirm/jobs/7778204003",
         "fields": 22,
         "withOptions": 9
       },
@@ -176,6 +166,16 @@
         "url": "https://job-boards.greenhouse.io/affirm/jobs/7778206003",
         "fields": 19,
         "withOptions": 6
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/affirm/jobs/7850544003",
+        "fields": 26,
+        "withOptions": 13
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/affirm/jobs/7778204003",
+        "fields": 22,
+        "withOptions": 9
       }
     ],
     "flexport": [
@@ -185,13 +185,13 @@
         "withOptions": 6
       },
       {
-        "url": "https://job-boards.greenhouse.io/flexport/jobs/6893746",
-        "fields": 12,
+        "url": "https://job-boards.greenhouse.io/flexport/jobs/7372929",
+        "fields": 13,
         "withOptions": 6
       },
       {
-        "url": "https://job-boards.greenhouse.io/flexport/jobs/7372929",
-        "fields": 13,
+        "url": "https://job-boards.greenhouse.io/flexport/jobs/6893746",
+        "fields": 12,
         "withOptions": 6
       },
       {
@@ -222,24 +222,31 @@
         "withOptions": 14
       }
     ],
-    "mixpanel": [
+    "twilio": [
       {
-        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8142181",
+        "url": "https://job-boards.greenhouse.io/twilio/jobs/7906141",
         "fields": 23,
-        "withOptions": 12
-      },
+        "withOptions": 4
+      }
+    ],
+    "mixpanel": [
       {
         "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8138334",
         "fields": 23,
         "withOptions": 12
       },
       {
-        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8142657",
+        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8126041",
         "fields": 23,
         "withOptions": 12
       },
       {
-        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8126041",
+        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8142181",
+        "fields": 23,
+        "withOptions": 12
+      },
+      {
+        "url": "https://job-boards.greenhouse.io/mixpanel/jobs/8142661",
         "fields": 23,
         "withOptions": 12
       }
@@ -253,18 +260,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 44,
       "reactSelectIds": [],
@@ -272,7 +279,7 @@
         "first_name"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "last name": {
       "label": "Last Name",
@@ -281,18 +288,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 44,
       "reactSelectIds": [],
@@ -300,7 +307,7 @@
         "last_name"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "email": {
       "label": "Email",
@@ -309,18 +316,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 44,
       "reactSelectIds": [],
@@ -328,7 +335,7 @@
         "email"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "country": {
       "label": "Country",
@@ -337,18 +344,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 0,
       "reactSelectIds": [
@@ -360,7 +367,7 @@
       "options": [
         "United States +1",
         "Afghanistan +93",
-        "\u00c5land Islands +358",
+        "Åland Islands +358",
         "Albania +355",
         "Algeria +213",
         "American Samoa +1",
@@ -413,10 +420,10 @@
         "Congo - Kinshasa +243",
         "Cook Islands +682",
         "Costa Rica +506",
-        "C\u00f4te d\u2019Ivoire +225",
+        "Côte d’Ivoire +225",
         "Croatia +385",
         "Cuba +53",
-        "Cura\u00e7ao +599",
+        "Curaçao +599",
         "Cyprus +357",
         "Czechia +420",
         "Denmark +45",
@@ -536,13 +543,13 @@
         "Portugal +351",
         "Puerto Rico +1",
         "Qatar +974",
-        "R\u00e9union +262",
+        "Réunion +262",
         "Romania +40",
         "Russia +7",
         "Rwanda +250",
         "Samoa +685",
         "San Marino +378",
-        "S\u00e3o Tom\u00e9 & Pr\u00edncipe +239",
+        "São Tomé & Príncipe +239",
         "Saudi Arabia +966",
         "Senegal +221",
         "Serbia +381",
@@ -559,7 +566,7 @@
         "South Sudan +211",
         "Spain +34",
         "Sri Lanka +94",
-        "St. Barth\u00e9lemy +590",
+        "St. Barthélemy +590",
         "St. Helena +290",
         "St. Kitts & Nevis +1",
         "St. Lucia +1",
@@ -603,52 +610,7 @@
         "Zambia +260",
         "Zimbabwe +263"
       ],
-      "optionCounts": [
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244,
-        244
-      ]
+      "searchable": false
     },
     "phone": {
       "label": "Phone",
@@ -657,18 +619,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 0,
       "reactSelectIds": [],
@@ -676,7 +638,7 @@
         "phone"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "attach": {
       "label": "Attach",
@@ -685,18 +647,18 @@
       },
       "seen": 44,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 0,
       "reactSelectIds": [],
@@ -704,7 +666,7 @@
         "resume"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "linkedin profile": {
       "label": "LinkedIn Profile",
@@ -713,66 +675,66 @@
       },
       "seen": 41,
       "boards": [
-        "gitlab",
         "reddit",
+        "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "robinhood",
         "affirm",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
+        "question_67695793",
+        "question_65381803",
         "question_36101205002",
-        "question_36622854002",
         "question_37369956002",
         "question_37811431002",
-        "question_63497928",
+        "question_36622854002",
         "question_68278135",
-        "question_65381803",
-        "question_67695793",
+        "question_63497928",
         "question_68238272",
-        "question_37020453002",
-        "question_37658705002",
-        "question_37239549002",
-        "question_37628284002",
         "question_12074263004",
-        "question_12497118004",
         "question_13576518004",
+        "question_12497118004",
+        "question_37658705002",
+        "question_37628284002",
         "question_15261019004",
+        "question_37020453002",
+        "question_37239549002",
         "question_14826597008",
         "question_8581812008",
         "question_18208341008",
         "question_18203457008",
-        "question_68482791",
-        "question_54527568",
-        "question_61045574",
         "question_68302329",
-        "question_31786590003",
         "question_31497180003",
-        "question_31105715003",
+        "question_68482791",
         "question_31105743003",
+        "question_31786590003",
+        "question_61045574",
+        "question_54527568",
+        "question_31105715003",
         "question_68004894",
         "question_61226878",
         "question_63013270",
         "question_68187597",
+        "question_66633665",
         "question_68030571",
         "question_66549918",
-        "question_67763431",
-        "question_68695099",
         "question_68662324",
-        "question_68698817",
         "question_68561314",
-        "question_66633665"
+        "question_68695099",
+        "question_67763431",
+        "question_68698849"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "location (city)": {
       "label": "Location (City)",
@@ -783,13 +745,13 @@
       "boards": [
         "reddit",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "robinhood",
         "flexport",
         "gusto",
-        "mixpanel",
-        "twilio"
+        "twilio",
+        "mixpanel"
       ],
       "required": 30,
       "reactSelectIds": [
@@ -799,7 +761,7 @@
         "candidate-location"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": true
     },
     "gender": {
       "label": "Gender",
@@ -810,12 +772,12 @@
       "boards": [
         "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "affirm",
-        "gusto",
-        "mixpanel"
+        "mixpanel",
+        "gusto"
       ],
       "required": 0,
       "reactSelectIds": [
@@ -830,32 +792,7 @@
         "Female",
         "Decline To Self Identify"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "veteran status": {
       "label": "Veteran Status",
@@ -866,12 +803,12 @@
       "boards": [
         "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "affirm",
-        "gusto",
-        "mixpanel"
+        "mixpanel",
+        "gusto"
       ],
       "required": 0,
       "reactSelectIds": [
@@ -886,32 +823,7 @@
         "I identify as one or more of the classifications of a protected veteran",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "disability status": {
       "label": "Disability Status",
@@ -922,12 +834,12 @@
       "boards": [
         "gitlab",
         "cloudflare",
-        "discord",
         "figma",
+        "discord",
         "anthropic",
         "affirm",
-        "gusto",
-        "mixpanel"
+        "mixpanel",
+        "gusto"
       ],
       "required": 0,
       "reactSelectIds": [
@@ -942,32 +854,7 @@
         "No, I do not have a disability and have not had one in the past",
         "I do not want to answer"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "are you hispanic/latino": {
       "label": "Are you Hispanic/Latino",
@@ -981,8 +868,8 @@
         "figma",
         "anthropic",
         "affirm",
-        "gusto",
-        "mixpanel"
+        "mixpanel",
+        "gusto"
       ],
       "required": 0,
       "reactSelectIds": [
@@ -996,28 +883,7 @@
         "No",
         "Decline To Self Identify"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "website": {
       "label": "Website",
@@ -1036,24 +902,24 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_68238273",
-        "question_37020454002",
         "question_37658706002",
-        "question_37239550002",
         "question_37628285002",
+        "question_37020454002",
+        "question_37239550002",
         "question_14826588008",
         "question_18208332008",
         "question_18203448008",
-        "question_68482792",
-        "question_54527569",
-        "question_61045575",
         "question_68302330",
-        "question_68695100",
+        "question_68482792",
+        "question_61045575",
+        "question_54527569",
         "question_68662325",
-        "question_68698818",
-        "question_68561315"
+        "question_68561315",
+        "question_68695100",
+        "question_68698850"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "preferred first name": {
       "label": "Preferred First Name",
@@ -1074,12 +940,12 @@
       "fieldIds": [
         "preferred_name",
         "question_12074269004",
-        "question_12497124004",
         "question_13576524004",
+        "question_12497124004",
         "question_15261025004"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "how did you hear about this job": {
       "label": "How did you hear about this job",
@@ -1099,21 +965,21 @@
         "react-select-question_66595611-placeholder"
       ],
       "fieldIds": [
-        "question_63497929",
-        "question_68278136",
-        "question_65381804",
         "question_67695794",
+        "question_65381804",
         "question_64278781",
+        "question_68278136",
+        "question_63497929",
         "question_66595611",
         "question_68338705",
-        "question_37020455002",
         "question_37658707002",
-        "question_37239551002",
         "question_37628286002",
+        "question_37020455002",
+        "question_37239551002",
+        "question_68302331",
         "question_68482793",
-        "question_54527570",
         "question_61045576",
-        "question_68302331"
+        "question_54527570"
       ],
       "options": [
         "Grace Hopper Celebration",
@@ -1126,9 +992,48 @@
         "Other conferences or events",
         "Other (none of the above)"
       ],
-      "optionCounts": [
-        9
-      ]
+      "searchable": false
+    },
+    "pronouns": {
+      "label": "Pronouns",
+      "kinds": {
+        "combobox": 8
+      },
+      "seen": 8,
+      "boards": [
+        "figma",
+        "affirm"
+      ],
+      "required": 4,
+      "reactSelectIds": [
+        "react-select-question_12074266004-placeholder",
+        "react-select-question_13576521004-placeholder",
+        "react-select-question_12497121004-placeholder",
+        "react-select-question_15261022004-placeholder",
+        "react-select-question_31497184003-placeholder",
+        "react-select-question_31105747003-placeholder",
+        "react-select-question_31786594003-placeholder",
+        "react-select-question_31105719003-placeholder"
+      ],
+      "fieldIds": [
+        "question_12074266004",
+        "question_13576521004",
+        "question_12497121004",
+        "question_15261022004",
+        "question_31497184003",
+        "question_31105747003",
+        "question_31786594003",
+        "question_31105719003"
+      ],
+      "options": [
+        "He/him/his",
+        "She/her/hers",
+        "They/them/theirs",
+        "My pronouns are not listed",
+        "I prefer not to say",
+        "I prefer to self describe"
+      ],
+      "searchable": false
     },
     "school": {
       "label": "School",
@@ -1192,7 +1097,7 @@
         "Allen University",
         "Alliant International University",
         "Alma College",
-        "Alpen-Adria-Universit\u00e4t Klagenfurt",
+        "Alpen-Adria-Universität Klagenfurt",
         "Alvernia University",
         "Alverno College",
         "Amberton University",
@@ -1247,18 +1152,209 @@
         "Ateneo de Manila University",
         "Athens State University",
         "Athens University of Economy And Business",
-        "Atlanta College of Arts"
+        "Atlanta College of Arts",
+        "Auburn University",
+        "Auburn University - Montgomery",
+        "Auckland University of Technology",
+        "Augsburg College",
+        "Augustana College",
+        "Aurora University",
+        "Austin College",
+        "Austin Peay State University",
+        "Australian National University",
+        "Ave Maria University",
+        "Averett University",
+        "Avila University",
+        "Azusa Pacific University",
+        "Babes-Bolyai University",
+        "Babson College",
+        "Bacone College",
+        "Baker College of Flint",
+        "Baker University",
+        "Baku State University",
+        "Baldwin Wallace University",
+        "Ball State University",
+        "Bandung Institute of Technology (ITB)",
+        "Bangor University",
+        "Baptist Bible College",
+        "Baptist Bible College and Seminary",
+        "Baptist College of Florida",
+        "Baptist Memorial College of Health Sciences",
+        "Baptist Missionary Association Theological Seminary",
+        "Bard College",
+        "Bard College at Simon's Rock",
+        "Bar-Ilan University",
+        "Barnard College",
+        "Barry University",
+        "Barton College",
+        "Bastyr University",
+        "Bates College",
+        "Bauder College",
+        "Bauman Moscow State Technical University",
+        "Bayamon Central University",
+        "Baylor University",
+        "Bay Path College",
+        "Bay State College",
+        "Beacon College",
+        "Becker College",
+        "Beihang University (former BUAA)",
+        "Beijing Institute of Technology",
+        "Beijing Normal University",
+        "Belarusian National Technical University",
+        "Belarus State University",
+        "Belhaven University",
+        "Bellarmine University",
+        "Bellevue College",
+        "Bellevue University",
+        "Bellin College",
+        "Belmont Abbey College",
+        "Belmont University",
+        "Beloit College",
+        "Bemidji State University",
+        "Benedict College",
+        "Benedictine College",
+        "Benedictine University",
+        "Benemérita Universidad Autónoma de Puebla",
+        "Ben Gurion University of The Negev",
+        "Benjamin Franklin Institute of Technology",
+        "Bennett College",
+        "Bennington College",
+        "Bentley University",
+        "Berea College",
+        "Berkeley College",
+        "Berklee College of Music",
+        "Berry College",
+        "Bethany College",
+        "Bethany Lutheran College",
+        "Bethel College",
+        "Bethel University",
+        "Bethune-Cookman University",
+        "Bilkent University",
+        "Binghamton University - SUNY",
+        "BI Norwegian Business School",
+        "Biola University",
+        "Birkbeck College, University of London",
+        "Birmingham-Southern College",
+        "Bismarck State College",
+        "Blackburn College",
+        "Black Hills State University",
+        "Blessing-Rieman College of Nursing",
+        "Bloomfield College",
+        "Bloomsburg University of Pennsylvania",
+        "Bluefield College",
+        "Bluefield State College",
+        "Blue Mountain College",
+        "Bluffton University",
+        "Bogazici University",
+        "Bogor Agricultural University",
+        "Boise State University",
+        "Bond University",
+        "Boricua College",
+        "Boston Architectural College",
+        "Boston College",
+        "Boston Conservatory",
+        "Boston University",
+        "Bowdoin College",
+        "Bowie State University",
+        "Bowling Green State University",
+        "Bradley University",
+        "Brandeis University",
+        "Brandman University",
+        "Brazosport College",
+        "Brenau University",
+        "Brescia University",
+        "Brevard College",
+        "Brewton-Parker College",
+        "Briarcliffe College",
+        "Briar Cliff University",
+        "Bridgewater College",
+        "Bridgewater State University",
+        "Brigham Young University - Hawaii",
+        "Brigham Young University - Idaho",
+        "Brigham Young University - Provo",
+        "Brno University of Technology",
+        "Brock University",
+        "Brooks Institute of Photography",
+        "Brown University",
+        "Brunel University",
+        "Bryan College",
+        "Bryant University",
+        "Bryn Athyn College of the New Church",
+        "Bryn Mawr College",
+        "Bucknell University",
+        "Buena Vista University",
+        "Burlington College",
+        "Butler University",
+        "Cabarrus College of Health Sciences",
+        "Cabrini College",
+        "Cairn University",
+        "Cairo University",
+        "Caldwell College",
+        "California Baptist University",
+        "California College of the Arts",
+        "California Institute of Integral Studies",
+        "California Institute of Technology",
+        "California Institute of the Arts",
+        "California Lutheran University",
+        "California Maritime Academy",
+        "California Polytechnic State University - San Luis Obispo",
+        "California State Polytechnic University - Pomona",
+        "California State University - Bakersfield",
+        "California State University - Channel Islands",
+        "California State University - Chico",
+        "California State University - Dominguez Hills",
+        "California State University - East Bay",
+        "California State University - Fresno",
+        "California State University - Fullerton",
+        "California State University - Long Beach",
+        "California State University - Los Angeles",
+        "California State University - Monterey Bay",
+        "California State University - Northridge",
+        "California State University - Sacramento",
+        "California State University - San Bernardino",
+        "California State University - San Marcos",
+        "California State University - Stanislaus",
+        "California University of Pennsylvania",
+        "Calumet College of St. Joseph",
+        "Calvary Bible College and Theological Seminary",
+        "Calvin College",
+        "Cambridge College",
+        "Cameron University",
+        "Campbellsville University",
+        "Campbell University",
+        "Canisius College",
+        "Capella University",
+        "Capital University",
+        "Capitol College",
+        "Cardiff University",
+        "Cardinal Stritch University",
+        "Caribbean University",
+        "Carleton College",
+        "Carleton University",
+        "Carlos Albizu University",
+        "Carlow University",
+        "Carnegie Mellon University",
+        "Carroll College",
+        "Carroll University",
+        "Carson-Newman University",
+        "Carthage College",
+        "Case Western Reserve University",
+        "Castleton State College",
+        "Catania University",
+        "Catawba College",
+        "Cazenovia College",
+        "Cedar Crest College",
+        "Cedarville University",
+        "Centenary College",
+        "Centenary College of Louisiana",
+        "Central Baptist College",
+        "Central Bible College",
+        "Central Christian College",
+        "Central College",
+        "Central Connecticut State University",
+        "Central Methodist University"
       ],
-      "optionCounts": [
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100
-      ]
+      "searchable": true
     },
     "degree": {
       "label": "Degree",
@@ -1289,16 +1385,7 @@
         "Master's Degree",
         "Other"
       ],
-      "optionCounts": [
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,
-        10
-      ]
+      "searchable": false
     },
     "discipline": {
       "label": "Discipline",
@@ -1391,66 +1478,7 @@
         "Urban Studies",
         "Veterinary Medicine"
       ],
-      "optionCounts": [
-        72,
-        72,
-        72,
-        72,
-        72,
-        72,
-        72,
-        72
-      ]
-    },
-    "pronouns": {
-      "label": "Pronouns",
-      "kinds": {
-        "combobox": 8
-      },
-      "seen": 8,
-      "boards": [
-        "figma",
-        "affirm"
-      ],
-      "required": 4,
-      "reactSelectIds": [
-        "react-select-question_12074266004-placeholder",
-        "react-select-question_12497121004-placeholder",
-        "react-select-question_13576521004-placeholder",
-        "react-select-question_15261022004-placeholder",
-        "react-select-question_31786594003-placeholder",
-        "react-select-question_31497184003-placeholder",
-        "react-select-question_31105719003-placeholder",
-        "react-select-question_31105747003-placeholder"
-      ],
-      "fieldIds": [
-        "question_12074266004",
-        "question_12497121004",
-        "question_13576521004",
-        "question_15261022004",
-        "question_31786594003",
-        "question_31497184003",
-        "question_31105719003",
-        "question_31105747003"
-      ],
-      "options": [
-        "He/him/his",
-        "She/her/hers",
-        "They/them/theirs",
-        "My pronouns are not listed",
-        "I prefer not to say",
-        "I prefer to self describe"
-      ],
-      "optionCounts": [
-        4,
-        4,
-        4,
-        4,
-        6,
-        6,
-        6,
-        6
-      ]
+      "searchable": false
     },
     "additional information": {
       "label": "Additional Information",
@@ -1465,8 +1493,8 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_12497122004",
         "question_13576522004",
+        "question_12497122004",
         "question_15261023004",
         "question_14826596008",
         "question_8581809008",
@@ -1474,7 +1502,7 @@
         "question_18203456008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "twitter": {
       "label": "Twitter",
@@ -1490,14 +1518,14 @@
       "required": 1,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786600003",
         "question_31497190003",
-        "question_31105725003",
         "question_31105752003",
+        "question_31786600003",
+        "question_31105725003",
         "question_66633666[]_710617010"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "linkedin": {
       "label": "LinkedIn",
@@ -1513,13 +1541,13 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_68187598[]_732396490",
+        "question_66633666[]_710617009",
         "question_68030572[]_731562890",
         "question_66549919[]_709248270",
-        "question_67763432[]_730032936",
-        "question_66633666[]_710617009"
+        "question_67763432[]_730032936"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "glassdoor": {
       "label": "Glassdoor",
@@ -1535,13 +1563,13 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_68187598[]_732396491",
+        "question_66633666[]_710617011",
         "question_68030572[]_731562891",
         "question_66549919[]_709248271",
-        "question_67763432[]_730032937",
-        "question_66633666[]_710617011"
+        "question_67763432[]_730032937"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "indeed": {
       "label": "Indeed",
@@ -1557,13 +1585,88 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_68187598[]_732396492",
+        "question_66633666[]_710617012",
         "question_68030572[]_731562892",
         "question_66549919[]_709248272",
-        "question_67763432[]_730032938",
-        "question_66633666[]_710617012"
+        "question_67763432[]_730032938"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
+    },
+    "please provide the name of your current (or most recent) company": {
+      "label": "Please provide the name of your current (or most recent) company",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "reddit"
+      ],
+      "required": 4,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_67695795",
+        "question_65381805",
+        "question_68278137",
+        "question_63497930"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you now, or will you in the future, require immigration sponsorship to work at reddit": {
+      "label": "Do you now, or will you in the future, require immigration sponsorship to work at Reddit",
+      "kinds": {
+        "combobox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "reddit"
+      ],
+      "required": 4,
+      "reactSelectIds": [
+        "react-select-question_67695797-placeholder",
+        "react-select-question_65381807-placeholder",
+        "react-select-question_68278140-placeholder",
+        "react-select-question_63497932-placeholder"
+      ],
+      "fieldIds": [
+        "question_67695797",
+        "question_65381807",
+        "question_68278140",
+        "question_63497932"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "by selecting \"i agree,\" i understand that the information i have provided as part of this job application will be processed in accordance wi": {
+      "label": "By selecting \"I agree,\" I understand that the information I have provided as part of this job application will be processed in accordance with Reddit's Candidate Privacy Policy.",
+      "kinds": {
+        "combobox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "reddit"
+      ],
+      "required": 4,
+      "reactSelectIds": [
+        "react-select-question_67695798-placeholder",
+        "react-select-question_65381808-placeholder",
+        "react-select-question_68278141-placeholder",
+        "react-select-question_63497933-placeholder"
+      ],
+      "fieldIds": [
+        "question_67695798",
+        "question_65381808",
+        "question_68278141",
+        "question_63497933"
+      ],
+      "options": [
+        "I agree"
+      ],
+      "searchable": false
     },
     "what's the name you'd prefer us to use throughout the interview process": {
       "label": "What's the name you'd prefer us to use throughout the interview process",
@@ -1578,12 +1681,12 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_36101206002",
-        "question_36622855002",
         "question_37369957002",
-        "question_37811432002"
+        "question_37811432002",
+        "question_36622855002"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you subject to any employment agreements and/or post-employment restrictions with your current employer or a past employer": {
       "label": "Are you subject to any employment agreements and/or post-employment restrictions with your current employer or a past employer",
@@ -1597,26 +1700,21 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_36101207002-placeholder",
-        "react-select-question_36622857002-placeholder",
         "react-select-question_37369959002-placeholder",
-        "react-select-question_37811434002-placeholder"
+        "react-select-question_37811434002-placeholder",
+        "react-select-question_36622857002-placeholder"
       ],
       "fieldIds": [
         "question_36101207002",
-        "question_36622857002",
         "question_37369959002",
-        "question_37811434002"
+        "question_37811434002",
+        "question_36622857002"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "it is important to us to create an accessible and inclusive interview experience. please let us know if there are any adjustments we can mak": {
       "label": "It is important to us to create an accessible and inclusive interview experience. Please let us know if there are any adjustments we can make to assist you during the hiring and interview process",
@@ -1631,12 +1729,12 @@
       "reactSelectIds": [],
       "fieldIds": [
         "question_36101208002",
-        "question_36622858002",
         "question_37369960002",
-        "question_37811435002"
+        "question_37811435002",
+        "question_36622858002"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "will you now or in the future require sponsorship for a visa to remain in your current location": {
       "label": "Will you now or in the future require sponsorship for a visa to remain in your current location",
@@ -1650,15 +1748,15 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_36101209002-placeholder",
-        "react-select-question_36622859002-placeholder",
         "react-select-question_37369961002-placeholder",
-        "react-select-question_37811436002-placeholder"
+        "react-select-question_37811436002-placeholder",
+        "react-select-question_36622859002-placeholder"
       ],
       "fieldIds": [
         "question_36101209002",
-        "question_36622859002",
         "question_37369961002",
-        "question_37811436002"
+        "question_37811436002",
+        "question_36622859002"
       ],
       "options": [
         "No",
@@ -1669,12 +1767,7 @@
         "Yes, F-1 Visa OPT (USA)",
         "Yes, but not one of the visas listed here"
       ],
-      "optionCounts": [
-        7,
-        7,
-        7,
-        7
-      ]
+      "searchable": false
     },
     "have you previously worked at or consulted for gitlab": {
       "label": "Have you previously worked at or consulted for GitLab",
@@ -1688,26 +1781,21 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_36101210002-placeholder",
-        "react-select-question_36622860002-placeholder",
         "react-select-question_37369962002-placeholder",
-        "react-select-question_37811437002-placeholder"
+        "react-select-question_37811437002-placeholder",
+        "react-select-question_36622860002-placeholder"
       ],
       "fieldIds": [
         "question_36101210002",
-        "question_36622860002",
         "question_37369962002",
-        "question_37811437002"
+        "question_37811437002",
+        "question_36622860002"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "what is your current country of residence": {
       "label": "What is your current country of residence",
@@ -1721,15 +1809,15 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_36101211002-placeholder",
-        "react-select-question_36622861002-placeholder",
         "react-select-question_37369963002-placeholder",
-        "react-select-question_37811438002-placeholder"
+        "react-select-question_37811438002-placeholder",
+        "react-select-question_36622861002-placeholder"
       ],
       "fieldIds": [
         "question_36101211002",
-        "question_36622861002",
         "question_37369963002",
-        "question_37811438002"
+        "question_37811438002",
+        "question_36622861002"
       ],
       "options": [
         "Afghanistan",
@@ -1930,97 +2018,7 @@
         "Zambia",
         "Zimbabwe"
       ],
-      "optionCounts": [
-        197,
-        197,
-        197,
-        197
-      ]
-    },
-    "please provide the name of your current (or most recent) company": {
-      "label": "Please provide the name of your current (or most recent) company",
-      "kinds": {
-        "text": 4
-      },
-      "seen": 4,
-      "boards": [
-        "reddit"
-      ],
-      "required": 4,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_63497930",
-        "question_68278137",
-        "question_65381805",
-        "question_67695795"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "do you now, or will you in the future, require immigration sponsorship to work at reddit": {
-      "label": "Do you now, or will you in the future, require immigration sponsorship to work at Reddit",
-      "kinds": {
-        "combobox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "reddit"
-      ],
-      "required": 4,
-      "reactSelectIds": [
-        "react-select-question_63497932-placeholder",
-        "react-select-question_68278140-placeholder",
-        "react-select-question_65381807-placeholder",
-        "react-select-question_67695797-placeholder"
-      ],
-      "fieldIds": [
-        "question_63497932",
-        "question_68278140",
-        "question_65381807",
-        "question_67695797"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
-    },
-    "by selecting \"i agree,\" i understand that the information i have provided as part of this job application will be processed in accordance wi": {
-      "label": "By selecting \"I agree,\" I understand that the information I have provided as part of this job application will be processed in accordance with Reddit's Candidate Privacy Policy.",
-      "kinds": {
-        "combobox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "reddit"
-      ],
-      "required": 4,
-      "reactSelectIds": [
-        "react-select-question_63497933-placeholder",
-        "react-select-question_68278141-placeholder",
-        "react-select-question_65381808-placeholder",
-        "react-select-question_67695798-placeholder"
-      ],
-      "fieldIds": [
-        "question_63497933",
-        "question_68278141",
-        "question_65381808",
-        "question_67695798"
-      ],
-      "options": [
-        "I agree"
-      ],
-      "optionCounts": [
-        1,
-        1,
-        1,
-        1
-      ]
+      "searchable": false
     },
     "legal name (if different than above)": {
       "label": "Legal Name (if different than above)",
@@ -2041,7 +2039,7 @@
         "question_68298798"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "acknowledge/confirm": {
       "label": "Acknowledge/Confirm",
@@ -2061,7 +2059,103 @@
         "question_68298801[]_738525038"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
+    },
+    "why do you want to join figma": {
+      "label": "Why do you want to join Figma",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "figma"
+      ],
+      "required": 4,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_12074265004",
+        "question_13576520004",
+        "question_12497120004",
+        "question_15261021004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "from where do you intend to work?": {
+      "label": "From where do you intend to work?",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "figma"
+      ],
+      "required": 4,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_12074268004",
+        "question_13576523004",
+        "question_12497123004",
+        "question_15261024004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you authorized to work in the country for which you applied?": {
+      "label": "Are you authorized to work in the country for which you applied?",
+      "kinds": {
+        "combobox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "figma"
+      ],
+      "required": 4,
+      "reactSelectIds": [
+        "react-select-question_12074270004-placeholder",
+        "react-select-question_13576525004-placeholder",
+        "react-select-question_12497125004-placeholder",
+        "react-select-question_15261026004-placeholder"
+      ],
+      "fieldIds": [
+        "question_12074270004",
+        "question_13576525004",
+        "question_12497125004",
+        "question_15261026004"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "have you ever worked for figma before, as an employee or a contractor/consultant?": {
+      "label": "Have you ever worked for Figma before, as an employee or a contractor/consultant?",
+      "kinds": {
+        "combobox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "figma"
+      ],
+      "required": 4,
+      "reactSelectIds": [
+        "react-select-question_12074271004-placeholder",
+        "react-select-question_13576526004-placeholder",
+        "react-select-question_12497126004-placeholder",
+        "react-select-question_15261027004-placeholder"
+      ],
+      "fieldIds": [
+        "question_12074271004",
+        "question_13576526004",
+        "question_12497126004",
+        "question_15261027004"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "why do you want to work at discord": {
       "label": "Why do you want to work at Discord",
@@ -2075,13 +2169,13 @@
       "required": 4,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_37020452002",
         "question_37658704002",
-        "question_37239548002",
-        "question_37628283002"
+        "question_37628283002",
+        "question_37020452002",
+        "question_37239548002"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you legally authorized to work in the united states for our company": {
       "label": "Are you legally authorized to work in the United States for our Company",
@@ -2094,27 +2188,22 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_37020456002-placeholder",
         "react-select-question_37658708002-placeholder",
-        "react-select-question_37239552002-placeholder",
-        "react-select-question_37628287002-placeholder"
+        "react-select-question_37628287002-placeholder",
+        "react-select-question_37020456002-placeholder",
+        "react-select-question_37239552002-placeholder"
       ],
       "fieldIds": [
-        "question_37020456002",
         "question_37658708002",
-        "question_37239552002",
-        "question_37628287002"
+        "question_37628287002",
+        "question_37020456002",
+        "question_37239552002"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "are you currently located in the us": {
       "label": "Are you currently located in the US",
@@ -2127,27 +2216,22 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_37020457002-placeholder",
         "react-select-question_37658709002-placeholder",
-        "react-select-question_37239553002-placeholder",
-        "react-select-question_37628288002-placeholder"
+        "react-select-question_37628288002-placeholder",
+        "react-select-question_37020457002-placeholder",
+        "react-select-question_37239553002-placeholder"
       ],
       "fieldIds": [
-        "question_37020457002",
         "question_37658709002",
-        "question_37239553002",
-        "question_37628288002"
+        "question_37628288002",
+        "question_37020457002",
+        "question_37239553002"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "race and ethnicity": {
       "label": "Race and Ethnicity",
@@ -2173,12 +2257,7 @@
         "Two or More Races",
         "White"
       ],
-      "optionCounts": [
-        8,
-        8,
-        8,
-        8
-      ]
+      "searchable": false
     },
     "gender identity (optional)": {
       "label": "Gender Identity (optional)",
@@ -2201,12 +2280,7 @@
         "Genderqueer",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        5,
-        5,
-        5,
-        5
-      ]
+      "searchable": false
     },
     "race or ethnicity (optional)": {
       "label": "Race or Ethnicity (optional)",
@@ -2234,12 +2308,7 @@
         "White or European",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        10,
-        10,
-        10,
-        10
-      ]
+      "searchable": false
     },
     "i consider myself a member of the lgbtq+ community. (optional)": {
       "label": "I consider myself a member of the LGBTQ+ community. (optional)",
@@ -2260,118 +2329,7 @@
         "No",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3
-      ]
-    },
-    "why do you want to join figma": {
-      "label": "Why do you want to join Figma",
-      "kinds": {
-        "textarea": 4
-      },
-      "seen": 4,
-      "boards": [
-        "figma"
-      ],
-      "required": 4,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_12074265004",
-        "question_12497120004",
-        "question_13576520004",
-        "question_15261021004"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "from where do you intend to work?": {
-      "label": "From where do you intend to work?",
-      "kinds": {
-        "text": 4
-      },
-      "seen": 4,
-      "boards": [
-        "figma"
-      ],
-      "required": 4,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_12074268004",
-        "question_12497123004",
-        "question_13576523004",
-        "question_15261024004"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "are you authorized to work in the country for which you applied?": {
-      "label": "Are you authorized to work in the country for which you applied?",
-      "kinds": {
-        "combobox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "figma"
-      ],
-      "required": 4,
-      "reactSelectIds": [
-        "react-select-question_12074270004-placeholder",
-        "react-select-question_12497125004-placeholder",
-        "react-select-question_13576525004-placeholder",
-        "react-select-question_15261026004-placeholder"
-      ],
-      "fieldIds": [
-        "question_12074270004",
-        "question_12497125004",
-        "question_13576525004",
-        "question_15261026004"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
-    },
-    "have you ever worked for figma before, as an employee or a contractor/consultant?": {
-      "label": "Have you ever worked for Figma before, as an employee or a contractor/consultant?",
-      "kinds": {
-        "combobox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "figma"
-      ],
-      "required": 4,
-      "reactSelectIds": [
-        "react-select-question_12074271004-placeholder",
-        "react-select-question_12497126004-placeholder",
-        "react-select-question_13576526004-placeholder",
-        "react-select-question_15261027004-placeholder"
-      ],
-      "fieldIds": [
-        "question_12074271004",
-        "question_12497126004",
-        "question_13576526004",
-        "question_15261027004"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "(optional) personal preferences": {
       "label": "(Optional) Personal Preferences",
@@ -2391,7 +2349,7 @@
         "question_18203447008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "when is the earliest you would want to start working with us": {
       "label": "When is the earliest you would want to start working with us",
@@ -2411,7 +2369,7 @@
         "question_18203450008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "do you have any deadlines or timeline considerations we should be aware of": {
       "label": "Do you have any deadlines or timeline considerations we should be aware of",
@@ -2431,7 +2389,7 @@
         "question_18203451008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "ai policy for application": {
       "label": "AI Policy for Application",
@@ -2459,12 +2417,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "why anthropic": {
       "label": "Why Anthropic",
@@ -2484,7 +2437,7 @@
         "question_18203453008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is lo": {
       "label": "Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?",
@@ -2512,12 +2465,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "have you ever interviewed at anthropic before": {
       "label": "Have you ever interviewed at Anthropic before",
@@ -2545,12 +2493,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "have you used robinhood": {
       "label": "Have you used Robinhood",
@@ -2563,27 +2506,22 @@
       ],
       "required": 0,
       "reactSelectIds": [
+        "react-select-question_68302332-placeholder",
         "react-select-question_68482794-placeholder",
-        "react-select-question_54527571-placeholder",
         "react-select-question_61045577-placeholder",
-        "react-select-question_68302332-placeholder"
+        "react-select-question_54527571-placeholder"
       ],
       "fieldIds": [
+        "question_68302332",
         "question_68482794",
-        "question_54527571",
         "question_61045577",
-        "question_68302332"
+        "question_54527571"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "have you ever worked for robinhood as an employee, intern or contractor? note that providing false or misleading information may result in d": {
       "label": "Have you ever worked for Robinhood as an employee, intern or contractor? Note that providing false or misleading information may result in disqualification from the hiring process",
@@ -2596,16 +2534,16 @@
       ],
       "required": 4,
       "reactSelectIds": [
+        "react-select-question_68302333-placeholder",
         "react-select-question_68482795-placeholder",
-        "react-select-question_54527572-placeholder",
         "react-select-question_61045578-placeholder",
-        "react-select-question_68302333-placeholder"
+        "react-select-question_54527572-placeholder"
       ],
       "fieldIds": [
+        "question_68302333",
         "question_68482795",
-        "question_54527572",
         "question_61045578",
-        "question_68302333"
+        "question_54527572"
       ],
       "options": [
         "I currently work at Robinhood as a full-time employee or intern",
@@ -2614,15 +2552,10 @@
         "I have previously worked at Robinhood in a contractor role",
         "I have never worked at Robinhood"
       ],
-      "optionCounts": [
-        5,
-        5,
-        5,
-        5
-      ]
+      "searchable": false
     },
-    "do you have: a) any personal/familial relationships (current robinhood employees or employees of robinhood\u2019s vendors); b) any outside busine": {
-      "label": "Do you have: a) any Personal/Familial Relationships (current Robinhood employees or employees of Robinhood\u2019s vendors); b) any Outside Business Activities that you wish to continue; c) any investment that is greater than 5% of the outstanding shares of a publicly-traded company; d) any investment in a private company that has a business relationship or that is a current competitor of Robinhood; or e) any Intellectual Property Ownership (patents, trademarks, copyrights) that you wish to retain and/or create/develop while at Robinhood",
+    "do you have: a) any personal/familial relationships (current robinhood employees or employees of robinhood’s vendors); b) any outside busine": {
+      "label": "Do you have: a) any Personal/Familial Relationships (current Robinhood employees or employees of Robinhood’s vendors); b) any Outside Business Activities that you wish to continue; c) any investment that is greater than 5% of the outstanding shares of a publicly-traded company; d) any investment in a private company that has a business relationship or that is a current competitor of Robinhood; or e) any Intellectual Property Ownership (patents, trademarks, copyrights) that you wish to retain and/or create/develop while at Robinhood",
       "kinds": {
         "combobox": 4
       },
@@ -2632,27 +2565,22 @@
       ],
       "required": 4,
       "reactSelectIds": [
+        "react-select-question_68302336-placeholder",
         "react-select-question_68482800-placeholder",
-        "react-select-question_54527578-placeholder",
         "react-select-question_61045584-placeholder",
-        "react-select-question_68302336-placeholder"
+        "react-select-question_54527578-placeholder"
       ],
       "fieldIds": [
+        "question_68302336",
         "question_68482800",
-        "question_54527578",
         "question_61045584",
-        "question_68302336"
+        "question_54527578"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "if you answered \"yes\" to the above question, please provide additional information here": {
       "label": "If you answered \"Yes\" to the above question, please provide additional information here",
@@ -2666,13 +2594,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
+        "question_68302337",
         "question_68482801",
-        "question_54527579",
         "question_61045585",
-        "question_68302337"
+        "question_54527579"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "robinhood adheres to applicable laws and regulations in relation to government officials given inherent bribery and/or corruption risk. a go": {
       "label": "Robinhood adheres to applicable laws and regulations in relation to government officials given inherent bribery and/or corruption risk. A government official is any person that performs a public function on any level or acts in any official capacity on behalf of a government or government owned entity. a) Do you currently hold or have you held, within the last 5 years, a position as a government official? b) Have you been referred or recommended for this position by a government official? c) Are you related to or have a close personal relationship with a government official",
@@ -2685,27 +2613,22 @@
       ],
       "required": 4,
       "reactSelectIds": [
+        "react-select-question_68302338-placeholder",
         "react-select-question_68482802-placeholder",
-        "react-select-question_54527580-placeholder",
         "react-select-question_61045586-placeholder",
-        "react-select-question_68302338-placeholder"
+        "react-select-question_54527580-placeholder"
       ],
       "fieldIds": [
+        "question_68302338",
         "question_68482802",
-        "question_54527580",
         "question_61045586",
-        "question_68302338"
+        "question_54527580"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "current company": {
       "label": "Current Company",
@@ -2719,13 +2642,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786591003",
         "question_31497181003",
-        "question_31105716003",
-        "question_31105744003"
+        "question_31105744003",
+        "question_31786591003",
+        "question_31105716003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "preferred name": {
       "label": "Preferred Name",
@@ -2739,13 +2662,13 @@
       "required": 4,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786592003",
         "question_31497182003",
-        "question_31105717003",
-        "question_31105745003"
+        "question_31105745003",
+        "question_31786592003",
+        "question_31105717003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "name pronunciation": {
       "label": "Name Pronunciation",
@@ -2759,13 +2682,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786593003",
         "question_31497183003",
-        "question_31105718003",
-        "question_31105746003"
+        "question_31105746003",
+        "question_31786593003",
+        "question_31105718003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "which u.s. state or canadian province do you reside in": {
       "label": "Which U.S. State or Canadian Province do you reside in",
@@ -2778,16 +2701,16 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_31786597003-placeholder",
         "react-select-question_31497187003-placeholder",
-        "react-select-question_31105722003-placeholder",
-        "react-select-question_31105749003-placeholder"
+        "react-select-question_31105749003-placeholder",
+        "react-select-question_31786597003-placeholder",
+        "react-select-question_31105722003-placeholder"
       ],
       "fieldIds": [
-        "question_31786597003",
         "question_31497187003",
-        "question_31105722003",
-        "question_31105749003"
+        "question_31105749003",
+        "question_31786597003",
+        "question_31105722003"
       ],
       "options": [
         "Alabama",
@@ -2852,12 +2775,7 @@
         "Prince Edward Island",
         "Quebec"
       ],
-      "optionCounts": [
-        61,
-        61,
-        61,
-        61
-      ]
+      "searchable": false
     },
     "how did you first learn about affirm as an employer?": {
       "label": "How did you first learn about Affirm as an employer?",
@@ -2870,21 +2788,21 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_31786598003-placeholder",
         "react-select-question_31497188003-placeholder",
-        "react-select-question_31105723003-placeholder",
-        "react-select-question_31105750003-placeholder"
+        "react-select-question_31105750003-placeholder",
+        "react-select-question_31786598003-placeholder",
+        "react-select-question_31105723003-placeholder"
       ],
       "fieldIds": [
-        "question_31786598003",
         "question_31497188003",
-        "question_31105723003",
-        "question_31105750003"
+        "question_31105750003",
+        "question_31786598003",
+        "question_31105723003"
       ],
       "options": [
         "Affirm blog",
         "Affirm Recruiting Team reached out",
-        "Affirm\u2019s Career Site",
+        "Affirm’s Career Site",
         "AfroTech",
         "Alumni Forum",
         "Built In",
@@ -2904,12 +2822,7 @@
         "Twitter",
         "Other"
       ],
-      "optionCounts": [
-        21,
-        21,
-        21,
-        21
-      ]
+      "searchable": false
     },
     "github": {
       "label": "GitHub",
@@ -2923,13 +2836,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786599003",
         "question_31497189003",
-        "question_31105724003",
-        "question_31105751003"
+        "question_31105751003",
+        "question_31786599003",
+        "question_31105724003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "portfolio": {
       "label": "Portfolio",
@@ -2943,13 +2856,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786601003",
         "question_31497191003",
-        "question_31105726003",
-        "question_31105753003"
+        "question_31105753003",
+        "question_31786601003",
+        "question_31105726003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "other links": {
       "label": "Other Links",
@@ -2963,13 +2876,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_31786602003",
         "question_31497192003",
-        "question_31105727003",
-        "question_31105754003"
+        "question_31105754003",
+        "question_31786602003",
+        "question_31105727003"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "have you previously been employed at affirm for any length of time": {
       "label": "Have you previously been employed at Affirm for any length of time",
@@ -2982,16 +2895,16 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_31786603003-placeholder",
         "react-select-question_31497193003-placeholder",
-        "react-select-question_31105728003-placeholder",
-        "react-select-question_31105755003-placeholder"
+        "react-select-question_31105755003-placeholder",
+        "react-select-question_31786603003-placeholder",
+        "react-select-question_31105728003-placeholder"
       ],
       "fieldIds": [
-        "question_31786603003",
         "question_31497193003",
-        "question_31105728003",
-        "question_31105755003"
+        "question_31105755003",
+        "question_31786603003",
+        "question_31105728003"
       ],
       "options": [
         "I have not previously been employed at Affirm",
@@ -3000,12 +2913,7 @@
         "I have been employed at Affirm as an intern",
         "I have been employed at Affirm as a contractor"
       ],
-      "optionCounts": [
-        5,
-        5,
-        5,
-        5
-      ]
+      "searchable": false
     },
     "how did you first hear about flexport": {
       "label": "How did you first hear about Flexport",
@@ -3019,14 +2927,14 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_68004895-placeholder",
-        "react-select-question_56743061-placeholder",
         "react-select-question_61226879-placeholder",
+        "react-select-question_56743061-placeholder",
         "react-select-question_63013271-placeholder"
       ],
       "fieldIds": [
         "question_68004895",
-        "question_56743061",
         "question_61226879",
+        "question_56743061",
         "question_63013271"
       ],
       "options": [
@@ -3040,12 +2948,7 @@
         "Social Media (e.g. Facebook, X, Instagram, etc.)",
         "Other"
       ],
-      "optionCounts": [
-        9,
-        9,
-        9,
-        9
-      ]
+      "searchable": false
     },
     "have you previously been employed by flexport or any of its entities; or by an agency representing flexport": {
       "label": "Have you previously been employed by Flexport or any of its entities; or by an agency representing Flexport",
@@ -3059,26 +2962,21 @@
       "required": 4,
       "reactSelectIds": [
         "react-select-question_68004899-placeholder",
-        "react-select-question_56743063-placeholder",
         "react-select-question_61226885-placeholder",
+        "react-select-question_56743063-placeholder",
         "react-select-question_63013277-placeholder"
       ],
       "fieldIds": [
         "question_68004899",
-        "question_56743063",
         "question_61226885",
+        "question_56743063",
         "question_63013277"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "zip code / postal code (non-u.s. based candidates, please enter \"00000\")": {
       "label": "Zip Code / Postal Code (Non-U.S. based candidates, please enter \"00000\")",
@@ -3098,7 +2996,7 @@
         "question_67763430"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "facebook": {
       "label": "Facebook",
@@ -3118,7 +3016,7 @@
         "question_67763432[]_730032939"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "built in colorado": {
       "label": "Built In Colorado",
@@ -3138,7 +3036,7 @@
         "question_67763432[]_730032940"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "news article": {
       "label": "News Article",
@@ -3158,7 +3056,7 @@
         "question_67763432[]_730032941"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "conference or meetup": {
       "label": "Conference or Meetup",
@@ -3178,7 +3076,7 @@
         "question_67763432[]_730032942"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "billboard/outdoor ads": {
       "label": "Billboard/Outdoor Ads",
@@ -3198,7 +3096,7 @@
         "question_67763432[]_730032946"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you legally authorized to work in the country where you are applying": {
       "label": "Are you legally authorized to work in the country where you are applying",
@@ -3226,12 +3124,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "will you now or in the future require visa sponsorship for employment": {
       "label": "Will you now or in the future require visa sponsorship for employment",
@@ -3259,12 +3152,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "how would you describe your gender identity (please select one)": {
       "label": "How would you describe your gender identity (please select one)",
@@ -3286,12 +3174,7 @@
         "I prefer to self-describe",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "searchable": false
     },
     "i identify as transgender (please select one)": {
       "label": "I identify as transgender (please select one)",
@@ -3313,12 +3196,7 @@
         "I prefer to self-describe",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "searchable": false
     },
     "i identify my sexual orientation as (please select one)": {
       "label": "I identify my sexual orientation as (please select one)",
@@ -3342,12 +3220,7 @@
         "I prefer to self-describe",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        6,
-        6,
-        6,
-        6
-      ]
+      "searchable": false
     },
     "i identify my race/ethnicity as (mark all that apply)": {
       "label": "I identify my race/ethnicity as (mark all that apply)",
@@ -3373,12 +3246,7 @@
         "I prefer to self-describe",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        8,
-        8,
-        8,
-        8
-      ]
+      "searchable": false
     },
     "veteran status (please select one)": {
       "label": "Veteran Status (please select one)",
@@ -3399,12 +3267,7 @@
         "No, I am not a veteran",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "i have a disability (please select one):": {
       "label": "I have a disability (please select one):",
@@ -3426,12 +3289,7 @@
         "I prefer to self-describe",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "searchable": false
     },
     "i identify as a first-generation professional (please select one)": {
       "label": "I identify as a first-generation professional (please select one)",
@@ -3452,12 +3310,7 @@
         "No",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        3,
-        3,
-        3,
-        3
-      ]
+      "searchable": false
     },
     "how did you hear about mixpanel as an employer": {
       "label": "How did you hear about Mixpanel as an Employer",
@@ -3470,16 +3323,16 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_68695101-placeholder",
         "react-select-question_68662326-placeholder",
-        "react-select-question_68698819-placeholder",
-        "react-select-question_68561316-placeholder"
+        "react-select-question_68561316-placeholder",
+        "react-select-question_68695101-placeholder",
+        "react-select-question_68698851-placeholder"
       ],
       "fieldIds": [
-        "question_68695101",
         "question_68662326",
-        "question_68698819",
-        "question_68561316"
+        "question_68561316",
+        "question_68695101",
+        "question_68698851"
       ],
       "options": [
         "LinkedIn",
@@ -3496,12 +3349,7 @@
         "Referral from Mixpanel Employee",
         "Other"
       ],
-      "optionCounts": [
-        13,
-        13,
-        13,
-        13
-      ]
+      "searchable": false
     },
     "are you currently authorized to work in the country outlined for this job (e.g. h-1b status)": {
       "label": "Are you currently authorized to work in the country outlined for this job (e.g. H-1B status)",
@@ -3514,26 +3362,21 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_68695102-placeholder",
         "react-select-question_68662327-placeholder",
-        "react-select-question_68698820-placeholder",
-        "react-select-question_68561317-placeholder"
+        "react-select-question_68561317-placeholder",
+        "react-select-question_68695102-placeholder",
+        "react-select-question_68698852-placeholder"
       ],
       "fieldIds": [
-        "question_68695102",
         "question_68662327",
-        "question_68698820",
-        "question_68561317"
+        "question_68561317",
+        "question_68695102",
+        "question_68698852"
       ],
       "options": [
         "My status to work in the country in this role's location is unknown"
       ],
-      "optionCounts": [
-        1,
-        1,
-        1,
-        1
-      ]
+      "searchable": false
     },
     "name (the name you go by)": {
       "label": "Name (the name you go by)",
@@ -3547,13 +3390,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_68695103",
         "question_68662328",
-        "question_68698821",
-        "question_68561318"
+        "question_68561318",
+        "question_68695103",
+        "question_68698853"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "pronouns (the pronouns you use)": {
       "label": "Pronouns (the pronouns you use)",
@@ -3567,13 +3410,13 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_68695104",
         "question_68662329",
-        "question_68698822",
-        "question_68561319"
+        "question_68561319",
+        "question_68695104",
+        "question_68698854"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "please acknowledge that you've read and understand mixpanel's recruitment privacy policy": {
       "label": "Please acknowledge that you've read and understand Mixpanel's Recruitment Privacy Policy",
@@ -3586,26 +3429,21 @@
       ],
       "required": 4,
       "reactSelectIds": [
-        "react-select-question_68695105-placeholder",
         "react-select-question_68662330-placeholder",
-        "react-select-question_68698823-placeholder",
-        "react-select-question_68561320-placeholder"
+        "react-select-question_68561320-placeholder",
+        "react-select-question_68695105-placeholder",
+        "react-select-question_68698855-placeholder"
       ],
       "fieldIds": [
-        "question_68695105",
         "question_68662330",
-        "question_68698823",
-        "question_68561320"
+        "question_68561320",
+        "question_68695105",
+        "question_68698855"
       ],
       "options": [
         "Acknowledge/Confirm"
       ],
-      "optionCounts": [
-        1,
-        1,
-        1,
-        1
-      ]
+      "searchable": false
     },
     "do you consider yourself a member of the lesbian, gay, bisexual, transgender, queer/questioning community": {
       "label": "Do you consider yourself a member of the Lesbian, Gay, Bisexual, Transgender, Queer/Questioning Community",
@@ -3627,12 +3465,7 @@
         "No, but I identify as an Ally",
         "Prefer not to say"
       ],
-      "optionCounts": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "searchable": false
     },
     "by checking this box, i consent to mixpanel collecting, storing, and processing my responses to the demographic data surveys above": {
       "label": "By checking this box, I consent to Mixpanel collecting, storing, and processing my responses to the demographic data surveys above",
@@ -3649,7 +3482,219 @@
         "gdpr_demographic_data_consent_given_1"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
+    },
+    "if not, tell us a bit more about your location or relocation plans": {
+      "label": "If not, tell us a bit more about your location or relocation plans",
+      "kinds": {
+        "textarea": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_68475373",
+        "question_68475402",
+        "question_68475344"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you currently authorized to work in the u.s": {
+      "label": "Are you currently authorized to work in the U.S",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 3,
+      "reactSelectIds": [
+        "react-select-question_65381806-placeholder",
+        "react-select-question_68278139-placeholder",
+        "react-select-question_63497931-placeholder"
+      ],
+      "fieldIds": [
+        "question_65381806",
+        "question_68278139",
+        "question_63497931"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "what gender identity do you most closely identify with?": {
+      "label": "What gender identity do you most closely identify with?",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-430-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Agender",
+        "Genderfluid",
+        "Gender non-conforming",
+        "Genderqueer",
+        "Female",
+        "Male",
+        "Non-binary",
+        "Not listed",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "are you a person of transgender experience?": {
+      "label": "Are you a person of transgender experience?",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-431-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "what sexual orientation do you most closely identify with?": {
+      "label": "What sexual orientation do you most closely identify with?",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-432-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Asexual",
+        "Bisexual",
+        "Gay",
+        "Heterosexual",
+        "Lesbian",
+        "Pansexual",
+        "Queer",
+        "Not listed",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "do you live with a disability (as outlined by the ada)": {
+      "label": "Do you live with a disability (as outlined by the ADA)",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-433-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Yes, I have a disability, or have a history/record of having a disability",
+        "No, I do not have a disability, or have a history/record of having a disability",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "are you a veteran/have you served in the military?": {
+      "label": "Are you a veteran/have you served in the military?",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-434-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Active Reserve",
+        "Inactive Reserve",
+        "Other Protected Veteran",
+        "Retired",
+        "Unspecified Veteran",
+        "Vietnam Era Veteran",
+        "Vietnam Veteran and Other Protected Veteran",
+        "No military service",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "please select up to 2 ethnicities that you most closely identify with": {
+      "label": "Please select up to 2 ethnicities that you most closely identify with",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-436-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "American Indian or Alaska Native",
+        "Black or African American",
+        "East Asian",
+        "South Asian",
+        "Hispanic or Latinx",
+        "Middle Eastern or North African",
+        "Native Hawaiian or Other Pacific Islander",
+        "White",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "by checking this box, i consent to reddit collecting, storing, and processing my responses to the demographic data surveys above": {
+      "label": "By checking this box, I consent to Reddit collecting, storing, and processing my responses to the demographic data surveys above",
+      "kinds": {
+        "checkbox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "reddit"
+      ],
+      "required": 3,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "gdpr_demographic_data_consent_given_1"
+      ],
+      "options": [],
+      "searchable": false
     },
     "please choose the country in which you are located": {
       "label": "Please choose the country in which you are located",
@@ -3662,14 +3707,14 @@
       ],
       "required": 1,
       "reactSelectIds": [
-        "react-select-question_36622856002-placeholder",
         "react-select-question_37369958002-placeholder",
-        "react-select-question_37811433002-placeholder"
+        "react-select-question_37811433002-placeholder",
+        "react-select-question_36622856002-placeholder"
       ],
       "fieldIds": [
-        "question_36622856002",
         "question_37369958002",
-        "question_37811433002"
+        "question_37811433002",
+        "question_36622856002"
       ],
       "options": [
         "Afghanistan",
@@ -3711,8 +3756,8 @@
         "Colombia",
         "Comoros",
         "Crimea",
-        "Democratic Republic of the\u00a0Congo",
-        "Republic of the\u00a0Congo",
+        "Democratic Republic of the Congo",
+        "Republic of the Congo",
         "Costa Rica",
         "Cote d'Ivoire",
         "Croatia",
@@ -3871,251 +3916,7 @@
         "Zambia",
         "Zimbabwe"
       ],
-      "optionCounts": [
-        198,
-        198,
-        4
-      ]
-    },
-    "if not, tell us a bit more about your location or relocation plans": {
-      "label": "If not, tell us a bit more about your location or relocation plans",
-      "kinds": {
-        "textarea": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_68475344",
-        "question_68475402",
-        "question_68475373"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "are you currently authorized to work in the u.s": {
-      "label": "Are you currently authorized to work in the U.S",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 3,
-      "reactSelectIds": [
-        "react-select-question_63497931-placeholder",
-        "react-select-question_68278139-placeholder",
-        "react-select-question_65381806-placeholder"
-      ],
-      "fieldIds": [
-        "question_63497931",
-        "question_68278139",
-        "question_65381806"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
-    },
-    "what gender identity do you most closely identify with?": {
-      "label": "What gender identity do you most closely identify with?",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-430-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Agender",
-        "Genderfluid",
-        "Gender non-conforming",
-        "Genderqueer",
-        "Female",
-        "Male",
-        "Non-binary",
-        "Not listed",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        9,
-        9,
-        9
-      ]
-    },
-    "are you a person of transgender experience?": {
-      "label": "Are you a person of transgender experience?",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-431-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Yes",
-        "No",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        3,
-        3,
-        3
-      ]
-    },
-    "what sexual orientation do you most closely identify with?": {
-      "label": "What sexual orientation do you most closely identify with?",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-432-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Asexual",
-        "Bisexual",
-        "Gay",
-        "Heterosexual",
-        "Lesbian",
-        "Pansexual",
-        "Queer",
-        "Not listed",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        9,
-        9,
-        9
-      ]
-    },
-    "do you live with a disability (as outlined by the ada)": {
-      "label": "Do you live with a disability (as outlined by the ADA)",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-433-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Yes, I have a disability, or have a history/record of having a disability",
-        "No, I do not have a disability, or have a history/record of having a disability",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        3,
-        3,
-        3
-      ]
-    },
-    "are you a veteran/have you served in the military?": {
-      "label": "Are you a veteran/have you served in the military?",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-434-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Active Reserve",
-        "Inactive Reserve",
-        "Other Protected Veteran",
-        "Retired",
-        "Unspecified Veteran",
-        "Vietnam Era Veteran",
-        "Vietnam Veteran and Other Protected Veteran",
-        "No military service",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        9,
-        9,
-        9
-      ]
-    },
-    "please select up to 2 ethnicities that you most closely identify with": {
-      "label": "Please select up to 2 ethnicities that you most closely identify with",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-436-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "American Indian or Alaska Native",
-        "Black or African American",
-        "East Asian",
-        "South Asian",
-        "Hispanic or Latinx",
-        "Middle Eastern or North African",
-        "Native Hawaiian or Other Pacific Islander",
-        "White",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        9,
-        9,
-        9
-      ]
-    },
-    "by checking this box, i consent to reddit collecting, storing, and processing my responses to the demographic data surveys above": {
-      "label": "By checking this box, I consent to Reddit collecting, storing, and processing my responses to the demographic data surveys above",
-      "kinds": {
-        "checkbox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "reddit"
-      ],
-      "required": 3,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "gdpr_demographic_data_consent_given_1"
-      ],
-      "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "would you like to include your linkedin profile, personal website or blog": {
       "label": "Would you like to include your LinkedIn profile, personal website or blog",
@@ -4134,7 +3935,7 @@
         "question_68338704"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "do you now or will you in the future require immigration sponsorship to work at cloudflare": {
       "label": "Do you now or will you in the future require immigration sponsorship to work at Cloudflare",
@@ -4160,41 +3961,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
-    },
-    "are you currently based in or willing to relocate to the bay area for this position?": {
-      "label": "Are you currently based in or willing to relocate to the Bay Area for this position?",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "discord"
-      ],
-      "required": 3,
-      "reactSelectIds": [
-        "react-select-question_37658710002-placeholder",
-        "react-select-question_37239554002-placeholder",
-        "react-select-question_37628289002-placeholder"
-      ],
-      "fieldIds": [
-        "question_37658710002",
-        "question_37239554002",
-        "question_37628289002"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "other website": {
       "label": "Other Website",
@@ -4208,12 +3975,38 @@
       "required": 0,
       "reactSelectIds": [],
       "fieldIds": [
-        "question_12497119004",
         "question_13576519004",
+        "question_12497119004",
         "question_15261020004"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
+    },
+    "are you currently based in or willing to relocate to the bay area for this position?": {
+      "label": "Are you currently based in or willing to relocate to the Bay Area for this position?",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "discord"
+      ],
+      "required": 3,
+      "reactSelectIds": [
+        "react-select-question_37658710002-placeholder",
+        "react-select-question_37628289002-placeholder",
+        "react-select-question_37239554002-placeholder"
+      ],
+      "fieldIds": [
+        "question_37658710002",
+        "question_37628289002",
+        "question_37239554002"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "are you open to working in-person in one of our offices 25% of the time": {
       "label": "Are you open to working in-person in one of our offices 25% of the time",
@@ -4239,11 +4032,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "do you require visa sponsorship?": {
       "label": "Do you require visa sponsorship?",
@@ -4269,11 +4058,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "are you open to relocation for this role?": {
       "label": "Are you open to relocation for this role?",
@@ -4299,11 +4084,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "what is the address from which you plan on working? if you would need to relocate, please type \"relocating\"": {
       "label": "What is the address from which you plan on working? If you would need to relocate, please type \"relocating\"",
@@ -4322,290 +4103,7 @@
         "question_18203459008"
       ],
       "options": [],
-      "optionCounts": []
-    },
-    "what gender pronouns do you prefer": {
-      "label": "What gender pronouns do you prefer",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-question_68482796-placeholder",
-        "react-select-question_54527573-placeholder",
-        "react-select-question_61045579-placeholder"
-      ],
-      "fieldIds": [
-        "question_68482796",
-        "question_54527573",
-        "question_61045579"
-      ],
-      "options": [
-        "He / Him",
-        "She / Her",
-        "Them / They",
-        "My pronouns are not listed",
-        "I don\u2019t wish to answer"
-      ],
-      "optionCounts": [
-        5,
-        5,
-        5
-      ]
-    },
-    "are you legally work authorized to work in the us": {
-      "label": "Are you legally work authorized to work in the US",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 3,
-      "reactSelectIds": [
-        "react-select-question_68482797-placeholder",
-        "react-select-question_54527574-placeholder",
-        "react-select-question_61045580-placeholder"
-      ],
-      "fieldIds": [
-        "question_68482797",
-        "question_54527574",
-        "question_61045580"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
-    },
-    "will you now (or in the future) require visa sponsorship in order to work in the us": {
-      "label": "Will you now (or in the future) require visa sponsorship in order to work in the US",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 3,
-      "reactSelectIds": [
-        "react-select-question_68482798-placeholder",
-        "react-select-question_54527575-placeholder",
-        "react-select-question_61045581-placeholder"
-      ],
-      "fieldIds": [
-        "question_68482798",
-        "question_54527575",
-        "question_61045581"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
-    },
-    "are you willing to work from the office(s) listed on the job description": {
-      "label": "Are you willing to work from the office(s) listed on the job description",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 3,
-      "reactSelectIds": [
-        "react-select-question_68482799-placeholder",
-        "react-select-question_54527576-placeholder",
-        "react-select-question_61045582-placeholder"
-      ],
-      "fieldIds": [
-        "question_68482799",
-        "question_54527576",
-        "question_61045582"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
-    },
-    "what is your gender identity": {
-      "label": "What is your gender identity",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-1255-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Cisgender woman",
-        "Cisgender man",
-        "Transgender woman",
-        "Transgender man",
-        "Non-binary",
-        "Two-spirit",
-        "My gender identity is not listed",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        8,
-        8,
-        8
-      ]
-    },
-    "what is your race or ethnicity": {
-      "label": "What is your race or ethnicity",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-1258-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "American Indian or Alaskan Native",
-        "Black or African American",
-        "East Asian",
-        "Hispanic or Latino",
-        "Middle Eastern or North African",
-        "Native Hawaiian or Other Pacific Islander",
-        "South Asian",
-        "Southeast Asian",
-        "White",
-        "Two or More Races",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        11,
-        11,
-        11
-      ]
-    },
-    "what is your military status": {
-      "label": "What is your military status",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-1259-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "I am on active duty",
-        "I am part of the national guard or on reserve",
-        "I have never served in the military",
-        "I identify as a protected veteran",
-        "I identify as a non-protected veteran",
-        "I identify in multiple military status categories",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        7,
-        7,
-        7
-      ]
-    },
-    "what is your disability status": {
-      "label": "What is your disability status",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-1261-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Yes, I have a disability",
-        "No, I don't have a disability",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        3,
-        3,
-        3
-      ]
-    },
-    "do you identify as part of the lgbtq+ community": {
-      "label": "Do you identify as part of the LGBTQ+ community",
-      "kinds": {
-        "combobox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-1465-placeholder"
-      ],
-      "fieldIds": [],
-      "options": [
-        "Yes",
-        "No",
-        "Questioning",
-        "I don't wish to answer"
-      ],
-      "optionCounts": [
-        4,
-        4,
-        4
-      ]
-    },
-    "by checking this box, i consent to robinhood collecting, storing, and processing my responses to the demographic data surveys above": {
-      "label": "By checking this box, I consent to Robinhood collecting, storing, and processing my responses to the demographic data surveys above",
-      "kinds": {
-        "checkbox": 3
-      },
-      "seen": 3,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 3,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "gdpr_demographic_data_consent_given_1"
-      ],
-      "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "do you require immigration sponsorship to work for affirm in the united states": {
       "label": "Do you require immigration sponsorship to work for Affirm in the United States",
@@ -4618,24 +4116,20 @@
       ],
       "required": 3,
       "reactSelectIds": [
-        "react-select-question_31786595003-placeholder",
         "react-select-question_31497185003-placeholder",
+        "react-select-question_31786595003-placeholder",
         "react-select-question_31105720003-placeholder"
       ],
       "fieldIds": [
-        "question_31786595003",
         "question_31497185003",
+        "question_31786595003",
         "question_31105720003"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "will you require immigration sponsorship at any point in the future to maintain authorization to work in the united states": {
       "label": "Will you require immigration sponsorship at any point in the future to maintain authorization to work in the United States",
@@ -4648,24 +4142,20 @@
       ],
       "required": 3,
       "reactSelectIds": [
-        "react-select-question_31786596003-placeholder",
         "react-select-question_31497186003-placeholder",
+        "react-select-question_31786596003-placeholder",
         "react-select-question_31105721003-placeholder"
       ],
       "fieldIds": [
-        "question_31786596003",
         "question_31497186003",
+        "question_31786596003",
         "question_31105721003"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2,
-        2
-      ]
+      "searchable": false
     },
     "how do you identify? (gender identity)": {
       "label": "How do you identify? (gender identity)",
@@ -4688,11 +4178,7 @@
         "I prefer not to say",
         "I prefer to self describe"
       ],
-      "optionCounts": [
-        5,
-        5,
-        5
-      ]
+      "searchable": false
     },
     "how do you identify? (race/ethnicity)": {
       "label": "How do you identify? (race/ethnicity)",
@@ -4721,11 +4207,254 @@
         "I prefer not to say",
         "I prefer to self describe"
       ],
-      "optionCounts": [
-        11,
-        11,
-        11
-      ]
+      "searchable": false
+    },
+    "what gender pronouns do you prefer": {
+      "label": "What gender pronouns do you prefer",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-question_68482796-placeholder",
+        "react-select-question_61045579-placeholder",
+        "react-select-question_54527573-placeholder"
+      ],
+      "fieldIds": [
+        "question_68482796",
+        "question_61045579",
+        "question_54527573"
+      ],
+      "options": [
+        "He / Him",
+        "She / Her",
+        "Them / They",
+        "My pronouns are not listed",
+        "I don’t wish to answer"
+      ],
+      "searchable": false
+    },
+    "are you legally work authorized to work in the us": {
+      "label": "Are you legally work authorized to work in the US",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 3,
+      "reactSelectIds": [
+        "react-select-question_68482797-placeholder",
+        "react-select-question_61045580-placeholder",
+        "react-select-question_54527574-placeholder"
+      ],
+      "fieldIds": [
+        "question_68482797",
+        "question_61045580",
+        "question_54527574"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "will you now (or in the future) require visa sponsorship in order to work in the us": {
+      "label": "Will you now (or in the future) require visa sponsorship in order to work in the US",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 3,
+      "reactSelectIds": [
+        "react-select-question_68482798-placeholder",
+        "react-select-question_61045581-placeholder",
+        "react-select-question_54527575-placeholder"
+      ],
+      "fieldIds": [
+        "question_68482798",
+        "question_61045581",
+        "question_54527575"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "are you willing to work from the office(s) listed on the job description": {
+      "label": "Are you willing to work from the office(s) listed on the job description",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 3,
+      "reactSelectIds": [
+        "react-select-question_68482799-placeholder",
+        "react-select-question_61045582-placeholder",
+        "react-select-question_54527576-placeholder"
+      ],
+      "fieldIds": [
+        "question_68482799",
+        "question_61045582",
+        "question_54527576"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "what is your gender identity": {
+      "label": "What is your gender identity",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-1255-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Cisgender woman",
+        "Cisgender man",
+        "Transgender woman",
+        "Transgender man",
+        "Non-binary",
+        "Two-spirit",
+        "My gender identity is not listed",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "what is your race or ethnicity": {
+      "label": "What is your race or ethnicity",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-1258-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "American Indian or Alaskan Native",
+        "Black or African American",
+        "East Asian",
+        "Hispanic or Latino",
+        "Middle Eastern or North African",
+        "Native Hawaiian or Other Pacific Islander",
+        "South Asian",
+        "Southeast Asian",
+        "White",
+        "Two or More Races",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "what is your military status": {
+      "label": "What is your military status",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-1259-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "I am on active duty",
+        "I am part of the national guard or on reserve",
+        "I have never served in the military",
+        "I identify as a protected veteran",
+        "I identify as a non-protected veteran",
+        "I identify in multiple military status categories",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "what is your disability status": {
+      "label": "What is your disability status",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-1261-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Yes, I have a disability",
+        "No, I don't have a disability",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "do you identify as part of the lgbtq+ community": {
+      "label": "Do you identify as part of the LGBTQ+ community",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-1465-placeholder"
+      ],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "Questioning",
+        "I don't wish to answer"
+      ],
+      "searchable": false
+    },
+    "by checking this box, i consent to robinhood collecting, storing, and processing my responses to the demographic data surveys above": {
+      "label": "By checking this box, I consent to Robinhood collecting, storing, and processing my responses to the demographic data surveys above",
+      "kinds": {
+        "checkbox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 3,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "gdpr_demographic_data_consent_given_1"
+      ],
+      "options": [],
+      "searchable": false
     },
     "let us know which specific channel/event/medium/etc you heard about us": {
       "label": "Let us know which specific channel/event/medium/etc you heard about us",
@@ -4744,7 +4473,7 @@
         "question_63013272"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "application consent for flexport": {
       "label": "Application consent for Flexport",
@@ -4757,23 +4486,19 @@
       ],
       "required": 3,
       "reactSelectIds": [
-        "react-select-question_56743060-placeholder",
         "react-select-question_61226884-placeholder",
+        "react-select-question_56743060-placeholder",
         "react-select-question_63013276-placeholder"
       ],
       "fieldIds": [
-        "question_56743060",
         "question_61226884",
+        "question_56743060",
         "question_63013276"
       ],
       "options": [
         "I Accept"
       ],
-      "optionCounts": [
-        1,
-        1,
-        1
-      ]
+      "searchable": false
     },
     "gusto blog": {
       "label": "Gusto Blog",
@@ -4792,7 +4517,7 @@
         "question_67763432[]_730032943"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "gusto employee": {
       "label": "Gusto Employee",
@@ -4811,7 +4536,7 @@
         "question_67763432[]_730032944"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "gusto website": {
       "label": "Gusto Website",
@@ -4830,7 +4555,7 @@
         "question_67763432[]_730032945"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "the person in this role is required to live within 50 miles commuting distance of the office where the role is listed. are you currently bas": {
       "label": "The person in this role is required to live within 50 miles commuting distance of the office where the role is listed. Are you currently based within 50 miles of the job location, or able to relocate there before your start date",
@@ -4843,21 +4568,18 @@
       ],
       "required": 2,
       "reactSelectIds": [
-        "react-select-question_67509443-placeholder",
-        "react-select-question_68278138-placeholder"
+        "react-select-question_68278138-placeholder",
+        "react-select-question_67509443-placeholder"
       ],
       "fieldIds": [
-        "question_67509443",
-        "question_68278138"
+        "question_68278138",
+        "question_67509443"
       ],
       "options": [
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2,
-        2
-      ]
+      "searchable": false
     },
     "what is your preferred office location": {
       "label": "What is your preferred office location",
@@ -4870,12 +4592,12 @@
       ],
       "required": 2,
       "reactSelectIds": [
-        "react-select-question_54527577-placeholder",
-        "react-select-question_61045583-placeholder"
+        "react-select-question_61045583-placeholder",
+        "react-select-question_54527577-placeholder"
       ],
       "fieldIds": [
-        "question_54527577",
-        "question_61045583"
+        "question_61045583",
+        "question_54527577"
       ],
       "options": [
         "Menlo Park, CA",
@@ -4883,116 +4605,7 @@
         "Bellevue, WA",
         "Toronto, Canada"
       ],
-      "optionCounts": [
-        4,
-        4
-      ]
-    },
-    "are you currently located in bangalore?": {
-      "label": "Are you currently located in Bangalore?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gitlab"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_36667493002-placeholder"
-      ],
-      "fieldIds": [
-        "question_36667493002"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "do you have strong proficiency in at least one modern scripting language (python, javascript/typescript, or similar) and a solid understandi": {
-      "label": "Do you have strong proficiency in at least one modern scripting language (Python, JavaScript/TypeScript, or similar) and a solid understanding of REST APIs, GraphQL, and integration patterns?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gitlab"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_36667494002-placeholder"
-      ],
-      "fieldIds": [
-        "question_36667494002"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "do you have practical fluency across the llm ecosystem? hands-on experience with models from anthropic, openai, open-source alternatives, an": {
-      "label": "Do you have practical fluency across the LLM ecosystem? hands-on experience with models from Anthropic, OpenAI, open-source alternatives, and the judgment to know which to reach for and when?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gitlab"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_36667495002-placeholder"
-      ],
-      "fieldIds": [
-        "question_36667495002"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "briefly describe your experience with ads products": {
-      "label": "Briefly describe your experience with Ads products",
-      "kinds": {
-        "textarea": 1
-      },
-      "seen": 1,
-      "boards": [
-        "reddit"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_65610529"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "briefly describe your experience with conversion modeling or ranking": {
-      "label": "Briefly describe your experience with conversion modeling or ranking",
-      "kinds": {
-        "textarea": 1
-      },
-      "seen": 1,
-      "boards": [
-        "reddit"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_65610530"
-      ],
-      "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "the person in this role is required to live within 50 miles (80 km) commuting distance of the office where the role is listed. are you curre": {
       "label": "The person in this role is required to live within 50 miles (80 km) commuting distance of the office where the role is listed. Are you currently based within 50 miles of the job location, or able to relocate there before your start date",
@@ -5014,9 +4627,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "are you currently authorized to work in this country": {
       "label": "Are you currently authorized to work in this country",
@@ -5038,9 +4649,107 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
+    },
+    "briefly describe your experience with ads products": {
+      "label": "Briefly describe your experience with Ads products",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "reddit"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_65610529"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "briefly describe your experience with conversion modeling or ranking": {
+      "label": "Briefly describe your experience with conversion modeling or ranking",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "reddit"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_65610530"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you currently located in bangalore?": {
+      "label": "Are you currently located in Bangalore?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gitlab"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_36667493002-placeholder"
+      ],
+      "fieldIds": [
+        "question_36667493002"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "do you have strong proficiency in at least one modern scripting language (python, javascript/typescript, or similar) and a solid understandi": {
+      "label": "Do you have strong proficiency in at least one modern scripting language (Python, JavaScript/TypeScript, or similar) and a solid understanding of REST APIs, GraphQL, and integration patterns?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gitlab"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_36667494002-placeholder"
+      ],
+      "fieldIds": [
+        "question_36667494002"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "do you have practical fluency across the llm ecosystem? hands-on experience with models from anthropic, openai, open-source alternatives, an": {
+      "label": "Do you have practical fluency across the LLM ecosystem? hands-on experience with models from Anthropic, OpenAI, open-source alternatives, and the judgment to know which to reach for and when?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gitlab"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_36667495002-placeholder"
+      ],
+      "fieldIds": [
+        "question_36667495002"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "are you currently enrolled in a university or program and will return to the program upon completion of internship": {
       "label": "Are you currently enrolled in a university or program and will return to the program upon completion of internship",
@@ -5062,9 +4771,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "if you are currently enrolled in a university or program, when do you expect to graduate or complete your program? (select the closest date.": {
       "label": "If you are currently enrolled in a university or program, when do you expect to graduate or complete your program? (Select the closest date.)",
@@ -5095,9 +4802,7 @@
         "June 2029",
         "N/A"
       ],
-      "optionCounts": [
-        11
-      ]
+      "searchable": false
     },
     "if you are enrolled in university, what degree are you currently pursuing?": {
       "label": "If you are enrolled in university, what degree are you currently pursuing?",
@@ -5120,12 +4825,10 @@
         "Master's",
         "MBA",
         "PhD",
-        "Other (Associate\u2019s, Bootcamp, etc)",
+        "Other (Associate’s, Bootcamp, etc)",
         "N/A"
       ],
-      "optionCounts": [
-        6
-      ]
+      "searchable": false
     },
     "a successful internship may lead to consideration for a full-time opportunity. if you were to receive a full-time offer, when would you be a": {
       "label": "A successful internship may lead to consideration for a full-time opportunity. If you were to receive a full-time offer, when would you be available to start",
@@ -5147,9 +4850,7 @@
         "Immediately after the internship ends",
         "Need to return to school and available upon graduation"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "are you currently a resident of the greater austin area, or do you have confirmed plans to be based there for the duration of this internshi": {
       "label": "Are you currently a resident of the Greater Austin area, or do you have confirmed plans to be based there for the duration of this internship",
@@ -5171,9 +4872,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "are you available for a 12-week full-time (40 hours per week) internship between september - december 2026": {
       "label": "Are you available for a 12-week full-time (40 hours per week) internship between September - December 2026",
@@ -5195,12 +4894,10 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
-    "are you able to work in our austin office 3\u20135 days a week": {
-      "label": "Are you able to work in our Austin office 3\u20135 days a week",
+    "are you able to work in our austin office 3–5 days a week": {
+      "label": "Are you able to work in our Austin office 3–5 days a week",
       "kinds": {
         "combobox": 1
       },
@@ -5219,9 +4916,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "this role requires that you live in one of the following hubs: austin, tx or nyc. are you currently located in one of the hub locations or w": {
       "label": "This role requires that you live in one of the following hubs: Austin, TX or NYC. Are you currently located in one of the hub locations or willing to relocate",
@@ -5244,9 +4939,7 @@
         "I am willing to relocate to this job's location.",
         "I do not live and not willing to relocate to this job's location."
       ],
-      "optionCounts": [
-        3
-      ]
+      "searchable": false
     },
     "please indicate your current city, state, and country": {
       "label": "Please indicate your current city, state, and country",
@@ -5263,7 +4956,7 @@
         "question_68338709"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "how did you hear about this job?": {
       "label": "How did you hear about this job?",
@@ -5280,7 +4973,7 @@
         "question_68298799"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you currently a resident of the greater nyc area": {
       "label": "Are you currently a resident of the Greater NYC area",
@@ -5302,9 +4995,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "are you currently a resident of the greater austin, tx area": {
       "label": "Are you currently a resident of the Greater Austin, TX area",
@@ -5326,9 +5017,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "do you now or will you in the future require immigration sponsorship to work at cloudflare?": {
       "label": "Do you now or will you in the future require immigration sponsorship to work at Cloudflare?",
@@ -5350,9 +5039,24 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
+    },
+    "are you fluent in german": {
+      "label": "Are you fluent in German",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "figma"
+      ],
+      "required": 0,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_14019464004"
+      ],
+      "options": [],
+      "searchable": false
     },
     "are you currently based in or willing to relocate to the bay area for this position": {
       "label": "Are you currently based in or willing to relocate to the Bay Area for this position",
@@ -5374,9 +5078,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "do you have in-house experience? if so, please list your years of in-house experience and area(s) of focus": {
       "label": "Do you have in-house experience? If so, please list your years of in-house experience and area(s) of focus",
@@ -5393,24 +5095,7 @@
         "question_37322558002"
       ],
       "options": [],
-      "optionCounts": []
-    },
-    "are you fluent in german": {
-      "label": "Are you fluent in German",
-      "kinds": {
-        "text": 1
-      },
-      "seen": 1,
-      "boards": [
-        "figma"
-      ],
-      "required": 0,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_14019464004"
-      ],
-      "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you currently located in sf/nyc or open to relocation, if not?": {
       "label": "Are you currently located in SF/NYC or open to relocation, if not?",
@@ -5432,9 +5117,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "our account executive team is in office 4 days/week. are you open to working in our office 4 days/week": {
       "label": "Our Account Executive team is in office 4 days/week. Are you open to working in our office 4 days/week",
@@ -5456,9 +5139,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "do you have experience selling api or technical products to engineering teams? if yes, please describe in a few sentences": {
       "label": "Do you have experience selling API or technical products to engineering teams? If yes, please describe in a few sentences",
@@ -5475,10 +5156,10 @@
         "question_10246878008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
-    "send us something you made that taught someone a hard idea \u2014 a course, a video, an essay, a tool. what did you understand about how people l": {
-      "label": "Send us something you made that taught someone a hard idea \u2014 a course, a video, an essay, a tool. What did you understand about how people learn that made it work? What did you get wrong in the first draft",
+    "send us something you made that taught someone a hard idea — a course, a video, an essay, a tool. what did you understand about how people l": {
+      "label": "Send us something you made that taught someone a hard idea — a course, a video, an essay, a tool. What did you understand about how people learn that made it work? What did you get wrong in the first draft",
       "kinds": {
         "textarea": 1
       },
@@ -5492,7 +5173,7 @@
         "question_18212889008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "what do you think is critical to teach to help people achieve ai fluency that most people are not teaching well": {
       "label": "What do you think is critical to teach to help people achieve AI Fluency that most people are not teaching well",
@@ -5509,31 +5190,7 @@
         "question_18212890008"
       ],
       "options": [],
-      "optionCounts": []
-    },
-    "are you a us citizen or lawful permanent resident": {
-      "label": "Are you a US citizen or lawful permanent resident",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "robinhood"
-      ],
-      "required": 0,
-      "reactSelectIds": [
-        "react-select-question_68238781-placeholder"
-      ],
-      "fieldIds": [
-        "question_68238781"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "do you have the unrestricted right to work in the country where this role is located": {
       "label": "Do you have the unrestricted right to work in the country where this role is located",
@@ -5555,9 +5212,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "please review and acknowledge the specific robinhood applicant privacy policy applicable to the country where you are applying": {
       "label": "Please review and acknowledge the specific Robinhood Applicant Privacy Policy applicable to the country where you are applying",
@@ -5578,9 +5233,7 @@
       "options": [
         "I acknowledge"
       ],
-      "optionCounts": [
-        1
-      ]
+      "searchable": false
     },
     "do you now, or will you in the future, require immigration sponsorship to work for affirm in canada": {
       "label": "Do you now, or will you in the future, require immigration sponsorship to work for Affirm in Canada",
@@ -5602,9 +5255,29 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
+    },
+    "are you a us citizen or lawful permanent resident": {
+      "label": "Are you a US citizen or lawful permanent resident",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "robinhood"
+      ],
+      "required": 0,
+      "reactSelectIds": [
+        "react-select-question_68238781-placeholder"
+      ],
+      "fieldIds": [
+        "question_68238781"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "do you have a valid passport?": {
       "label": "Do you have a valid passport?",
@@ -5626,9 +5299,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "will you now or in the future require flexport to commence (\"sponsor\") an immigration case in order to employ you (for example, h-1b or othe": {
       "label": "Will you now or in the future require Flexport to commence (\"sponsor\") an immigration case in order to employ you (for example, H-1B or other employment-based immigration case)? This is sometimes called \"sponsorship\" for an employment-based visa status",
@@ -5650,9 +5321,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "are you authorized to work lawfully in the united states for flexport": {
       "label": "Are you authorized to work lawfully in the United States for Flexport",
@@ -5674,57 +5343,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "is your italian language at native or fluent level of proficiency": {
-      "label": "Is your Italian language at native or fluent level of proficiency",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "flexport"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_56743058-placeholder"
-      ],
-      "fieldIds": [
-        "question_56743058"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "do you require visa sponsorship in order to legally work in italy?": {
-      "label": "Do you require visa sponsorship in order to legally work in Italy?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "flexport"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_56743059-placeholder"
-      ],
-      "fieldIds": [
-        "question_56743059"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "voornaam": {
       "label": "Voornaam",
@@ -5741,7 +5360,7 @@
         "first_name"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "achternaam": {
       "label": "Achternaam",
@@ -5758,7 +5377,7 @@
         "last_name"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "e-mail": {
       "label": "E-mail",
@@ -5775,7 +5394,7 @@
         "email"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "land": {
       "label": "Land",
@@ -5796,19 +5415,19 @@
       "options": [
         "Verenigde Staten +1",
         "Afghanistan +93",
-        "\u00c5landeilanden +358",
-        "Albani\u00eb +355",
+        "Ålandeilanden +358",
+        "Albanië +355",
         "Algerije +213",
         "Amerikaans-Samoa +1",
         "Andorra +376",
         "Angola +244",
         "Anguilla +1",
         "Antigua en Barbuda +1",
-        "Argentini\u00eb +54",
-        "Armeni\u00eb +374",
+        "Argentinië +54",
+        "Armenië +374",
         "Aruba +297",
         "Ascension Island +247",
-        "Australi\u00eb +61",
+        "Australië +61",
         "Oostenrijk +43",
         "Azerbeidzjan +994",
         "Bahamas +1",
@@ -5816,15 +5435,15 @@
         "Bangladesh +880",
         "Barbados +1",
         "Wit-Rusland +375",
-        "Belgi\u00eb +32",
+        "België +32",
         "Belize +501",
         "Benin +229",
         "Bermuda +1",
         "Bhutan +975",
         "Bolivia +591",
-        "Bosni\u00eb en Herzegovina +387",
+        "Bosnië en Herzegovina +387",
         "Botswana +267",
-        "Brazili\u00eb +55",
+        "Brazilië +55",
         "Brits Territorium in de Indische Oceaan +246",
         "Britse Maagdeneilanden +1",
         "Brunei +673",
@@ -5834,7 +5453,7 @@
         "Cambodja +855",
         "Kameroen +237",
         "Canada +1",
-        "Kaapverdi\u00eb +238",
+        "Kaapverdië +238",
         "Caribisch Nederland +599",
         "Caymaneilanden +1",
         "Centraal-Afrikaanse Republiek +236",
@@ -5850,11 +5469,11 @@
         "Cookeilanden +682",
         "Costa Rica +506",
         "Ivoorkust +225",
-        "Kroati\u00eb +385",
+        "Kroatië +385",
         "Cuba +53",
-        "Cura\u00e7ao +599",
+        "Curaçao +599",
         "Cyprus +357",
-        "Tsjechi\u00eb +420",
+        "Tsjechië +420",
         "Denemarken +45",
         "Djibouti +253",
         "Dominica +1",
@@ -5866,17 +5485,17 @@
         "Eritrea +291",
         "Estland +372",
         "Eswatini +268",
-        "Ethiopi\u00eb +251",
+        "Ethiopië +251",
         "Falklandeilanden +500",
-        "Faer\u00f6er +298",
+        "Faeröer +298",
         "Fiji +679",
         "Finland +358",
         "Frankrijk +33",
         "Frans-Guyana +594",
-        "Frans-Polynesi\u00eb +689",
+        "Frans-Polynesië +689",
         "Gabon +241",
         "Gambia +220",
-        "Georgi\u00eb +995",
+        "Georgië +995",
         "Duitsland +49",
         "Ghana +233",
         "Gibraltar +350",
@@ -5890,65 +5509,65 @@
         "Guinea +224",
         "Guinee-Bissau +245",
         "Guyana +592",
-        "Ha\u00efti +509",
+        "Haïti +509",
         "Honduras +504",
         "Hongkong SAR China +852",
         "Hongarije +36",
         "IJsland +354",
         "India +91",
-        "Indonesi\u00eb +62",
+        "Indonesië +62",
         "Iran +98",
         "Irak +964",
         "Ierland +353",
         "Isle of Man +44",
-        "Isra\u00ebl +972",
-        "Itali\u00eb +39",
+        "Israël +972",
+        "Italië +39",
         "Jamaica +1",
         "Japan +81",
         "Jersey +44",
-        "Jordani\u00eb +962",
+        "Jordanië +962",
         "Kazachstan +7",
         "Kenia +254",
         "Kiribati +686",
         "Kosovo +383",
         "Koeweit +965",
-        "Kirgizi\u00eb +996",
+        "Kirgizië +996",
         "Laos +856",
         "Letland +371",
         "Libanon +961",
         "Lesotho +266",
         "Liberia +231",
-        "Libi\u00eb +218",
+        "Libië +218",
         "Liechtenstein +423",
         "Litouwen +370",
         "Luxemburg +352",
         "Macau SAR China +853",
         "Madagascar +261",
         "Malawi +265",
-        "Maleisi\u00eb +60",
+        "Maleisië +60",
         "Malediven +960",
         "Mali +223",
         "Malta +356",
         "Marshalleilanden +692",
         "Martinique +596",
-        "Mauritani\u00eb +222",
+        "Mauritanië +222",
         "Mauritius +230",
         "Mayotte +262",
         "Mexico +52",
-        "Micronesi\u00eb +691",
-        "Moldavi\u00eb +373",
+        "Micronesië +691",
+        "Moldavië +373",
         "Monaco +377",
-        "Mongoli\u00eb +976",
+        "Mongolië +976",
         "Montenegro +382",
         "Montserrat +1",
         "Marokko +212",
         "Mozambique +258",
         "Myanmar (Birma) +95",
-        "Namibi\u00eb +264",
+        "Namibië +264",
         "Nauru +674",
         "Nepal +977",
         "Nederland +31",
-        "Nieuw-Caledoni\u00eb +687",
+        "Nieuw-Caledonië +687",
         "Nieuw-Zeeland +64",
         "Nicaragua +505",
         "Niger +227",
@@ -5956,7 +5575,7 @@
         "Niue +683",
         "Norfolk-eiland +672",
         "Noord-Korea +850",
-        "Noord-Macedoni\u00eb +389",
+        "Noord-Macedonië +389",
         "Noordelijke Marianeneilanden +1",
         "Noorwegen +47",
         "Oman +968",
@@ -5972,30 +5591,30 @@
         "Portugal +351",
         "Puerto Rico +1",
         "Qatar +974",
-        "R\u00e9union +262",
-        "Roemeni\u00eb +40",
+        "Réunion +262",
+        "Roemenië +40",
         "Rusland +7",
         "Rwanda +250",
         "Samoa +685",
         "San Marino +378",
-        "S\u00e3o Tom\u00e9 en Pr\u00edncipe +239",
-        "Saudi-Arabi\u00eb +966",
+        "São Tomé en Príncipe +239",
+        "Saudi-Arabië +966",
         "Senegal +221",
-        "Servi\u00eb +381",
+        "Servië +381",
         "Seychellen +248",
         "Sierra Leone +232",
         "Singapore +65",
         "Sint Maarten +1",
         "Slowakije +421",
-        "Sloveni\u00eb +386",
+        "Slovenië +386",
         "Salomonseilanden +677",
-        "Somali\u00eb +252",
+        "Somalië +252",
         "Zuid-Afrika +27",
         "Zuid-Korea +82",
         "Zuid-Soedan +211",
         "Spanje +34",
         "Sri Lanka +94",
-        "St. Barth\u00e9lemy +590",
+        "St. Barthélemy +590",
         "Sint-Helena +290",
         "St. Kitts en Nevis +1",
         "St. Lucia +1",
@@ -6007,7 +5626,7 @@
         "Spitsbergen en Jan Mayen +47",
         "Zweden +46",
         "Zwitserland +41",
-        "Syri\u00eb +963",
+        "Syrië +963",
         "Taiwan +886",
         "Tadzjikistan +992",
         "Tanzania +255",
@@ -6017,14 +5636,14 @@
         "Tokelau +690",
         "Tonga +676",
         "Trinidad en Tobago +1",
-        "Tunesi\u00eb +216",
+        "Tunesië +216",
         "Turkije +90",
         "Turkmenistan +993",
         "Turks- en Caicoseilanden +1",
         "Tuvalu +688",
         "Amerikaanse Maagdeneilanden +1",
         "Oeganda +256",
-        "Oekra\u00efne +380",
+        "Oekraïne +380",
         "Verenigde Arabische Emiraten +971",
         "Verenigd Koninkrijk +44",
         "Uruguay +598",
@@ -6039,9 +5658,7 @@
         "Zambia +260",
         "Zimbabwe +263"
       ],
-      "optionCounts": [
-        244
-      ]
+      "searchable": false
     },
     "telefoon": {
       "label": "Telefoon",
@@ -6058,7 +5675,7 @@
         "phone"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "voeg toe": {
       "label": "Voeg toe",
@@ -6075,7 +5692,7 @@
         "resume"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "do you require a visa sponsorship to work in the netherlands": {
       "label": "Do you require a visa sponsorship to work in the Netherlands",
@@ -6097,9 +5714,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "what is your dutch language level proficiency?": {
       "label": "What is your Dutch language level proficiency?",
@@ -6123,9 +5738,51 @@
         "C1-C2",
         "Native speaker"
       ],
-      "optionCounts": [
-        4
-      ]
+      "searchable": false
+    },
+    "is your italian language at native or fluent level of proficiency": {
+      "label": "Is your Italian language at native or fluent level of proficiency",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "flexport"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_56743058-placeholder"
+      ],
+      "fieldIds": [
+        "question_56743058"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "do you require visa sponsorship in order to legally work in italy?": {
+      "label": "Do you require visa sponsorship in order to legally work in Italy?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "flexport"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_56743059-placeholder"
+      ],
+      "fieldIds": [
+        "question_56743059"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "are you eligible to work in germany": {
       "label": "Are you eligible to work in Germany",
@@ -6147,9 +5804,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "a1": {
       "label": "A1",
@@ -6166,7 +5821,7 @@
         "question_64132261[]_642610988"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "a2": {
       "label": "A2",
@@ -6183,7 +5838,7 @@
         "question_64132261[]_642610989"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "b1": {
       "label": "B1",
@@ -6200,7 +5855,7 @@
         "question_64132261[]_642610990"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "b2": {
       "label": "B2",
@@ -6217,7 +5872,7 @@
         "question_64132261[]_642610991"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "c1": {
       "label": "C1",
@@ -6234,7 +5889,7 @@
         "question_64132261[]_642610992"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "c2": {
       "label": "C2",
@@ -6251,7 +5906,7 @@
         "question_64132261[]_642610993"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "native": {
       "label": "Native",
@@ -6268,7 +5923,7 @@
         "question_64132261[]_642610994"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "which of the following metropolitan areas do you reside in?": {
       "label": "Which of the following metropolitan areas do you reside in?",
@@ -6291,9 +5946,7 @@
         "Phoenix, AZ",
         "None of the above"
       ],
-      "optionCounts": [
-        3
-      ]
+      "searchable": false
     },
     "do you have at least 4 years of formal leadership experience in benefits advisory, customer success or renewals, or a similar field": {
       "label": "Do you have at least 4 years of formal leadership experience in benefits advisory, customer success or renewals, or a similar field",
@@ -6315,9 +5968,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "do you have direct experience with small group health insurance (fully insured, level-funded or peo models)": {
       "label": "Do you have direct experience with small group health insurance (fully insured, level-funded or PEO models)",
@@ -6339,200 +5990,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "company blog": {
-      "label": "Company Blog",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_66549919[]_709248277"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "company employee": {
-      "label": "Company Employee",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_66549919[]_709248278"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "company website": {
-      "label": "Company Website",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_66549919[]_709248279"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "do you have experience building with ai tools? for example: designing and deploying ai agents, automations, or workflows that execute multi-": {
-      "label": "Do you have experience building with AI tools? For example: designing and deploying AI agents, automations, or workflows that execute multi-step work.",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_67123143-placeholder"
-      ],
-      "fieldIds": [
-        "question_67123143"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "gumloop": {
-      "label": "Gumloop",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_67123144[]_723330053"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "claude": {
-      "label": "Claude",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_67123144[]_723330054"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "glean": {
-      "label": "Glean",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_67123144[]_723330055"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "other ai tools": {
-      "label": "Other AI tools",
-      "kinds": {
-        "checkbox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [],
-      "fieldIds": [
-        "question_67123144[]_723330056"
-      ],
-      "options": [],
-      "optionCounts": []
-    },
-    "do you have direct experience in program management?": {
-      "label": "Do you have direct experience in program management?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_67123145-placeholder"
-      ],
-      "fieldIds": [
-        "question_67123145"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
-    },
-    "do you currently reside in the denver metro area?": {
-      "label": "Do you currently reside in the Denver Metro area?",
-      "kinds": {
-        "combobox": 1
-      },
-      "seen": 1,
-      "boards": [
-        "gusto"
-      ],
-      "required": 1,
-      "reactSelectIds": [
-        "react-select-question_67225047-placeholder"
-      ],
-      "fieldIds": [
-        "question_67225047"
-      ],
-      "options": [
-        "Yes",
-        "No"
-      ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "careers website": {
       "label": "Careers Website",
@@ -6549,7 +6007,7 @@
         "question_66633666[]_710617008"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "twilio blog": {
       "label": "Twilio Blog",
@@ -6566,7 +6024,7 @@
         "question_66633666[]_710617013"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "conference or event": {
       "label": "Conference or Event",
@@ -6583,7 +6041,7 @@
         "question_66633666[]_710617014"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "content (e.g. videos, ads, billboards etc)": {
       "label": "Content (e.g. videos, ads, billboards etc)",
@@ -6600,7 +6058,7 @@
         "question_66633666[]_710617015"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "other": {
       "label": "Other",
@@ -6617,7 +6075,7 @@
         "question_66633666[]_710617016"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "are you legally authorized to work in the country in which this role is located": {
       "label": "Are you legally authorized to work in the country in which this role is located",
@@ -6639,9 +6097,7 @@
         "Yes",
         "No"
       ],
-      "optionCounts": [
-        2
-      ]
+      "searchable": false
     },
     "what is the source of your right to work where this role is listed": {
       "label": "What is the source of your right to work where this role is listed",
@@ -6664,9 +6120,7 @@
         "Citizen of a country with an unlimited right to work where this role is listed",
         "Valid visa with permission to work with any employer where this role is listed"
       ],
-      "optionCounts": [
-        3
-      ]
+      "searchable": false
     },
     "acknowledge": {
       "label": "Acknowledge",
@@ -6683,7 +6137,7 @@
         "question_66633669[]_710617021"
       ],
       "options": [],
-      "optionCounts": []
+      "searchable": false
     },
     "voluntary self-identification of gender": {
       "label": "Voluntary Self-Identification of Gender",
@@ -6706,9 +6160,7 @@
         "Gender Nonconforming",
         "I don't wish to answer"
       ],
-      "optionCounts": [
-        5
-      ]
+      "searchable": false
     },
     "by checking this box, i consent to twilio collecting, storing, and processing my responses to the demographic data surveys above": {
       "label": "By checking this box, I consent to Twilio collecting, storing, and processing my responses to the demographic data surveys above",
@@ -6725,24 +6177,192 @@
         "gdpr_demographic_data_consent_given_1"
       ],
       "options": [],
-      "optionCounts": []
-    }
-  },
-  "verifiedNotes": {
-    "location (city)": {
-      "verifiedLive": "2026-08-19",
-      "url": "https://job-boards.greenhouse.io/reddit/jobs/7617155",
-      "finding": "0 options on click with no typing; real results only after typing a query (e.g. typing 'Austin' returned 'Austin, Texas, United States' etc). This is a genuine live-search field with no fixed list, not a capture miss -- unlike School/Degree/Discipline, which DO return a real default list on click alone.",
-      "implication": "Cannot be shape-checked against a fixed option list. Fill/suggest logic for this field needs to type-and-match rather than pick-from-list."
+      "searchable": false
     },
-    "country": {
-      "verifiedLive": "2026-08-19",
-      "finding": "id=country, react-select-country-placeholder -- this IS the phone number's country-CODE selector (options are 'United States +1', 'Afghanistan +93', ...), not a country-of-residence field. 'Land' is the same field, Dutch-localized, on Flexport.",
-      "implication": "A field labeled 'Country' on Greenhouse is NOT reliably a residence-country field -- must disambiguate by id/widget id, not by label alone, or risk filling a phone code into a residence answer or vice versa."
+    "company blog": {
+      "label": "Company Blog",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_66549919[]_709248277"
+      ],
+      "options": [],
+      "searchable": false
     },
-    "are you subject to any employment agreements and/or post-employment restrictions with your current employer or a past employer": {
-      "verifiedLive": "2026-08-19",
-      "finding": "Spot-checked live: options are genuinely exactly ['Yes','No']. Confirms the 59 generic-only-option questions in this corpus are very likely correct data (real binary questions), not an under-capture artifact -- but only this ONE of the 59 was individually verified against a live page."
+    "company employee": {
+      "label": "Company Employee",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_66549919[]_709248278"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "company website": {
+      "label": "Company Website",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_66549919[]_709248279"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have experience building with ai tools? for example: designing and deploying ai agents, automations, or workflows that execute multi-": {
+      "label": "Do you have experience building with AI tools? For example: designing and deploying AI agents, automations, or workflows that execute multi-step work.",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_67123143-placeholder"
+      ],
+      "fieldIds": [
+        "question_67123143"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "gumloop": {
+      "label": "Gumloop",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_67123144[]_723330053"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "claude": {
+      "label": "Claude",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_67123144[]_723330054"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "glean": {
+      "label": "Glean",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_67123144[]_723330055"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "other ai tools": {
+      "label": "Other AI tools",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [],
+      "fieldIds": [
+        "question_67123144[]_723330056"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have direct experience in program management?": {
+      "label": "Do you have direct experience in program management?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_67123145-placeholder"
+      ],
+      "fieldIds": [
+        "question_67123145"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "do you currently reside in the denver metro area?": {
+      "label": "Do you currently reside in the Denver Metro area?",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "gusto"
+      ],
+      "required": 1,
+      "reactSelectIds": [
+        "react-select-question_67225047-placeholder"
+      ],
+      "fieldIds": [
+        "question_67225047"
+      ],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     }
   }
 }

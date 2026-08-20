@@ -22,6 +22,9 @@ const arg = (k, d) => {
 };
 const PER = Number(arg('--per', 4));
 const MAX = Number(arg('--max', 45));
+const CONCURRENCY = Number(arg('--concurrency', 10));
+const JITTER_MIN = Number(arg('--jitter-min', 5000));
+const JITTER_MAX = Number(arg('--jitter-max', 15000));
 const OUT = arg('--out', 'e2e/fixtures/greenhouse-corpus.json');
 const T = 25_000;
 
@@ -137,77 +140,153 @@ const browser = await chromium.launch();
 const corpus = { ats: 'greenhouse', schema: 2, boards: {}, questions: {} };
 let forms = 0;
 
-/** Open one combobox and read what it offers. This is the slow part, and the reason the corpus is useful. */
+const OPTION_CAP = 300;
+
 /**
- * Read what ONE dropdown offers, without trusting any selector to be scoped to it.
+ * Read what ONE dropdown offers, and tell the difference between "here is the complete answer" and
+ * "here is a sample of a search field."
  *
  * First cut used a global `[class*="option"],[role="option"]` query and it was WRONG: Greenhouse
- * permanently mounts a phone country-code picker (intl-tel-input) whose ~200 `<li>` items carry
- * role="option" unconditionally, hidden or not, click or no click. That selector matched all of them
- * regardless of which field was actually opened, so School/Degree/Discipline came back with
- * "Afghanistan+93, Åland Islands+358, ..." ahead of the real answers -- caught by reading the captured
- * VALUES, not by trusting the count.
+ * permanently mounts a phone country-code picker whose ~200 items carry role="option" unconditionally.
+ * Fixed with a before/after diff, scoped to nothing but what changed because of this click.
  *
- * Fixed with a before/after diff: snapshot every option-like node before the click, snapshot again
- * after, keep only what is NEW. That is universal across ATS DOM conventions -- it does not depend on
- * knowing where any given vendor mounts its menu -- and it is immune to anything that was already
- * sitting in the DOM before we touched this field.
+ * Second cut treated any dropdown that returned options as a fixed list and tried to scroll it to
+ * exhaustion. That was also wrong: "School" is a VIRTUALIZED TYPEAHEAD — the unfiltered view shows an
+ * alphabetical default page that keeps growing every scroll (100 -> 344 -> 444..., never verified to
+ * terminate), but typing "Zurich" instantly filters to exactly the 2 real matches.
+ *
+ * Third cut probed "searchable" by typing a NONSENSE query and checking whether the result count
+ * shrank. That was WRONG TOO, and wrong in a way that silently broke every field: react-select filters
+ * on typed text as a generic UI convenience whether the backing list is 3 fixed items or 10,000
+ * virtualized ones — so the nonsense-query probe returned `searchable: true` for literally every
+ * combobox in the corpus, including Gender (3 options) and plain Yes/No fields. That test never
+ * measured what it claimed to.
+ *
+ * What actually distinguishes "complete list, typing is just a filter convenience" from "must type to
+ * discover anything" is whether the list is DONE GROWING once we stop scrolling: a fixed list (Country,
+ * Discipline, Gender) plateaus after one or two scrolls because the whole backing array is short. A
+ * virtualized typeahead (School) keeps rendering more items every scroll for as long as we keep going,
+ * and a field like "Location (City)" renders literally nothing until you type. So: track the option
+ * count after each scroll; if it's still growing at the last one, or started empty, this is a real
+ * search field — keep the sample bounded and mark `searchable: true`. If it plateaued, the sample IS
+ * the whole list.
  */
 async function optionsFor(page, id) {
   try {
-    // page.evaluate() does not reliably round-trip a Set through Playwright's serialization boundary —
-    // it comes back unusable in Node. Return a plain array and build the Set on this side.
     const beforeArr = await page.evaluate(() =>
       [...document.querySelectorAll('[class*="option"],[role="option"]')].map((o) => o.textContent.trim()),
     );
     const before = new Set(beforeArr);
     await page.click(`[id="${id}"]`, { timeout: 2500 });
     await page.waitForTimeout(700);
-    const after = await page.evaluate(() =>
-      [...document.querySelectorAll('[class*="option"],[role="option"]')]
-        .filter((o) => o.getBoundingClientRect().height > 0) // visible now, not just present
-        .map((o) => o.textContent.trim())
-        .filter((t) => t && t.length < 90),
-    );
+
+    const countNew = async () => {
+      const raw = await page.evaluate(() =>
+        [...document.querySelectorAll('[class*="option"],[role="option"]')]
+          .filter((o) => o.getBoundingClientRect().height > 0)
+          .map((o) => o.textContent.trim())
+          .filter((t) => t && t.length < 90),
+      );
+      return [...new Set(raw)].filter((t) => !before.has(t));
+    };
+
+    const counts = [(await countNew()).length];
+    for (let i = 0; i < 4; i++) {
+      await page.evaluate(() => {
+        const opts = [...document.querySelectorAll('[role="option"]')];
+        const last = opts[opts.length - 1];
+        const menu = last?.closest('[class*="menu" i],[class*="Menu"]') ?? last?.parentElement;
+        if (menu) menu.scrollTop = menu.scrollHeight;
+      });
+      await page.waitForTimeout(250);
+      counts.push((await countNew()).length);
+    }
+    const finalItems = await countNew();
+    const sample = finalItems.slice(0, OPTION_CAP);
+
+    const startedEmpty = counts[0] === 0;
+    const stillGrowing = counts[counts.length - 1] > counts[counts.length - 2];
+    const hitCap = finalItems.length >= OPTION_CAP;
+    const searchable = startedEmpty || stillGrowing || hitCap;
+
     await page.keyboard.press('Escape').catch(() => {});
     await page.waitForTimeout(200);
-    const fresh = [...new Set(after)].filter((t) => !before.has(t));
-    return fresh.slice(0, 300);
+    return { options: sample, searchable };
   } catch {
-    return [];
+    return { options: [], searchable: false };
   }
 }
 
-outer: for (const board of BOARDS) {
-  if (forms >= MAX) break;
-  const urls = (await boardJobs(board)).slice(0, PER);
-  if (!urls.length) {
-    console.log(`  –  ${board}: no public jobs`);
-    continue;
-  }
+/**
+ * Fetch every board's job listing CONCURRENTLY — these are plain JSON GETs against each company's own
+ * boards-api endpoint, with no dependency on each other, so there is no reason to wait for board N
+ * before asking about board N+1.
+ */
+console.log(`  fetching ${BOARDS.length} board listings concurrently…`);
+const listings = await Promise.all(
+  BOARDS.map(async (board) => ({ board, urls: (await boardJobs(board)).slice(0, PER) })),
+);
+for (const { board, urls } of listings) if (!urls.length) console.log(`  –  ${board}: no public jobs`);
+
+/** One flat queue of (board, url) work items — this is what makes the worker pool possible. */
+const queue = [];
+for (const { board, urls } of listings) for (const url of urls) queue.push({ board, url });
+queue.length = Math.min(queue.length, MAX);
+console.log(`  ${queue.length} postings queued across ${listings.filter((l) => l.urls.length).length} boards\n`);
+
+/**
+ * Process the queue with N CONCURRENT tabs instead of one page working through everything in order.
+ *
+ * The original harvester used three nested sequential `for` loops — boards, then postings, then
+ * dropdowns within a posting — with real per-step waits (page settle, click, scroll, type-probe) that
+ * do not depend on each other AT ALL across different companies' forms. That serial structure alone
+ * was why a run took 20-30+ minutes: killed at 4 of 13 boards after 10 minutes with no sign this was
+ * network-bound rather than just not asking for more than one thing at a time. 6 concurrent tabs cut
+ * that to roughly 5-6s/form, verified on a 12-form test run.
+ *
+ * CONCURRENCY is still capped, not unbounded: these postings span many different companies but
+ * job-boards.greenhouse.io is shared infrastructure. The RAM to run far more tabs is available, but
+ * more tabs alone isn't what makes a crawler look considerate — evenly-timed requests do. Six workers
+ * each grabbing their next item the instant they're free produces bursts of up to 6 near-simultaneous
+ * new requests, repeating every few seconds. A random JITTER before each worker starts its next item
+ * desynchronizes that: workers drift apart over the run instead of staying in lockstep, so raising
+ * CONCURRENCY (more parallel work) and adding jitter (less synchronized timing) are complementary, not
+ * in tension — one is throughput, the other is request shape.
+ */
+let cursor = 0;
+const boardKept = {};
+const jitter = () => JITTER_MIN + Math.random() * (JITTER_MAX - JITTER_MIN);
+
+async function worker() {
   const page = await browser.newPage();
   await page.setViewportSize({ width: 1300, height: 950 });
-  const kept = [];
-  for (const url of urls) {
-    if (forms >= MAX) {
-      await page.close();
-      break outer;
-    }
+  while (cursor < queue.length && forms < MAX) {
+    const item = queue[cursor++];
+    if (!item) break;
+    const { board, url } = item;
+    await page.waitForTimeout(jitter()); // spread this worker's next request out from the others
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: T });
       await page.waitForSelector('input,select,textarea', { timeout: 8000 }).catch(() => {});
-      await page.waitForTimeout(3500); // real settle time, not a guess at 2.2s
+      await page.waitForTimeout(3500);
       const fields = await page.evaluate(readForm);
       if (fields.length < 5) continue;
 
-      // Open each dropdown and record what it accepts.
       for (const f of fields) {
         if (f.kind !== 'combobox' || !f.id || f.options.length) continue;
-        f.options = await optionsFor(page, f.id);
+        const r = await optionsFor(page, f.id);
+        f.options = r.options;
+        f.searchable = r.searchable;
       }
 
-      kept.push({ url, fields: fields.length, withOptions: fields.filter((f) => f.options.length).length });
       forms++;
+      (boardKept[board] ??= []).push({
+        url,
+        fields: fields.length,
+        withOptions: fields.filter((f) => f.options.length).length,
+      });
+      // Object mutation here is safe under concurrency: nothing awaits between the read and the write in
+      // this block, and JS only switches tasks at an `await` — so two workers can never interleave mid-update.
       for (const f of fields) {
         const k = f.label.toLowerCase().slice(0, 140);
         const q = (corpus.questions[k] ??= {
@@ -219,7 +298,7 @@ outer: for (const board of BOARDS) {
           reactSelectIds: [],
           fieldIds: [],
           options: [],
-          optionCounts: [],
+          searchable: false,
         });
         q.seen++;
         q.kinds[f.kind] = (q.kinds[f.kind] ?? 0) + 1;
@@ -227,23 +306,22 @@ outer: for (const board of BOARDS) {
         if (!q.boards.includes(board)) q.boards.push(board);
         if (f.reactSelectId && !q.reactSelectIds.includes(f.reactSelectId)) q.reactSelectIds.push(f.reactSelectId);
         if (f.id && !/^\d/.test(f.id) && !q.fieldIds.includes(f.id)) q.fieldIds.push(f.id);
-        if (f.options.length) {
-          q.optionCounts.push(f.options.length);
-          // keep the LONGEST list seen — a truncated open would otherwise poison the record
-          if (f.options.length > q.options.length) q.options = f.options.slice(0, 300);
-        }
+        if (f.searchable) q.searchable = true;
+        if (f.options.length > q.options.length) q.options = f.options.slice(0, OPTION_CAP);
       }
+      const withOpts = Object.values(corpus.questions).filter((v) => v.options.length).length;
+      console.log(
+        `  ✓ ${board.padEnd(20)} ${forms}/${queue.length} forms · ${Object.keys(corpus.questions).length} questions · ${withOpts} with options`,
+      );
     } catch {
       /* a posting can close between listing and load */
     }
   }
   await page.close();
-  if (kept.length) corpus.boards[board] = kept;
-  const withOpts = Object.values(corpus.questions).filter((v) => v.options.length).length;
-  console.log(
-    `  ✓ ${board.padEnd(20)} ${kept.length} form(s) · ${forms} total · ${Object.keys(corpus.questions).length} questions · ${withOpts} with options`,
-  );
 }
+
+await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+corpus.boards = boardKept;
 await browser.close();
 
 corpus.questions = Object.fromEntries(Object.entries(corpus.questions).sort((a, b) => b[1].seen - a[1].seen));

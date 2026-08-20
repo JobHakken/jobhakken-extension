@@ -23,6 +23,9 @@ const arg = (k, d) => {
 const ATS = arg('--ats', 'greenhouse');
 const PER = Number(arg('--per', 4));
 const MAX = Number(arg('--max', 40));
+const CONCURRENCY = Number(arg('--concurrency', 8));
+const JITTER_MIN = Number(arg('--jitter-min', 5000));
+const JITTER_MAX = Number(arg('--jitter-max', 15000));
 const T = 25_000;
 
 const json = async (url, body) => {
@@ -224,6 +227,7 @@ function readForm() {
   };
   const out = [],
     seen = new Set();
+  let hidCounter = 0;
   for (const el of document.querySelectorAll('input,select,textarea')) {
     const type = el.type;
     if (['hidden', 'submit', 'button', 'search'].includes(type)) continue;
@@ -236,11 +240,20 @@ function readForm() {
     const desc = el.getAttribute('aria-describedby') ?? '';
     let kind = el.tagName === 'TEXTAREA' ? 'textarea' : el.tagName === 'SELECT' ? 'select' : type || 'text';
     if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox') kind = 'combobox';
+    // Ashby's combobox inputs carry role="combobox" but no `id` at all — an id-based click selector
+    // silently matches nothing and the field's options never get captured. Stamp every combobox with a
+    // data attribute we control so there is always something reliable to click on, id or not.
+    let clickId = el.id || null;
+    if (kind === 'combobox' && !clickId) {
+      clickId = `jh-hid-${hidCounter++}`;
+      el.setAttribute('data-jh-hid', clickId);
+    }
     out.push({
       label,
       kind,
       required: el.required || /\*/.test(el.closest('[class*="field"]')?.querySelector('label')?.textContent ?? ''),
       id: el.id || null,
+      clickId,
       widgetId: desc.split(/\s+/).find((t) => /^react-select-|select/.test(t)) ?? null,
       options: el.tagName === 'SELECT' ? [...el.options].map((o) => o.textContent.trim()).filter(Boolean) : [],
     });
@@ -261,21 +274,33 @@ let forms = 0,
   openTried = 0,
   openOk = 0;
 
+const OPTION_CAP = 300;
+
 /**
- * Read what ONE dropdown offers, without trusting any selector to be scoped to it.
+ * Read what ONE dropdown offers, without trusting any selector to be scoped to it, and tell the
+ * difference between "here is the complete answer" and "here is a sample of a search field."
  *
  * First cut used a global `[class*="option"],[role="option"]` query, and it was wrong: Greenhouse
  * permanently mounts a phone country-code picker (intl-tel-input) whose ~200 <li> items carry
- * role="option" unconditionally, click or no click. That selector matched all of them regardless of
- * which field was opened, so School/Degree/Discipline came back with "Afghanistan+93, ..." ahead of the
- * real answers — caught by reading the captured VALUES, not by trusting the count.
+ * role="option" unconditionally, click or no click. Fixed with a before/after diff: snapshot
+ * option-like nodes before the click, again after, keep only what is NEW and currently visible.
+ * Universal across ATS DOM conventions — it does not depend on knowing where any given vendor mounts
+ * its menu.
  *
- * Fixed with a before/after diff: snapshot option-like nodes before the click, again after, keep only
- * what is NEW and currently visible. Universal across ATS DOM conventions — it does not depend on
- * knowing where any given vendor mounts its menu.
+ * Second cut probed "is this a search field" by typing a nonsense query and checking whether the
+ * result count shrank. That was wrong in a way that broke silently: nearly every combobox widget
+ * filters on typed text as a generic convenience, whether the backing list is 3 fixed items or a
+ * 10,000-row virtualized one — so the probe returned true for almost everything. What actually tells
+ * them apart is whether the list is DONE GROWING once scrolling stops: a fixed list (Gender, Country)
+ * plateaus after a scroll or two; a real virtualized typeahead (School) keeps rendering more on every
+ * scroll; a pure search field (no default list at all) starts empty. Track the option count after each
+ * scroll and use that shape, not a type-and-recount side-quest.
  */
-async function optionsFor(page, id) {
+async function optionsFor(page, clickId) {
   openTried++;
+  // clickId is either the element's real `id` or a synthetic `jh-hid-N` we stamped via readForm() on
+  // Ashby-style comboboxes that carry role="combobox" but no id at all.
+  const selector = clickId.startsWith('jh-hid-') ? `[data-jh-hid="${clickId}"]` : `[id="${clickId}"]`;
   try {
     // page.evaluate() does not reliably round-trip a Set through Playwright's serialization boundary —
     // it comes back unusable in Node. Return a plain array and build the Set on this side.
@@ -283,41 +308,81 @@ async function optionsFor(page, id) {
       [...document.querySelectorAll('[class*="option"],[role="option"]')].map((o) => o.textContent.trim()),
     );
     const before = new Set(beforeArr);
-    await page.click(`[id="${id}"]`, { timeout: 2500 });
+    await page.click(selector, { timeout: 2500 });
     await page.waitForTimeout(700);
-    const after = await page.evaluate(() =>
-      [...document.querySelectorAll('[class*="option"],[role="option"]')]
-        .filter((o) => o.getBoundingClientRect().height > 0)
-        .map((o) => o.textContent.trim())
-        .filter((t) => t && t.length < 90),
-    );
+
+    const countNew = async () => {
+      const raw = await page.evaluate(() =>
+        [...document.querySelectorAll('[class*="option"],[role="option"]')]
+          .filter((o) => o.getBoundingClientRect().height > 0)
+          .map((o) => o.textContent.trim())
+          .filter((t) => t && t.length < 90),
+      );
+      return [...new Set(raw)].filter((t) => !before.has(t));
+    };
+
+    const counts = [(await countNew()).length];
+    for (let i = 0; i < 6; i++) {
+      const n = await page.evaluate(() => {
+        const opts = [...document.querySelectorAll('[role="option"]')];
+        const last = opts[opts.length - 1];
+        const menu = last?.closest('[class*="menu" i],[class*="Menu"]') ?? last?.parentElement;
+        if (menu) menu.scrollTop = menu.scrollHeight;
+        last?.scrollIntoView?.();
+        return opts.length;
+      });
+      await page.waitForTimeout(250);
+      counts.push((await countNew()).length);
+      if (n === counts[counts.length - 2] && counts.length > 3) break; // stable for a beat — stop early
+    }
+    const finalItems = await countNew();
+    const sample = finalItems.slice(0, OPTION_CAP);
+
+    const startedEmpty = counts[0] === 0;
+    const stillGrowing = counts.length > 1 && counts[counts.length - 1] > counts[counts.length - 2];
+    const hitCap = finalItems.length >= OPTION_CAP;
+    const searchable = startedEmpty || stillGrowing || hitCap;
+
     await page.keyboard.press('Escape').catch(() => {});
     await page.waitForTimeout(180);
-    const fresh = [...new Set(after)].filter((t) => !before.has(t));
-    if (fresh.length) openOk++;
-    return fresh.slice(0, 300);
+    if (sample.length) openOk++;
+    return { options: sample, searchable };
   } catch {
-    return [];
+    return { options: [], searchable: false };
   }
 }
 
-outer: for (const token of src.tokens) {
-  if (forms >= MAX) break;
-  const urls = ((await src.list(token)) ?? [])
-    .filter((u) => typeof u === 'string' && u.startsWith('http'))
-    .slice(0, PER);
-  if (!urls.length) {
-    console.log(`  –  ${token}: none`);
-    continue;
-  }
+/**
+ * Fetch every company's listing CONCURRENTLY, then work one flat queue of (token, url) items with N
+ * concurrent tabs — the same pattern proven on the Greenhouse harvester (10.6min -> 4min at 45 forms).
+ * Jitter before each item desynchronizes the workers' request timing without limiting throughput.
+ */
+console.log(`  fetching ${src.tokens.length} ${ATS} listings concurrently…`);
+const listings = await Promise.all(
+  src.tokens.map(async (token) => ({
+    token,
+    urls: ((await src.list(token)) ?? []).filter((u) => typeof u === 'string' && u.startsWith('http')).slice(0, PER),
+  })),
+);
+for (const { token, urls } of listings) if (!urls.length) console.log(`  –  ${token}: none`);
+
+const queue = [];
+for (const { token, urls } of listings) for (const url of urls) queue.push({ token, url });
+queue.length = Math.min(queue.length, MAX);
+console.log(`  ${queue.length} postings queued across ${listings.filter((l) => l.urls.length).length} companies\n`);
+
+let cursor = 0;
+const boardKept = {};
+const jitter = () => JITTER_MIN + Math.random() * (JITTER_MAX - JITTER_MIN);
+
+async function worker() {
   const page = await browser.newPage();
   await page.setViewportSize({ width: 1300, height: 950 });
-  const kept = [];
-  for (const url of urls) {
-    if (forms >= MAX) {
-      await page.close();
-      break outer;
-    }
+  while (cursor < queue.length && forms < MAX) {
+    const item = queue[cursor++];
+    if (!item) break;
+    const { token, url } = item;
+    await page.waitForTimeout(jitter());
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: T });
       await page.waitForSelector('input,select,textarea', { timeout: 8000 }).catch(() => {});
@@ -341,11 +406,15 @@ outer: for (const token of src.tokens) {
       const fields = await page.evaluate(readForm);
       if (fields.length < 5) continue;
       for (const f of fields) {
-        if (f.kind !== 'combobox' || !f.id || f.options.length) continue;
-        f.options = await optionsFor(page, f.id);
+        if (f.kind !== 'combobox' || !f.clickId || f.options.length) continue;
+        const r = await optionsFor(page, f.clickId);
+        f.options = r.options;
+        f.searchable = r.searchable;
       }
-      kept.push({ url, fields: fields.length });
       forms++;
+      (boardKept[token] ??= []).push({ url, fields: fields.length });
+      // Object mutation here is safe under concurrency: nothing awaits between the read and the write in
+      // this block, and JS only switches tasks at an `await` — two workers can never interleave mid-update.
       for (const f of fields) {
         const k = f.label.toLowerCase().slice(0, 140);
         const q = (corpus.questions[k] ??= {
@@ -357,6 +426,7 @@ outer: for (const token of src.tokens) {
           widgetIds: [],
           fieldIds: [],
           options: [],
+          searchable: false,
         });
         q.seen++;
         q.kinds[f.kind] = (q.kinds[f.kind] ?? 0) + 1;
@@ -364,18 +434,21 @@ outer: for (const token of src.tokens) {
         if (!q.boards.includes(token)) q.boards.push(token);
         if (f.widgetId && !q.widgetIds.includes(f.widgetId)) q.widgetIds.push(f.widgetId);
         if (f.id && !/^\d/.test(f.id) && !q.fieldIds.includes(f.id)) q.fieldIds.push(f.id);
-        if (f.options.length > q.options.length) q.options = f.options.slice(0, 300);
+        if (f.searchable) q.searchable = true;
+        if (f.options.length > q.options.length) q.options = f.options.slice(0, OPTION_CAP);
       }
+      console.log(
+        `  ✓ ${token.padEnd(20)} ${forms}/${queue.length} forms · ${Object.keys(corpus.questions).length} questions`,
+      );
     } catch {
       /* posting closed or blocked */
     }
   }
   await page.close();
-  if (kept.length) corpus.boards[token] = kept;
-  console.log(
-    `  ✓ ${token.padEnd(20)} ${kept.length} form(s) · ${forms} total · ${Object.keys(corpus.questions).length} questions`,
-  );
 }
+
+await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+corpus.boards = boardKept;
 await browser.close();
 
 corpus.questions = Object.fromEntries(Object.entries(corpus.questions).sort((a, b) => b[1].seen - a[1].seen));
