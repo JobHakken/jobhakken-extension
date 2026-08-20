@@ -50,11 +50,20 @@ function valueOf(el: Element): string {
   // successfully-filled dropdown as empty — which is what made us tell users "6 filled" on a form
   // where 14 fields actually held values.
   if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-haspopup') === 'listbox') {
-    const box = el.closest('[class*="control"],[class*="select"],[class*="Select"]');
-    const txt = (box?.textContent ?? '')
-      .replace(/select\s*\.{2,}/i, '') // react-select's "Select..." placeholder
-      .trim();
-    if (txt) return txt;
+    // A className-based closest() lookup is fragile here: Greenhouse's BEM naming puts "select" in
+    // EVERY ancestor along the way up (select__input -> select__input-container ->
+    // select__value-container -> select__control), so `el.closest('[class*="select"]')` — even
+    // starting from the parent — kept self-matching an empty wrapper div one level too early and
+    // silently reported "not filled yet" for this entire widget family, even when the selection was
+    // correctly showing (verified live: the real text sat two levels further up than the nearest
+    // class*="select" match). Walk up looking for actual rendered TEXT instead of guessing a class
+    // name — robust to whatever a given vendor happens to name its wrapper divs.
+    let node: Element | null = el.parentElement;
+    for (let i = 0; node && i < 8; i++) {
+      const txt = (node.textContent ?? '').replace(/select\s*\.{2,}/i, '').trim();
+      if (txt) return txt;
+      node = node.parentElement;
+    }
   }
   return '';
 }

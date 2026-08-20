@@ -200,8 +200,20 @@ function reactSelectSet(el: Element, value: string): boolean {
 
 /** What the widget currently displays as its choice (react-select renders it as text, not input.value). */
 function shown(el: Element): string {
-  const control = el.closest('[class*="control"], [class*="Control"], [class*="select"], [class*="Select"]');
-  return ((control?.textContent ?? '') as string).replace(/select\s*\.{2,}/i, '').trim();
+  // A className-based closest() lookup is fragile here: Greenhouse's BEM naming puts "select" in
+  // EVERY ancestor's class along the way up (select__input -> select__input-container ->
+  // select__value-container -> select__control), so widening the search past `el` itself still
+  // self-matched on an empty wrapper div one level too early — verified live: the selection rendered
+  // correctly ("Reykjavik, Capital Region, Iceland") two levels further up than the nearest
+  // class*="select" match. Walk up looking for actual rendered TEXT instead of guessing a class name —
+  // robust to whatever a given vendor happens to name its wrapper divs.
+  let node: Element | null = el.parentElement;
+  for (let i = 0; node && i < 8; i++) {
+    const txt = (node.textContent ?? '').replace(/select\s*\.{2,}/i, '').trim();
+    if (txt) return txt;
+    node = node.parentElement;
+  }
+  return '';
 }
 
 /**
@@ -233,15 +245,32 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
   let opts = [...document.querySelectorAll<HTMLElement>('[role="option"]')].filter(
     (o) => o.getBoundingClientRect().height > 0,
   );
-  // Long lists filter as you type (countries) — narrow, then re-read.
-  if (opts.length > 12 && el instanceof HTMLInputElement) {
+  // Long lists filter as you type (countries) — narrow, then re-read. A field that opens with NOTHING
+  // visible (School, Location (City), Ashby's location field — verified live against real corpus data:
+  // zero options until typed) is a different case, not just an empty long list: there's no list to
+  // narrow, so type the FULL value rather than a slice, and give it longer — these are typically a
+  // remote/debounced search (same as Workday's multiselect prompt in widgets.ts), not a client-side
+  // filter over an already-loaded array. Without this the field silently stays blank: `reactSelectSet`
+  // above already failed for the same reason (an async combobox's `props.options` is empty until a
+  // query has actually run), so this fallback was the only remaining path and it never triggered.
+  if ((opts.length > 12 || opts.length === 0) && el instanceof HTMLInputElement) {
+    const searchOnly = opts.length === 0;
     const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-    set?.call(el, value.slice(0, 24));
+    set?.call(el, searchOnly ? value : value.slice(0, 24));
     el.dispatchEvent(new Event('input', { bubbles: true }));
-    await sleep(350);
-    const filtered = [...document.querySelectorAll<HTMLElement>('[role="option"]')].filter(
-      (o) => o.getBoundingClientRect().height > 0,
-    );
+    await sleep(searchOnly ? 700 : 350);
+    const readVisible = () =>
+      [...document.querySelectorAll<HTMLElement>('[role="option"]')].filter(
+        (o) => o.getBoundingClientRect().height > 0,
+      );
+    let filtered = readVisible();
+    // Poll a bit longer only for the genuinely-empty case — a remote search can still be in flight
+    // after the first wait. Bounded so this can never run away with the fill budget (repairFills gives
+    // a combobox 4s total; open-wait + this stays comfortably under that).
+    for (let i = 0; searchOnly && !filtered.length && i < 5; i++) {
+      await sleep(350);
+      filtered = readVisible();
+    }
     if (filtered.length) opts = filtered;
   }
   const score = (text: string): number => {
@@ -265,8 +294,17 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
     return false;
   }
   best.click();
-  await sleep(300);
-  const after = shown(el);
+  // A single fixed wait-then-check reported a real success as a failure: on a live Greenhouse
+  // Location (City) field, the click committed correctly (verified: `shown(el)` eventually read the
+  // right text) but a single 300ms sleep read the DOM before React finished re-rendering the selected
+  // text, so the field silently got left blank AND recorded as unfillable even though the pick worked.
+  // Poll for a beat instead of trusting one snapshot.
+  let after = '';
+  for (let i = 0; i < 5; i++) {
+    await sleep(150);
+    after = shown(el);
+    if ((!!after && after !== before) || (el as HTMLInputElement).value) break;
+  }
   const ok = (!!after && after !== before) || !!(el as HTMLInputElement).value;
   if (!ok) el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   return ok;
