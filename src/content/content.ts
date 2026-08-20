@@ -69,6 +69,7 @@ import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js';
 import { applyH1bBadges, getH1bVerdict } from './h1b.js';
+import { applyHiringPostFilters, isPostSearchPage } from './hiringPosts.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -2051,6 +2052,7 @@ async function init() {
 
   updateBadge(); // toolbar-icon field count
   applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
+  if (isPostSearchPage()) void applyHiringPostFilters(); // LinkedIn content-search only — unrelated to badges/rail below
   syncRail(); // the rail + its launcher, once we know this page is an application
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
@@ -2063,6 +2065,12 @@ async function init() {
       // constantly. Running the full detectFields + per-field resolution + badge passes there was
       // continuous wasted work and a real risk to browser responsiveness. A single querySelectorAll
       // costs nothing and rules out the overwhelming majority of pages.
+      // LinkedIn's content-search page is never "formish" (no application fields), so it's checked
+      // and returned on its own — same cheap-gate discipline, a different page shape.
+      if (isPostSearchPage()) {
+        void applyHiringPostFilters();
+        return;
+      }
       if (!looksFormish()) return;
       updateBadge();
       syncRail();
