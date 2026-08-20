@@ -751,7 +751,14 @@ async function draftTwo(label: string): Promise<{ options: string[]; error?: str
  * something. Re-checked on SPA mutations, since an application form often renders after first paint.
  */
 function syncRail(): void {
-  const wanted = isRelevantPage() || fieldCount >= 3;
+  // `isRelevantPage()` alone — deliberately NOT `|| fieldCount >= 3` (#174). A bare field count is not
+  // an application signal: a login form, a contact form, a newsletter signup, a checkout and most
+  // settings screens all clear three fields, so that clause put our launcher on most of the web. It
+  // also contradicted the documented contract on `isRelevantPage` right above ("opens ONLY on
+  // job-application pages, never on ordinary sites"). Beyond being noise, UI appearing on unrelated
+  // sites reads as "this extension watches everything I do", which is the opposite of the local-always
+  // promise we make. An unrecognised ATS is still reachable: `siteOptedIn` forces the rail on.
+  const wanted = isRelevantPage();
   if (!wanted) {
     unmountRail();
     return;
