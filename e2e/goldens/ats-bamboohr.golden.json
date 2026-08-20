@@ -1,6 +1,6 @@
 {
   "fixture": "ats-bamboohr.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
   "_note": "BambooHR SPA form, captured live from the embedded iframe.",
   "fields": [
@@ -29,13 +29,34 @@
       "selector": "#nickname_hpcsaf",
       "expect": "",
       "review": true,
-      "note": "text — Please leave this field blank"
+      "note": "text \u2014 Please leave this field blank"
     },
     {
       "selector": "#FabricTextField-16",
       "expect": "",
       "review": true,
-      "note": "text — Link to This Job"
+      "note": "text \u2014 Link to This Job"
+    },
+    {
+      "label": "file-input",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file \u2014 file-input"
+    },
+    {
+      "selector": ":nth-match(input, 8)",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file \u2014 file-input"
+    },
+    {
+      "selector": "#g-recaptcha-response",
+      "expect": "",
+      "review": true,
+      "note": "textarea"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

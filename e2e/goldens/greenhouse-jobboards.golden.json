@@ -1,6 +1,6 @@
 {
   "fixture": "greenhouse-jobboards.html",
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera (dummy identity)",
   "_note": "The NEWER React job-boards.greenhouse.io variant (distinct from the classic boards.greenhouse.io fixture). Captured live via capture:static. Core PII gated; phone/upload reported.",
   "fields": [
     {
@@ -29,152 +29,245 @@
       "selector": "#question_19282376004",
       "expect": "",
       "review": true,
-      "note": "text — Please provide your City *"
+      "note": "text \u2014 Please provide your City *"
     },
     {
       "selector": "#question_19282378004",
       "expect": "",
       "review": true,
-      "note": "text — Please provide your Zip Code *"
+      "note": "text \u2014 Please provide your Zip Code *"
     },
     {
       "selector": "#question_19282379004",
       "expect": "",
       "review": true,
-      "note": "text — Website"
+      "note": "text \u2014 Website"
     },
     {
       "selector": "#question_19282380004",
       "expect": "",
       "review": true,
-      "note": "text — LinkedIn Profile"
+      "note": "text \u2014 LinkedIn Profile"
     },
     {
       "selector": "#question_19282384004",
       "expect": "",
       "review": true,
-      "note": "text — Have you worked for Two Six Technologies or an affiliate in the past? "
+      "note": "text \u2014 Have you worked for Two Six Technologies or an affiliate in the past? "
     },
     {
       "selector": "#question_19282387004",
       "expect": "",
       "review": true,
-      "note": "text — How did you hear about us?*"
+      "note": "text \u2014 How did you hear about us?*"
     },
     {
       "selector": "#question_19282388004",
       "expect": "",
       "review": true,
-      "note": "text — If you were referred by an Employee, please list their name."
+      "note": "text \u2014 If you were referred by an Employee, please list their name."
     },
     {
       "selector": "#question_19282389004",
       "expect": "",
       "review": true,
-      "note": "text — Please provide your Legal Name *"
+      "note": "text \u2014 Please provide your Legal Name *"
     },
     {
       "selector": "#country",
       "expect": "",
       "review": true,
-      "note": "combobox — Country*"
+      "note": "combobox \u2014 Country*"
     },
     {
       "selector": "#iti-0__search-input",
       "expect": "",
       "review": true,
-      "note": "combobox — Phone"
+      "note": "combobox \u2014 Phone"
     },
     {
       "selector": "#school--0",
       "expect": "",
       "review": true,
-      "note": "combobox — School"
+      "note": "combobox \u2014 School"
     },
     {
       "selector": "#degree--0",
       "expect": "",
       "review": true,
-      "note": "combobox — Degree"
+      "note": "combobox \u2014 Degree"
     },
     {
       "selector": "#discipline--0",
       "expect": "",
       "review": true,
-      "note": "combobox — Discipline"
+      "note": "combobox \u2014 Discipline"
     },
     {
       "selector": "#question_19282377004",
       "expect": "",
       "review": true,
-      "note": "combobox — Please select your State*"
+      "note": "combobox \u2014 Please select your State*"
     },
     {
       "selector": "#question_19282381004",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you eligible for a DoD security clearance?*"
+      "note": "combobox \u2014 Are you eligible for a DoD security clearance?*"
     },
     {
       "selector": "#question_19282382004",
       "expect": "",
       "review": true,
-      "note": "combobox — Security Clearance *"
+      "note": "combobox \u2014 Security Clearance *"
     },
     {
       "selector": "#question_19282383004",
       "expect": "",
       "review": true,
-      "note": "combobox — Desired Salary*"
+      "note": "combobox \u2014 Desired Salary*"
     },
     {
       "selector": "#question_19282385004",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you a current or former direct employee of any government institut"
+      "note": "combobox \u2014 Are you a current or former direct employee of any government institut"
     },
     {
       "selector": "#question_19282386004",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you currently bound by any non-compete or employment agreement?*"
+      "note": "combobox \u2014 Are you currently bound by any non-compete or employment agreement?*"
     },
     {
       "selector": "#question_19282390004",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you legally authorized to work in the United States?*"
+      "note": "combobox \u2014 Are you legally authorized to work in the United States?*"
     },
     {
       "selector": "#question_19282391004",
       "expect": "",
       "review": true,
-      "note": "combobox — Do you now, or will you in the future, require company sponsorship for"
+      "note": "combobox \u2014 Do you now, or will you in the future, require company sponsorship for"
     },
     {
       "selector": "#gender",
       "expect": "",
       "review": true,
-      "note": "combobox — Gender*"
+      "note": "combobox \u2014 Gender*"
     },
     {
       "selector": "#hispanic_ethnicity",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you Hispanic/Latino?*"
+      "note": "combobox \u2014 Are you Hispanic/Latino?*"
     },
     {
       "selector": "#veteran_status",
       "expect": "",
       "review": true,
-      "note": "combobox — Veteran Status*"
+      "note": "combobox \u2014 Veteran Status*"
     },
     {
       "selector": "#disability_status",
       "expect": "",
       "review": true,
-      "note": "combobox — Disability Status*"
+      "note": "combobox \u2014 Disability Status*"
+    },
+    {
+      "selector": ":nth-match(input, 5)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#resume",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "#cover_letter",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": ":nth-match(input, 15)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 20)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 22)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 24)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 27)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 29)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 34)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 36)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 38)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 40)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 42)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 44)",
+      "expect": "",
+      "review": true,
+      "note": "input"
     }
   ],
-  "minRecall": 1
+  "minRecall": 1,
+  "minPrecision": 1
 }

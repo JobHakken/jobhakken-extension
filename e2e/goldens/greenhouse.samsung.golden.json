@@ -1,8 +1,8 @@
 {
   "fixture": "greenhouse.samsung.html",
   "minRecall": 1,
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
-  "_note": "Human-authored expectation of what SHOULD fill (never auto-derived from current behaviour). gate:true fields fail the build if wrong (regression guard on core PII). gate:false fields are reported as coverage/gaps but don't fail — they track work to hand upstream to @jobhakken/autofill. match defaults to exact; 'contains' for values a site may reformat (e.g. phone).",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera (dummy identity)",
+  "_note": "Human-authored expectation of what SHOULD fill (never auto-derived from current behaviour). gate:true fields fail the build if wrong (regression guard on core PII). gate:false fields are reported as coverage/gaps but don't fail \u2014 they track work to hand upstream to @jobhakken/autofill. match defaults to exact; 'contains' for values a site may reformat (e.g. phone).",
   "fields": [
     {
       "selector": "#first_name",
@@ -31,7 +31,7 @@
       "expect": "linkedin.com/in/jordan-rivera",
       "match": "contains",
       "gate": false,
-      "note": "LinkedIn Profile free-text question (contains — robust to www/no-www)"
+      "note": "LinkedIn Profile free-text question (contains \u2014 robust to www/no-www)"
     },
     {
       "selector": "#question_31130472003",
@@ -43,151 +43,292 @@
       "selector": "#company-name-0",
       "expect": "",
       "review": true,
-      "note": "text — Company name*"
+      "note": "text \u2014 Company name*"
     },
     {
       "selector": "#title-0",
       "expect": "",
       "review": true,
-      "note": "text — Title*"
+      "note": "text \u2014 Title*"
     },
     {
       "selector": "#start-date-year-0",
       "expect": "",
       "review": true,
-      "note": "text — Start date year*"
+      "note": "text \u2014 Start date year*"
     },
     {
       "selector": "#end-date-year-0",
       "expect": "",
       "review": true,
-      "note": "text — End date year*"
+      "note": "text \u2014 End date year*"
     },
     {
       "selector": "#start-year--0",
       "expect": "",
       "review": true,
-      "note": "text — Start date year*"
+      "note": "text \u2014 Start date year*"
     },
     {
       "selector": "#end-year--0",
       "expect": "",
       "review": true,
-      "note": "text — End date year*"
+      "note": "text \u2014 End date year*"
     },
     {
       "selector": "#question_31130473003",
       "expect": "",
       "review": true,
-      "note": "text — Physical Address*"
+      "note": "text \u2014 Physical Address*"
     },
     {
       "selector": "#g-recaptcha-response-100000",
       "expect": "",
       "review": true,
-      "note": "textarea — Powered by"
+      "note": "textarea \u2014 Powered by"
     },
     {
       "selector": "#current-role-0_1",
       "expect": "",
       "review": true,
-      "note": "radio — End date year*"
+      "note": "radio \u2014 End date year*"
     },
     {
       "selector": "[id=\"question_31130477003[]_164236972003\"]",
       "expect": "",
       "review": true,
-      "note": "radio — How did you learn about Samsung Semiconductor Inc.? Select all that ap"
+      "note": "radio \u2014 How did you learn about Samsung Semiconductor Inc.? Select all that ap"
     },
     {
       "selector": "#country",
       "expect": "",
       "review": true,
-      "note": "combobox — Country*"
+      "note": "combobox \u2014 Country*"
     },
     {
       "selector": "#start-date-month-0",
       "expect": "",
       "review": true,
-      "note": "combobox — Start date month*"
+      "note": "combobox \u2014 Start date month*"
     },
     {
       "selector": "#end-date-month-0",
       "expect": "",
       "review": true,
-      "note": "combobox — End date month*"
+      "note": "combobox \u2014 End date month*"
     },
     {
       "selector": "#school--0",
       "expect": "",
       "review": true,
-      "note": "combobox — School*"
+      "note": "combobox \u2014 School*"
     },
     {
       "selector": "#degree--0",
       "expect": "",
       "review": true,
-      "note": "combobox — Degree*"
+      "note": "combobox \u2014 Degree*"
     },
     {
       "selector": "#discipline--0",
       "expect": "",
       "review": true,
-      "note": "combobox — Discipline*"
+      "note": "combobox \u2014 Discipline*"
     },
     {
       "selector": "#start-month--0",
       "expect": "",
       "review": true,
-      "note": "combobox — Start date month*"
+      "note": "combobox \u2014 Start date month*"
     },
     {
       "selector": "#end-month--0",
       "expect": "",
       "review": true,
-      "note": "combobox — End date month*"
+      "note": "combobox \u2014 End date month*"
     },
     {
       "selector": "#question_31130474003",
       "expect": "",
       "review": true,
-      "note": "combobox — Have you previously been employed at Samsung Semiconductor or one of o"
+      "note": "combobox \u2014 Have you previously been employed at Samsung Semiconductor or one of o"
     },
     {
       "selector": "#question_31130475003",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you legally authorized to work in the United States? *"
+      "note": "combobox \u2014 Are you legally authorized to work in the United States? *"
     },
     {
       "selector": "#question_31130476003",
       "expect": "",
       "review": true,
-      "note": "combobox — Will you now or in the future require visa sponsorship? *"
+      "note": "combobox \u2014 Will you now or in the future require visa sponsorship? *"
     },
     {
       "selector": "#gender",
       "expect": "",
       "review": true,
-      "note": "combobox — Gender*"
+      "note": "combobox \u2014 Gender*"
     },
     {
       "selector": "#hispanic_ethnicity",
       "expect": "",
       "review": true,
-      "note": "combobox — Are you Hispanic/Latino?*"
+      "note": "combobox \u2014 Are you Hispanic/Latino?*"
     },
     {
       "selector": "#veteran_status",
       "expect": "",
       "review": true,
-      "note": "combobox — Veteran Status*"
+      "note": "combobox \u2014 Veteran Status*"
     },
     {
       "selector": "#disability_status",
       "expect": "",
       "review": true,
-      "note": "combobox — Disability Status*"
+      "note": "combobox \u2014 Disability Status*"
+    },
+    {
+      "selector": ":nth-match(input, 5)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#resume",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "#cover_letter",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": ":nth-match(input, 12)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 15)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 19)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 21)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 23)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 25)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 28)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 34)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 36)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 38)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236973003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236974003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236975003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236976003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236977003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236978003\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 47)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 49)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 51)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 53)",
+      "expect": "",
+      "review": true,
+      "note": "input"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

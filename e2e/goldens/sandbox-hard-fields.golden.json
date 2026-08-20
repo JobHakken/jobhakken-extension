@@ -1,7 +1,7 @@
 {
   "fixture": "e2e/sandbox.html",
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
-  "_note": "The HARD fields autofill actually struggles with: a lazy react-select combobox (value in data-value) and file uploads (files[0].name). These fill LATE via the interactive pass → poll:true. NB: no fill_sensitive override — the EEO/Gender combobox must fill on the DEFAULT (fill-all), so this also guards that default.",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera (dummy identity)",
+  "_note": "The HARD fields autofill actually struggles with: a lazy react-select combobox (value in data-value) and file uploads (files[0].name). These fill LATE via the interactive pass \u2192 poll:true. NB: no fill_sensitive override \u2014 the EEO/Gender combobox must fill on the DEFAULT (fill-all), so this also guards that default.",
   "fields": [
     {
       "label": "First Name",
@@ -23,7 +23,7 @@
       "match": "contains",
       "poll": true,
       "gate": true,
-      "note": "résumé upload"
+      "note": "r\u00e9sum\u00e9 upload"
     },
     {
       "selector": "#cl",
@@ -38,19 +38,20 @@
       "selector": "#fn",
       "expect": "",
       "review": true,
-      "note": "text — First Name"
+      "note": "text \u2014 First Name"
     },
     {
       "selector": "#em",
       "expect": "",
       "review": true,
-      "note": "text — Email"
+      "note": "text \u2014 Email"
     },
     {
       "selector": "#ph",
       "expect": "",
       "review": true,
-      "note": "text — Phone"
+      "note": "text \u2014 Phone"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

@@ -1,8 +1,8 @@
 {
   "fixture": "ats-jobvite.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
-  "_note": "Jobvite public /apply form (captured live). Opaque field ids → match by label.",
+  "_note": "Jobvite public /apply form (captured live). Opaque field ids \u2192 match by label.",
   "fields": [
     {
       "label": "First Name",
@@ -29,31 +29,38 @@
       "selector": "#jv-edit-resume-textarea0",
       "expect": "",
       "review": true,
-      "note": "textarea — Type or paste your Resume here"
+      "note": "textarea \u2014 Type or paste your Resume here"
     },
     {
       "selector": "#jv-field-yn17Zfwe",
       "expect": "",
       "review": true,
-      "note": "text — First Name*"
+      "note": "text \u2014 First Name*"
     },
     {
       "selector": "#jv-field-yo17Zfwf",
       "expect": "",
       "review": true,
-      "note": "text — Last Name*"
+      "note": "text \u2014 Last Name*"
     },
     {
       "selector": "#jv-field-yp17Zfwg",
       "expect": "",
       "review": true,
-      "note": "text — Email*"
+      "note": "text \u2014 Email*"
     },
     {
       "selector": "#jv-field-yq17Zfwh",
       "expect": "",
       "review": true,
-      "note": "text — Phone"
+      "note": "text \u2014 Phone"
+    },
+    {
+      "selector": "#g-recaptcha-response",
+      "expect": "",
+      "review": true,
+      "note": "textarea"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

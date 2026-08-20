@@ -7,49 +7,57 @@
       "selector": "#workExperience-267--jobTitle",
       "expect": "",
       "review": true,
-      "note": "text — Job Title*"
+      "note": "text \u2014 Job Title*"
     },
     {
       "selector": "#workExperience-267--companyName",
       "expect": "",
       "review": true,
-      "note": "text — Company*"
+      "note": "text \u2014 Company*"
     },
     {
       "selector": "#workExperience-267--location",
       "expect": "",
       "review": true,
-      "note": "text — Location*"
+      "note": "text \u2014 Location*"
     },
     {
       "selector": "#workExperience-267--startDate-dateSectionMonth-input",
       "expect": "",
       "review": true,
-      "note": "text — From*"
+      "note": "text \u2014 From*"
     },
     {
       "selector": "#workExperience-267--startDate-dateSectionYear-input",
       "expect": "",
       "review": true,
-      "note": "text — From*"
+      "note": "text \u2014 From*"
     },
     {
       "selector": "#workExperience-267--endDate-dateSectionMonth-input",
       "expect": "",
       "review": true,
-      "note": "text — To*"
+      "note": "text \u2014 To*"
     },
     {
       "selector": "#workExperience-267--endDate-dateSectionYear-input",
       "expect": "",
       "review": true,
-      "note": "text — To*"
+      "note": "text \u2014 To*"
     },
     {
       "selector": "#workExperience-267--currentlyWorkHere",
       "expect": "",
       "review": true,
-      "note": "radio — Location*"
+      "note": "radio \u2014 Location*"
+    },
+    {
+      "selector": ":nth-match(input, 9)",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

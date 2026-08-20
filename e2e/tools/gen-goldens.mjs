@@ -59,6 +59,10 @@ function addressOf(f) {
   if (f.name) return { selector: `[name="${f.name.replace(/"/g, '\\"')}"]` };
   // Long prose labels make terrible regexes; only use a label that reads like a real field name.
   if (f.label && f.label.length <= 60) return { label: f.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') };
+  // Nothing nameable: fall back to position. Playwright's :nth-match works on a plain locator, and a
+  // frozen fixture's DOM order does not move. Without this, a field with no id/name/label can never be
+  // named by a golden — so every fill into it reads as an untracked write forever.
+  if (f.nth) return { selector: `:nth-match(${f.nth.tag}, ${f.nth.idx})` };
   return null;
 }
 
@@ -81,6 +85,32 @@ for (const rel of fixtureFiles()) {
   await page.goto('file://' + path.join(FIXTURES, rel), { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(200);
 
+  // Identity is the ELEMENT, never the address string. Successive versions of the addressing logic
+  // (id, then label, then position) each produced a different string for the same control, so a
+  // string-keyed `seen` re-added controls that were already named — hundreds of duplicates, which
+  // then double-counted in the scoring. Tag every control once and dedupe on that tag instead.
+  await page.evaluate(() =>
+    document.querySelectorAll('input, select, textarea').forEach((el, i) => el.setAttribute('data-gg', String(i))),
+  );
+
+  const hit = existing.get(rel);
+  const golden = hit?.golden ?? {
+    fixture: rel,
+    _note:
+      'Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.',
+    minRecall: 0,
+    fields: [],
+  };
+
+  // Which controls are ALREADY named — resolved through the golden's own locators, so whatever form
+  // an existing entry's address takes, the element it points at counts as covered.
+  const covered = new Set();
+  for (const e of golden.fields) {
+    const loc = e.label ? page.getByLabel(new RegExp(e.label, 'i')).first() : page.locator(e.selector);
+    const ids = await loc.evaluateAll((els) => els.map((x) => x.getAttribute('data-gg'))).catch(() => []);
+    for (const id of ids) if (id != null) covered.add(id);
+  }
+
   const detected = await page.evaluate((mods) => {
     const loaded = {};
     const load = (name, code) => {
@@ -95,40 +125,52 @@ for (const rel of fixtureFiles()) {
     load('signature', mods.signature);
     load('widgets', mods.widgets);
     load('detect', mods.detect);
+    const nthOf = (el) => {
+      const tag = el.tagName.toLowerCase();
+      const i = [...document.querySelectorAll(tag)].indexOf(el);
+      return i < 0 ? null : { tag, idx: i + 1 };
+    };
+    const describe = (el, kind) => ({
+      gg: el.getAttribute('data-gg'),
+      id: el.id ?? '',
+      name: el.getAttribute('name') ?? '',
+      label: el.getAttribute('aria-label') ?? '',
+      kind,
+      isFile: el.type === 'file',
+      nth: nthOf(el),
+    });
+    let out = [];
     try {
-      return loaded.detect.detectFields(document).map((f) => ({
-        id: f.id ?? '',
-        name: f.name ?? '',
-        label: f.label ?? '',
-        kind: f.kind,
-        isFile: f.el instanceof HTMLInputElement && f.el.type === 'file',
-      }));
+      out = loaded.detect.detectFields(document).map((f) => ({ ...describe(f.el, f.kind), label: f.label ?? '' }));
     } catch {
-      return [];
+      out = [];
     }
+    // detectFields is narrower than "things autofill can write to": it skips file inputs (uploads go
+    // via detectFileInputs) and the anonymous search <input>s inside custom combobox widgets, yet both
+    // get written to. The golden must be able to NAME anything the unexpected-fill check can see, or a
+    // legitimate fill there reads as an untracked write forever.
+    const have = new Set(out.map((f) => f.gg));
+    for (const el of document.querySelectorAll('input, select, textarea')) {
+      if (el.disabled || el.type === 'hidden' || have.has(el.getAttribute('data-gg'))) continue;
+      out.push(describe(el, el.type === 'file' ? 'file' : el.tagName.toLowerCase()));
+    }
+    return out;
   }, MODULES);
 
-  const hit = existing.get(rel);
-  // A fixture with no golden only earns one if it looks like a real application form; the LinkedIn
-  // listing captures and similar pages would otherwise produce empty, meaningless goldens.
   if (!hit && detected.length < 4) continue;
 
-  const golden = hit?.golden ?? {
-    fixture: rel,
-    _note:
-      'Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.',
-    minRecall: 0,
-    fields: [],
-  };
-  const seen = new Set(golden.fields.map(keyOf));
-
+  const usedAddr = new Set(golden.fields.map(keyOf));
   const fresh = [];
   for (const f of detected) {
-    const addr = addressOf(f);
+    if (f.gg == null || covered.has(f.gg)) continue; // this control already has an entry
+    covered.add(f.gg);
+    let addr = addressOf(f);
     if (!addr) continue;
-    const key = keyOf(addr);
-    if (seen.has(key)) continue; // human-authored (or previously generated) — never touch it
-    seen.add(key);
+    // Two controls can share a label (BambooHR gives both uploads aria-label="file-input") and a label
+    // locator resolves to `.first()`, so the second needs its own, positional address.
+    if (usedAddr.has(keyOf(addr)) && f.nth) addr = { selector: `:nth-match(${f.nth.tag}, ${f.nth.idx})` };
+    if (usedAddr.has(keyOf(addr))) continue;
+    usedAddr.add(keyOf(addr));
     fresh.push({
       ...addr,
       expect: '',
@@ -138,20 +180,14 @@ for (const rel of fixtureFiles()) {
     });
   }
 
-  if (!fresh.length && hit) continue; // nothing new; leave the file untouched so the run is idempotent
+  if (!fresh.length && hit) continue;
   const before = hit ? JSON.parse(JSON.stringify(hit.golden.fields)) : [];
   golden.fields.push(...fresh);
   added += fresh.length;
 
-  // Enforce invariant 1 on every run rather than trusting it: a human-authored expectation is the
-  // whole value of this file, and silently rewriting one would be far worse than not generating at
-  // all. Checked here, against the real corpus, so the guarantee can't quietly rot.
   for (const [i, prev] of before.entries()) {
     if (JSON.stringify(golden.fields[i]) !== JSON.stringify(prev)) {
-      throw new Error(
-        `gen-goldens would have modified an existing entry in ${hit.file}:\n` +
-          `  was: ${JSON.stringify(prev)}\n  now: ${JSON.stringify(golden.fields[i])}`,
-      );
+      throw new Error(`gen-goldens would have modified an existing entry in ${hit.file}`);
     }
   }
   if (fresh.some((f) => !f.review)) throw new Error(`gen-goldens emitted a non-review entry for ${rel}`);

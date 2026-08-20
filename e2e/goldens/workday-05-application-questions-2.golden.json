@@ -1,0 +1,32 @@
+{
+  "fixture": "workday/05-application-questions-2.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": ":nth-match(input, 1)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 2)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#secondaryQuestionnaire--dc4c98474ab110019f8ec35d351a0000",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 We respect the privacy of candidates for employment. This Privacy Noti"
+    },
+    {
+      "selector": "#secondaryQuestionnaire--dc4c98474ab110019f8ec3f744510002",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 I hereby consent to sharing and provision of my Personal Information t"
+    }
+  ],
+  "minPrecision": 1
+}

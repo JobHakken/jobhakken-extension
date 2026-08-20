@@ -7,91 +7,183 @@
       "selector": "[name=\"cName\"]",
       "expect": "",
       "review": true,
-      "note": "text — Full Name"
+      "note": "text \u2014 Full Name"
     },
     {
       "selector": "[name=\"cEmail\"]",
       "expect": "",
       "review": true,
-      "note": "text — Email Address"
+      "note": "text \u2014 Email Address"
     },
     {
       "selector": "[name=\"cPhoneNumber\"]",
       "expect": "",
       "review": true,
-      "note": "text — Phone Number"
+      "note": "text \u2014 Phone Number"
     },
     {
       "selector": "[name=\"cSummary\"]",
       "expect": "",
       "review": true,
-      "note": "textarea — Experience Summary"
+      "note": "textarea \u2014 Experience Summary"
     },
     {
       "selector": "[name=\"cCoverLetter\"]",
       "expect": "",
       "review": true,
-      "note": "textarea — Cover Letter"
+      "note": "textarea \u2014 Cover Letter"
     },
     {
       "selector": "[name=\"section_1776267224428_question_0\"]",
       "expect": "",
       "review": true,
-      "note": "text — What 2 or 3 program languages are you most comfortable with?*"
+      "note": "text \u2014 What 2 or 3 program languages are you most comfortable with?*"
     },
     {
       "selector": "[name=\"section_1776267224428_question_1\"]",
       "expect": "",
       "review": true,
-      "note": "textarea — If yes, explain:"
+      "note": "textarea \u2014 If yes, explain:"
     },
     {
       "selector": "[name=\"section_1776267224428_question_2\"]",
       "expect": "",
       "review": true,
-      "note": "text — Please list your best project here:"
+      "note": "text \u2014 Please list your best project here:"
     },
     {
       "selector": "[name=\"smsConsent\"]",
       "expect": "",
       "review": true,
-      "note": "radio — Phone Number"
+      "note": "radio \u2014 Phone Number"
     },
     {
       "selector": "[name=\"section_1776267224428_question_3\"]",
       "expect": "",
       "review": true,
-      "note": "radio — Are you legally authorized to work in the United States?*"
+      "note": "radio \u2014 Are you legally authorized to work in the United States?*"
     },
     {
       "selector": "[name=\"section_1776267224428_question_4\"]",
       "expect": "",
       "review": true,
-      "note": "radio — Will you now or in the future require sponsorship to work within the U"
+      "note": "radio \u2014 Will you now or in the future require sponsorship to work within the U"
     },
     {
       "selector": "#race_white",
       "expect": "",
       "review": true,
-      "note": "radio — Race or Ethnicity"
+      "note": "radio \u2014 Race or Ethnicity"
     },
     {
       "selector": "#gender_male",
       "expect": "",
       "review": true,
-      "note": "radio — Gender"
+      "note": "radio \u2014 Gender"
     },
     {
       "selector": "#vet_yes",
       "expect": "",
       "review": true,
-      "note": "radio — Please check one of the boxes below:"
+      "note": "radio \u2014 Please check one of the boxes below:"
     },
     {
       "selector": "#disability_yes",
       "expect": "",
       "review": true,
-      "note": "radio — Please check one of the boxes below:"
+      "note": "radio \u2014 Please check one of the boxes below:"
+    },
+    {
+      "selector": "#main-attachment",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "#hp_7f2b",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_black",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_hispanic",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_indian",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_hawaiian",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_two",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_latino",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#race_white_no",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#gender_female",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#gender_no",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#vet_no",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#vet_nope",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#disability_no",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#disability_nope",
+      "expect": "",
+      "review": true,
+      "note": "input"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

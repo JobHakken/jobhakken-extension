@@ -1,7 +1,7 @@
 {
   "fixture": "workday/02-my-information.html",
   "minRecall": 1,
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera (dummy identity)",
   "_note": "Workday 'My Information'. gate:true = proven-stable core fields (regression guard). gate:false = reported coverage/gaps.",
   "fields": [
     {
@@ -44,73 +44,110 @@
       "selector": "#address--addressLine2",
       "expect": "",
       "review": true,
-      "note": "text — Address Line 2"
+      "note": "text \u2014 Address Line 2"
     },
     {
       "selector": "#address--regionSubdivision1",
       "expect": "",
       "review": true,
-      "note": "text — County"
+      "note": "text \u2014 County"
     },
     {
       "selector": "#phoneNumber--extension",
       "expect": "",
       "review": true,
-      "note": "text — Phone Extension"
+      "note": "text \u2014 Phone Extension"
     },
     {
       "selector": "#j7x79",
       "expect": "",
       "review": true,
-      "note": "radio — Have you previously worked for Stanley Black & Decker? If Yes, please "
+      "note": "radio \u2014 Have you previously worked for Stanley Black & Decker? If Yes, please "
     },
     {
       "selector": "#name--preferredCheck",
       "expect": "",
       "review": true,
-      "note": "radio — Suffix"
+      "note": "radio \u2014 Suffix"
     },
     {
       "selector": "#source--source",
       "expect": "",
       "review": true,
-      "note": "combobox — How Did You Hear About Us?*"
+      "note": "combobox \u2014 How Did You Hear About Us?*"
     },
     {
       "selector": "#country--country",
       "expect": "",
       "review": true,
-      "note": "combobox — Country*"
+      "note": "combobox \u2014 Country*"
     },
     {
       "selector": "#name--legalName--title",
       "expect": "",
       "review": true,
-      "note": "combobox — Prefix"
+      "note": "combobox \u2014 Prefix"
     },
     {
       "selector": "#name--legalName--social",
       "expect": "",
       "review": true,
-      "note": "combobox — Suffix"
+      "note": "combobox \u2014 Suffix"
     },
     {
       "selector": "#address--countryRegion",
       "expect": "",
       "review": true,
-      "note": "combobox — State*"
+      "note": "combobox \u2014 State*"
     },
     {
       "selector": "#phoneNumber--phoneType",
       "expect": "",
       "review": true,
-      "note": "combobox — Phone Device Type*"
+      "note": "combobox \u2014 Phone Device Type*"
     },
     {
       "selector": "#phoneNumber--countryPhoneCode",
       "expect": "",
       "review": true,
-      "note": "combobox — Country Phone Code*"
+      "note": "combobox \u2014 Country Phone Code*"
+    },
+    {
+      "selector": "#j7x7a",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 4)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 5)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 9)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 14)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 17)",
+      "expect": "",
+      "review": true,
+      "note": "input"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

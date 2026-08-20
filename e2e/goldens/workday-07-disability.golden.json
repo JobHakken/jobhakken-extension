@@ -7,55 +7,62 @@
       "selector": "#selfIdentifiedDisabilityData--name",
       "expect": "",
       "review": true,
-      "note": "text — Name*"
+      "note": "text \u2014 Name*"
     },
     {
       "selector": "#selfIdentifiedDisabilityData--employeeId",
       "expect": "",
       "review": true,
-      "note": "text — Employee ID (if applicable)"
+      "note": "text \u2014 Employee ID (if applicable)"
     },
     {
       "selector": "#selfIdentifiedDisabilityData--dateSignedOn-dateSectionMonth-input",
       "expect": "",
       "review": true,
-      "note": "text — Date*"
+      "note": "text \u2014 Date*"
     },
     {
       "selector": "#selfIdentifiedDisabilityData--dateSignedOn-dateSectionDay-input",
       "expect": "",
       "review": true,
-      "note": "text — Date*"
+      "note": "text \u2014 Date*"
     },
     {
       "selector": "#selfIdentifiedDisabilityData--dateSignedOn-dateSectionYear-input",
       "expect": "",
       "review": true,
-      "note": "text — Date*"
+      "note": "text \u2014 Date*"
     },
     {
       "selector": "[id=\"64cbff5f364f10000ae7a421cf210000-disabilityStatus\"]",
       "expect": "",
       "review": true,
-      "note": "radio — Yes, I have a disability, or have had one in the past"
+      "note": "radio \u2014 Yes, I have a disability, or have had one in the past"
     },
     {
       "selector": "[id=\"64cbff5f364f10000aeec521b4ec0000-disabilityStatus\"]",
       "expect": "",
       "review": true,
-      "note": "radio — Yes, I have a disability, or have had one in the past"
+      "note": "radio \u2014 Yes, I have a disability, or have had one in the past"
     },
     {
       "selector": "[id=\"64cbff5f364f10000af3af293a050000-disabilityStatus\"]",
       "expect": "",
       "review": true,
-      "note": "radio — No, I do not have a disability and have not had one in the past"
+      "note": "radio \u2014 No, I do not have a disability and have not had one in the past"
     },
     {
       "selector": "#selfIdentifiedDisabilityData--disabilityForm",
       "expect": "",
       "review": true,
-      "note": "combobox — Language*"
+      "note": "combobox \u2014 Language*"
+    },
+    {
+      "selector": ":nth-match(input, 1)",
+      "expect": "",
+      "review": true,
+      "note": "input"
     }
-  ]
+  ],
+  "minPrecision": 1
 }

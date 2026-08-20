@@ -1,43 +1,44 @@
 {
   "fixture": "e2e/nonapp.html",
-  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "_note": "A deliberately NON-application page (login/contact form). Every field must stay empty: filling here is the failure.",
   "minRecall": 0,
   "fields": [
     {
       "selector": "#q",
       "expect": "",
-      "review": true,
-      "note": "text — Search"
+      "note": "text \u2014 Search",
+      "mustStayEmpty": true
     },
     {
       "selector": "#fn",
       "expect": "",
-      "review": true,
-      "note": "text — First name"
+      "note": "text \u2014 First name",
+      "mustStayEmpty": true
     },
     {
       "selector": "#ln",
       "expect": "",
-      "review": true,
-      "note": "text — Last name"
+      "note": "text \u2014 Last name",
+      "mustStayEmpty": true
     },
     {
       "selector": "#em",
       "expect": "",
-      "review": true,
-      "note": "text — Email"
+      "note": "text \u2014 Email",
+      "mustStayEmpty": true
     },
     {
       "selector": "#ph",
       "expect": "",
-      "review": true,
-      "note": "text — Phone"
+      "note": "text \u2014 Phone",
+      "mustStayEmpty": true
     },
     {
       "selector": "#co",
       "expect": "",
-      "review": true,
-      "note": "text — Company"
+      "note": "text \u2014 Company",
+      "mustStayEmpty": true
     }
-  ]
+  ],
+  "minPrecision": 1
 }
