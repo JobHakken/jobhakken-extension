@@ -293,7 +293,32 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
     el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     return false;
   }
-  best.click();
+  // Neither a bare `.click()` NOR invoking the option's own React handlers (reactClick) commits a
+  // selection on every combobox variant. Verified live (Samsung Semiconductor Greenhouse posting,
+  // Discipline field): both left `.select__single-value` never rendered — the component never actually
+  // entered a "selected" state — while the search <input>'s OWN value happened to still hold the typed
+  // query text, which made the OLD success check below (falling back to `!!el.value`) falsely report
+  // success. Pressing Escape afterwards (a completely ordinary interaction — closing the panel, the
+  // next field's own fill sequence, anything) then wiped that leftover search text, and the field
+  // silently reverted to empty with no error anywhere. What DOES reliably commit, verified live on the
+  // same field: keyboard navigation — ArrowDown to the target row, Enter to confirm — the same
+  // technique a real person uses, and the one every list widget wires up for accessibility regardless
+  // of how its click handling is implemented internally. Try the cheaper paths first; keyboard is the
+  // fallback that's actually reliable when they aren't.
+  if (!reactClick(best)) {
+    const idx = opts.indexOf(best);
+    if (idx >= 0 && idx < 20) {
+      for (let i = 0; i <= idx; i++) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, bubbles: true }),
+        );
+        await sleep(20);
+      }
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+    } else {
+      best.click(); // best sits too far down a huge list to walk to with keypresses — try anyway
+    }
+  }
   // A single fixed wait-then-check reported a real success as a failure: on a live Greenhouse
   // Location (City) field, the click committed correctly (verified: `shown(el)` eventually read the
   // right text) but a single 300ms sleep read the DOM before React finished re-rendering the selected
@@ -303,9 +328,13 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
   for (let i = 0; i < 5; i++) {
     await sleep(150);
     after = shown(el);
-    if ((!!after && after !== before) || (el as HTMLInputElement).value) break;
+    if (!!after && after !== before) break;
   }
-  const ok = (!!after && after !== before) || !!(el as HTMLInputElement).value;
+  // `el.value` is deliberately NOT part of this check: for a combobox search input, a non-empty value
+  // means "text is currently typed in the search box," not "a selection was committed" — a genuine
+  // commit clears the search text and renders the choice in a separate display element instead. Using
+  // `el.value` as a success signal is backwards here: it's true in exactly the failure case above.
+  const ok = !!after && after !== before;
   if (!ok) el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   return ok;
 }
