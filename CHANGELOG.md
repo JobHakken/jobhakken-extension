@@ -4,6 +4,18 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.1
+- **Fixed: fields like School or Location (City) silently stayed blank.** These only show real choices
+  once you start typing — nothing renders on open — and the fill logic never tried typing into a field
+  that opened empty. It now does, the same way a person would.
+- **Fixed: a filled dropdown could be reported as still empty**, which sometimes made the field's own
+  "was this filled?" check silently retry or misreport, especially right after picking a search result.
+- **Fixed: the green "we filled this" outline could appear on a field before it actually held a value.**
+  It showed up the moment ANY field got auto-filled, coloring every other high-confidence field on the
+  page too — even ones you hadn't clicked Fill on yet. The outline now only appears once a field
+  genuinely holds a value; "need you" fields still mark regardless, since that's a prompt, not a claim
+  of success.
+
 ## 0.35.0
 - **Back up & restore moved to Settings**, under Account & settings, where it belongs — it's account-level,
   not per-site, and not part of filling a form. The two icons are gone from the sidebar.

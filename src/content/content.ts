@@ -818,13 +818,13 @@ async function fieldOptions(
  */
 const MARK = 'data-jh-mark';
 function markFields(rows: PanelRow[], on: boolean): void {
-  const fields = new Map(pageFields().map((f) => [f.signature, f.el]));
+  const fields = new Map(pageFields().map((f) => [f.signature, f]));
   if (!on) {
-    for (const el of fields.values()) {
-      if (el.hasAttribute(MARK)) {
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-        el.removeAttribute(MARK);
+    for (const f of fields.values()) {
+      if (f.el.hasAttribute(MARK)) {
+        f.el.style.outline = '';
+        f.el.style.outlineOffset = '';
+        f.el.removeAttribute(MARK);
       }
     }
     return;
@@ -836,11 +836,26 @@ function markFields(rows: PanelRow[], on: boolean): void {
     sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
   };
   for (const r of rows) {
-    const el = fields.get(r.signature);
-    if (!el) continue;
-    el.style.outline = style[r.group] ?? '';
-    el.style.outlineOffset = '1px';
-    el.setAttribute(MARK, r.group);
+    const field = fields.get(r.signature);
+    if (!field) continue;
+    // "know"/"remember" claim a fill actually happened — that's only true once the control HOLDS the
+    // value, not merely because we're confident we COULD fill it. `r.current` (the panelFields()
+    // snapshot) goes stale the moment a single field is filled without a full panel refresh, so check
+    // the LIVE DOM here rather than trust it — otherwise a field the user hasn't touched yet gets
+    // marked green the next time ANYTHING re-renders the panel, which reads as a false success.
+    // "ask"/"sensitive" are prompts, not success claims — they mark regardless of current state, since
+    // flagging what needs the user's attention is the whole point, filled or not.
+    if ((r.group === 'know' || r.group === 'remember') && !currentValue(field).trim()) {
+      if (field.el.hasAttribute(MARK)) {
+        field.el.style.outline = '';
+        field.el.style.outlineOffset = '';
+        field.el.removeAttribute(MARK);
+      }
+      continue;
+    }
+    field.el.style.outline = style[r.group] ?? '';
+    field.el.style.outlineOffset = '1px';
+    field.el.setAttribute(MARK, r.group);
   }
 }
 
