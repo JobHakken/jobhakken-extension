@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "node build.mjs",
-    "package": "NODE_ENV=production node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged → jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
+    "package": "NODE_ENV=production node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged \u2192 jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
     "test": "jest --config ./jest.config.ts",
     "test:e2e": "E2E=1 npm run build && playwright test",
     "test:e2e:headed": "E2E=1 npm run build && PWHEAD=1 playwright test",
@@ -32,8 +32,7 @@
     "gen:h1b-roles": "node scripts/gen-h1b-roles.mjs"
   },
   "dependencies": {
-    "@jobhakken/autofill": "^0.2.1",
-    "@jobhakken/core": "^0.4.0"
+    "@jobhakken/autofill": "^0.2.1"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.1",

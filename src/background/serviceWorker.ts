@@ -6,7 +6,7 @@
  * for local-device access on every page, so the content script messages us instead and
  * WE fetch (extension origin + host_permissions → no prompt). Ephemeral — no state.
  */
-import { normalizeCompanyName } from '@jobhakken/core/build/sponsors';
+import { normalizeCompanyName } from '../lib/vendor/sponsors.js';
 
 import { chatText, draftAnswers, parseResumeToProfile } from '../lib/aiClient.js';
 import { mapFieldsWithAi } from '../lib/aiFieldMap.js';

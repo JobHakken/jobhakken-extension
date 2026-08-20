@@ -6,7 +6,7 @@ import {
   type UserRule,
 } from '@jobhakken/autofill';
 
-import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '@jobhakken/core/build/llm/providers.js';
+import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '../lib/vendor/llm/providers.js';
 
 import { DEFAULT_BASE } from '../lib/aiClient.js';
 import { connect, rpc } from '../lib/bridgeClient.js';

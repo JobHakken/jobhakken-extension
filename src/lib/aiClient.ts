@@ -10,8 +10,8 @@
  * COST: all questions on a form are drafted in ONE call (résumé/job context sent once), not one call
  * per question — a 4–6× token reduction on multi-essay forms. Output is capped.
  */
-import { createLlmClient } from '@jobhakken/core/build/llm/createLlmClient.js';
-import { getProvider } from '@jobhakken/core/build/llm/providers.js';
+import { createLlmClient } from './vendor/llm/createLlmClient.js';
+import { getProvider } from './vendor/llm/providers.js';
 
 import { hasAiHostPermission } from './hostPerms.js';
 
