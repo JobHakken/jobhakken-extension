@@ -4,6 +4,19 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.2
+- **Fixed: a dropdown could show the right answer, then silently revert to blank.** On some comboboxes,
+  clicking the matched option didn't actually register — the field looked briefly filled (typed search
+  text sitting in the box), then reverted the moment you pressed Escape, scrolled away, or the next
+  field filled. Now falls back to the same keyboard selection a person would use when a click doesn't
+  take, and the "did this work?" check no longer treats leftover typed text as a success.
+- **Fixed: a "select all that apply" checkbox question only outlined its first checkbox**, making it
+  look like one random checkbox needed attention instead of the whole question. All of them mark now.
+- **Fixed: some field outlines were a nearly-invisible sliver** instead of a box around the visible
+  control — a few widgets keep their real interactive element sized down to almost nothing.
+- **Fill-as-you-scroll now shows what it filled**, the same green/blue outline a manual Fill gets. It
+  was the one fill path that left no visible trace before.
+
 ## 0.35.1
 - **Fixed: fields like School or Location (City) silently stayed blank.** These only show real choices
   once you start typing — nothing renders on open — and the fill logic never tried typing into a field
