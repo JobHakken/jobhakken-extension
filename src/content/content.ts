@@ -25,6 +25,7 @@ import {
   type MappingStore,
   type Profile,
   type ProfileKey,
+  type Resolution,
 } from '@jobhakken/autofill';
 
 import { mountRail, unmountRail } from './rail.js';
@@ -694,13 +695,13 @@ async function learnFromPage(): Promise<number> {
   const store = await answerStore();
   let learned = 0;
   for (const field of pageFields()) {
-    const typed = currentValue(field).trim();
+    const typed = currentValueFixed(field).trim();
     if (!typed) continue;
     const label = field.label || field.name || field.id;
     // A question we can offer back needs a real question as its key. A bare name/id ("q3", "input-2")
     // will never match anywhere else, so banking it only grows the store.
     if (!label || label.length < 8 || !/[a-z]{3}.*[a-z]{3}/i.test(label)) continue;
-    const res = resolveField(field, { userRules: rules, store });
+    const res = rejectMisscopedStartDate(field, resolveField(field, { userRules: rules, store }));
     if (res?.key && EEO.has(res.key)) continue; // never bank a demographic answer
     // Only learn what we COULDN'T answer. If the profile already supplies a value for this field, a
     // remembered answer would never be offered anyway (the profile wins in panelFields), so banking it
@@ -870,7 +871,7 @@ function markFields(rows: PanelRow[], on: boolean): void {
     // marked green the next time ANYTHING re-renders the panel, which reads as a false success.
     // "ask"/"sensitive" are prompts, not success claims — they mark regardless of current state, since
     // flagging what needs the user's attention is the whole point, filled or not.
-    if ((r.group === 'know' || r.group === 'remember') && !currentValue(field).trim()) continue;
+    if ((r.group === 'know' || r.group === 'remember') && !currentValueFixed(field).trim()) continue;
     for (const el of markTargets(field)) {
       el.style.outline = MARK_STYLE[r.group] ?? '';
       el.style.outlineOffset = '1px';
@@ -1029,6 +1030,39 @@ function pageFields(): ReturnType<typeof detectFields> {
   return detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
 }
 
+/**
+ * `currentValue()` from @jobhakken/autofill doesn't special-case a standalone checkbox — it falls back
+ * to `.value`, which is a STATIC STRING (e.g. "1"/"true") present whether or not the box is checked.
+ * That made an UNCHECKED "Current role" checkbox report as "filled", which markFields()'s "only mark
+ * know/remember once the field actually holds a value" check (see markFields below) relies on being
+ * accurate — verified live (Samsung Semiconductor Greenhouse: `checked: false`, `value: "1"`, and the
+ * field still showed a green "we filled this" outline). Filed upstream (#163); wrapped here until the
+ * fix ships in a published @jobhakken/autofill release.
+ */
+function currentValueFixed(field: DetectedField): string {
+  if (field.kind !== 'radio' && field.el instanceof HTMLInputElement && field.el.type === 'checkbox') {
+    return field.el.checked ? 'checked' : '';
+  }
+  return currentValue(field);
+}
+
+/**
+ * The `startDate` seed rule (@jobhakken/autofill) is written for a job-application availability
+ * question ("When can you start [this new job]?") and matches the bare phrase "start date" with no
+ * check on which SECTION the field is in. `deriveFullProfile()` computes a genuinely reasonable
+ * near-term date for that legitimate question — the bug isn't the value, it's WHERE it lands.
+ * Greenhouse's own history sections label their fields "Start date" too, for a completely different
+ * meaning: Education's is "when did you start this degree", Employment's is "when did you start this
+ * PAST job" — verified live, both wrongly resolved to the same job-availability answer (education:
+ * `education--*` ancestor class; employment: `employment--*`). Filed upstream (#161); reject the match
+ * locally for either until a section-aware fix ships — a real history date should stay unresolved
+ * (dashed "needs you") rather than assert something about a role the applicant never claimed.
+ */
+function rejectMisscopedStartDate(field: DetectedField, res: Resolution | null): Resolution | null {
+  if (res?.key === 'startDate' && field.el.closest('[class*="education" i], [class*="employment" i]')) return null;
+  return res;
+}
+
 /** True when an element lives inside the rail's shadow tree (closest() cannot cross that boundary). */
 function insideRail(el: Element): boolean {
   const root = el.getRootNode() as ShadowRoot | Document;
@@ -1091,7 +1125,7 @@ async function startProgressive(): Promise<void> {
         // Never write into what the person is typing in, and never overwrite what they typed.
         if (document.activeElement === e.target) continue;
         const live = pageFields().find((f) => f.signature === sig);
-        if (!live || currentValue(live).trim()) {
+        if (!live || currentValueFixed(live).trim()) {
           progressiveDone.add(sig); // already answered, by us or by them
           continue;
         }
@@ -1140,7 +1174,7 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
   for (const field of fields) {
     const label = field.label || field.name || field.id;
     const q = normalizeQuestion(label);
-    const res = resolveField(field, { userRules: rules, store });
+    const res = rejectMisscopedStartDate(field, resolveField(field, { userRules: rules, store }));
     const key = res?.key;
     const profileValue = res?.literal ?? (key ? (profile[key] ?? '') : '');
     const consequential = !!key && CONSEQUENTIAL.has(key);
@@ -1193,7 +1227,7 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
       kind: field.kind,
       group,
       value,
-      current: currentValue(field),
+      current: currentValueFixed(field),
       source: group === 'remember' ? 'learned' : source,
       why,
       consequential,

@@ -802,11 +802,28 @@ export function mountRail(api: RailApi): void {
         btn.disabled = true;
         const before = btn.textContent;
         btn.textContent = 'Filling…';
-        // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
-        for (const r of rows.filter(
-          (x) => x.value && x.current.trim() !== x.value.trim() && (sensitiveOn || x.group !== 'sensitive'),
-        )) {
-          markRow(r.signature, await api.fillOne(r.signature, r.value));
+        const filledSigs = new Set<string>();
+        let current = rows;
+        // Answering one question can reveal another that didn't exist in the DOM a moment ago —
+        // verified live: Greenhouse's "Race" only renders after "Are you Hispanic/Latino?" is answered
+        // (#162). A single fixed pass over the panel's original snapshot never sees it. Re-check for
+        // newly-fillable rows after each pass instead, bounded so a page that keeps generating "new"
+        // signatures (a bug elsewhere, or genuinely unbounded content) can't loop forever.
+        for (let pass = 0; pass < 5; pass++) {
+          const toFill = current.filter(
+            (x) =>
+              x.value &&
+              x.current.trim() !== x.value.trim() &&
+              (sensitiveOn || x.group !== 'sensitive') &&
+              !filledSigs.has(x.signature),
+          );
+          if (!toFill.length) break;
+          // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
+          for (const r of toFill) {
+            filledSigs.add(r.signature);
+            markRow(r.signature, await api.fillOne(r.signature, r.value));
+          }
+          current = (await api.panelFields()).rows;
         }
         markAfterFill(); // show what just happened on the form itself
         btn.textContent = before;
