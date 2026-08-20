@@ -1215,6 +1215,25 @@ function insideRail(el: Element): boolean {
 const PROGRESSIVE_KEY = 'f2a_progressive';
 let progressiveObserver: IntersectionObserver | null = null;
 const progressiveDone = new Set<string>();
+/**
+ * What we intend to fill, kept CURRENT rather than snapshotted per observer.
+ *
+ * The page-wide MutationObserver re-runs `syncRail()` (debounced 800ms) on any DOM change, and a React
+ * application form mutates constantly — so `startProgressive()` gets called over and over. It used to
+ * `stopProgressive()` FIRST and then `await` slow work (per-field resolution + storage reads) before
+ * building the replacement, which left the page unobserved for the whole gap. Anything scrolled past
+ * during a gap was missed for good, because an IntersectionObserver only reports a field re-entering
+ * the viewport, not one already sitting in it. That's what made scroll-fill look like it "sometimes
+ * works": whether a field filled depended on whether a rebuild happened to be in flight as it came
+ * into view. Refreshing the page appeared to fix it only because the reload re-ran the whole pass.
+ *
+ * So the observer is now created once and never torn down on a refresh — these maps are updated in
+ * place and newly-appeared fields are simply added to it, which also picks up controls a prior fill
+ * revealed (e.g. Greenhouse's Race question, which only exists once Hispanic/Latino is answered).
+ */
+const progressiveWanted = new Map<string, PanelRow>();
+const progressiveByEl = new Map<Element, string>();
+let progressiveSyncing = false;
 
 export async function progressiveEnabled(): Promise<boolean> {
   try {
@@ -1226,51 +1245,83 @@ export async function progressiveEnabled(): Promise<boolean> {
 
 async function setProgressive(on: boolean): Promise<void> {
   await chrome.storage.local.set({ [PROGRESSIVE_KEY]: on }).catch(() => {});
-  if (on) void startProgressive();
-  else stopProgressive();
+  if (!on) {
+    stopProgressive();
+    return;
+  }
+  // Switching it on is an explicit request for a pass over this page, so forget what a previous
+  // enable-then-disable already visited — otherwise a field skipped earlier in the session could never
+  // be reconsidered. Safe to re-offer: the observer still refuses to touch a field that holds a value
+  // or that the person is typing in, so this can't overwrite anything.
+  progressiveDone.clear();
+  void startProgressive();
 }
 
 function stopProgressive(): void {
   progressiveObserver?.disconnect();
   progressiveObserver = null;
+  progressiveWanted.clear();
+  progressiveByEl.clear();
 }
 
+/** One long-lived observer's callback — reads the live maps, never a per-build snapshot. */
+function onProgressiveIntersect(entries: IntersectionObserverEntry[]): void {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const sig = progressiveByEl.get(e.target);
+    const row = sig ? progressiveWanted.get(sig) : undefined;
+    if (!sig || !row || progressiveDone.has(sig)) continue;
+    // Never write into what the person is typing in, and never overwrite what they typed.
+    if (document.activeElement === e.target) continue;
+    const live = pageFields().find((f) => f.signature === sig);
+    if (!live || currentValueFixed(live).trim()) {
+      progressiveDone.add(sig); // already answered, by us or by them
+      continue;
+    }
+    progressiveDone.add(sig);
+    // Show what just happened the same way a panel-triggered fill does — otherwise the one fill
+    // path a person never explicitly asked for is also the only one that leaves no visible trace.
+    void fillOne(sig, row.value).then((res) => {
+      if (res.filled) markOne(live, row.group);
+    });
+  }
+}
+
+/**
+ * Start scroll-filling, or refresh what it's watching. Safe to call repeatedly — the page-wide
+ * MutationObserver does exactly that. Never disconnects an existing observer (see `progressiveWanted`
+ * for why that mattered); it updates the maps in place and observes anything newly eligible.
+ */
 async function startProgressive(): Promise<void> {
-  stopProgressive();
-  if (await siteDisabled()) return;
-  const data = await panelFields();
-  const fillSensitive = await loadFillSensitive();
-  const byEl = new Map(pageFields().map((f) => [f.el, f.signature]));
-  const wanted = new Map(
-    data.rows
-      .filter((r) => r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive)))
-      .map((r) => [r.signature, r]),
-  );
-  progressiveObserver = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        const sig = byEl.get(e.target as HTMLElement);
-        const row = sig ? wanted.get(sig) : undefined;
-        if (!sig || !row || progressiveDone.has(sig)) continue;
-        // Never write into what the person is typing in, and never overwrite what they typed.
-        if (document.activeElement === e.target) continue;
-        const live = pageFields().find((f) => f.signature === sig);
-        if (!live || currentValueFixed(live).trim()) {
-          progressiveDone.add(sig); // already answered, by us or by them
-          continue;
-        }
-        progressiveDone.add(sig);
-        // Show what just happened the same way a panel-triggered fill does — otherwise the one fill
-        // path a person never explicitly asked for is also the only one that leaves no visible trace.
-        void fillOne(sig, row.value).then((res) => {
-          if (res.filled) markOne(live, row.group);
-        });
+  if (await siteDisabled()) {
+    stopProgressive();
+    return;
+  }
+  if (progressiveSyncing) return; // a refresh is already in flight; it will pick up current DOM state
+  progressiveSyncing = true;
+  try {
+    const data = await panelFields();
+    const fillSensitive = await loadFillSensitive();
+    progressiveWanted.clear();
+    for (const r of data.rows) {
+      if (r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive))) {
+        progressiveWanted.set(r.signature, r);
       }
-    },
-    { rootMargin: '0px 0px -15% 0px', threshold: 0.35 },
-  );
-  for (const [el, sig] of byEl) if (wanted.has(sig)) progressiveObserver.observe(el);
+    }
+    for (const [el] of progressiveByEl) if (!el.isConnected) progressiveByEl.delete(el); // drop replaced nodes
+    for (const f of pageFields()) progressiveByEl.set(f.el, f.signature);
+    // Built AFTER the awaits above, so there is never a window with no observer attached.
+    progressiveObserver ??= new IntersectionObserver(onProgressiveIntersect, {
+      rootMargin: '0px 0px -15% 0px',
+      threshold: 0.35,
+    });
+    // observe() is idempotent per element, so re-observing an already-watched field costs nothing.
+    for (const [el, sig] of progressiveByEl) {
+      if (progressiveWanted.has(sig) && !progressiveDone.has(sig)) progressiveObserver.observe(el);
+    }
+  } finally {
+    progressiveSyncing = false;
+  }
 }
 
 /** Per-site escape hatch: silence us on one employer's page without disabling the extension. */

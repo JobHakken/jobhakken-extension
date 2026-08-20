@@ -5,6 +5,16 @@ SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing 
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
 ## 0.36.0
+- **Scroll-fill is no longer torn down while the page is still changing.** Enabling "fill as I scroll"
+  built a watcher, but any change to the page rebuilt it from scratch — and on a modern application
+  form the page changes constantly. The rebuild dropped the watcher *first* and then did its slow work,
+  so for a moment nothing was being watched, and a field you scrolled past in that moment was never
+  filled (a watcher only notices a field *entering* view, not one already sitting there). The watcher is
+  now kept alive and updated in place, so nothing is missed mid-rebuild, and fields a previous answer
+  revealed get picked up as they appear.
+- **Turning "fill as I scroll" back on now gives the page a fresh pass**, instead of permanently
+  skipping fields it had already visited earlier in the session. It still never touches a field that
+  already holds a value or that you're typing in.
 - **Hiring-post filter on LinkedIn's content search.** On LinkedIn's own post-search results page
   (e.g. searching `hiring "firmware"`), each post now gets a quiet "View job ↗" / "Find this post ↗"
   row, and posts that aren't actually a hiring pitch (job seekers, the dominant noise on this search)
