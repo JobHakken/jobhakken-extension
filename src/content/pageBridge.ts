@@ -305,7 +305,39 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
   // technique a real person uses, and the one every list widget wires up for accessibility regardless
   // of how its click handling is implemented internally. Try the cheaper paths first; keyboard is the
   // fallback that's actually reliable when they aren't.
-  if (!reactClick(best)) {
+  //
+  // These are tried in order and each one is VERIFIED before escalating, because no single technique
+  // works everywhere and picking just one trades one widget family for another. An earlier version
+  // escalated straight from reactClick to keyboard, skipping the plain click — that fixed Greenhouse
+  // but broke every ordinary listbox whose options commit on a real `click` and ignore key events
+  // (caught by e2e/sandbox.html's lazy dropdown, whose option handlers are plain click listeners).
+  //
+  // A single fixed wait-then-check also reported real successes as failures: on a live Greenhouse
+  // Location (City) field the pick committed, but one 300ms sleep read the DOM before React had
+  // re-rendered the selected text, so the field was left blank AND recorded as unfillable. So each
+  // attempt polls for a beat rather than trusting one snapshot.
+  const settled = async (tries: number): Promise<string> => {
+    for (let i = 0; i < tries; i++) {
+      await sleep(150);
+      const seen = shown(el);
+      if (seen && seen !== before) return seen;
+    }
+    return '';
+  };
+
+  let after = '';
+  // 1. The option's own React handlers — for components that ignore untrusted synthetic clicks.
+  if (reactClick(best)) after = await settled(3);
+  // 2. A plain DOM click — what an ordinary (non-React) listbox actually listens for.
+  if (!after) {
+    best.click();
+    after = await settled(3);
+  }
+  // 3. Keyboard: ArrowDown to the row, Enter to confirm — the way a person using a keyboard does it,
+  //    wired up by any accessible widget regardless of how its click handling works internally. This
+  //    is the one that commits on Samsung Semiconductor's Greenhouse Discipline field, where neither
+  //    a bare click nor the React handlers ever put the component into a selected state.
+  if (!after) {
     const idx = opts.indexOf(best);
     if (idx >= 0 && idx < 20) {
       for (let i = 0; i <= idx; i++) {
@@ -315,20 +347,8 @@ async function driveCombobox(el: HTMLElement, value: string): Promise<boolean> {
         await sleep(20);
       }
       el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-    } else {
-      best.click(); // best sits too far down a huge list to walk to with keypresses — try anyway
+      after = await settled(5);
     }
-  }
-  // A single fixed wait-then-check reported a real success as a failure: on a live Greenhouse
-  // Location (City) field, the click committed correctly (verified: `shown(el)` eventually read the
-  // right text) but a single 300ms sleep read the DOM before React finished re-rendering the selected
-  // text, so the field silently got left blank AND recorded as unfillable even though the pick worked.
-  // Poll for a beat instead of trusting one snapshot.
-  let after = '';
-  for (let i = 0; i < 5; i++) {
-    await sleep(150);
-    after = shown(el);
-    if (!!after && after !== before) break;
   }
   // `el.value` is deliberately NOT part of this check: for a combobox search input, a non-empty value
   // means "text is currently typed in the search box," not "a selection was committed" — a genuine
