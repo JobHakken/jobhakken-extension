@@ -4,34 +4,98 @@
   "boards": {
     "persado": [
       {
-        "url": "https://apply.workable.com/persado/j/EB98E75C30/apply/",
-        "fields": 17
+        "url": "https://apply.workable.com/persado/j/D6FB457899/apply/",
+        "fields": 20
       },
       {
         "url": "https://apply.workable.com/persado/j/B9D91A4C0B/apply/",
-        "fields": 18
+        "fields": 21
       },
       {
-        "url": "https://apply.workable.com/persado/j/D6FB457899/apply/",
-        "fields": 16
+        "url": "https://apply.workable.com/persado/j/EB98E75C30/apply/",
+        "fields": 20
       }
     ],
     "blueground": [
       {
         "url": "https://apply.workable.com/blueground/j/0FD01ABC66/apply/",
-        "fields": 15
-      },
-      {
-        "url": "https://apply.workable.com/blueground/j/186545F8C1/apply/",
-        "fields": 18
+        "fields": 14
       },
       {
         "url": "https://apply.workable.com/blueground/j/3C3D8183F6/apply/",
-        "fields": 17
+        "fields": 16
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/186545F8C1/apply/",
+        "fields": 20
       },
       {
         "url": "https://apply.workable.com/blueground/j/90AF5EDC62/apply/",
-        "fields": 19
+        "fields": 16
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/4C8988B307/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/0B41E69FA9/apply/",
+        "fields": 21
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/6C6B4B42F5/apply/",
+        "fields": 13
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/B725717F18/apply/",
+        "fields": 21
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/62A308AF24/apply/",
+        "fields": 21
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/FA81CF78EC/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/203BF42FBF/apply/",
+        "fields": 24
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/3E2608F811/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/DF694D45CA/apply/",
+        "fields": 21
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/58B988B0D2/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/46C77FBABD/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/092286FFE5/apply/",
+        "fields": 22
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/3EA5BD5E71/apply/",
+        "fields": 23
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/9D3D73F77D/apply/",
+        "fields": 18
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/A676D38600/apply/",
+        "fields": 16
+      },
+      {
+        "url": "https://apply.workable.com/blueground/j/F31313C213/apply/",
+        "fields": 14
       }
     ],
     "skroutz": [
@@ -50,6 +114,44 @@
       {
         "url": "https://apply.workable.com/skroutz/j/4FFDCB70B4/apply/",
         "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/17E29A82D8/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/689A33867A/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/2BFA843F32/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/E369AAF6FF/apply/",
+        "fields": 6
+      },
+      {
+        "url": "https://apply.workable.com/skroutz/j/12CC21E6A1/apply/",
+        "fields": 6
+      }
+    ],
+    "aha": [
+      {
+        "url": "https://apply.workable.com/aha/j/CF9020CADA/apply/",
+        "fields": 16
+      },
+      {
+        "url": "https://apply.workable.com/aha/j/CAE72F443A/apply/",
+        "fields": 19
+      },
+      {
+        "url": "https://apply.workable.com/aha/j/CC5C51E5AC/apply/",
+        "fields": 19
+      },
+      {
+        "url": "https://apply.workable.com/aha/j/4C2C23A7EB/apply/",
+        "fields": 17
       }
     ]
   },
@@ -57,91 +159,124 @@
     "first name": {
       "label": "First name",
       "kinds": {
-        "text": 11
+        "text": 36
       },
-      "seen": 11,
+      "seen": 36,
       "boards": [
         "persado",
         "blueground",
-        "skroutz"
+        "skroutz",
+        "aha"
       ],
-      "required": 11,
+      "required": 36,
       "widgetIds": [],
       "fieldIds": [
         "firstname"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "last name": {
       "label": "Last name",
       "kinds": {
-        "text": 11
+        "text": 36
       },
-      "seen": 11,
+      "seen": 36,
       "boards": [
         "persado",
         "blueground",
-        "skroutz"
+        "skroutz",
+        "aha"
       ],
-      "required": 11,
+      "required": 36,
       "widgetIds": [],
       "fieldIds": [
         "lastname"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "email": {
       "label": "Email",
       "kinds": {
-        "email": 11
+        "email": 36
       },
-      "seen": 11,
+      "seen": 36,
       "boards": [
         "persado",
         "blueground",
-        "skroutz"
+        "skroutz",
+        "aha"
       ],
-      "required": 11,
+      "required": 36,
       "widgetIds": [],
       "fieldIds": [
         "email"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "svgs not supported by this browser": {
       "label": "SVGs not supported by this browser",
       "kinds": {
-        "file": 11
+        "file": 36
       },
-      "seen": 11,
+      "seen": 36,
       "boards": [
         "persado",
         "blueground",
-        "skroutz"
+        "skroutz",
+        "aha"
       ],
-      "required": 6,
+      "required": 13,
       "widgetIds": [],
       "fieldIds": [
-        "input_files_input_bNcdghjfyjXGfMH3",
-        "input_files_input_dTSePXOlwu4JSjvE",
-        "input_files_input_h4RNrroPRrRhEtI5",
-        "input_files_input_RohX8rO1paFb51xg",
-        "input_files_input_ARIkakQsKoAvFw8j",
-        "input_files_input_m1W7vswnZTJWsZWJ",
-        "input_files_input_elemsitciIN9pRD1",
-        "input_files_input_nYyRAztf7hFY3z8B",
-        "input_files_input_y9Y0CS6drGBdW6zw",
-        "input_files_input_NB5jcDiDcbxTz3cF",
-        "input_files_input_GlMed9zHHCBzhbCh"
+        "input_files_input_Av0RmPMHnxRoItCG",
+        "input_files_input_SebC8SQHq2wHZun0",
+        "input_files_input_sNYndUBXVwq1o4Qc",
+        "input_files_input_Ueqc3s2MKsPOmSVQ",
+        "input_files_input_ftdPbtG329zt0En4",
+        "input_files_input_mX4p9HSdBbjm8HBN",
+        "input_files_input_Y8jiowoUo5WHMffF",
+        "input_files_input_u98wwXa5HurgFQjF",
+        "input_files_input_pkbLlv9Dz1zk9j0n",
+        "input_files_input_o1JuJJ0QrGEPCqCv",
+        "input_files_input_L0JRloT3mMaljiaP",
+        "input_files_input_Op6Bjn4CL9xivPhh",
+        "input_files_input_giIHUHJqsMOmGZ9Y",
+        "input_files_input_iOi9WJqfPUxq7jAJ",
+        "input_files_input_pW644ZnJL2Oye9xo",
+        "input_files_input_WDn4xAWyHGZrATSy",
+        "input_files_input_S8eQzTxP5M7abw88",
+        "input_files_input_Wd9Gh2zVvXZOGt2Y",
+        "input_files_input_WrBocvoBv7LQY4YB",
+        "input_files_input_c41ZlumLaeH1gN8a",
+        "input_files_input_uTlV3EHwpvjhTNOw",
+        "input_files_input_OilUr1yWmlH85DqD",
+        "input_files_input_AROXDsDDSKWbgEF7",
+        "input_files_input_GYUBfS3XuXNgBpDs",
+        "input_files_input_CsTvufnxIUu7qj4t",
+        "input_files_input_oZfrMp18OuQ9xeXl",
+        "input_files_input_stUbWfooxHaGpIcv",
+        "input_files_input_w3LCPByVdArIMn9u",
+        "input_files_input_J4J6ysa1YS22QebB",
+        "input_files_input_JHdzVETl8MQEWjuh",
+        "input_files_input_xpbuJWLCEnjiiT4B",
+        "input_files_input_RtyVdo20S5Ktzh0y",
+        "input_files_input_z6R60yUknaTfwHQJ",
+        "input_files_input_plIDUdGfAYWSoUp7",
+        "input_files_input_oiz1RsZktQ0DVDJb",
+        "input_files_input_iqxcjXhENjq3rVah"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "cover letter (optional)": {
       "label": "Cover letter (Optional)",
       "kinds": {
-        "textarea": 10
+        "textarea": 29
       },
-      "seen": 10,
+      "seen": 29,
       "boards": [
         "persado",
         "blueground",
@@ -152,30 +287,72 @@
       "fieldIds": [
         "cover_letter"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "phone+1united states+1united kingdom+44canada+1germany+49australia+61afghanistan+93albania+355algeria+213american samoa+1andorra+376angola+2": {
-      "label": "Phone+1United States+1United Kingdom+44Canada+1Germany+49Australia+61Afghanistan+93Albania+355Algeria+213American Samoa+1Andorra+376Angola+244Anguilla+1Antigua & Barbuda+1Argentina+54Armenia+374Aruba+297Ascension Island+247Australia+61Austria+43Azerbaijan+994Bahamas+1Bahrain+973Bangladesh+880Barbados+1Belarus+375Belgium+32Belize+501Benin+229Bermuda+1Bhutan+975Bolivia+591Bosnia & Herzegovina+387Botswana+267Brazil+55British Indian Ocean Territory+246British Virgin Islands+1Brunei+673Bulgaria+359Burkina Faso+226Burundi+257Cambodia+855Cameroon+237Canada+1Cape Verde+238Caribbean Netherlands+599Cayman Islands+1Central African Republic+236Chad+235Chile+56China+86Christmas Island+61Cocos (Keeling) Islands+61Colombia+57Comoros+269Congo - Brazzaville+242Congo - Kinshasa+243Cook Islands+682Costa Rica+506Côte d’Ivoire+225Croatia+385Cuba+53Curaçao+599Cyprus+357Czech Republic+420Denmark+45Djibouti+253Dominica+1Dominican Republic+1Ecuador+593Egypt+20El Salvador+503Equatorial Guinea+240Eritrea+291Estonia+372Eswatini+268Ethiopia+251Falkland Islands+500Faroe Islands+298Fiji+679Finland+358France+33French Guiana+594French Polynesia+689Gabon+241Gambia+220Georgia+995Germany+49Ghana+233Gibraltar+350Greece+30Greenland+299Grenada+1Guadeloupe+590Guam+1Guatemala+502Guernsey+44Guinea+224Guinea-Bissau+245Guyana+592Haiti+509Honduras+504Hong Kong+852Hungary+36Iceland+354India+91Indonesia+62Iran+98Iraq+964Ireland+353Isle of Man+44Israel+972Italy+39Jamaica+1Japan+81Jersey+44Jordan+962Kazakhstan+7Kenya+254Kiribati+686Kosovo+383Kuwait+965Kyrgyzstan+996Laos+856Latvia+371Lebanon+961Lesotho+266Liberia+231Libya+218Liechtenstein+423Lithuania+370Luxembourg+352Macau+853Madagascar+261Malawi+265Malaysia+60Maldives+960Mali+223Malta+356Marshall Islands+692Martinique+596Mauritania+222Mauritius+230Mayotte+262Mexico+52Micronesia+691Moldova+373Monaco+377Mongolia+976Montenegro+382Montserrat+1Morocco+212Mozambique+258Myanmar (Burma)+95Namibia+264Nauru+674Nepal+977Netherlands+31New Caledonia+687New Zealand+64Nicaragua+505Niger+227Nigeria+234Niue+683Norfolk Island+672North Korea+850North Macedonia+389Northern Mariana Islands+1Norway+47Oman+968Pakistan+92Palau+680Palestine+970Panama+507Papua New Guinea+675Paraguay+595Peru+51Philippines+63Poland+48Portugal+351Puerto Rico+1Qatar+974Réunion+262Romania+40Russia+7Rwanda+250Samoa+685San Marino+378São Tomé & Príncipe+239Saudi Arabia+966Senegal+221Serbia+381Seychelles+248Sierra Leone+232Singapore+65Sint Maarten+1Slovakia+421Slovenia+386Solomon Islands+677Somalia+252South Africa+27South Korea+82South Sudan+211Spain+34Sri Lanka+94St Barthélemy+590St Helena+290St Kitts & Nevis+1St Lucia+1St Martin+590St Pierre & Miquelon+508St Vincent & Grenadines+1Sudan+249Suriname+597Svalbard & Jan Mayen+47Sweden+46Switzerland+41Syria+963Taiwan+886Tajikistan+992Tanzania+255Thailand+66Timor-Leste+670Togo+228Tokelau+690Tonga+676Trinidad & Tobago+1Tunisia+216Turkey+90Turkmenistan+993Turks & Caicos Islands+1Tuvalu+688Uganda+256Ukraine+380United Arab Emirates+971United Kingdom+44United States+1Uruguay+598US Virgin Islands+1Uzbekistan+998Vanuatu+678Vatican City+39Venezuela+58Vietnam+84Wallis & Futuna+681Western Sahara+212Yemen+967Zambia+260Zimbabwe+263Åland Islands+358",
+    "city": {
+      "label": "city",
       "kinds": {
-        "tel": 9
+        "text": 27
       },
-      "seen": 9,
+      "seen": 27,
       "boards": [
         "persado",
         "blueground",
-        "skroutz"
+        "aha"
       ],
-      "required": 9,
+      "required": 0,
       "widgetIds": [],
-      "fieldIds": [],
-      "options": []
+      "fieldIds": [
+        "city"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "postcode": {
+      "label": "postcode",
+      "kinds": {
+        "text": 27
+      },
+      "seen": 27,
+      "boards": [
+        "persado",
+        "blueground",
+        "aha"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "postcode"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "country": {
+      "label": "country",
+      "kinds": {
+        "text": 27
+      },
+      "seen": 27,
+      "boards": [
+        "persado",
+        "blueground",
+        "aha"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "country"
+      ],
+      "options": [],
+      "searchable": false
     },
     "headline (optional)": {
       "label": "Headline (Optional)",
       "kinds": {
-        "text": 7
+        "text": 21
       },
-      "seen": 7,
+      "seen": 21,
       "boards": [
         "persado",
         "blueground"
@@ -185,65 +362,15 @@
       "fieldIds": [
         "headline"
       ],
-      "options": []
-    },
-    "city": {
-      "label": "city",
-      "kinds": {
-        "text": 7
-      },
-      "seen": 7,
-      "boards": [
-        "persado",
-        "blueground"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "city"
-      ],
-      "options": []
-    },
-    "postcode": {
-      "label": "postcode",
-      "kinds": {
-        "text": 7
-      },
-      "seen": 7,
-      "boards": [
-        "persado",
-        "blueground"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "postcode"
-      ],
-      "options": []
-    },
-    "country": {
-      "label": "country",
-      "kinds": {
-        "text": 7
-      },
-      "seen": 7,
-      "boards": [
-        "persado",
-        "blueground"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "country"
-      ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "summary (optional)": {
       "label": "Summary (Optional)",
       "kinds": {
-        "textarea": 7
+        "textarea": 21
       },
-      "seen": 7,
+      "seen": 21,
       "boards": [
         "persado",
         "blueground"
@@ -253,70 +380,472 @@
       "fieldIds": [
         "summary"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "yes": {
-      "label": "YES",
+    "phone": {
+      "label": "Phone",
       "kinds": {
-        "radio": 7
+        "tel": 19
       },
-      "seen": 7,
+      "seen": 19,
       "boards": [
         "persado",
-        "blueground"
+        "blueground",
+        "skroutz",
+        "aha"
       ],
-      "required": 7,
+      "required": 19,
       "widgetIds": [],
-      "fieldIds": [
-        "Inl0gidzh7DXe1yR",
-        "j2dTJScwOS4wDnSp",
-        "S1rX6jk5huYdv4zH",
-        "mmR6CjtcUhpZSyXx",
-        "M3nfaezBqLPDLrGJ",
-        "HnaMlnmKFHqVNzhu",
-        "H7gECRXvfIb2Zkir"
-      ],
-      "options": []
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
     },
-    "no": {
-      "label": "NO",
+    "address (optional)svgs not supported by this browser": {
+      "label": "Address (Optional)SVGs not supported by this browser",
       "kinds": {
-        "radio": 7
+        "text": 18
       },
-      "seen": 7,
+      "seen": 18,
       "boards": [
-        "persado",
         "blueground"
       ],
-      "required": 7,
-      "widgetIds": [],
-      "fieldIds": [
-        "zAQjyjBIEm7aAszS",
-        "iQA8sAwn3mAQDyXH",
-        "uQwKoLaRtaUfLNd5",
-        "U6nhHaDX1CCncwKf",
-        "yJrwNCtEx4aprPdd",
-        "FC630FGx0ZCn5RqJ",
-        "IUjsiBGLvypVF5Hj"
-      ],
-      "options": []
-    },
-    "addresssvgs not supported by this browser": {
-      "label": "AddressSVGs not supported by this browser",
-      "kinds": {
-        "text": 5
-      },
-      "seen": 5,
-      "boards": [
-        "persado",
-        "blueground"
-      ],
-      "required": 5,
+      "required": 0,
       "widgetIds": [],
       "fieldIds": [
         "address"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
+    },
+    "phone (optional)": {
+      "label": "Phone (Optional)",
+      "kinds": {
+        "tel": 17
+      },
+      "seen": 17,
+      "boards": [
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "what are your desired salary expectations excluding bonuses": {
+      "label": "What are your desired salary expectations excluding bonuses",
+      "kinds": {
+        "text": 13
+      },
+      "seen": 13,
+      "boards": [
+        "blueground"
+      ],
+      "required": 13,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12299856",
+        "QA_12296484",
+        "QA_9823740",
+        "QA_10771146",
+        "QA_9823956",
+        "QA_9823902",
+        "QA_9823809",
+        "QA_9823566",
+        "QA_9823542",
+        "QA_9823571",
+        "QA_9823576",
+        "QA_9823600",
+        "QA_9823581"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you authorized to work in the united states": {
+      "label": "Are you authorized to work in the United States",
+      "kinds": {
+        "radiogroup": 12
+      },
+      "seen": 12,
+      "boards": [
+        "blueground"
+      ],
+      "required": 12,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "have you ever been responsible for doing inspections": {
+      "label": "Have you ever been responsible for doing inspections",
+      "kinds": {
+        "radiogroup": 12
+      },
+      "seen": 12,
+      "boards": [
+        "blueground"
+      ],
+      "required": 12,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "were the inspections digital or manual": {
+      "label": "Were the inspections digital or manual",
+      "kinds": {
+        "text": 12
+      },
+      "seen": 12,
+      "boards": [
+        "blueground"
+      ],
+      "required": 12,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12296493",
+        "QA_10399230",
+        "QA_10771156",
+        "QA_10399506",
+        "QA_10399241",
+        "QA_10399426",
+        "QA_10399653",
+        "QA_10399908",
+        "QA_10399674",
+        "QA_10399933",
+        "QA_10399975",
+        "QA_10399950"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "addresssvgs not supported by this browser": {
+      "label": "AddressSVGs not supported by this browser",
+      "kinds": {
+        "text": 9
+      },
+      "seen": 9,
+      "boards": [
+        "persado",
+        "blueground",
+        "aha"
+      ],
+      "required": 9,
+      "widgetIds": [],
+      "fieldIds": [
+        "address"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have a valid driver's license": {
+      "label": "Do you have a valid driver's license",
+      "kinds": {
+        "radiogroup": 9
+      },
+      "seen": 9,
+      "boards": [
+        "blueground"
+      ],
+      "required": 9,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "can you give an example of how you have navigated new technology in your current or prior role": {
+      "label": "Can you give an example of how you have navigated new technology in your current or prior role",
+      "kinds": {
+        "textarea": 8
+      },
+      "seen": 8,
+      "boards": [
+        "blueground"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12296494",
+        "QA_10399231",
+        "QA_10399427",
+        "QA_10399909",
+        "QA_10399675",
+        "QA_10399934",
+        "QA_10399976",
+        "QA_10399951"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you comfortable performing home repair/ maintenance tasks": {
+      "label": "Are you comfortable performing home repair/ maintenance tasks",
+      "kinds": {
+        "radiogroup": 7
+      },
+      "seen": 7,
+      "boards": [
+        "blueground"
+      ],
+      "required": 7,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "in your previous role what would you say were the 3 primary tasks you were responsible for": {
+      "label": "In your previous role what would you say were the 3 primary tasks you were responsible for",
+      "kinds": {
+        "textarea": 7
+      },
+      "seen": 7,
+      "boards": [
+        "blueground"
+      ],
+      "required": 7,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10399229",
+        "QA_10399239",
+        "QA_10399424",
+        "QA_10399650",
+        "QA_10399671",
+        "QA_10399931",
+        "QA_10399948"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "select an option…": {
+      "label": "Select an option…",
+      "kinds": {
+        "combobox": 6
+      },
+      "seen": 6,
+      "boards": [
+        "persado",
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "input_CA_6216_input",
+        "input_QA_10591812_input",
+        "input_QA_9818420_input",
+        "input_QA_9818831_input"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "gdpr": {
+      "label": "gdpr",
+      "kinds": {
+        "checkbox": 6
+      },
+      "seen": 6,
+      "boards": [
+        "blueground"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "what is your gross annual salary expectations for this role": {
+      "label": "What is your gross annual salary expectations for this role",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "blueground"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10591811",
+        "QA_9908175",
+        "QA_9818419",
+        "QA_9818830"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are you comfortable performing general residential repairs": {
+      "label": "Are you comfortable performing general residential repairs",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "blueground"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "if so, what are some of the repairs that you have the most experience with": {
+      "label": "If so, what are some of the repairs that you have the most experience with",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "blueground"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10771153",
+        "QA_10367293",
+        "QA_10367022",
+        "QA_10367043"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "could you tell me more about your supervising or management background": {
+      "label": "Could you tell me more about your supervising or management background",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "blueground"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10399651",
+        "QA_10399672",
+        "QA_10399930",
+        "QA_10399947"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "which of the following statements best describes your right to work in australia": {
+      "label": "Which of the following statements best describes your right to work in Australia",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "SVGs not supported by this browser.Australian Citizen",
+        "SVGs not supported by this browser.Permanent Resident",
+        "SVGs not supported by this browser.Visa"
+      ],
+      "searchable": false
+    },
+    "ca_22184": {
+      "label": "CA_22184",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "SVGs not supported by this browser.Yes",
+        "SVGs not supported by this browser.No"
+      ],
+      "searchable": false
+    },
+    "legal first name (record preferred first name above)": {
+      "label": "Legal first name (record preferred first name above)",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_32235"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "legal last name (record preferred last name above)": {
+      "label": "Legal last name (record preferred last name above)",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_32236"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "middle name(s) (optional)": {
+      "label": "Middle name(s) (Optional)",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_31912"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "if yes, where did you reside? (optional)": {
+      "label": "If yes, where did you reside? (Optional)",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "aha"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_22183"
+      ],
+      "options": [],
+      "searchable": false
     },
     "ca_6216": {
       "label": "CA_6216",
@@ -330,7 +859,8 @@
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "are you legally authorized to work permanently in the country where you're applying for this position": {
       "label": "Are you legally authorized to work permanently in the country where you're applying for this position",
@@ -346,26 +876,49 @@
       "fieldIds": [
         "CA_42240"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "svgs not supported by this browser.svgs not supported by this browser.svgs not supported by this browser.i have read, understand and accept ": {
-      "label": "SVGs not supported by this browser.SVGs not supported by this browser.SVGs not supported by this browser.I have read, understand and accept the content of the Privacy Notice and consent to the processing of my data as part of this application",
+    "do you currently reside in the united states": {
+      "label": "Do you currently reside in the United States",
       "kinds": {
-        "checkbox": 3
+        "radiogroup": 2
       },
-      "seen": 3,
+      "seen": 2,
+      "boards": [
+        "persado"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "are you authorized to work in the e.u": {
+      "label": "Are you authorized to work in the E.U",
+      "kinds": {
+        "radiogroup": 2
+      },
+      "seen": 2,
       "boards": [
         "blueground"
       ],
-      "required": 0,
+      "required": 2,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
     },
-    "what is your gross annual salary expectations for this role": {
-      "label": "What is your gross annual salary expectations for this role",
+    "annual gross salary expectations": {
+      "label": "Annual Gross Salary Expectations",
       "kinds": {
-        "text": 2
+        "textarea": 2
       },
       "seen": 2,
       "boards": [
@@ -374,45 +927,88 @@
       "required": 2,
       "widgetIds": [],
       "fieldIds": [
-        "QA_10591811",
-        "QA_9908175"
+        "QA_11321342",
+        "QA_11938760"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "phone (optional)+1united states+1united kingdom+44canada+1germany+49australia+61afghanistan+93albania+355algeria+213american samoa+1andorra+": {
-      "label": "Phone (Optional)+1United States+1United Kingdom+44Canada+1Germany+49Australia+61Afghanistan+93Albania+355Algeria+213American Samoa+1Andorra+376Angola+244Anguilla+1Antigua & Barbuda+1Argentina+54Armenia+374Aruba+297Ascension Island+247Australia+61Austria+43Azerbaijan+994Bahamas+1Bahrain+973Bangladesh+880Barbados+1Belarus+375Belgium+32Belize+501Benin+229Bermuda+1Bhutan+975Bolivia+591Bosnia & Herzegovina+387Botswana+267Brazil+55British Indian Ocean Territory+246British Virgin Islands+1Brunei+673Bulgaria+359Burkina Faso+226Burundi+257Cambodia+855Cameroon+237Canada+1Cape Verde+238Caribbean Netherlands+599Cayman Islands+1Central African Republic+236Chad+235Chile+56China+86Christmas Island+61Cocos (Keeling) Islands+61Colombia+57Comoros+269Congo - Brazzaville+242Congo - Kinshasa+243Cook Islands+682Costa Rica+506Côte d’Ivoire+225Croatia+385Cuba+53Curaçao+599Cyprus+357Czech Republic+420Denmark+45Djibouti+253Dominica+1Dominican Republic+1Ecuador+593Egypt+20El Salvador+503Equatorial Guinea+240Eritrea+291Estonia+372Eswatini+268Ethiopia+251Falkland Islands+500Faroe Islands+298Fiji+679Finland+358France+33French Guiana+594French Polynesia+689Gabon+241Gambia+220Georgia+995Germany+49Ghana+233Gibraltar+350Greece+30Greenland+299Grenada+1Guadeloupe+590Guam+1Guatemala+502Guernsey+44Guinea+224Guinea-Bissau+245Guyana+592Haiti+509Honduras+504Hong Kong+852Hungary+36Iceland+354India+91Indonesia+62Iran+98Iraq+964Ireland+353Isle of Man+44Israel+972Italy+39Jamaica+1Japan+81Jersey+44Jordan+962Kazakhstan+7Kenya+254Kiribati+686Kosovo+383Kuwait+965Kyrgyzstan+996Laos+856Latvia+371Lebanon+961Lesotho+266Liberia+231Libya+218Liechtenstein+423Lithuania+370Luxembourg+352Macau+853Madagascar+261Malawi+265Malaysia+60Maldives+960Mali+223Malta+356Marshall Islands+692Martinique+596Mauritania+222Mauritius+230Mayotte+262Mexico+52Micronesia+691Moldova+373Monaco+377Mongolia+976Montenegro+382Montserrat+1Morocco+212Mozambique+258Myanmar (Burma)+95Namibia+264Nauru+674Nepal+977Netherlands+31New Caledonia+687New Zealand+64Nicaragua+505Niger+227Nigeria+234Niue+683Norfolk Island+672North Korea+850North Macedonia+389Northern Mariana Islands+1Norway+47Oman+968Pakistan+92Palau+680Palestine+970Panama+507Papua New Guinea+675Paraguay+595Peru+51Philippines+63Poland+48Portugal+351Puerto Rico+1Qatar+974Réunion+262Romania+40Russia+7Rwanda+250Samoa+685San Marino+378São Tomé & Príncipe+239Saudi Arabia+966Senegal+221Serbia+381Seychelles+248Sierra Leone+232Singapore+65Sint Maarten+1Slovakia+421Slovenia+386Solomon Islands+677Somalia+252South Africa+27South Korea+82South Sudan+211Spain+34Sri Lanka+94St Barthélemy+590St Helena+290St Kitts & Nevis+1St Lucia+1St Martin+590St Pierre & Miquelon+508St Vincent & Grenadines+1Sudan+249Suriname+597Svalbard & Jan Mayen+47Sweden+46Switzerland+41Syria+963Taiwan+886Tajikistan+992Tanzania+255Thailand+66Timor-Leste+670Togo+228Tokelau+690Tonga+676Trinidad & Tobago+1Tunisia+216Turkey+90Turkmenistan+993Turks & Caicos Islands+1Tuvalu+688Uganda+256Ukraine+380United Arab Emirates+971United Kingdom+44United States+1Uruguay+598US Virgin Islands+1Uzbekistan+998Vanuatu+678Vatican City+39Venezuela+58Vietnam+84Wallis & Futuna+681Western Sahara+212Yemen+967Zambia+260Zimbabwe+263Åland Islands+358",
+    "linkedin": {
+      "label": "LinkedIn",
       "kinds": {
-        "tel": 2
+        "textarea": 2
       },
       "seen": 2,
       "boards": [
         "blueground"
       ],
-      "required": 0,
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_11321343",
+        "QA_11938761"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "give an example of how you have navigated new technology in your current or prior role": {
+      "label": "Give an example of how you have navigated new technology in your current or prior role",
+      "kinds": {
+        "textarea": 2
+      },
+      "seen": 2,
+      "boards": [
+        "blueground"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_10399242",
+        "QA_10399654"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have a valid australian driver licence": {
+      "label": "Do you have a valid Australian driver licence",
+      "kinds": {
+        "radiogroup": 2
+      },
+      "seen": 2,
+      "boards": [
+        "aha"
+      ],
+      "required": 2,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
     },
-    "address (optional)svgs not supported by this browser": {
-      "label": "Address (Optional)SVGs not supported by this browser",
+    "please list your suburb of residence and local government area (lga)": {
+      "label": "Please list your suburb of residence and local government area (LGA)",
       "kinds": {
         "text": 2
       },
       "seen": 2,
       "boards": [
-        "blueground"
+        "aha"
       ],
-      "required": 0,
+      "required": 2,
       "widgetIds": [],
       "fieldIds": [
-        "address"
+        "QA_12266744",
+        "QA_12266892"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "do you have a background that includes experience in digital marketing and/or working with technical saas products (e.g., adobe, salesforce ": {
-      "label": "Do you have a background that includes experience in digital marketing and/or working with technical SaaS products (e.g., adobe, salesforce marketing cloud, etc.)",
+    "are you fluent in written and spoken english": {
+      "label": "Are you fluent in written and spoken English",
       "kinds": {
-        "textarea": 1
+        "radiogroup": 1
       },
       "seen": 1,
       "boards": [
@@ -420,10 +1016,138 @@
       ],
       "required": 1,
       "widgetIds": [],
-      "fieldIds": [
-        "QA_12200264"
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
       ],
-      "options": []
+      "searchable": false
+    },
+    "are you currently located on the east coast": {
+      "label": "Are you currently located on the East Coast",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12062158": {
+      "label": "QA_12062158",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12246440": {
+      "label": "QA_12246440",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have experience managing enterprise financial services accounts": {
+      "label": "Do you have experience managing Enterprise Financial Services accounts",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11648238": {
+      "label": "QA_11648238",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have experience managing end-to-end digital marketing campaigns": {
+      "label": "Do you have experience managing end-to-end digital marketing campaigns",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11648241": {
+      "label": "QA_11648241",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
     },
     "please share some examples of digital marketing campaigns you have managed": {
       "label": "Please share some examples of digital marketing campaigns you have managed",
@@ -439,7 +1163,8 @@
       "fieldIds": [
         "QA_11656515"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "can you please elaborate on your experience with email marketing campaigns": {
       "label": "Can you please elaborate on your experience with email marketing campaigns",
@@ -455,12 +1180,84 @@
       "fieldIds": [
         "QA_11656516"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "what are your desired salary expectations excluding bonuses": {
-      "label": "What are your desired salary expectations excluding bonuses",
+    "qa_12201269": {
+      "label": "QA_12201269",
       "kinds": {
-        "text": 1
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have experience directly managing or leading a team of project managers": {
+      "label": "Do you have experience directly managing or leading a team of project managers",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12179374": {
+      "label": "QA_12179374",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have a background that includes experience in digital marketing and/or working with technical saas products (e.g., adobe, salesforce ": {
+      "label": "Do you have a background that includes experience in digital marketing and/or working with technical SaaS products (e.g., adobe, salesforce marketing cloud, etc.)",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "persado"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "QA_12200264"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have the right to work in the us": {
+      "label": "Do you have the right to work in the US",
+      "kinds": {
+        "radiogroup": 1
       },
       "seen": 1,
       "boards": [
@@ -468,10 +1265,66 @@
       ],
       "required": 1,
       "widgetIds": [],
-      "fieldIds": [
-        "QA_12299856"
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
       ],
-      "options": []
+      "searchable": false
+    },
+    "do you speak greek proficiently": {
+      "label": "Do you speak Greek proficiently",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have the right to work in greece": {
+      "label": "Do you have the right to work in Greece",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11231170": {
+      "label": "QA_11231170",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
     },
     "qa_10591812": {
       "label": "QA_10591812",
@@ -485,7 +1338,8 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "what other languages do you speak fluently": {
       "label": "What other languages do you speak fluently",
@@ -501,10 +1355,84 @@
       "fieldIds": [
         "QA_10591813"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "annual gross salary expectations": {
-      "label": "Annual Gross Salary Expectations",
+    "what is your level of french": {
+      "label": "What is your level of French",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "SVGs not supported by this browser.Native/Fluent",
+        "SVGs not supported by this browser.Intermediate",
+        "SVGs not supported by this browser.Basic"
+      ],
+      "searchable": false
+    },
+    "do you have the right to work in france": {
+      "label": "Do you have the right to work in France",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12296485": {
+      "label": "QA_12296485",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12296486": {
+      "label": "QA_12296486",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have a reliable personal vehicle that you can use to travel between different apartments across the san francisco/bay area on days wh": {
+      "label": "Do you have a reliable personal vehicle that you can use to travel between different apartments across the San Francisco/Bay Area on days when you won't be using the company van? Mileage reimbursement is provided",
       "kinds": {
         "textarea": 1
       },
@@ -515,12 +1443,13 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [
-        "QA_11321342"
+        "QA_12296491"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "linkedin": {
-      "label": "LinkedIn",
+    "what types of maintenance tasks/ home repairs are you comfortable performing on a daily basis": {
+      "label": "What types of maintenance tasks/ home repairs are you comfortable performing on a daily basis",
       "kinds": {
         "textarea": 1
       },
@@ -531,14 +1460,51 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [
-        "QA_11321343"
+        "QA_12296490"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "svgs not supported by this browser.native/fluent": {
-      "label": "SVGs not supported by this browser.Native/Fluent",
+    "qa_9823736": {
+      "label": "QA_9823736",
       "kinds": {
-        "radio": 1
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823737": {
+      "label": "QA_9823737",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "are you comfortable performing general residential repairs? if so, what are some of the repairs that you have the most experience with": {
+      "label": "Are you comfortable performing general residential repairs? If so, what are some of the repairs that you have the most experience with",
+      "kinds": {
+        "textarea": 1
       },
       "seen": 1,
       "boards": [
@@ -547,14 +1513,228 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [
-        "wIL9URXJw9Tgom7u"
+        "QA_9823738"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "svgs not supported by this browser.intermediate": {
-      "label": "SVGs not supported by this browser.Intermediate",
+    "qa_9818420": {
+      "label": "QA_9818420",
       "kinds": {
-        "radio": 1
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "qa_10771147": {
+      "label": "QA_10771147",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_10771148": {
+      "label": "QA_10771148",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_10771150": {
+      "label": "QA_10771150",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823957": {
+      "label": "QA_9823957",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823958": {
+      "label": "QA_9823958",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823960": {
+      "label": "QA_9823960",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823909": {
+      "label": "QA_9823909",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823910": {
+      "label": "QA_9823910",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823905": {
+      "label": "QA_9823905",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823812": {
+      "label": "QA_9823812",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_10367041": {
+      "label": "QA_10367041",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do your own mode of transportation to travel to and from the office as well as to the apartments in the boston area": {
+      "label": "Do your own mode of transportation to travel to and from the office as well as to the apartments in the Boston area",
+      "kinds": {
+        "textarea": 1
       },
       "seen": 1,
       "boards": [
@@ -563,14 +1743,195 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [
-        "nmQsF1Oy06J8bj7J"
+        "QA_9823811"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "svgs not supported by this browser.basic": {
-      "label": "SVGs not supported by this browser.Basic",
+    "qa_9823567": {
+      "label": "QA_9823567",
       "kinds": {
-        "radio": 1
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823568": {
+      "label": "QA_9823568",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823544": {
+      "label": "QA_9823544",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823545": {
+      "label": "QA_9823545",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823572": {
+      "label": "QA_9823572",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823573": {
+      "label": "QA_9823573",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823577": {
+      "label": "QA_9823577",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823578": {
+      "label": "QA_9823578",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823601": {
+      "label": "QA_9823601",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823602": {
+      "label": "QA_9823602",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "what types of repairs/ maintenance tasks are you comfortable performing": {
+      "label": "What types of repairs/ maintenance tasks are you comfortable performing",
+      "kinds": {
+        "textarea": 1
       },
       "seen": 1,
       "boards": [
@@ -579,9 +1940,169 @@
       "required": 1,
       "widgetIds": [],
       "fieldIds": [
-        "zWcSmUv3jOEhzzZY"
+        "QA_10793548"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
+    },
+    "qa_9823582": {
+      "label": "QA_9823582",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9823583": {
+      "label": "QA_9823583",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11871620": {
+      "label": "QA_11871620",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have a valid drivers license": {
+      "label": "Do you have a valid drivers license",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11871622": {
+      "label": "QA_11871622",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_11871623": {
+      "label": "QA_11871623",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have the ability to lift and move items (~30 lbs)": {
+      "label": "Do you have the ability to lift and move items (~30 lbs)",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "are you comfortable using mobile apps, slack, and basic digital tools": {
+      "label": "Are you comfortable using mobile apps, Slack, and basic digital tools",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_9818831": {
+      "label": "QA_9818831",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "blueground"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
     },
     "at skroutz, we value simplifying the complex. describe a process in your current work that is 'bloated.' how would you strip it down to its ": {
       "label": "At Skroutz, we value simplifying the complex. Describe a process in your current work that is 'bloated.' How would you strip it down to its MVP (Minimum Viable Product) without losing quality",
@@ -597,8 +2118,134 @@
       "fieldIds": [
         "QA_11387128"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
+    },
+    "what type of role are you interested in": {
+      "label": "What type of role are you interested in",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "CA_23004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have current and full registration with ahpra, spa or aasw": {
+      "label": "Do you have current and full registration with AHPRA, SPA or AASW",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12266743": {
+      "label": "QA_12266743",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have current and full registration with vit": {
+      "label": "Do you have current and full registration with VIT",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12266891": {
+      "label": "QA_12266891",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "qa_12253340": {
+      "label": "QA_12253340",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
+    },
+    "do you have the ability to attend the melbourne office at least once per week": {
+      "label": "Do you have the ability to attend the Melbourne office at least once per week",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "aha"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "YES",
+        "NO"
+      ],
+      "searchable": false
     }
   },
-  "dropdownOpenRate": null
+  "dropdownOpenRate": 0
 }

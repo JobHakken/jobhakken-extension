@@ -83,28 +83,23 @@ const SOURCES = {
         (j?.jobs ?? []).map((x) => x.absolute_url),
       ),
   },
+  // Token lists below are LIVE-VERIFIED (2026-08-19: each returned >0 postings from its own API right
+  // before this run) rather than guessed company names — the prior guessed lists were mostly dead
+  // (e.g. Lever: 4/20 live; most former Lever customers have since moved to Ashby/Greenhouse). A token
+  // that 404s or returns an empty list is a company that left the platform, not a harvester bug.
   lever: {
     tokens: [
-      'palantir',
-      'netflix',
-      'plaid',
-      'brex',
-      'ramp',
-      'anduril',
-      'match',
-      'atlassian',
-      'scaleai',
-      'figma',
-      'nubank',
-      'shopify',
       'spotify',
-      'klarna',
-      'revolut',
-      'n26',
-      'bolt',
-      'gett',
-      'deliveryhero',
-      'zalando',
+      'palantir',
+      'angellist',
+      'secureframe',
+      'lifestance',
+      'shieldai',
+      'paytm',
+      'wealthfront',
+      'outreach',
+      'walkme',
+      'matillion',
     ],
     list: (t) =>
       json(`https://api.lever.co/v0/postings/${t}?mode=json`).then((j) =>
@@ -116,19 +111,13 @@ const SOURCES = {
       'ramp',
       'linear',
       'vanta',
-      'clay',
-      'deel',
       'openai',
       'notion',
-      'mercury',
       'replit',
       'posthog',
       'cursor',
-      'scale',
-      'together',
       'modal',
       'baseten',
-      'sourcegraph',
       'runway',
       'sierra',
       'harvey',
@@ -139,66 +128,24 @@ const SOURCES = {
         (j?.jobs ?? []).map((x) => x.applyUrl || `https://jobs.ashbyhq.com/${t}/${x.id}/application`),
       ),
   },
+  // Much thinner real footprint than Greenhouse/Ashby among companies searched — reflects actual market
+  // share, not under-searching. Held to the same verification bar rather than padded with dead guesses.
   smartrecruiters: {
-    tokens: [
-      'Visa',
-      'Bosch',
-      'Square',
-      'McDonalds',
-      'Ubisoft',
-      'Publicis',
-      'LinkedIn',
-      'Avery',
-      'IKEA',
-      'Vodafone',
-      'BoschGroup',
-      'Sanofi',
-      'Airbus',
-      'Allianz',
-      'Siemens',
-    ],
+    tokens: ['Visa', 'BoschGroup', 'KimberlyClark', 'McDonaldsCorporation', 'Accor'],
     list: (t) =>
       json(`https://api.smartrecruiters.com/v1/companies/${t}/postings`).then((j) =>
         (j?.content ?? []).map((x) => `https://jobs.smartrecruiters.com/${t}/${x.id}`),
       ),
   },
   workable: {
-    tokens: [
-      'gorgias',
-      'sword-health',
-      'remote',
-      'deliveroo',
-      'omnipresent',
-      'flowbird',
-      'causaly',
-      'persado',
-      'blueground',
-      'workable',
-      'beat',
-      'skroutz',
-      'e-food',
-      'viva-wallet',
-    ],
+    tokens: ['persado', 'blueground', 'skroutz', 'aha'],
     list: (t) =>
       json(`https://apply.workable.com/api/v1/widget/accounts/${t}?details=true`).then((j) =>
         (j?.jobs ?? []).map((x) => `https://apply.workable.com/${t}/j/${x.shortcode}/apply/`),
       ),
   },
   recruitee: {
-    tokens: [
-      'tandemdiabetescare',
-      'catawiki',
-      'usabilla',
-      'trengo',
-      'sendcloud',
-      'framer',
-      'mollie',
-      'messagebird',
-      'backbase',
-      'picnic',
-      'bynder',
-      'channable',
-    ],
+    tokens: ['channable', 'bunq', 'personio'],
     list: (t) =>
       json(`https://${t}.recruitee.com/api/offers/`).then((j) =>
         (j?.offers ?? []).map((x) => `https://${t}.recruitee.com/o/${x.slug}/c/new`),
@@ -209,17 +156,61 @@ const SOURCES = {
 function readForm() {
   const norm = (s) =>
     (s ?? '')
-      .replace(/\*/g, '')
+      .replace(/[*✱]/g, '') // Lever renders its required-field marker as U+2731, not a plain asterisk
       .replace(/\s+/g, ' ')
       .replace(/[:?.]+$/g, '')
       .trim();
+  // A <label> that WRAPS its control (`<label>Gender <select>...</select></label>`, common on Lever)
+  // puts the control INSIDE the label element, so `label.textContent` walks through every <option> too
+  // — "Gender" becomes "GenderMaleFemaleDecline to self-identify". Three DIFFERENT shapes of this bug
+  // showed up: <option> text bleeding straight in; a plain <div> SIBLING of the control inside the same
+  // label carrying unrelated help text (Lever's EEO race field — several paragraphs of "A person having
+  // origins in..." explainer); and Workable's phone field, where the "control" is a div-based
+  // role="combobox" widget (the same permanently-mounted intl-tel-input country list seen contaminating
+  // Greenhouse) with NO <select>/<option> tags anywhere — "Phone" became
+  // "Phone+1United States+1United Kingdom+44Canada...", all ~200 countries concatenated in.
+  //
+  // Rather than keep blacklisting element types one bug at a time, collect text in DOCUMENT ORDER and
+  // STOP ENTIRELY at the first thing that looks like a control anywhere in the subtree — by tag OR by
+  // ARIA role, since custom widgets often aren't a real <select> at all. The question text always
+  // precedes its own control. A length cap is the backstop for whatever pattern #4 turns out to be.
+  const CONTROL_TAGS = new Set(['SELECT', 'OPTION', 'INPUT', 'TEXTAREA', 'BUTTON']);
+  const CONTROL_ROLES = new Set(['combobox', 'listbox', 'option', 'radiogroup']);
+  const isControlLike = (el) =>
+    CONTROL_TAGS.has(el.tagName) ||
+    CONTROL_ROLES.has(el.getAttribute('role') ?? '') ||
+    el.getAttribute('aria-haspopup') === 'listbox';
+  const cleanText = (node) => {
+    if (!node) return '';
+    let text = '';
+    let stopped = false;
+    const walk = (n) => {
+      for (const child of n.childNodes) {
+        if (stopped || text.length > 200) {
+          stopped = true;
+          return;
+        }
+        if (child.nodeType === 3) {
+          text += child.textContent;
+        } else if (child.nodeType === 1) {
+          if (isControlLike(child)) {
+            stopped = true;
+            return;
+          }
+          walk(child);
+        }
+      }
+    };
+    walk(node);
+    return text;
+  };
   const labelFor = (el) => {
     const l = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
     return norm(
-      l?.textContent ||
+      cleanText(l) ||
         el.getAttribute('aria-label') ||
-        el.closest('label')?.textContent ||
-        el.closest('[class*="field"]')?.querySelector('label')?.textContent ||
+        cleanText(el.closest('label')) ||
+        cleanText(el.closest('[class*="field"]')?.querySelector('label')) ||
         el.getAttribute('placeholder') ||
         el.name ||
         '',
@@ -228,7 +219,116 @@ function readForm() {
   const out = [],
     seen = new Set();
   let hidCounter = 0;
+
+  // Radio/checkbox GROUPS are one question with several choices ("Race": Hispanic/White/Black/...), but
+  // walking inputs one at a time treats each choice as its OWN standalone field — "Native Hawaiian or
+  // Other Pacific Islander (Not Hispanic or Latino)" showed up as an independent question on Ashby, when
+  // it's really one option inside a "Race" radiogroup (radio: 292 instances on Ashby alone; every
+  // platform here except Greenhouse — which implements EEO questions as react-select comboboxes instead
+  // — uses native radios/checkboxes for exactly this kind of question). Consolidate BEFORE the per-field
+  // loop: group same-name radios (always a real group) and same-name checkboxes with 2+ members (a
+  // genuine multi-select — a lone checkbox is a toggle like "I agree", not a group) into one field with
+  // an options list, the same shape a native <select> already produces.
+  const consumed = new Set();
+  // Lever's custom per-company screening questions ("cards[<uuid>][field0]") use no <fieldset> and no
+  // ARIA labelling at all — the heading lives in a SIBLING of the field's own container, one level up
+  // (`<li class="application-question"><div>Are you legally authorized...?</div><div
+  // class="application-field">...radios...</div></li>`), so `[class*="field" i]` alone finds only the
+  // inner wrapper that never contains the heading. Try the broader "question" container first — the
+  // length cap below is what keeps an over-broad match (one that swept in more than one question) from
+  // being trusted, not this ordering alone.
+  const groupContainer = (el) =>
+    el.closest('fieldset') ||
+    el.closest('[role="radiogroup"]') ||
+    el.closest('[class*="question" i]') ||
+    el.closest('[class*="field" i]') ||
+    el.parentElement?.parentElement ||
+    el.parentElement;
+  // A real question header ("Race", "Veteran Status") is always short. Three different places actually
+  // hold it, in priority order: Workable points `aria-labelledby` on the radiogroup at a completely
+  // separate element elsewhere in the DOM (not a descendant at all, so nothing short of resolving the id
+  // finds it) — checking only `aria-label` missed this silently. Ashby wraps the group in a <fieldset>
+  // whose FIRST child is a <label> naming the question, but querying `fieldset label` without care
+  // instead matches Workable's PER-OPTION label ("YES" — Workable wraps each individual choice in its
+  // own <label>, not just the group heading), which then gets used as if it were the whole question — a
+  // wrapper label always has an <input> as its first child, a heading label never does, so that
+  // distinguishes them. And a <div class="description"> sitting in the same fieldset before any radio
+  // carries paragraphs of EEO explainer text that a naive container walk absorbs too ("Race" became
+  // "RaceHispanic or Latino - A person of Cuban, Mexican..."). So: resolve aria-labelledby first (most
+  // authoritative, whether on the fieldset or on any role=radiogroup ancestor), then legend, then a
+  // fieldset label ONLY if it isn't itself a per-choice wrapper, then the whole-container walk as a last
+  // resort — the last two capped at a length no real header should exceed.
+  const GROUP_LABEL_CAP = 80;
+  const labelledBy = (el) => {
+    const id = el?.getAttribute('aria-labelledby');
+    if (!id) return '';
+    const target = document.getElementById(id.split(/\s+/)[0]);
+    return norm(cleanText(target) || target?.textContent || '');
+  };
+  const groupLabel = (els) => {
+    for (const el of els) {
+      const fs = el.closest('fieldset');
+      const rg = el.closest('[role="radiogroup"]');
+      const byId = labelledBy(fs) || labelledBy(rg);
+      if (byId && byId.length <= GROUP_LABEL_CAP) return byId;
+      const al = fs?.getAttribute('aria-label') || rg?.getAttribute('aria-label');
+      if (al) return norm(al);
+      const legend = norm(cleanText(fs?.querySelector('legend')));
+      if (legend && legend.length <= GROUP_LABEL_CAP) return legend;
+      const label = fs?.querySelector('label');
+      if (label && !label.querySelector('input,select,textarea')) {
+        const t = norm(cleanText(label));
+        if (t && t.length <= GROUP_LABEL_CAP) return t;
+      }
+    }
+    let best = '';
+    for (const el of els) {
+      const t = norm(cleanText(groupContainer(el)));
+      if (t && t.length <= GROUP_LABEL_CAP && t.length > best.length) best = t;
+    }
+    return best;
+  };
+  // The heading walk above stops at the FIRST control on purpose (so trailing help text never gets
+  // swept in) — but a per-option choice label needs the OPPOSITE handling: Workable wraps each radio as
+  // `<label><input/><span>YES</span></label>`, control first, visible text after, so stopping at the
+  // first control returns nothing. An option's own text never has a further nested control inside it,
+  // so it's safe here to simply remove the input from a clone rather than stop-and-discard.
+  const optionText = (el) => {
+    const l = (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)) || el.closest('label');
+    if (!l) return norm(el.getAttribute('aria-label') || el.value || '');
+    const clone = l.cloneNode(true);
+    clone.querySelectorAll('input,select,textarea,button').forEach((n) => n.remove());
+    return norm(clone.textContent) || norm(el.getAttribute('aria-label') || el.value || '');
+  };
+  for (const kind of ['radio', 'checkbox']) {
+    const byName = new Map();
+    for (const el of document.querySelectorAll(`input[type="${kind}"]`)) {
+      if (el.getBoundingClientRect().height === 0 || !el.name) continue;
+      if (!byName.has(el.name)) byName.set(el.name, []);
+      byName.get(el.name).push(el);
+    }
+    for (const els of byName.values()) {
+      if (els.length < 2) continue; // a lone checkbox/radio isn't a group
+      const label = norm(groupLabel(els) || els[0].name);
+      if (!label || label.length < 2) continue;
+      const k = label.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      for (const el of els) consumed.add(el);
+      out.push({
+        label,
+        kind: kind === 'radio' ? 'radiogroup' : 'checkboxgroup',
+        required: els.some((el) => el.required),
+        id: null,
+        clickId: null,
+        widgetId: null,
+        options: els.map(optionText).filter(Boolean),
+      });
+    }
+  }
+
   for (const el of document.querySelectorAll('input,select,textarea')) {
+    if (consumed.has(el)) continue;
     const type = el.type;
     if (['hidden', 'submit', 'button', 'search'].includes(type)) continue;
     if (el.getBoundingClientRect().height === 0 && type !== 'file') continue;

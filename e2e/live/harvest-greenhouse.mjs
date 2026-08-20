@@ -97,13 +97,52 @@ function readForm() {
       .replace(/\s+/g, ' ')
       .replace(/[:?.]+$/g, '')
       .trim();
+  // A <label> that WRAPS its control puts the control INSIDE the label element, so `label.textContent`
+  // walks through the control's own rendered text too. Three different shapes confirmed on Lever/
+  // Workable: <option> text bleeding straight in; a plain <div> SIBLING of the control inside the same
+  // label carrying unrelated help text; and a div-based role="combobox" widget (Workable's phone field
+  // — the same permanently-mounted intl-tel-input country list that contaminates Greenhouse's own
+  // option-scoping) with no <select>/<option> tags at all. Stop at the first thing that looks like a
+  // control by tag OR by ARIA role, not just a tag blacklist — plus a length cap as backstop for
+  // whatever pattern #4 turns out to be. Greenhouse's own markup hasn't shown this, but it's cheap
+  // insurance against the same class of bug.
+  const CONTROL_TAGS = new Set(['SELECT', 'OPTION', 'INPUT', 'TEXTAREA', 'BUTTON']);
+  const CONTROL_ROLES = new Set(['combobox', 'listbox', 'option', 'radiogroup']);
+  const isControlLike = (el) =>
+    CONTROL_TAGS.has(el.tagName) ||
+    CONTROL_ROLES.has(el.getAttribute('role') ?? '') ||
+    el.getAttribute('aria-haspopup') === 'listbox';
+  const cleanText = (node) => {
+    if (!node) return '';
+    let text = '';
+    let stopped = false;
+    const walk = (n) => {
+      for (const child of n.childNodes) {
+        if (stopped || text.length > 200) {
+          stopped = true;
+          return;
+        }
+        if (child.nodeType === 3) {
+          text += child.textContent;
+        } else if (child.nodeType === 1) {
+          if (isControlLike(child)) {
+            stopped = true;
+            return;
+          }
+          walk(child);
+        }
+      }
+    };
+    walk(node);
+    return text;
+  };
   const labelFor = (el) => {
     const l = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
     return norm(
-      l?.textContent ||
+      cleanText(l) ||
         el.getAttribute('aria-label') ||
-        el.closest('label')?.textContent ||
-        el.closest('[class*="field"]')?.querySelector('label')?.textContent ||
+        cleanText(el.closest('label')) ||
+        cleanText(el.closest('[class*="field"]')?.querySelector('label')) ||
         el.getAttribute('placeholder') ||
         el.name ||
         '',

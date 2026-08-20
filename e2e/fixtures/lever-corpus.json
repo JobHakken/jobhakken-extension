@@ -4,685 +4,1050 @@
   "boards": {
     "palantir": [
       {
-        "url": "https://jobs.lever.co/palantir/ac978161-6f46-4f6b-ad9e-a258e642751c/apply",
-        "fields": 53
+        "url": "https://jobs.lever.co/palantir/0bbfd4f4-41ff-4ec6-b73f-5200efd5d4d3/apply",
+        "fields": 21
       },
       {
-        "url": "https://jobs.lever.co/palantir/0bbfd4f4-41ff-4ec6-b73f-5200efd5d4d3/apply",
-        "fields": 54
+        "url": "https://jobs.lever.co/palantir/ac978161-6f46-4f6b-ad9e-a258e642751c/apply",
+        "fields": 20
       },
       {
         "url": "https://jobs.lever.co/palantir/fe2a8c69-49b7-405f-816c-a6c6f894399a/apply",
-        "fields": 54
+        "fields": 21
       },
       {
         "url": "https://jobs.lever.co/palantir/a237973c-cb29-41fe-9c80-416e6f42e087/apply",
-        "fields": 54
+        "fields": 21
       }
     ],
     "spotify": [
       {
-        "url": "https://jobs.lever.co/spotify/890b2c0f-f46f-4a4b-bb73-3a6af6e0edd5/apply",
-        "fields": 26
+        "url": "https://jobs.lever.co/spotify/2193db3f-77c5-43b8-b030-8f92c9882bf1/apply",
+        "fields": 17
       },
       {
         "url": "https://jobs.lever.co/spotify/a0fa7da3-4c3c-4fa2-97bd-7d6eb01eb9e5/apply",
-        "fields": 28
+        "fields": 17
       },
       {
-        "url": "https://jobs.lever.co/spotify/2193db3f-77c5-43b8-b030-8f92c9882bf1/apply",
-        "fields": 33
+        "url": "https://jobs.lever.co/spotify/890b2c0f-f46f-4a4b-bb73-3a6af6e0edd5/apply",
+        "fields": 14
       },
       {
         "url": "https://jobs.lever.co/spotify/b4ad9572-e20f-4185-a284-99d9740d04f0/apply",
-        "fields": 27
+        "fields": 15
+      }
+    ],
+    "angellist": [
+      {
+        "url": "https://jobs.lever.co/angellist/4e96cf5f-0e7d-4931-a834-733dff6aa7b2/apply",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.lever.co/angellist/e0c43af6-5bc2-4a3a-a3c6-9b6448e1d594/apply",
+        "fields": 11
+      },
+      {
+        "url": "https://jobs.lever.co/angellist/f35e7b60-f64c-4f5d-a36a-6c5e8e186664/apply",
+        "fields": 11
+      },
+      {
+        "url": "https://jobs.lever.co/angellist/e9bd5995-9d75-4419-9f5d-e41db9d49da4/apply",
+        "fields": 10
+      }
+    ],
+    "lifestance": [
+      {
+        "url": "https://jobs.lever.co/lifestance/e14e9a5c-51a4-4f08-9c57-53cfe3956efb/apply",
+        "fields": 12
+      },
+      {
+        "url": "https://jobs.lever.co/lifestance/ed90ffa8-455b-4edb-8c23-87eb45321191/apply",
+        "fields": 12
+      },
+      {
+        "url": "https://jobs.lever.co/lifestance/12bb562b-0689-4de9-802f-8a92c9a78c18/apply",
+        "fields": 12
+      },
+      {
+        "url": "https://jobs.lever.co/lifestance/16d7615e-62d3-42c9-aa7c-9082315c4fa7/apply",
+        "fields": 12
+      }
+    ],
+    "shieldai": [
+      {
+        "url": "https://jobs.lever.co/shieldai/baaae144-6477-4f3b-975b-ec1d04d0a7e4/apply",
+        "fields": 36
+      },
+      {
+        "url": "https://jobs.lever.co/shieldai/41468aca-c1c2-4a7b-aec8-f499e64b6d1e/apply",
+        "fields": 36
+      },
+      {
+        "url": "https://jobs.lever.co/shieldai/56f5da35-2c1f-4229-9afd-5231418f50fa/apply",
+        "fields": 34
+      },
+      {
+        "url": "https://jobs.lever.co/shieldai/30df7ce0-c4c3-400e-ac9c-12537cea37ce/apply",
+        "fields": 36
+      }
+    ],
+    "paytm": [
+      {
+        "url": "https://jobs.lever.co/paytm/86665c39-2182-4d69-8b8c-33eac104ec2b/apply",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.lever.co/paytm/9eed4fec-73f7-4114-a5d3-b2f689c92e8c/apply",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.lever.co/paytm/6c1b9af2-9a7c-4cd2-a97b-54e956cf82f1/apply",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.lever.co/paytm/8182f4b5-4dcb-4d3d-87fc-93a0d8730d3d/apply",
+        "fields": 15
+      }
+    ],
+    "wealthfront": [
+      {
+        "url": "https://jobs.lever.co/wealthfront/78d6f6d5-1f08-4d5d-87be-c4250567bfb5/apply",
+        "fields": 21
+      },
+      {
+        "url": "https://jobs.lever.co/wealthfront/cb80e493-2667-45f1-99c5-e2f8ba59b4b2/apply",
+        "fields": 24
+      },
+      {
+        "url": "https://jobs.lever.co/wealthfront/f5a0963a-ca1a-4140-b9e6-dbf6072093fe/apply",
+        "fields": 22
+      },
+      {
+        "url": "https://jobs.lever.co/wealthfront/26d453d0-f9df-4396-a655-70f6dbceb328/apply",
+        "fields": 25
+      }
+    ],
+    "outreach": [
+      {
+        "url": "https://jobs.lever.co/outreach/dc29c7f1-d7ef-431f-a35a-173dac2a4138/apply",
+        "fields": 12
+      },
+      {
+        "url": "https://jobs.lever.co/outreach/9a24e6ad-3af2-4db0-a606-672946284b40/apply",
+        "fields": 15
+      },
+      {
+        "url": "https://jobs.lever.co/outreach/18210dbb-a2ad-49a8-9ee9-c31ad14da0f6/apply",
+        "fields": 15
+      },
+      {
+        "url": "https://jobs.lever.co/outreach/3c27d8b2-bdef-4a0c-8507-092ef90fab33/apply",
+        "fields": 15
+      }
+    ],
+    "walkme": [
+      {
+        "url": "https://jobs.lever.co/walkme/2e290a8a-7042-4c7d-968d-5ba28b147a9c/apply",
+        "fields": 18
+      },
+      {
+        "url": "https://jobs.lever.co/walkme/b750e3de-d94f-453b-bf64-a67033b48bf4/apply",
+        "fields": 17
+      },
+      {
+        "url": "https://jobs.lever.co/walkme/0808b2c0-80f7-478b-9067-812416ac0634/apply",
+        "fields": 19
+      },
+      {
+        "url": "https://jobs.lever.co/walkme/9520d94a-9593-4874-b836-cfc544c202ed/apply",
+        "fields": 20
+      }
+    ],
+    "matillion": [
+      {
+        "url": "https://jobs.lever.co/matillion/4675d07d-d7c2-4eb7-b661-674e1a2fac3d/apply",
+        "fields": 14
+      },
+      {
+        "url": "https://jobs.lever.co/matillion/c3171182-5c15-43da-bf47-00ee03cd8f53/apply",
+        "fields": 15
+      },
+      {
+        "url": "https://jobs.lever.co/matillion/d1e30399-742d-4a36-be74-5008af810606/apply",
+        "fields": 15
+      },
+      {
+        "url": "https://jobs.lever.co/matillion/9e298c14-736c-4b0d-aee7-653655f3f5ee/apply",
+        "fields": 15
       }
     ]
   },
   "questions": {
-    "resume/cv ✱attach resume/cvcouldn't auto-read resume.analyzing resume...success!": {
-      "label": "Resume/CV ✱ATTACH RESUME/CVCouldn't auto-read resume.Analyzing resume...Success!",
+    "resume/cv attach resume/cv": {
+      "label": "Resume/CV ATTACH RESUME/CV",
       "kinds": {
-        "file": 8
+        "file": 40
       },
-      "seen": 8,
+      "seen": 40,
       "boards": [
         "palantir",
-        "spotify"
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
       ],
       "required": 0,
       "widgetIds": [],
       "fieldIds": [
         "resume-upload-input"
       ],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "full name✱": {
-      "label": "Full name✱",
+    "full name": {
+      "label": "Full name",
       "kinds": {
-        "text": 8
+        "text": 40
       },
-      "seen": 8,
+      "seen": 40,
       "boards": [
         "palantir",
-        "spotify"
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
       ],
-      "required": 8,
+      "required": 40,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "email✱": {
-      "label": "Email✱",
+    "email": {
+      "label": "Email",
       "kinds": {
-        "email": 8
+        "email": 40
       },
-      "seen": 8,
+      "seen": 40,
       "boards": [
         "palantir",
-        "spotify"
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
       ],
-      "required": 8,
+      "required": 40,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
-    },
-    "current location ✱no location found. try entering a different locationloading": {
-      "label": "Current location ✱No location found. Try entering a different locationLoading",
-      "kinds": {
-        "text": 8
-      },
-      "seen": 8,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 8,
-      "widgetIds": [],
-      "fieldIds": [
-        "location-input"
-      ],
-      "options": []
-    },
-    "linkedin url": {
-      "label": "LinkedIn URL",
-      "kinds": {
-        "text": 8
-      },
-      "seen": 8,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "github url": {
-      "label": "GitHub URL",
-      "kinds": {
-        "text": 8
-      },
-      "seen": 8,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "portfolio url": {
-      "label": "Portfolio URL",
-      "kinds": {
-        "text": 8
-      },
-      "seen": 8,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "no": {
-      "label": "No",
-      "kinds": {
-        "radio": 4,
-        "checkbox": 4
-      },
-      "seen": 8,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 8,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "yes": {
-      "label": "Yes",
-      "kinds": {
-        "radio": 6
-      },
-      "seen": 6,
-      "boards": [
-        "palantir",
-        "spotify"
-      ],
-      "required": 6,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "phone": {
       "label": "Phone",
       "kinds": {
-        "text": 4
+        "text": 40
       },
-      "seen": 4,
+      "seen": 40,
       "boards": [
-        "palantir"
+        "palantir",
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
       ],
-      "required": 0,
+      "required": 24,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
+    },
+    "current location": {
+      "label": "Current location",
+      "kinds": {
+        "text": 39,
+        "radiogroup": 1
+      },
+      "seen": 40,
+      "boards": [
+        "palantir",
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
+      ],
+      "required": 24,
+      "widgetIds": [],
+      "fieldIds": [
+        "location-input"
+      ],
+      "options": [
+        "Delhi",
+        "Gurgaon",
+        "Noida",
+        "Outside Delhi NCR"
+      ],
+      "searchable": false
     },
     "current company": {
       "label": "Current company",
       "kinds": {
-        "text": 4
+        "text": 40
       },
-      "seen": 4,
+      "seen": 40,
       "boards": [
-        "palantir"
+        "palantir",
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "linkedin url": {
+      "label": "LinkedIn URL",
+      "kinds": {
+        "text": 40
+      },
+      "seen": 40,
+      "boards": [
+        "palantir",
+        "spotify",
+        "angellist",
+        "lifestance",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "other website": {
+      "label": "Other website",
+      "kinds": {
+        "text": 32
+      },
+      "seen": 32,
+      "boards": [
+        "spotify",
+        "angellist",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "outreach",
+        "walkme",
+        "matillion"
       ],
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "english (eng)": {
-      "label": "English (ENG)",
+    "github url": {
+      "label": "GitHub URL",
       "kinds": {
-        "checkbox": 4
+        "text": 24
       },
-      "seen": 4,
+      "seen": 24,
       "boards": [
-        "palantir"
+        "palantir",
+        "spotify",
+        "shieldai",
+        "paytm",
+        "outreach",
+        "walkme"
       ],
-      "required": 4,
+      "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "spanish (spa)": {
-      "label": "Spanish (SPA)",
+    "portfolio url": {
+      "label": "Portfolio URL",
       "kinds": {
-        "checkbox": 4
+        "text": 24
       },
-      "seen": 4,
+      "seen": 24,
       "boards": [
-        "palantir"
+        "palantir",
+        "spotify",
+        "shieldai",
+        "wealthfront",
+        "outreach",
+        "walkme"
       ],
-      "required": 4,
+      "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "french (fra)": {
-      "label": "French (FRA)",
+    "veteran status": {
+      "label": "Veteran status",
       "kinds": {
-        "checkbox": 4
+        "select": 20
       },
-      "seen": 4,
+      "seen": 20,
       "boards": [
-        "palantir"
+        "palantir",
+        "lifestance",
+        "shieldai",
+        "wealthfront",
+        "outreach",
+        "walkme"
       ],
-      "required": 4,
+      "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
-    },
-    "german (deu)": {
-      "label": "German (DEU)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
+      "options": [
+        "Select ...",
+        "I identify as one or more of the classifications of protected veteran listed above",
+        "I am not a protected veteran",
+        "I decline to self-identify for protected veteran status"
       ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "japanese (jpn)": {
-      "label": "Japanese (JPN)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "cantonese (cant)": {
-      "label": "Cantonese (CANT)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "mandarin (man)": {
-      "label": "Mandarin (MAN)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "dutch (nld)": {
-      "label": "Dutch (NLD)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "hindi (hin)": {
-      "label": "Hindi (HIN)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "arabic (ara)": {
-      "label": "Arabic (ARA)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "danish (dan)": {
-      "label": "Danish (DAN)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "turkish (tur)": {
-      "label": "Turkish (TUR)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "portuguese (por)": {
-      "label": "Portuguese (POR)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "hebrew (heb)": {
-      "label": "Hebrew (HEB)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "swedish (swe)": {
-      "label": "Swedish (SWE)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "norwegian (nor)": {
-      "label": "Norwegian (NOR)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "italian (ita)": {
-      "label": "Italian (ITA)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "vietnamese (vie)": {
-      "label": "Vietnamese (VIE)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "tagalog (tgl)": {
-      "label": "Tagalog (TGL)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "khmer (khm)": {
-      "label": "Khmer (KHM)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "hmong (hmn)": {
-      "label": "Hmong (HMN)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "telugu (tel)": {
-      "label": "Telugu (TEL)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "bengali (bne)": {
-      "label": "Bengali (BNE)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "marathi (mar)": {
-      "label": "Marathi (MAR)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "urdu (urd)": {
-      "label": "Urdu (URD)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "gujarati (guj)": {
-      "label": "Gujarati (GUJ)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "lithuanian (lit)": {
-      "label": "Lithuanian (LIT)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "korean (kor)": {
-      "label": "Korean (KOR)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "american sign language (asl)": {
-      "label": "American Sign Language (ASL)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "british sign language (bsl)": {
-      "label": "British Sign Language (BSL)",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "choose not to disclose": {
-      "label": "Choose not to disclose",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "polish": {
-      "label": "Polish",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "other": {
-      "label": "Other",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
+      "searchable": false
     },
     "type your response": {
       "label": "Type your response",
       "kinds": {
-        "text": 4
+        "text": 18
+      },
+      "seen": 18,
+      "boards": [
+        "palantir",
+        "shieldai",
+        "paytm",
+        "wealthfront",
+        "walkme",
+        "matillion"
+      ],
+      "required": 9,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "gender": {
+      "label": "Gender",
+      "kinds": {
+        "select": 17
+      },
+      "seen": 17,
+      "boards": [
+        "lifestance",
+        "shieldai",
+        "wealthfront",
+        "outreach",
+        "walkme"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select ...",
+        "Male",
+        "Female",
+        "Decline to self-identify"
+      ],
+      "searchable": false
+    },
+    "race": {
+      "label": "Race",
+      "kinds": {
+        "select": 13,
+        "radiogroup": 4
+      },
+      "seen": 17,
+      "boards": [
+        "lifestance",
+        "shieldai",
+        "wealthfront",
+        "outreach",
+        "walkme"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select ...",
+        "Hispanic or Latino",
+        "White (Not Hispanic or Latino)",
+        "Black or African American (Not Hispanic or Latino)",
+        "Native Hawaiian or Other Pacific Islander (Not Hispanic or Latino)",
+        "Asian (Not Hispanic or Latino)",
+        "American Indian or Alaska Native (Not Hispanic or Latino)",
+        "Two or More Races (Not Hispanic or Latino)",
+        "Decline to self-identify"
+      ],
+      "searchable": false
+    },
+    "pronouns": {
+      "label": "Pronouns",
+      "kinds": {
+        "checkboxgroup": 12
+      },
+      "seen": 12,
+      "boards": [
+        "spotify",
+        "lifestance",
+        "outreach"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "He/him",
+        "She/her",
+        "They/them",
+        "Xe/xem",
+        "Ze/hir",
+        "Ey/em",
+        "Hir/hir",
+        "Fae/faer",
+        "Hu/hu",
+        "Use name only"
+      ],
+      "searchable": false
+    },
+    "twitter url": {
+      "label": "Twitter URL",
+      "kinds": {
+        "text": 12
+      },
+      "seen": 12,
+      "boards": [
+        "shieldai",
+        "outreach",
+        "walkme"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "opportunitylocationid": {
+      "label": "opportunityLocationId",
+      "kinds": {
+        "select": 10
+      },
+      "seen": 10,
+      "boards": [
+        "spotify",
+        "angellist",
+        "shieldai",
+        "wealthfront",
+        "walkme"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "Palo Alto, CA",
+        "Seattle, WA",
+        "San Francisco, CA",
+        "New York City, NY"
+      ],
+      "searchable": false
+    },
+    "additional information": {
+      "label": "Additional information",
+      "kinds": {
+        "textarea": 8
+      },
+      "seen": 8,
+      "boards": [
+        "palantir",
+        "lifestance"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "additional-information"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what is your location": {
+      "label": "What is your location",
+      "kinds": {
+        "select": 8
+      },
+      "seen": 8,
+      "boards": [
+        "spotify",
+        "paytm"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "Afghanistan",
+        "Albania",
+        "Algeria",
+        "American Samoa",
+        "Andorra",
+        "Angola",
+        "Anguilla",
+        "Antarctica",
+        "Antigua and Barbuda",
+        "Argentina",
+        "Armenia",
+        "Aruba",
+        "Australia",
+        "Austria",
+        "Azerbaijan",
+        "Bahamas",
+        "Bahrain",
+        "Bangladesh",
+        "Barbados",
+        "Belarus",
+        "Belgium",
+        "Belize",
+        "Benin",
+        "Bermuda",
+        "Bhutan",
+        "Bolivia",
+        "Bonaire, Sint Eustatius and Saba",
+        "Bosnia and Herzegovina",
+        "Botswana",
+        "Bouvet Island",
+        "Brazil",
+        "British Indian Ocean Territory",
+        "Brunei",
+        "Bulgaria",
+        "Burkina Faso",
+        "Burundi",
+        "Cambodia",
+        "Cameroon",
+        "Canada",
+        "Cape Verde",
+        "Cayman Islands",
+        "Central African Republic",
+        "Chad",
+        "Chile",
+        "China",
+        "Christmas Island",
+        "Cocos (Keeling) Islands",
+        "Colombia",
+        "Comoros",
+        "Congo",
+        "Congo, the Democratic Republic of the",
+        "Cook Islands",
+        "Costa Rica",
+        "Croatia",
+        "Cuba",
+        "Curaçao",
+        "Cyprus",
+        "Czech Republic",
+        "Denmark",
+        "Djibouti",
+        "Dominica",
+        "Dominican Republic",
+        "Ecuador",
+        "Egypt",
+        "El Salvador",
+        "Equatorial Guinea",
+        "Eritrea",
+        "Estonia",
+        "Eswatini",
+        "Ethiopia",
+        "Falkland Islands",
+        "Faroe Islands",
+        "Fiji",
+        "Finland",
+        "France",
+        "French Guiana",
+        "French Polynesia",
+        "French Southern Territories",
+        "Gabon",
+        "Gambia",
+        "Georgia",
+        "Germany",
+        "Ghana",
+        "Gibraltar",
+        "Greece",
+        "Greenland",
+        "Grenada",
+        "Guadeloupe",
+        "Guam",
+        "Guatemala",
+        "Guernsey",
+        "Guinea",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haiti",
+        "Heard Island and McDonald Islands",
+        "Holy See (Vatican City State)",
+        "Honduras",
+        "Hong Kong",
+        "Hungary",
+        "Iceland",
+        "India",
+        "Indonesia",
+        "Iran",
+        "Iraq",
+        "Ireland",
+        "Isle of Man",
+        "Israel",
+        "Italy",
+        "Ivory Coast",
+        "Jamaica",
+        "Japan",
+        "Jersey",
+        "Jordan",
+        "Kazakhstan",
+        "Kenya",
+        "Kiribati",
+        "Kosovo",
+        "Kuwait",
+        "Kyrgyzstan",
+        "Laos",
+        "Latvia",
+        "Lebanon",
+        "Lesotho",
+        "Liberia",
+        "Libya",
+        "Liechtenstein",
+        "Lithuania",
+        "Luxembourg",
+        "Macao",
+        "Macedonia, the Former Yugoslav Republic of",
+        "Madagascar",
+        "Malawi",
+        "Malaysia",
+        "Maldives",
+        "Mali",
+        "Malta",
+        "Marshall Islands",
+        "Martinique",
+        "Mauritania",
+        "Mauritius",
+        "Mayotte",
+        "Mexico",
+        "Micronesia, Federated States of",
+        "Moldova",
+        "Monaco",
+        "Mongolia",
+        "Montenegro",
+        "Montserrat",
+        "Morocco",
+        "Mozambique",
+        "Myanmar",
+        "Namibia",
+        "Nauru",
+        "Nepal",
+        "Netherlands",
+        "New Caledonia",
+        "New Zealand",
+        "Nicaragua",
+        "Niger",
+        "Nigeria",
+        "Niue",
+        "Norfolk Island",
+        "North Korea",
+        "Northern Mariana Islands",
+        "Norway",
+        "Oman",
+        "Pakistan",
+        "Palau",
+        "Palestine, State of",
+        "Panama",
+        "Papua New Guinea",
+        "Paraguay",
+        "Peru",
+        "Philippines",
+        "Pitcairn",
+        "Poland",
+        "Portugal",
+        "Puerto Rico",
+        "Qatar",
+        "Romania",
+        "Russia",
+        "Rwanda",
+        "Réunion",
+        "Saint Barthélemy",
+        "Saint Helena, Ascension and Tristan da Cunha",
+        "Saint Kitts and Nevis",
+        "Saint Lucia",
+        "Saint Martin (French part)",
+        "Saint Pierre and Miquelon",
+        "Saint Vincent and the Grenadines",
+        "Samoa",
+        "San Marino",
+        "Sao Tome and Principe",
+        "Saudi Arabia",
+        "Senegal",
+        "Serbia",
+        "Seychelles",
+        "Sierra Leone",
+        "Singapore",
+        "Sint Maarten (Dutch part)",
+        "Slovakia",
+        "Slovenia",
+        "Solomon Islands",
+        "Somalia",
+        "South Africa",
+        "South Georgia and the South Sandwich Islands",
+        "South Korea",
+        "South Sudan",
+        "Spain",
+        "Sri Lanka",
+        "Sudan",
+        "Suriname",
+        "Svalbard and Jan Mayen",
+        "Sweden",
+        "Switzerland",
+        "Syria",
+        "Taiwan",
+        "Tajikistan",
+        "Tanzania",
+        "Thailand",
+        "Timor-Leste",
+        "Togo",
+        "Tokelau",
+        "Tonga",
+        "Trinidad and Tobago",
+        "Tunisia",
+        "Turkey",
+        "Turkmenistan",
+        "Turks and Caicos Islands",
+        "Tuvalu",
+        "Uganda",
+        "Ukraine",
+        "United Arab Emirates",
+        "United Kingdom",
+        "United States",
+        "United States Minor Outlying Islands",
+        "Uruguay",
+        "Uzbekistan",
+        "Vanuatu",
+        "Venezuela",
+        "Vietnam",
+        "Virgin Islands, British",
+        "Virgin Islands, U.S.",
+        "Wallis and Futuna",
+        "Western Sahara",
+        "Yemen",
+        "Zambia",
+        "Zimbabwe",
+        "Åland Islands"
+      ],
+      "searchable": false
+    },
+    "how did you hear about us": {
+      "label": "How did you hear about us",
+      "kinds": {
+        "radiogroup": 8
+      },
+      "seen": 8,
+      "boards": [
+        "shieldai",
+        "wealthfront"
+      ],
+      "required": 8,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "LinkedIn Job Postings",
+        "LinkedIn Advertising",
+        "Glassdoor",
+        "Indeed",
+        "Working At Wealthfront Blog",
+        "Social Media (Facebook, Instagram, Twitter, etc.)",
+        "Youtube",
+        "Podcast",
+        "From family or a friend",
+        "Wealthfront Employee",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "disability status": {
+      "label": "Disability status",
+      "kinds": {
+        "select": 7
+      },
+      "seen": 7,
+      "boards": [
+        "palantir",
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "disabilitySelectElement"
+      ],
+      "options": [
+        "Select ...",
+        "Yes, I have a disability, or have had one in the past",
+        "No, I do not have a disability and have not had one in the past",
+        "I do not want to answer"
+      ],
+      "searchable": false
+    },
+    "consent[marketing]": {
+      "label": "consent[marketing]",
+      "kinds": {
+        "checkbox": 5
+      },
+      "seen": 5,
+      "boards": [
+        "matillion",
+        "walkme"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "are you legally authorized to work in the country for which you are applying": {
+      "label": "Are you legally authorized to work in the country for which you are applying",
+      "kinds": {
+        "radiogroup": 4
       },
       "seen": 4,
       "boards": [
         "palantir"
       ],
-      "required": 0,
+      "required": 4,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[1c719ca9-5069-4afe-9e82-39ca420e0edb][field1]": {
+      "label": "cards[1c719ca9-5069-4afe-9e82-39ca420e0edb][field1]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[73796cde-fc01-4758-9002-c85155f3503d][field0]": {
+      "label": "cards[73796cde-fc01-4758-9002-c85155f3503d][field0]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes, I consent",
+        "No, I do not consent"
+      ],
+      "searchable": false
+    },
+    "language skill(s) (check all that apply)": {
+      "label": "Language Skill(s) (Check all that apply)",
+      "kinds": {
+        "checkboxgroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "palantir"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "English (ENG)",
+        "Spanish (SPA)",
+        "French (FRA)",
+        "German (DEU)",
+        "Japanese (JPN)",
+        "Cantonese (CANT)",
+        "Mandarin (MAN)",
+        "Dutch (NLD)",
+        "Hindi (HIN)",
+        "Arabic (ARA)",
+        "Danish (DAN)",
+        "Turkish (TUR)",
+        "Portuguese (POR)",
+        "Hebrew (HEB)",
+        "Swedish (SWE)",
+        "Norwegian (NOR)",
+        "Italian (ITA)",
+        "Vietnamese (VIE)",
+        "Tagalog (TGL)",
+        "Khmer (KHM)",
+        "Hmong (HMN)",
+        "Telugu (TEL)",
+        "Bengali (BNE)",
+        "Marathi (MAR)",
+        "Urdu (URD)",
+        "Gujarati (GUJ)",
+        "Lithuanian (LIT)",
+        "Korean (KOR)",
+        "American Sign Language (ASL)",
+        "British Sign Language (BSL)",
+        "Choose not to disclose",
+        "Polish",
+        "Other"
+      ],
+      "searchable": false
     },
     "cards[3da58b41-acf5-40a1-945e-c7f047ef8050][field0]": {
       "label": "cards[3da58b41-acf5-40a1-945e-c7f047ef8050][field0]",
@@ -997,7 +1362,8 @@
         "British Columbia Institute of Technology",
         "British University in Egypt",
         "Brno University of Technology"
-      ]
+      ],
+      "searchable": false
     },
     "cards[a6197d84-549e-4a91-8bb0-6af972510013][field0]": {
       "label": "cards[a6197d84-549e-4a91-8bb0-6af972510013][field0]",
@@ -1033,7 +1399,8 @@
         "University Job Board",
         "University or University Organization",
         "Other"
-      ]
+      ],
+      "searchable": false
     },
     "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field0]": {
       "label": "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field0]",
@@ -1047,7 +1414,8 @@
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
     "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field1]": {
       "label": "cards[ce72d538-c9ad-41f3-8e9a-618d40c82e3a][field1]",
@@ -1061,545 +1429,27 @@
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "yes, i consent": {
-      "label": "Yes, I consent",
+    "have you ever been previously employed by spotify": {
+      "label": "Have you ever been previously employed by Spotify",
       "kinds": {
-        "radio": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "no, i do not consent": {
-      "label": "No, I do not consent",
-      "kinds": {
-        "radio": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "additional information": {
-      "label": "Additional information",
-      "kinds": {
-        "textarea": 4
-      },
-      "seen": 4,
-      "boards": [
-        "palantir"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "additional-information"
-      ],
-      "options": []
-    },
-    "he/him": {
-      "label": "He/him",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "she/her": {
-      "label": "She/her",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "they/them": {
-      "label": "They/them",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "xe/xem": {
-      "label": "Xe/xem",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "ze/hir": {
-      "label": "Ze/hir",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "ey/em": {
-      "label": "Ey/em",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "hir/hir": {
-      "label": "Hir/hir",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "fae/faer": {
-      "label": "Fae/faer",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "hu/hu": {
-      "label": "Hu/hu",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "use name only": {
-      "label": "Use name only",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "useNameOnlyPronounsOption"
-      ],
-      "options": []
-    },
-    "custom": {
-      "label": "Custom",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [
-        "customPronounsOption"
-      ],
-      "options": []
-    },
-    "phone ✱": {
-      "label": "Phone ✱",
-      "kinds": {
-        "text": 4
+        "checkboxgroup": 4
       },
       "seen": 4,
       "boards": [
         "spotify"
       ],
       "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "current company ✱": {
-      "label": "Current company ✱",
-      "kinds": {
-        "text": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "other website": {
-      "label": "Other website",
-      "kinds": {
-        "text": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "yes - intern": {
-      "label": "Yes - Intern",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "yes - full time employment": {
-      "label": "Yes - Full Time Employment",
-      "kinds": {
-        "checkbox": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 4,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
-    },
-    "what is your location?select...afghanistanalbaniaalgeriaamerican samoaandorraangolaanguillaantarcticaantigua and barbudaargentinaarmeniaarub": {
-      "label": "What is your location?Select...AfghanistanAlbaniaAlgeriaAmerican SamoaAndorraAngolaAnguillaAntarcticaAntigua and BarbudaArgentinaArmeniaArubaAustraliaAustriaAzerbaijanBahamasBahrainBangladeshBarbadosBelarusBelgiumBelizeBeninBermudaBhutanBoliviaBonaire, Sint Eustatius and SabaBosnia and HerzegovinaBotswanaBouvet IslandBrazilBritish Indian Ocean TerritoryBruneiBulgariaBurkina FasoBurundiCambodiaCameroonCanadaCape VerdeCayman IslandsCentral African RepublicChadChileChinaChristmas IslandCocos (Keeling) IslandsColombiaComorosCongoCongo, the Democratic Republic of theCook IslandsCosta RicaCroatiaCubaCuraçaoCyprusCzech RepublicDenmarkDjiboutiDominicaDominican RepublicEcuadorEgyptEl SalvadorEquatorial GuineaEritreaEstoniaEswatiniEthiopiaFalkland IslandsFaroe IslandsFijiFinlandFranceFrench GuianaFrench PolynesiaFrench Southern TerritoriesGabonGambiaGeorgiaGermanyGhanaGibraltarGreeceGreenlandGrenadaGuadeloupeGuamGuatemalaGuernseyGuineaGuinea-BissauGuyanaHaitiHeard Island and McDonald IslandsHoly See (Vatican City State)HondurasHong KongHungaryIcelandIndiaIndonesiaIranIraqIrelandIsle of ManIsraelItalyIvory CoastJamaicaJapanJerseyJordanKazakhstanKenyaKiribatiKosovoKuwaitKyrgyzstanLaosLatviaLebanonLesothoLiberiaLibyaLiechtensteinLithuaniaLuxembourgMacaoMacedonia, the Former Yugoslav Republic ofMadagascarMalawiMalaysiaMaldivesMaliMaltaMarshall IslandsMartiniqueMauritaniaMauritiusMayotteMexicoMicronesia, Federated States ofMoldovaMonacoMongoliaMontenegroMontserratMoroccoMozambiqueMyanmarNamibiaNauruNepalNetherlandsNew CaledoniaNew ZealandNicaraguaNigerNigeriaNiueNorfolk IslandNorth KoreaNorthern Mariana IslandsNorwayOmanPakistanPalauPalestine, State ofPanamaPapua New GuineaParaguayPeruPhilippinesPitcairnPolandPortugalPuerto RicoQatarRomaniaRussiaRwandaRéunionSaint BarthélemySaint Helena, Ascension and Tristan da CunhaSaint Kitts and NevisSaint LuciaSaint Martin (French part)Saint Pierre and MiquelonSaint Vincent and the GrenadinesSamoaSan MarinoSao Tome and PrincipeSaudi ArabiaSenegalSerbiaSeychellesSierra LeoneSingaporeSint Maarten (Dutch part)SlovakiaSloveniaSolomon IslandsSomaliaSouth AfricaSouth Georgia and the South Sandwich IslandsSouth KoreaSouth SudanSpainSri LankaSudanSurinameSvalbard and Jan MayenSwedenSwitzerlandSyriaTaiwanTajikistanTanzaniaThailandTimor-LesteTogoTokelauTongaTrinidad and TobagoTunisiaTurkeyTurkmenistanTurks and Caicos IslandsTuvaluUgandaUkraineUnited Arab EmiratesUnited KingdomUnited StatesUnited States Minor Outlying IslandsUruguayUzbekistanVanuatuVenezuelaVietnamVirgin Islands, BritishVirgin Islands, U.S.Wallis and FutunaWestern SaharaYemenZambiaZimbabweÅland Islands",
-      "kinds": {
-        "select": 4
-      },
-      "seen": 4,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
       "widgetIds": [],
       "fieldIds": [],
       "options": [
-        "Select...",
-        "Afghanistan",
-        "Albania",
-        "Algeria",
-        "American Samoa",
-        "Andorra",
-        "Angola",
-        "Anguilla",
-        "Antarctica",
-        "Antigua and Barbuda",
-        "Argentina",
-        "Armenia",
-        "Aruba",
-        "Australia",
-        "Austria",
-        "Azerbaijan",
-        "Bahamas",
-        "Bahrain",
-        "Bangladesh",
-        "Barbados",
-        "Belarus",
-        "Belgium",
-        "Belize",
-        "Benin",
-        "Bermuda",
-        "Bhutan",
-        "Bolivia",
-        "Bonaire, Sint Eustatius and Saba",
-        "Bosnia and Herzegovina",
-        "Botswana",
-        "Bouvet Island",
-        "Brazil",
-        "British Indian Ocean Territory",
-        "Brunei",
-        "Bulgaria",
-        "Burkina Faso",
-        "Burundi",
-        "Cambodia",
-        "Cameroon",
-        "Canada",
-        "Cape Verde",
-        "Cayman Islands",
-        "Central African Republic",
-        "Chad",
-        "Chile",
-        "China",
-        "Christmas Island",
-        "Cocos (Keeling) Islands",
-        "Colombia",
-        "Comoros",
-        "Congo",
-        "Congo, the Democratic Republic of the",
-        "Cook Islands",
-        "Costa Rica",
-        "Croatia",
-        "Cuba",
-        "Curaçao",
-        "Cyprus",
-        "Czech Republic",
-        "Denmark",
-        "Djibouti",
-        "Dominica",
-        "Dominican Republic",
-        "Ecuador",
-        "Egypt",
-        "El Salvador",
-        "Equatorial Guinea",
-        "Eritrea",
-        "Estonia",
-        "Eswatini",
-        "Ethiopia",
-        "Falkland Islands",
-        "Faroe Islands",
-        "Fiji",
-        "Finland",
-        "France",
-        "French Guiana",
-        "French Polynesia",
-        "French Southern Territories",
-        "Gabon",
-        "Gambia",
-        "Georgia",
-        "Germany",
-        "Ghana",
-        "Gibraltar",
-        "Greece",
-        "Greenland",
-        "Grenada",
-        "Guadeloupe",
-        "Guam",
-        "Guatemala",
-        "Guernsey",
-        "Guinea",
-        "Guinea-Bissau",
-        "Guyana",
-        "Haiti",
-        "Heard Island and McDonald Islands",
-        "Holy See (Vatican City State)",
-        "Honduras",
-        "Hong Kong",
-        "Hungary",
-        "Iceland",
-        "India",
-        "Indonesia",
-        "Iran",
-        "Iraq",
-        "Ireland",
-        "Isle of Man",
-        "Israel",
-        "Italy",
-        "Ivory Coast",
-        "Jamaica",
-        "Japan",
-        "Jersey",
-        "Jordan",
-        "Kazakhstan",
-        "Kenya",
-        "Kiribati",
-        "Kosovo",
-        "Kuwait",
-        "Kyrgyzstan",
-        "Laos",
-        "Latvia",
-        "Lebanon",
-        "Lesotho",
-        "Liberia",
-        "Libya",
-        "Liechtenstein",
-        "Lithuania",
-        "Luxembourg",
-        "Macao",
-        "Macedonia, the Former Yugoslav Republic of",
-        "Madagascar",
-        "Malawi",
-        "Malaysia",
-        "Maldives",
-        "Mali",
-        "Malta",
-        "Marshall Islands",
-        "Martinique",
-        "Mauritania",
-        "Mauritius",
-        "Mayotte",
-        "Mexico",
-        "Micronesia, Federated States of",
-        "Moldova",
-        "Monaco",
-        "Mongolia",
-        "Montenegro",
-        "Montserrat",
-        "Morocco",
-        "Mozambique",
-        "Myanmar",
-        "Namibia",
-        "Nauru",
-        "Nepal",
-        "Netherlands",
-        "New Caledonia",
-        "New Zealand",
-        "Nicaragua",
-        "Niger",
-        "Nigeria",
-        "Niue",
-        "Norfolk Island",
-        "North Korea",
-        "Northern Mariana Islands",
-        "Norway",
-        "Oman",
-        "Pakistan",
-        "Palau",
-        "Palestine, State of",
-        "Panama",
-        "Papua New Guinea",
-        "Paraguay",
-        "Peru",
-        "Philippines",
-        "Pitcairn",
-        "Poland",
-        "Portugal",
-        "Puerto Rico",
-        "Qatar",
-        "Romania",
-        "Russia",
-        "Rwanda",
-        "Réunion",
-        "Saint Barthélemy",
-        "Saint Helena, Ascension and Tristan da Cunha",
-        "Saint Kitts and Nevis",
-        "Saint Lucia",
-        "Saint Martin (French part)",
-        "Saint Pierre and Miquelon",
-        "Saint Vincent and the Grenadines",
-        "Samoa",
-        "San Marino",
-        "Sao Tome and Principe",
-        "Saudi Arabia",
-        "Senegal",
-        "Serbia",
-        "Seychelles",
-        "Sierra Leone",
-        "Singapore",
-        "Sint Maarten (Dutch part)",
-        "Slovakia",
-        "Slovenia",
-        "Solomon Islands",
-        "Somalia",
-        "South Africa",
-        "South Georgia and the South Sandwich Islands",
-        "South Korea",
-        "South Sudan",
-        "Spain",
-        "Sri Lanka",
-        "Sudan",
-        "Suriname",
-        "Svalbard and Jan Mayen",
-        "Sweden",
-        "Switzerland",
-        "Syria",
-        "Taiwan",
-        "Tajikistan",
-        "Tanzania",
-        "Thailand",
-        "Timor-Leste",
-        "Togo",
-        "Tokelau",
-        "Tonga",
-        "Trinidad and Tobago",
-        "Tunisia",
-        "Turkey",
-        "Turkmenistan",
-        "Turks and Caicos Islands",
-        "Tuvalu",
-        "Uganda",
-        "Ukraine",
-        "United Arab Emirates",
-        "United Kingdom",
-        "United States",
-        "United States Minor Outlying Islands",
-        "Uruguay",
-        "Uzbekistan",
-        "Vanuatu",
-        "Venezuela",
-        "Vietnam",
-        "Virgin Islands, British",
-        "Virgin Islands, U.S.",
-        "Wallis and Futuna",
-        "Western Sahara",
-        "Yemen",
-        "Zambia",
-        "Zimbabwe",
-        "Åland Islands"
-      ]
+        "No",
+        "Yes - Intern",
+        "Yes - Full Time Employment"
+      ],
+      "searchable": false
     },
     "spotify has my consent to contact me about future job opportunities": {
       "label": "Spotify has my consent to contact me about future job opportunities",
@@ -1613,54 +1463,1039 @@
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "veteran statusselect ...i identify as one or more of the classifications of protected veteran listed abovei am not a protected veterani decl": {
-      "label": "Veteran statusSelect ...I identify as one or more of the classifications of protected veteran listed aboveI am not a protected veteranI decline to self-identify for protected veteran status",
+    "what is your work authorization status in the united states": {
+      "label": "What is your work authorization status in the United States",
       "kinds": {
-        "select": 3
+        "radiogroup": 4
       },
-      "seen": 3,
+      "seen": 4,
       "boards": [
-        "palantir"
+        "angellist"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "United States Citizen or Permanent Resident",
+        "US Work Visa Holder",
+        "No Visa; Seeking work authorization",
+        "Not applicable; working remotely outside of United States"
+      ],
+      "searchable": false
+    },
+    "are you authorized to work in the united states": {
+      "label": "Are you authorized to work in the United States",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "will you require sponsorship for employment now or in the future": {
+      "label": "Will you require sponsorship for employment now or in the future",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[7e99ef70-58ab-4a59-bc31-cc1c35935935][field0]": {
+      "label": "cards[7e99ef70-58ab-4a59-bc31-cc1c35935935][field0]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "A United States Citizen",
+        "A lawful permanent resident of the United States (i.e. Greencard holder)",
+        "A protected individual",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "cards[5f2a739c-bb0e-4283-92c6-1dc8c09b459c][field0]": {
+      "label": "cards[5f2a739c-bb0e-4283-92c6-1dc8c09b459c][field0]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "are you a transitioning service member": {
+      "label": "Are you a transitioning service member",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "No",
+        "Yes"
+      ],
+      "searchable": false
+    },
+    "if yes, what partnership program are you working with": {
+      "label": "If yes, what partnership program are you working with",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
       ],
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
       "options": [
-        "Select ...",
-        "I identify as one or more of the classifications of protected veteran listed above",
-        "I am not a protected veteran",
-        "I decline to self-identify for protected veteran status"
-      ]
+        "Hiring our Heroes",
+        "NextOp",
+        "Skillbridge general (no program)"
+      ],
+      "searchable": false
     },
-    "disability statusselect ...yes, i have a disability, or have had one in the pastno, i do not have a disability and have not had one in the p": {
-      "label": "Disability statusSelect ...Yes, I have a disability, or have had one in the pastNo, I do not have a disability and have not had one in the pastI do not want to answer",
+    "what office(s) would you be willing to relocate to? (select all that apply)": {
+      "label": "What office(s) would you be willing to relocate to? (Select all that apply)",
+      "kinds": {
+        "checkboxgroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "San Diego, California",
+        "Dallas, Texas",
+        "Washington, DC",
+        "Boston, MA",
+        "International",
+        "San Francisco, California"
+      ],
+      "searchable": false
+    },
+    "cards[115d9079-dcfa-4a25-aff3-f213bf88362e][field2]": {
+      "label": "cards[115d9079-dcfa-4a25-aff3-f213bf88362e][field2]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[7e99ef70-58ab-4a59-bc31-cc1c35935935][field1]": {
+      "label": "cards[7e99ef70-58ab-4a59-bc31-cc1c35935935][field1]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[5f2a739c-bb0e-4283-92c6-1dc8c09b459c][field1]": {
+      "label": "cards[5f2a739c-bb0e-4283-92c6-1dc8c09b459c][field1]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[a90569ad-6b52-448e-9792-055f7c122285][field1]": {
+      "label": "cards[a90569ad-6b52-448e-9792-055f7c122285][field1]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field2]": {
+      "label": "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field2]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field3]": {
+      "label": "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field3]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field4]": {
+      "label": "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field4]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field5]": {
+      "label": "cards[07fdf1f1-9952-493d-a9b7-320969a56fed][field5]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[f27077c2-d069-4885-b031-ee14b393fd41][field0]": {
+      "label": "cards[f27077c2-d069-4885-b031-ee14b393fd41][field0]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Please select an option",
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[f27077c2-d069-4885-b031-ee14b393fd41][field2]": {
+      "label": "cards[f27077c2-d069-4885-b031-ee14b393fd41][field2]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field4]": {
+      "label": "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field4]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field0]": {
+      "label": "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field0]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "Yes, I am!",
+        "Yes, I have opened an account but have not funded it yet.",
+        "No, I have not had a chance to use Wealthfront."
+      ],
+      "searchable": false
+    },
+    "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field1]": {
+      "label": "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field1]",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field5]": {
+      "label": "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field5]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Please indicate your highest level of education attained:",
+        "High School Diploma",
+        "Bachelor's Degree",
+        "Master's Degree",
+        "PhD",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field8]": {
+      "label": "cards[a1d93a51-fdfb-40d0-88bc-10dabbf56636][field8]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "university-picker-a1d93a51-fdfb-40d0-88bc-10dabbf56636-8"
+      ],
+      "options": [
+        "Select a university or college",
+        "ACAP University College",
+        "Auckland University of Technology",
+        "Australian Catholic University",
+        "Australian National University",
+        "Bond University",
+        "Carnegie Mellon University - Australia",
+        "Central Queensland University (CQUniversity)",
+        "Charles Darwin University",
+        "Charles Sturt University - Australia",
+        "Curtin University",
+        "Deakin University",
+        "Edith Cowan University",
+        "Federation University of Australia",
+        "Flinders University",
+        "Griffith University",
+        "James Cook University",
+        "La Trobe University",
+        "Macquarie University",
+        "Monash University",
+        "Murdoch University",
+        "Queensland University of Technology (QUT)",
+        "RMIT University",
+        "Royal Melbourne Institute of Technology",
+        "Southern Cross University",
+        "Swinburne University of Technology",
+        "Torrens University Australia",
+        "University of Adelaide",
+        "University of Canberra",
+        "University of Divinity",
+        "University of Melbourne",
+        "University of New England - Australia",
+        "University of New South Wales (UNSW) - Australia",
+        "University of Newcastle - Australia",
+        "University of Notre Dame Australia",
+        "University of Queensland",
+        "University of South Australia",
+        "University of Southern Queensland",
+        "University of Sydney",
+        "University of Tasmania",
+        "University of Technology, Sydney",
+        "University of the Sunshine Coast",
+        "University of Western Australia",
+        "University of Western Sydney",
+        "University of Wollongong",
+        "Victoria University",
+        "Fachhochschule Technikum Wien",
+        "University of Natural Resources and Life Sciences, Vienna",
+        "University of Vienna",
+        "University of Ghent",
+        "Technological Institute of Aeronautics",
+        "Acadia University",
+        "Algonquin College of Applied Arts and Technology",
+        "Athabasca University",
+        "Bishop's University",
+        "Brandon University",
+        "Brescia University College",
+        "British Columbia Institute of Technology (BCIT)",
+        "Brock University",
+        "Cambridge College of Technology - Canada",
+        "Canadian Mennonite University",
+        "Cape Breton University",
+        "Capilano University",
+        "Carleton University",
+        "CDI College of Business, Technology and Healthcare",
+        "Centennial College of Applied Arts and Technology",
+        "Centre d'études collégiales de Charlevoix",
+        "Charles Sturt University",
+        "Concordia University",
+        "Concordia University of Edmonton",
+        "Conestoga College",
+        "Crandall University",
+        "Dalhousie University",
+        "Dartmouth College - Canada",
+        "Devry Institute of Technology",
+        "Douglas College",
+        "Durham College of Applied Arts and Technology",
+        "Eastern College - Canada",
+        "Fairleigh Dickinson University - Canada",
+        "Fanshawe College of Applied Arts and Technology",
+        "Georgian College of Applied Arts and Technology",
+        "Grande Prairie Regional College",
+        "Grant MacEwan University",
+        "Hunter College - Canada",
+        "King's College - Canada",
+        "Kwantlen Polytechnic University",
+        "Lakehead University",
+        "Lambton College of Applied Arts and Technology",
+        "Langara College",
+        "Laurentian University",
+        "Lethbridge Community College",
+        "Lincien College of Business and Technology",
+        "McGill University",
+        "McMaster University",
+        "Medicine Hat College",
+        "Mohawk College of Applied Arts and Technology",
+        "Mount Allison University",
+        "Mount Royal University College",
+        "Mount Saint Vincent University",
+        "New Brunswick Community College (NBCC)",
+        "Nipissing University",
+        "Nova Scotia Community Colleges",
+        "Okanagan College",
+        "Queen's University - Canada",
+        "Red River College",
+        "Redeemer University College",
+        "Royal Military College of Canada",
+        "Saint Mary's University Canada",
+        "Sault College of Applied Arts and Technology",
+        "Seneca College of Applied Arts and Technology",
+        "Sherbrooke University",
+        "Sheridan College Institute of Technology and Advanced Learning",
+        "Simon Fraser University",
+        "Southern Alberta Institute of Technology",
+        "St. Francis Xavier University",
+        "The Kings University College - Canada",
+        "Thompson River University (University College of the Cariboo)",
+        "Toronto Metropolitan University",
+        "Trent University - Canada",
+        "Trinity Western University",
+        "Télé-université",
+        "University Canada West - On-Line",
+        "University of Alberta",
+        "University of British Columbia",
+        "University of British Columbia (UBC)",
+        "University of Calgary",
+        "University of Canada West - Vancouver",
+        "University of Guelph",
+        "University of Lethbridge",
+        "University of Manitoba",
+        "University of New Brunswick",
+        "University of Northern British Columbia",
+        "University of Ontario Institute of Technology",
+        "University of Ottawa",
+        "University of Prince Edward Island",
+        "University of Regina",
+        "University of Saskatchewan",
+        "University of the Fraser Valley",
+        "University of Toronto",
+        "University of Victoria",
+        "University of Waterloo",
+        "University of Western Ontario",
+        "University of Windsor",
+        "University of Winnipeg",
+        "Vancouver Island University",
+        "Western University",
+        "Wilfred Laurier University",
+        "Wilfrid Laurier University",
+        "York University - Canada",
+        "University of Zagreb",
+        "Aarhus University",
+        "Copenhagen Business School",
+        "Roskilde University",
+        "Technical University of Denmark (DTU)",
+        "University of Copenhagen (DIKU)",
+        "Cairo University",
+        "University of Alexandria",
+        "Ecole Nationale d’Ingénieursde Tarbes",
+        "ESCP Business School Of Paris",
+        "Mines ParisTech",
+        "École Centrale Paris",
+        "École de Design Nantes Atlantique, France",
+        "École Polytechnique Palaiseau",
+        "École Polytechnique Paris - Saclay",
+        "École pour l'informatique et les nouvelles technologies (EPITECH)",
+        "Aachen University of Applied Sciences",
+        "Accadis Hochschule, Bad Homburg",
+        "Albert-Ludwigs-Universität Freiburg",
+        "Albstadt-Sigmaringen University",
+        "Berlin School of Economics and Law",
+        "Berliner Hochschule für Technik (BTH/Beuth)",
+        "Bielefeld University",
+        "Carl von Ossietzky University Oldenburg",
+        "CBS International Business School (Cologne/Köln)",
+        "Charite Berlin",
+        "Chemnitz University of Technology",
+        "Cologne Business School",
+        "DHBW Heilbronn",
+        "DHBW Mannheim",
+        "Eberhard Karls Universität Tübingen",
+        "ESMT Berlin",
+        "Europa Universität Viadrina (Frankfurt Oder)",
+        "European School of Business, Reutlingen",
+        "FAU Friedrich-Alexander-Universität Erlangen-Nürnberg",
+        "FH Aachen",
+        "Frankfurt School of Finance and Management",
+        "Frankfurt University of Applied Sciences",
+        "Free University Of Berlin",
+        "Freie Universität Berlin",
+        "Fresenius University of Applied Sciences",
+        "Friedrich Alexandre University",
+        "Furtwangen University",
+        "Goethe University Frankfurt",
+        "Hamburg School of Business and Economics",
+        "Hannover Medical School",
+        "Hasso Plattner Institute (HPI)",
+        "HTW Berlin",
+        "Humbolt University Berlin",
+        "Jade University of Applied Sciences",
+        "Johannes Gutenberg University Mainz",
+        "Julius Maximilian University Würzburg",
+        "KIT Karlsruhe Institute of Technology",
+        "Konstanz University",
+        "Leibniz Univeristy Hannover",
+        "Ludwig-Maximilian-University Munich",
+        "Mannheim Business School",
+        "Medical School Hamburg",
+        "Otto Friedrich University",
+        "Philipps-University Marburg",
+        "Reutlingen University",
+        "Rheinland-Pfälzische Technische Universität",
+        "Rhine-Waal University of Applied Sciences",
+        "Ruhr Uni Bochum",
+        "Ruhr University Bochum",
+        "RWTH Aachen University",
+        "Technical University Braunschweig",
+        "Technical University Darmstadt",
+        "Technical University Dresden",
+        "Technical University Hamburg",
+        "Technical University Of Berlin",
+        "Technical University of Munich (TUM)",
+        "Technische Universität Berlin",
+        "Teschnische Hochschule Mittelhessen",
+        "University Duisburg-Essen",
+        "University of Applied Sciences Breda",
+        "University of Cologne",
+        "University of Europe for Applied Sciences",
+        "University of Göttingen",
+        "University of Hamburg",
+        "University of Heidelberg",
+        "University of Mannheim",
+        "University of Muenster",
+        "University of Münster",
+        "University of Passau",
+        "University of Potsdam",
+        "University of Regensburg",
+        "University of Rostock",
+        "University of Stuttgart",
+        "University of Ulm",
+        "Zeppelin University (Friedrichshafen)",
+        "Hong Kong University",
+        "Andrássy University Budapest",
+        "Budapest Business School",
+        "Budapest Metropolitan University",
+        "Budapest University of Economics and Business (BGE)",
+        "Budapest University of Technology and Economics (BME)",
+        "Central European University",
+        "Corvinus University Of Budapest",
+        "Eszterházy Károly Catholic University",
+        "Eötvös Loránd University (ELTE)",
+        "International Business School - Budapest",
+        "Metropolitan University Budapest",
+        "National University of Public Service (Hungary)",
+        "Pannon University",
+        "Pázmány Péter Catholic University",
+        "Semmelweis University",
+        "Széchenyi Istán University",
+        "University of Debrecen",
+        "University of Dunaújváros",
+        "University of Miskolc",
+        "University of Pécs",
+        "University of Szeged",
+        "University of Veszprém",
+        "Óbuda University",
+        "Indian Institute of Technology Kharagpur",
+        "Indian Institute of Technology Mandi",
+        "Bocconi University",
+        "Foscari University",
+        "LUISS Guido Carli University (Rome)",
+        "Sapienza University of Rome",
+        "University of Catania",
+        "University of Pavia",
+        "Politecnico di Milano",
+        "Advanced Institute of Industrial Technology",
+        "Aichi Institute of Technology",
+        "Aichi Medical University",
+        "Aichi Shukutoku University",
+        "Aichi University",
+        "Aino University",
+        "Akita International University",
+        "Aoyama Gakuin University",
+        "Asia University",
+        "Atomi University",
+        "Azabu University",
+        "Bukkyo University",
+        "Bunkyo Gakuin University",
+        "Bunkyo University",
+        "Bunsei University of Art",
+        "Business Breakthrough University",
+        "Chiba Institute of Technology",
+        "Chiba University",
+        "Chiba University of Commerce",
+        "Chubu Gakuin University",
+        "Chubu University",
+        "Chukyo University",
+        "Chuo University",
+        "Chuogakuin University",
+        "Daito Bunka University",
+        "Digital Hollywood University",
+        "Dokkyo Medical University"
+      ],
+      "searchable": false
+    },
+    "are you currently authorized to work in the country in which you are applying": {
+      "label": "Are you currently authorized to work in the country in which you are applying",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "walkme"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[1c3bcf8a-1b0f-4f66-9b7e-e2087c26ec50][field1]": {
+      "label": "cards[1c3bcf8a-1b0f-4f66-9b7e-e2087c26ec50][field1]",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "walkme"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[aeb318a9-cc55-4e02-aff8-402e77bbcf0b][field0]": {
+      "label": "cards[aeb318a9-cc55-4e02-aff8-402e77bbcf0b][field0]",
+      "kinds": {
+        "select": 4
+      },
+      "seen": 4,
+      "boards": [
+        "walkme"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Select...",
+        "No",
+        "Yes"
+      ],
+      "searchable": false
+    },
+    "what is your age range": {
+      "label": "What is your age range",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "matillion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "18-20",
+        "21-29",
+        "30-39",
+        "40-49",
+        "50-59",
+        "60 or older",
+        "Prefer not to say"
+      ],
+      "searchable": false
+    },
+    "what gender do you identify as": {
+      "label": "What gender do you identify as",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "matillion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Women",
+        "Man",
+        "Non-binary",
+        "Prefer not to say"
+      ],
+      "searchable": false
+    },
+    "i identify my ethnicity asselect all that apply": {
+      "label": "I identify my ethnicity asSelect all that apply",
+      "kinds": {
+        "checkboxgroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "matillion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "White / Caucasian",
+        "Hispanic, Latino, or Spanish origin",
+        "Black or African American",
+        "Asian",
+        "Native Hawaiian or other Pacific Islander",
+        "Indigenous Peoples, First Nations, Native American, or Alaska Native",
+        "Mixed or multiple ethnic groups",
+        "Other race, ethnicity, or origin",
+        "Prefer not to say"
+      ],
+      "searchable": false
+    },
+    "do you have, or are you able to obtain, a s/sar clearance": {
+      "label": "Do you have, or are you able to obtain, a S/SAR clearance",
+      "kinds": {
+        "radiogroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "shieldai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "searchable": false
+    },
+    "cards[d943cd7f-8244-461e-bdeb-53966b8f0c46][field0]": {
+      "label": "cards[d943cd7f-8244-461e-bdeb-53966b8f0c46][field0]",
+      "kinds": {
+        "radiogroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "walkme"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[d943cd7f-8244-461e-bdeb-53966b8f0c46][field1]": {
+      "label": "cards[d943cd7f-8244-461e-bdeb-53966b8f0c46][field1]",
       "kinds": {
         "select": 3
       },
       "seen": 3,
       "boards": [
-        "palantir"
+        "walkme"
       ],
       "required": 0,
       "widgetIds": [],
-      "fieldIds": [
-        "disabilitySelectElement"
-      ],
+      "fieldIds": [],
       "options": [
-        "Select ...",
-        "Yes, I have a disability, or have had one in the past",
-        "No, I do not have a disability and have not had one in the past",
-        "I do not want to answer"
-      ]
+        "Select...",
+        "San Francisco, CA, USA",
+        "Austin, TX, USA",
+        "Raleigh, NC, USA",
+        "London, UK",
+        "Tel Aviv, IL",
+        "Singapore",
+        "Tokyo, JP",
+        "Sydney, AU",
+        "SAP Office - NYC, Hudson Yards"
+      ],
+      "searchable": false
     },
-    "opportunitylocationid": {
-      "label": "opportunityLocationId",
+    "are you authorized to work lawfully in the united states for matillion": {
+      "label": "Are you authorized to work lawfully in the United States for Matillion",
       "kinds": {
-        "select": 2
+        "radiogroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "matillion"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "are you based in the united states": {
+      "label": "Are you based in the United States",
+      "kinds": {
+        "checkboxgroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "matillion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "which is your time zone": {
+      "label": "Which is your time zone",
+      "kinds": {
+        "checkboxgroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "matillion"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Eastern",
+        "Central",
+        "Mountain",
+        "Pacific",
+        "Outside of US mainland"
+      ],
+      "searchable": false
+    },
+    "are you able to work in the san francisco office 2 days/week": {
+      "label": "Are you able to work in the San Francisco office 2 days/week",
+      "kinds": {
+        "radiogroup": 2
       },
       "seen": 2,
+      "boards": [
+        "angellist"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "Yes, but I would first need to relocate",
+        "No",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "are you able to work in one of our offices 2 days/week": {
+      "label": "Are you able to work in one of our offices 2 days/week",
+      "kinds": {
+        "radiogroup": 2
+      },
+      "seen": 2,
+      "boards": [
+        "angellist"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "Yes, but I would first need to relocate",
+        "No",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "cards[8e6f33b0-f769-4346-83ba-5a3a0de31cab][field0]": {
+      "label": "cards[8e6f33b0-f769-4346-83ba-5a3a0de31cab][field0]",
+      "kinds": {
+        "checkboxgroup": 2
+      },
+      "seen": 2,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Palo Alto",
+        "San Francisco",
+        "New York",
+        "Seattle",
+        "Not Interested"
+      ],
+      "searchable": false
+    },
+    "cards[d090becd-07b8-4536-ac84-dbf3bc07e03d][field0]": {
+      "label": "cards[d090becd-07b8-4536-ac84-dbf3bc07e03d][field0]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "N/A (I’m currently based in Stockholm or London)"
+      ],
+      "searchable": false
+    },
+    "cards[5da55f6b-ce2a-4247-b741-f1e0b0de33c2][field0]": {
+      "label": "cards[5da55f6b-ce2a-4247-b741-f1e0b0de33c2][field0]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
       "boards": [
         "spotify"
       ],
@@ -1668,24 +2503,48 @@
       "widgetIds": [],
       "fieldIds": [],
       "options": [
-        "Select...",
-        "London",
-        "Stockholm"
-      ]
+        "0-4",
+        "4-6",
+        "6-9",
+        "9+"
+      ],
+      "searchable": false
     },
-    "palantir technologies has my consent to contact me about future job opportunities": {
-      "label": "Palantir Technologies has my consent to contact me about future job opportunities",
+    "are you legally authorized to work in the united states": {
+      "label": "Are you legally authorized to work in the United States",
       "kinds": {
-        "checkbox": 1
+        "radiogroup": 1
       },
       "seen": 1,
       "boards": [
-        "palantir"
+        "spotify"
       ],
-      "required": 0,
+      "required": 1,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field1]": {
+      "label": "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field1]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "spotify"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
     },
     "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field2]": {
       "label": "cards[98d47565-851b-4ca0-a247-ed31e45e3185][field2]",
@@ -1699,77 +2558,336 @@
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "n/a (i’m currently based in stockholm or london)": {
-      "label": "N/A (I’m currently based in Stockholm or London)",
+    "palantir technologies has my consent to contact me about future job opportunities": {
+      "label": "Palantir Technologies has my consent to contact me about future job opportunities",
       "kinds": {
-        "radio": 1
+        "checkbox": 1
       },
       "seen": 1,
       "boards": [
-        "spotify"
+        "palantir"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "total years of experience into accounts payable": {
+      "label": "Total Years of Experience into Accounts Payable",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "paytm"
       ],
       "required": 1,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [
+        "0-3 yrs",
+        "3 yrs - 5years",
+        "5-7Years",
+        "8years and above"
+      ],
+      "searchable": false
     },
-    "0-4": {
-      "label": "0-4",
+    "experience into gst and tds calculations": {
+      "label": "Experience into GST and TDS calculations",
       "kinds": {
-        "radio": 1
+        "radiogroup": 1
       },
       "seen": 1,
       "boards": [
-        "spotify"
+        "paytm"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "notice periods in days": {
+      "label": "Notice periods in Days",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "paytm"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Immediate joiner",
+        "30 days",
+        "60days",
+        "90days"
+      ],
+      "searchable": false
+    },
+    "are you willing to work from office": {
+      "label": "Are you willing to work from Office",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "paytm"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field2]": {
+      "label": "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field2]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "have you managed direct reports in a compliance function": {
+      "label": "Have you managed direct reports in a compliance function",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field4]": {
+      "label": "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field4]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "which of the following best describes your primary area of compliance experience": {
+      "label": "Which of the following best describes your primary area of compliance experience",
+      "kinds": {
+        "checkboxgroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Mortgage / home lending",
+        "Retail banking",
+        "Investment banking",
+        "Fund company (mutual fund / ETF)",
+        "Broker-dealer",
+        "Investment Adviser",
+        "Other (please specify)"
+      ],
+      "searchable": false
+    },
+    "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field1]": {
+      "label": "cards[76094373-d07c-46a6-9bb5-2b9c05ad7675][field1]",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
       ],
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "4-6": {
-      "label": "4-6",
+    "would you be able to interview in java": {
+      "label": "Would you be able to interview in Java",
       "kinds": {
-        "radio": 1
+        "radiogroup": 1
       },
       "seen": 1,
       "boards": [
-        "spotify"
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field0]": {
+      "label": "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field0]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "0%",
+        "1-25%",
+        "25%+"
+      ],
+      "searchable": false
+    },
+    "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field1]": {
+      "label": "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field1]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "0 - 2 years",
+        "2- 5 year",
+        "6 + years"
+      ],
+      "searchable": false
+    },
+    "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field2]": {
+      "label": "cards[0d9a4d40-374a-4a73-9e6e-c5c8f8b7c752][field2]",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "please choose the option that best describes your aml experience": {
+      "label": "Please choose the option that best describes your AML experience",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "I have very limited or no hands-on AML experience",
+        "I recently transitioned into AML and am exploring related career opportunities",
+        "My experience is focused on reviewing/dispositioning transaction monitoring alerts, conducting customer due diligence, and/or handling KYC-related reviews",
+        "My experience is focused on conducting investigations of varying complexity, ranging from transaction monitoring alerts and filing SARs as needed to high-profile investigations with typologies like trade-based money laundering, terrorist financing, sanctions evasion, etc"
+      ],
+      "searchable": false
+    },
+    "please check all of the certifications you hold": {
+      "label": "Please check all of the certifications you hold",
+      "kinds": {
+        "checkboxgroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "CAMS (Certified Anti-Money Laundering Specialist)",
+        "CFCS (Certified Financial Crimes Specialist)",
+        "CFE (Certified Fraud Examiner)",
+        "I do not have any certifications at this time",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "cards[cc34b1be-aab0-411d-9753-da39b2275457][field1]": {
+      "label": "cards[cc34b1be-aab0-411d-9753-da39b2275457][field1]",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "wealthfront"
       ],
       "required": 0,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     },
-    "6-9": {
-      "label": "6-9",
+    "cards[114df5b2-c436-4179-849c-031ec4cae490][field0]": {
+      "label": "cards[114df5b2-c436-4179-849c-031ec4cae490][field0]",
       "kinds": {
-        "radio": 1
+        "textarea": 1
       },
       "seen": 1,
       "boards": [
-        "spotify"
+        "matillion"
       ],
-      "required": 0,
+      "required": 1,
       "widgetIds": [],
       "fieldIds": [],
-      "options": []
-    },
-    "9+": {
-      "label": "9+",
-      "kinds": {
-        "radio": 1
-      },
-      "seen": 1,
-      "boards": [
-        "spotify"
-      ],
-      "required": 0,
-      "widgetIds": [],
-      "fieldIds": [],
-      "options": []
+      "options": [],
+      "searchable": false
     }
   },
   "dropdownOpenRate": null
