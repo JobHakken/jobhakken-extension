@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.5
+- **Hiring-post filter on LinkedIn's content search.** On LinkedIn's own post-search results page
+  (e.g. searching `hiring "firmware"`), each post now gets a quiet "View job ↗" / "Find this post ↗"
+  row, and posts that aren't actually a hiring pitch (job seekers, the dominant noise on this search)
+  are dimmed automatically. An AI pass can also suggest short tags ("recruiter agency", "contract role")
+  — click one to hide every post like it from then on. Nothing about the page is stored: no post text,
+  no author name, no per-post record — only the tags you've chosen to exclude, so future posts can be
+  matched against them without another AI call. Runs only on the page you're already viewing; nothing
+  is fetched or scraped in the background.
+
 ## 0.35.1
 - **Fixed: fields like School or Location (City) silently stayed blank.** These only show real choices
   once you start typing — nothing renders on open — and the fill logic never tried typing into a field
