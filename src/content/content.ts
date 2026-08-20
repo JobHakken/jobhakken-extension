@@ -628,6 +628,9 @@ async function recordUnfillable(field: { kind: string; label: string }): Promise
  */
 export type PanelRow = {
   signature: string;
+  /** The control's DOM id, when it has one — lets a caller re-read its value later via `rawFieldValue`,
+   *  bypassing `detectFields()`'s visibility gate (see `rawFieldValue`'s own comment for why that matters). */
+  id?: string;
   label: string;
   kind: string;
   group: 'know' | 'ask' | 'remember' | 'sensitive';
@@ -758,6 +761,7 @@ function syncRail(): void {
   mountRail({
     panelFields,
     fillOne,
+    rawFieldValue,
     learnFromPage,
     noteUse: (label) => noteRememberedUse(label),
     promote: (label, on) => setPromoted(label, on),
@@ -1051,8 +1055,70 @@ async function importData(text: string): Promise<{ ok: boolean; summary?: string
  * textarea was being reported as a form field to fill — visible as a "Need you" row labelled with our
  * own placeholder. Anything inside the rail host is ours, never the application's.
  */
+/**
+ * Fields a previous scan found, keyed by signature — the basis for the rescue pass in `pageFields`.
+ * Per-page and never persisted: it holds live element handles, not answers.
+ */
+const seenFields = new Map<string, DetectedField>();
+
+/**
+ * Is the control's own VISIBLE WIDGET genuinely rendered — as opposed to the (possibly transparent)
+ * input inside it?
+ *
+ * `detectFields`'s visibility gate is a security control: it drops any input the browser isn't really
+ * rendering, so a malicious posting can't park an EEO field off-screen and harvest protected-class data
+ * on autofill. That gate is right to exist, but react-select trips it as a false positive — committing a
+ * value sets the inner SEARCH INPUT to `opacity:0` (the choice renders as a sibling span instead). The
+ * gate sees `opacity:0` and drops the field, so EVERY dropdown disappeared from EVERY later scan the
+ * instant it was filled: the panel silently lost the row, marking couldn't reach it, and `fillOne`
+ * answered `gone` about a field sitting in plain sight. Verified live on Greenhouse — a filled control's
+ * input was `opacity:0` while its own `select__control` was a fully visible 34px-tall box.
+ *
+ * So judge the widget, not the transparent input: walk up to the rendered control and demand it be
+ * genuinely visible at a real size and on-screen. A field the page actually hid still fails this, which
+ * keeps the original guarantee intact.
+ */
+function widgetVisible(el: Element): boolean {
+  let node: Element | null = el;
+  for (let i = 0; node && i < 6; i++) {
+    const cs = getComputedStyle(node);
+    const opacity = parseFloat(cs.opacity);
+    const hiddenHere = cs.display === 'none' || cs.visibility === 'hidden' || cs.visibility === 'collapse';
+    // An ancestor with display:none / visibility:hidden hides everything below it, so that's terminal —
+    // no point walking further up looking for a visible box that can't be showing.
+    if (hiddenHere) return false;
+    const r = node.getBoundingClientRect();
+    const onScreen = r.right > -2000 && r.bottom > -2000 && r.left < 100000 && r.top < 100000;
+    if (!Number.isNaN(opacity) && opacity > 0.01 && r.width > 20 && r.height > 10 && onScreen) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
+/**
+ * The page's fields, excluding our own, plus any the visibility gate has dropped since we last saw them
+ * while their widget stayed on screen (see `widgetVisible`).
+ *
+ * A rescued field keeps its ORIGINAL signature, so row identity — and therefore every `fillOne` call,
+ * panel row and mark keyed on it — survives the field being filled. Rescue requires the element still
+ * be `isConnected`, so a control the page genuinely removes is correctly forgotten: on Greenhouse,
+ * answering Race with a decline collapses the linked ethnicity pair and deletes the Race control
+ * outright, and that field must NOT linger in the panel afterwards.
+ */
 function pageFields(): ReturnType<typeof detectFields> {
-  return detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+  const fresh = detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+  const live = new Set(fresh.map((f) => f.signature));
+  for (const f of fresh) seenFields.set(f.signature, f);
+  const rescued: DetectedField[] = [];
+  for (const [sig, f] of seenFields) {
+    if (live.has(sig)) continue;
+    if (!f.el.isConnected || !widgetVisible(f.el)) {
+      seenFields.delete(sig); // gone for real, or genuinely hidden — stop tracking it
+      continue;
+    }
+    rescued.push(f);
+  }
+  return [...fresh, ...rescued];
 }
 
 /**
@@ -1069,6 +1135,45 @@ function currentValueFixed(field: DetectedField): string {
     return field.el.checked ? 'checked' : '';
   }
   return currentValue(field);
+}
+
+/**
+ * Read what a combobox currently shows, by DOM id, independent of `detectFields()`'s visibility gate.
+ *
+ * A committed react-select value hides its own search input (`opacity:0`) once an option is chosen —
+ * the choice renders via a sibling span instead. `detectFields()`'s visibility gate treats that input
+ * as "not genuinely rendered" and drops the WHOLE field from every later scan (upstream, #165). That's
+ * harmless for "don't re-fill something already correct" — an absent row is never re-attempted either
+ * way — but it means `panelFields()` can never again report a value for a field the instant it's
+ * correctly filled, which blinds any check for whether a SIBLING's later fill silently reset it (#164:
+ * verified live, Greenhouse resets "Are you Hispanic/Latino?" when Race is set to "Decline To Self
+ * Identify"). Read the DOM directly by id instead, walking up for rendered text the same way `shown()`
+ * does in pageBridge — robust to whichever wrapper div a given vendor happens to use.
+ */
+function rawFieldValue(id: string): string {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  // A checkbox/radio's `.value` is a static attribute unrelated to whether it's actually checked (the
+  // same quirk `currentValueFixed` works around above) — verified live, it produced a false "regressed"
+  // read (a "Current role" checkbox reporting the string "Senior Engineer" regardless of checked state).
+  if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+    return el.checked ? 'checked' : '';
+  }
+  // A plain input's value lives in `.value`, never in `textContent` — check that first (this is what a
+  // walk-up-for-text search would miss entirely, since a text input's own value renders nothing a
+  // sibling/parent's `textContent` would ever pick up; verified live, it grabbed the field's LABEL text
+  // instead). Only fall back to reading rendered text for combobox-style widgets, which show their
+  // committed choice as a sibling span rather than in the (possibly hidden) search input's `.value`.
+  const v = String((el as HTMLInputElement).value ?? '').trim();
+  if (v) return v;
+  if (el.getAttribute('role') !== 'combobox' && el.getAttribute('aria-haspopup') !== 'listbox') return '';
+  let node: Element | null = el.parentElement;
+  for (let i = 0; node && i < 8; i++) {
+    const txt = (node.textContent ?? '').trim();
+    if (txt) return txt;
+    node = node.parentElement;
+  }
+  return '';
 }
 
 /**
@@ -1248,6 +1353,7 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
         ? { count: optCount > 0 ? optCount : null, searchable: field.kind === 'combobox' && optCount === 0 }
         : undefined,
       signature: field.signature,
+      id: field.id || undefined,
       label,
       kind: field.kind,
       group,

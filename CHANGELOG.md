@@ -4,6 +4,32 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.4
+- **Fixed: a dropdown disappeared from the panel the moment it was filled.** Every custom dropdown
+  (react-select, used by Greenhouse and most modern ATS) hides its own text box once you pick a value,
+  and our field scanner read that as "the page is hiding this field from me" and dropped it. So a
+  correctly-filled dropdown silently vanished from the side panel, couldn't be outlined on the page,
+  and couldn't be re-filled or corrected — Fill all reported "gone" about a field sitting in plain
+  sight. The scanner now judges the dropdown's own visible box rather than the hidden text box inside
+  it, so filled dropdowns stay visible and editable. The underlying check is a safety guard against a
+  posting hiding a field to harvest your data on autofill; that guard is unchanged — a field the page
+  genuinely hides, or removes, is still ignored.
+- **Fixed: one field failing to fill could silently stop later fields from filling at all.** After a
+  form rewrote a field behind our back, every field filled afterwards was wrongly blamed for it and
+  skipped. Verified on a real Greenhouse posting: gender, veteran status, disability status and
+  discipline were all being skipped as a result.
+- **Fill all is ~2.7× faster** (about 40s → 15s on a long Greenhouse application). It was pausing after
+  every single field to watch for the form reacting; it now notices that while moving on to the next
+  field instead of waiting.
+- **Linked EEO questions now settle correctly.** Some forms render one question as two dropdowns —
+  Greenhouse asks Hispanic/Latino yes-no *plus* a race dropdown that only exists while the answer is
+  "No" — and declining the race question is the same statement as declining the whole question, so the
+  form collapses the pair. Fill all no longer fights that: it stops re-trying the field that triggered
+  the collapse, leaving the required field visibly unfilled for you rather than flip-flopping between
+  two states and landing on an arbitrary one.
+- Demo data now answers the race question with a concrete category instead of "prefer not to say", so
+  demo mode has something visible to show on forms that collapse a declined answer.
+
 ## 0.35.3
 - **Fixed: an unchecked checkbox could still show the green "we filled this" outline.** A standalone
   checkbox's "did this fill?" check read a static attribute instead of whether it was actually checked.

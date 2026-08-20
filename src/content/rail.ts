@@ -18,6 +18,9 @@
 export type RailApi = {
   panelFields(): Promise<PanelData>;
   fillOne(signature: string, value: string): Promise<FillResult>;
+  /** Read a control's current displayed value by DOM id, independent of the panel's own field
+   *  detection — see content.ts's `rawFieldValue` for why that independence matters (#164/#165). */
+  rawFieldValue(id: string): string;
   learnFromPage(): Promise<number>;
   noteUse(label: string): Promise<number>;
   promote(label: string, on: boolean): Promise<void>;
@@ -53,6 +56,8 @@ export type RailApi = {
 type Group = 'know' | 'ask' | 'remember' | 'sensitive';
 export type PanelRow = {
   signature: string;
+  /** The control's DOM id, when it has one — see content.ts's `rawFieldValue` for why a caller needs it. */
+  id?: string;
   label: string;
   kind: string;
   group: Group;
@@ -802,28 +807,74 @@ export function mountRail(api: RailApi): void {
         btn.disabled = true;
         const before = btn.textContent;
         btn.textContent = 'Filling…';
-        const filledSigs = new Set<string>();
         let current = rows;
         // Answering one question can reveal another that didn't exist in the DOM a moment ago —
         // verified live: Greenhouse's "Race" only renders after "Are you Hispanic/Latino?" is answered
         // (#162). A single fixed pass over the panel's original snapshot never sees it. Re-check for
         // newly-fillable rows after each pass instead, bounded so a page that keeps generating "new"
         // signatures (a bug elsewhere, or genuinely unbounded content) can't loop forever.
+        //
+        // Re-checks every row each pass, not just ones we haven't attempted (#164). Some forms model one
+        // logical question as two linked controls, and answering the second can rewrite the first:
+        // verified live on Greenhouse, whose ethnicity question is a hispanic yes/no PLUS a race dropdown
+        // that only exists while the answer is "No". Declining the race is the same statement as
+        // declining the ethnicity, so the form collapses the pair — hispanic flips to Decline and the
+        // race control is removed. That's correct on the form's part, and no page state holds
+        // hispanic="No" alongside race="Decline", so retrying both every pass just oscillates and lands
+        // on whichever state the pass count's parity stops at. Instead, "poison" a signature once its
+        // fill is seen to rewrite a field we'd already landed: it's never retried, the run converges, and
+        // the collapsed answer stands (a declined pair IS a complete, faithful answer — restoring the
+        // first field would only re-reveal a required control we've stopped trying to fill).
+        const poisoned = new Set<string>();
+        // What each successful fill actually PUT on the page, by DOM id — not the profile's literal
+        // string. A value resolved through a fuzzy tier (the decline-interchangeable mapping: profile
+        // "Prefer not to say" → this form's "Decline To Self Identify") never equals its own `value` as
+        // text, so comparing against `value` would never see those fields as landed — exactly the fields
+        // most likely to be half of a linked pair. Comparing against what landed avoids that entirely.
+        //
+        // Read back through `rawFieldValue` (by DOM id) rather than a row's own `current`, so this stays
+        // correct even for a control that has dropped out of field detection.
+        const confirmed = new Map<string, { id: string; value: string }>();
+        let lastFilled: string | null = null;
+        /**
+         * Attribute any damage the previous fill caused, then stop tracking what it broke.
+         *
+         * Dropping the broken entries is essential, not tidiness: a clobbered value we keep watching
+         * reports "regressed" on every later check, so the next innocent field to be filled — and then
+         * every one after it — would be blamed and skipped.
+         */
+        const noteRegressions = (): void => {
+          const broken = [...confirmed.entries()]
+            .filter(([, c]) => api.rawFieldValue(c.id).trim() !== c.value.trim())
+            .map(([sig]) => sig);
+          if (!broken.length) return;
+          for (const sig of broken) confirmed.delete(sig);
+          if (lastFilled) poisoned.add(lastFilled);
+        };
         for (let pass = 0; pass < 5; pass++) {
           const toFill = current.filter(
             (x) =>
               x.value &&
               x.current.trim() !== x.value.trim() &&
               (sensitiveOn || x.group !== 'sensitive') &&
-              !filledSigs.has(x.signature),
+              !poisoned.has(x.signature),
           );
           if (!toFill.length) break;
           // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
           for (const r of toFill) {
-            filledSigs.add(r.signature);
-            markRow(r.signature, await api.fillOne(r.signature, r.value));
+            // Check for a cascade from the PREVIOUS fill here, rather than sleeping after each one to
+            // wait for it. A form's reaction is its own timing, not ours (measured ~400ms out on
+            // Greenhouse), but driving the next widget already takes longer than that, so by now it has
+            // landed — and this costs no added wall-clock, where polling every field cost ~30s a run.
+            noteRegressions();
+            if (poisoned.has(r.signature)) continue;
+            const fillRes = await api.fillOne(r.signature, r.value);
+            markRow(r.signature, fillRes);
+            lastFilled = r.signature;
+            if (fillRes.filled && r.id) confirmed.set(r.signature, { id: r.id, value: api.rawFieldValue(r.id) });
+            current = (await api.panelFields()).rows;
           }
-          current = (await api.panelFields()).rows;
+          noteRegressions(); // the pass's last fill has no successor to notice its cascade
         }
         markAfterFill(); // show what just happened on the form itself
         btn.textContent = before;

@@ -46,7 +46,11 @@ export const TEST_PROFILE: FullProfile = {
     currentSalary: '135,000 USD',
     gender: 'Prefer not to say',
     pronouns: 'they/them',
-    raceEthnicity: 'Prefer not to say',
+    // A concrete category, not "prefer not to say": on a linked EEO pair (Greenhouse renders one
+    // ethnicity question as hispanic-yes/no + race) a declined race is the SAME answer as a declined
+    // ethnicity, so the form correctly collapses the pair and removes the race control. That's a valid
+    // submission but it leaves demo mode with nothing visible to show, so demo data answers concretely.
+    raceEthnicity: 'White',
     hispanicLatino: 'No',
     veteranStatus: 'I am not a protected veteran',
     disabilityStatus: 'No, I do not have a disability',
