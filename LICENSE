@@ -1,22 +1,38 @@
-JobHakken Extension — Proprietary Software License
-Copyright (c) 2026 JobHakken. All rights reserved.
+JobHakken Extension
 
-This software and its associated source code, assets, and documentation
-(the "Software") are the confidential and proprietary property of JobHakken.
+Copyright (c) 2026 JobHakken
 
-NO LICENSE IS GRANTED. Except as expressly authorized in writing by JobHakken,
-you may NOT copy, modify, merge, publish, distribute, sublicense, sell, host,
-or create derivative works of the Software, in whole or in part, by any means.
+SPDX-License-Identifier: AGPL-3.0-or-later
 
-Access to this repository is provided solely to employees, contractors, and
-collaborators of JobHakken for the purpose of developing the Software, and is
-subject to any separate contributor, employment, or non-disclosure agreement
-in force. All contributions to this repository are assigned to and become the
-property of JobHakken.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED. IN NO EVENT SHALL JOBHAKKEN BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
-LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
 
-For licensing inquiries: legal@jobhakken.com
+The full license text is available at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+A plain-language summary (not a substitute for the license itself) is
+available at:
+https://choosealicense.com/licenses/agpl-3.0/
+
+If you did not receive a copy of the license with this program, you can
+obtain one from the Free Software Foundation at the address above, or by
+writing to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+Floor, Boston, MA 02110-1301, USA.
+
+---
+
+Why AGPL-3.0 rather than a permissive license (deliberate choice, not a
+default): unlike this project's companion library `@jobhakken/autofill`
+(pure form-detection mechanics, MIT-licensed separately), this repository is
+the product itself. AGPL-3.0 keeps the source open to contributors while
+requiring that anyone who runs a modified version of this software as a
+network service makes their modified source available to users of that
+service — it is chosen specifically to prevent a closed-source competing
+fork or hosted service built on this code without reciprocal contribution.
