@@ -818,6 +818,12 @@ async function fieldOptions(
  * people. Everything is removable, and cleared on unmount.
  */
 const MARK = 'data-jh-mark';
+const MARK_STYLE: Record<string, string> = {
+  know: '2px solid #5C7E48',
+  remember: '2px solid #5A6B8C',
+  ask: '2px dashed #BB6535',
+  sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
+};
 
 /**
  * Which element(s) an outline should actually land on for `field` — not always `field.el`.
@@ -853,12 +859,6 @@ function markFields(rows: PanelRow[], on: boolean): void {
     return;
   }
   const fields = new Map(pageFields().map((f) => [f.signature, f]));
-  const style: Record<string, string> = {
-    know: '2px solid #5C7E48',
-    remember: '2px solid #5A6B8C',
-    ask: '2px dashed #BB6535',
-    sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
-  };
   const stillMarked = new Set<HTMLElement>();
   for (const r of rows) {
     const field = fields.get(r.signature);
@@ -872,7 +872,7 @@ function markFields(rows: PanelRow[], on: boolean): void {
     // flagging what needs the user's attention is the whole point, filled or not.
     if ((r.group === 'know' || r.group === 'remember') && !currentValue(field).trim()) continue;
     for (const el of markTargets(field)) {
-      el.style.outline = style[r.group] ?? '';
+      el.style.outline = MARK_STYLE[r.group] ?? '';
       el.style.outlineOffset = '1px';
       el.setAttribute(MARK, r.group);
       stillMarked.add(el);
@@ -887,6 +887,21 @@ function markFields(rows: PanelRow[], on: boolean): void {
       el.removeAttribute(MARK);
     }
   });
+}
+
+/**
+ * Mark a SINGLE field right after it's filled, without touching any other field's mark.
+ *
+ * Progressive (fill-as-you-scroll) fills one field at a time as it enters the viewport — calling the
+ * full `markFields(rows, true)` for that would re-run its "clear anything not in this pass" sweep and
+ * erase every mark a panel-triggered fill had already placed elsewhere on the page. This only ever adds.
+ */
+function markOne(field: DetectedField, group: PanelRow['group']): void {
+  for (const el of markTargets(field)) {
+    el.style.outline = MARK_STYLE[group] ?? '';
+    el.style.outlineOffset = '1px';
+    el.setAttribute(MARK, group);
+  }
 }
 
 /** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
@@ -1066,7 +1081,6 @@ async function startProgressive(): Promise<void> {
       .filter((r) => r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive)))
       .map((r) => [r.signature, r]),
   );
-
   progressiveObserver = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -1082,7 +1096,11 @@ async function startProgressive(): Promise<void> {
           continue;
         }
         progressiveDone.add(sig);
-        void fillOne(sig, row.value);
+        // Show what just happened the same way a panel-triggered fill does — otherwise the one fill
+        // path a person never explicitly asked for is also the only one that leaves no visible trace.
+        void fillOne(sig, row.value).then((res) => {
+          if (res.filled) markOne(live, row.group);
+        });
       }
     },
     { rootMargin: '0px 0px -15% 0px', threshold: 0.35 },
