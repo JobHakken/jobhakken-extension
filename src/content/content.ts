@@ -19,6 +19,7 @@ import {
   setInputFile,
   unmappedQuestions,
   type CoverageReport,
+  type DetectedField,
   type FullProfile,
   type MappingSource,
   type MappingStore,
@@ -817,24 +818,48 @@ async function fieldOptions(
  * people. Everything is removable, and cleared on unmount.
  */
 const MARK = 'data-jh-mark';
+
+/**
+ * Which element(s) an outline should actually land on for `field` — not always `field.el`.
+ *
+ * A radio/checkbox GROUP is one question with several member inputs (`field.el` is just the first —
+ * see `detectRadioGroups`); outlining only that one made a 7-checkbox "select all that apply" question
+ * look like just its FIRST checkbox needed attention, not the whole question.
+ *
+ * A combobox's real interactive element can also be sized down to almost nothing — Greenhouse's
+ * Discipline field measured 3.5x20px against a 600x34px visible control box (verified live) — so
+ * outlining `field.el` directly draws a near-invisible sliver instead of a box around what a person
+ * actually sees on screen. Walk up until something is big enough to be worth outlining.
+ */
+function markTargets(field: DetectedField): HTMLElement[] {
+  if (field.optionEls && field.optionEls.length > 1) return field.optionEls;
+  let node: HTMLElement = field.el;
+  for (let i = 0; i < 5; i++) {
+    const r = node.getBoundingClientRect();
+    if (r.width > 20 && r.height > 10) return [node];
+    if (!node.parentElement) break;
+    node = node.parentElement;
+  }
+  return [field.el];
+}
+
 function markFields(rows: PanelRow[], on: boolean): void {
-  const fields = new Map(pageFields().map((f) => [f.signature, f]));
   if (!on) {
-    for (const f of fields.values()) {
-      if (f.el.hasAttribute(MARK)) {
-        f.el.style.outline = '';
-        f.el.style.outlineOffset = '';
-        f.el.removeAttribute(MARK);
-      }
-    }
+    document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach((el) => {
+      el.style.outline = '';
+      el.style.outlineOffset = '';
+      el.removeAttribute(MARK);
+    });
     return;
   }
+  const fields = new Map(pageFields().map((f) => [f.signature, f]));
   const style: Record<string, string> = {
     know: '2px solid #5C7E48',
     remember: '2px solid #5A6B8C',
     ask: '2px dashed #BB6535',
     sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
   };
+  const stillMarked = new Set<HTMLElement>();
   for (const r of rows) {
     const field = fields.get(r.signature);
     if (!field) continue;
@@ -845,18 +870,23 @@ function markFields(rows: PanelRow[], on: boolean): void {
     // marked green the next time ANYTHING re-renders the panel, which reads as a false success.
     // "ask"/"sensitive" are prompts, not success claims — they mark regardless of current state, since
     // flagging what needs the user's attention is the whole point, filled or not.
-    if ((r.group === 'know' || r.group === 'remember') && !currentValue(field).trim()) {
-      if (field.el.hasAttribute(MARK)) {
-        field.el.style.outline = '';
-        field.el.style.outlineOffset = '';
-        field.el.removeAttribute(MARK);
-      }
-      continue;
+    if ((r.group === 'know' || r.group === 'remember') && !currentValue(field).trim()) continue;
+    for (const el of markTargets(field)) {
+      el.style.outline = style[r.group] ?? '';
+      el.style.outlineOffset = '1px';
+      el.setAttribute(MARK, r.group);
+      stillMarked.add(el);
     }
-    field.el.style.outline = style[r.group] ?? '';
-    field.el.style.outlineOffset = '1px';
-    field.el.setAttribute(MARK, r.group);
   }
+  // Clear anything marked in a PREVIOUS pass that this one didn't re-mark — a "know" field that got
+  // filled then un-filled, or a row that dropped out of `rows` after the page changed under us.
+  document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach((el) => {
+    if (!stillMarked.has(el)) {
+      el.style.outline = '';
+      el.style.outlineOffset = '';
+      el.removeAttribute(MARK);
+    }
+  });
 }
 
 /** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
