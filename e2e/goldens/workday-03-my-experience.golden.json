@@ -1,0 +1,55 @@
+{
+  "fixture": "workday/03-my-experience.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "#workExperience-267--jobTitle",
+      "expect": "",
+      "review": true,
+      "note": "text — Job Title*"
+    },
+    {
+      "selector": "#workExperience-267--companyName",
+      "expect": "",
+      "review": true,
+      "note": "text — Company*"
+    },
+    {
+      "selector": "#workExperience-267--location",
+      "expect": "",
+      "review": true,
+      "note": "text — Location*"
+    },
+    {
+      "selector": "#workExperience-267--startDate-dateSectionMonth-input",
+      "expect": "",
+      "review": true,
+      "note": "text — From*"
+    },
+    {
+      "selector": "#workExperience-267--startDate-dateSectionYear-input",
+      "expect": "",
+      "review": true,
+      "note": "text — From*"
+    },
+    {
+      "selector": "#workExperience-267--endDate-dateSectionMonth-input",
+      "expect": "",
+      "review": true,
+      "note": "text — To*"
+    },
+    {
+      "selector": "#workExperience-267--endDate-dateSectionYear-input",
+      "expect": "",
+      "review": true,
+      "note": "text — To*"
+    },
+    {
+      "selector": "#workExperience-267--currentlyWorkHere",
+      "expect": "",
+      "review": true,
+      "note": "radio — Location*"
+    }
+  ]
+}

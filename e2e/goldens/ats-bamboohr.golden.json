@@ -4,9 +4,38 @@
   "minRecall": 1,
   "_note": "BambooHR SPA form, captured live from the embedded iframe.",
   "fields": [
-    { "selector": "#firstName", "expect": "Jordan", "gate": true },
-    { "selector": "#lastName", "expect": "Rivera", "gate": true },
-    { "selector": "#email", "expect": "jordan.rivera@example.com", "gate": true },
-    { "selector": "#phone", "expect": "555", "match": "contains", "gate": false }
+    {
+      "selector": "#firstName",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#lastName",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#phone",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "#nickname_hpcsaf",
+      "expect": "",
+      "review": true,
+      "note": "text — Please leave this field blank"
+    },
+    {
+      "selector": "#FabricTextField-16",
+      "expect": "",
+      "review": true,
+      "note": "text — Link to This Job"
+    }
   ]
 }

@@ -38,6 +38,156 @@
       "expect": "https://jordanrivera.dev",
       "gate": false,
       "note": "Website free-text question"
+    },
+    {
+      "selector": "#company-name-0",
+      "expect": "",
+      "review": true,
+      "note": "text — Company name*"
+    },
+    {
+      "selector": "#title-0",
+      "expect": "",
+      "review": true,
+      "note": "text — Title*"
+    },
+    {
+      "selector": "#start-date-year-0",
+      "expect": "",
+      "review": true,
+      "note": "text — Start date year*"
+    },
+    {
+      "selector": "#end-date-year-0",
+      "expect": "",
+      "review": true,
+      "note": "text — End date year*"
+    },
+    {
+      "selector": "#start-year--0",
+      "expect": "",
+      "review": true,
+      "note": "text — Start date year*"
+    },
+    {
+      "selector": "#end-year--0",
+      "expect": "",
+      "review": true,
+      "note": "text — End date year*"
+    },
+    {
+      "selector": "#question_31130473003",
+      "expect": "",
+      "review": true,
+      "note": "text — Physical Address*"
+    },
+    {
+      "selector": "#g-recaptcha-response-100000",
+      "expect": "",
+      "review": true,
+      "note": "textarea — Powered by"
+    },
+    {
+      "selector": "#current-role-0_1",
+      "expect": "",
+      "review": true,
+      "note": "radio — End date year*"
+    },
+    {
+      "selector": "[id=\"question_31130477003[]_164236972003\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio — How did you learn about Samsung Semiconductor Inc.? Select all that ap"
+    },
+    {
+      "selector": "#country",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Country*"
+    },
+    {
+      "selector": "#start-date-month-0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Start date month*"
+    },
+    {
+      "selector": "#end-date-month-0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — End date month*"
+    },
+    {
+      "selector": "#school--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — School*"
+    },
+    {
+      "selector": "#degree--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Degree*"
+    },
+    {
+      "selector": "#discipline--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Discipline*"
+    },
+    {
+      "selector": "#start-month--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Start date month*"
+    },
+    {
+      "selector": "#end-month--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — End date month*"
+    },
+    {
+      "selector": "#question_31130474003",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Have you previously been employed at Samsung Semiconductor or one of o"
+    },
+    {
+      "selector": "#question_31130475003",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you legally authorized to work in the United States? *"
+    },
+    {
+      "selector": "#question_31130476003",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Will you now or in the future require visa sponsorship? *"
+    },
+    {
+      "selector": "#gender",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Gender*"
+    },
+    {
+      "selector": "#hispanic_ethnicity",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you Hispanic/Latino?*"
+    },
+    {
+      "selector": "#veteran_status",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Veteran Status*"
+    },
+    {
+      "selector": "#disability_status",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Disability Status*"
     }
   ]
 }

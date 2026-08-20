@@ -24,6 +24,156 @@
       "match": "contains",
       "gate": false,
       "note": "phone"
+    },
+    {
+      "selector": "#question_19282376004",
+      "expect": "",
+      "review": true,
+      "note": "text — Please provide your City *"
+    },
+    {
+      "selector": "#question_19282378004",
+      "expect": "",
+      "review": true,
+      "note": "text — Please provide your Zip Code *"
+    },
+    {
+      "selector": "#question_19282379004",
+      "expect": "",
+      "review": true,
+      "note": "text — Website"
+    },
+    {
+      "selector": "#question_19282380004",
+      "expect": "",
+      "review": true,
+      "note": "text — LinkedIn Profile"
+    },
+    {
+      "selector": "#question_19282384004",
+      "expect": "",
+      "review": true,
+      "note": "text — Have you worked for Two Six Technologies or an affiliate in the past? "
+    },
+    {
+      "selector": "#question_19282387004",
+      "expect": "",
+      "review": true,
+      "note": "text — How did you hear about us?*"
+    },
+    {
+      "selector": "#question_19282388004",
+      "expect": "",
+      "review": true,
+      "note": "text — If you were referred by an Employee, please list their name."
+    },
+    {
+      "selector": "#question_19282389004",
+      "expect": "",
+      "review": true,
+      "note": "text — Please provide your Legal Name *"
+    },
+    {
+      "selector": "#country",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Country*"
+    },
+    {
+      "selector": "#iti-0__search-input",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Phone"
+    },
+    {
+      "selector": "#school--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — School"
+    },
+    {
+      "selector": "#degree--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Degree"
+    },
+    {
+      "selector": "#discipline--0",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Discipline"
+    },
+    {
+      "selector": "#question_19282377004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Please select your State*"
+    },
+    {
+      "selector": "#question_19282381004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you eligible for a DoD security clearance?*"
+    },
+    {
+      "selector": "#question_19282382004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Security Clearance *"
+    },
+    {
+      "selector": "#question_19282383004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Desired Salary*"
+    },
+    {
+      "selector": "#question_19282385004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you a current or former direct employee of any government institut"
+    },
+    {
+      "selector": "#question_19282386004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you currently bound by any non-compete or employment agreement?*"
+    },
+    {
+      "selector": "#question_19282390004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you legally authorized to work in the United States?*"
+    },
+    {
+      "selector": "#question_19282391004",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Do you now, or will you in the future, require company sponsorship for"
+    },
+    {
+      "selector": "#gender",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Gender*"
+    },
+    {
+      "selector": "#hispanic_ethnicity",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Are you Hispanic/Latino?*"
+    },
+    {
+      "selector": "#veteran_status",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Veteran Status*"
+    },
+    {
+      "selector": "#disability_status",
+      "expect": "",
+      "review": true,
+      "note": "combobox — Disability Status*"
     }
   ],
   "minRecall": 1

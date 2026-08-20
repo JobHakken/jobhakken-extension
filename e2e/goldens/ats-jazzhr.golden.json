@@ -4,9 +4,80 @@
   "minRecall": 1,
   "_note": "JazzHR (applytojob.com) public apply form (captured live).",
   "fields": [
-    { "selector": "#resumator-firstname-value", "expect": "Jordan", "gate": true },
-    { "selector": "#resumator-lastname-value", "expect": "Rivera", "gate": true },
-    { "selector": "#resumator-email-value", "expect": "jordan.rivera@example.com", "gate": true },
-    { "selector": "#resumator-phone-value", "expect": "555", "match": "contains", "gate": false }
+    {
+      "selector": "#resumator-firstname-value",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-lastname-value",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-email-value",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-phone-value",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "#resumator-address-value",
+      "expect": "",
+      "review": true,
+      "note": "text — Address"
+    },
+    {
+      "selector": "#resumator-city-value",
+      "expect": "",
+      "review": true,
+      "note": "text — City"
+    },
+    {
+      "selector": "#resumator-state-value",
+      "expect": "",
+      "review": true,
+      "note": "text — State/Province"
+    },
+    {
+      "selector": "#resumator-postal-value",
+      "expect": "",
+      "review": true,
+      "note": "text — Postal"
+    },
+    {
+      "selector": "#resumator-resumetext-value",
+      "expect": "",
+      "review": true,
+      "note": "textarea — Paste your resume here or Attach resume file"
+    },
+    {
+      "selector": "#resumator-xml-value",
+      "expect": "",
+      "review": true,
+      "note": "textarea — Resume*"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360362",
+      "expect": "",
+      "review": true,
+      "note": "select — Are you legally authorized to work in the United States?*"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360366",
+      "expect": "",
+      "review": true,
+      "note": "select — Will you require sponsorship to work in the United States now or in th"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360369",
+      "expect": "",
+      "review": true,
+      "note": "select — Are you willing to relocate to Austin,TX?*"
+    }
   ]
 }

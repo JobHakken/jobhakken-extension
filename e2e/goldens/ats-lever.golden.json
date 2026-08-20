@@ -4,8 +4,106 @@
   "minRecall": 1,
   "_note": "Lever public /apply form (captured live). Single full-name field.",
   "fields": [
-    { "selector": "input[name=\"name\"]", "expect": "Jordan", "match": "contains", "gate": true },
-    { "selector": "input[name=\"email\"]", "expect": "jordan.rivera@example.com", "gate": true },
-    { "selector": "input[name=\"phone\"]", "expect": "555", "match": "contains", "gate": false }
+    {
+      "selector": "input[name=\"name\"]",
+      "expect": "Jordan",
+      "match": "contains",
+      "gate": true
+    },
+    {
+      "selector": "input[name=\"email\"]",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "input[name=\"phone\"]",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "[name=\"name\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Full name✱"
+    },
+    {
+      "selector": "[name=\"email\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Email✱"
+    },
+    {
+      "selector": "[name=\"phone\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Phone ✱"
+    },
+    {
+      "selector": "#location-input",
+      "expect": "",
+      "review": true,
+      "note": "text — Current location ✱No location found. Try entering a different location"
+    },
+    {
+      "selector": "[name=\"org\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Current company ✱"
+    },
+    {
+      "selector": "[name=\"urls[LinkedIn]\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — LinkedIn URL✱"
+    },
+    {
+      "selector": "[name=\"urls[Twitter]\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Twitter URL"
+    },
+    {
+      "selector": "[name=\"urls[GitHub]\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — GitHub URL"
+    },
+    {
+      "selector": "[name=\"urls[Portfolio]\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Portfolio URL"
+    },
+    {
+      "selector": "[name=\"urls[Other]\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Other website"
+    },
+    {
+      "selector": "[name=\"eeo[gender]\"]",
+      "expect": "",
+      "review": true,
+      "note": "select — GenderSelect ...MaleFemaleDecline to self-identify"
+    },
+    {
+      "selector": "[name=\"eeo[race]\"]",
+      "expect": "",
+      "review": true,
+      "note": "select — RaceSelect ...Hispanic or LatinoWhite (Not Hispanic or Latino)Black or"
+    },
+    {
+      "selector": "[name=\"eeo[veteran]\"]",
+      "expect": "",
+      "review": true,
+      "note": "select — Veteran statusSelect ...I am a veteranI am not a veteranDecline to sel"
+    },
+    {
+      "selector": "[name=\"cards[b64452ba-bfae-428d-9165-4cb0e270f32b][field0]\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio — Are you legally authorized to work in the location of the job posting?"
+    }
   ]
 }

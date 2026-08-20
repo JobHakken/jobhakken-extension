@@ -1,44 +1,49 @@
 {
-  "fixture": "workday/02-my-information.html",
-  "minRecall": 1,
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
-  "_note": "Workday 'My Information'. gate:true = proven-stable core fields (regression guard). gate:false = reported coverage/gaps.",
+  "fixture": "workday/08-my-information-live.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
   "fields": [
     {
-      "selector": "#name--legalName--firstName",
-      "expect": "Jordan",
-      "gate": true
+      "label": "Country\\*",
+      "expect": "",
+      "review": true,
+      "note": "text — Country*"
     },
     {
-      "selector": "#name--legalName--lastName",
-      "expect": "Rivera",
-      "gate": true
+      "label": "Prefix",
+      "expect": "",
+      "review": true,
+      "note": "text — Prefix"
+    },
+    {
+      "selector": "#name--legalName--firstName",
+      "expect": "",
+      "review": true,
+      "note": "text — First Name*"
     },
     {
       "selector": "#name--legalName--middleName",
-      "expect": "Alex",
-      "gate": false
+      "expect": "",
+      "review": true,
+      "note": "text — Middle Name"
+    },
+    {
+      "selector": "#name--legalName--lastName",
+      "expect": "",
+      "review": true,
+      "note": "text — Last Name*"
+    },
+    {
+      "label": "Suffix",
+      "expect": "",
+      "review": true,
+      "note": "text — Suffix"
     },
     {
       "selector": "#address--addressLine1",
-      "expect": "128 Maple Street",
-      "gate": false
-    },
-    {
-      "selector": "#address--city",
-      "expect": "Austin",
-      "gate": false
-    },
-    {
-      "selector": "#address--postalCode",
-      "expect": "78701",
-      "gate": false
-    },
-    {
-      "selector": "#phoneNumber--phoneNumber",
-      "expect": "555",
-      "match": "contains",
-      "gate": false
+      "expect": "",
+      "review": true,
+      "note": "text — Address Line 1*"
     },
     {
       "selector": "#address--addressLine2",
@@ -47,10 +52,40 @@
       "note": "text — Address Line 2"
     },
     {
+      "selector": "#address--city",
+      "expect": "",
+      "review": true,
+      "note": "text — City*"
+    },
+    {
+      "label": "State\\*",
+      "expect": "",
+      "review": true,
+      "note": "text — State*"
+    },
+    {
+      "selector": "#address--postalCode",
+      "expect": "",
+      "review": true,
+      "note": "text — Postal Code*"
+    },
+    {
       "selector": "#address--regionSubdivision1",
       "expect": "",
       "review": true,
       "note": "text — County"
+    },
+    {
+      "label": "Phone Device Type\\*",
+      "expect": "",
+      "review": true,
+      "note": "text — Phone Device Type*"
+    },
+    {
+      "selector": "#phoneNumber--phoneNumber",
+      "expect": "",
+      "review": true,
+      "note": "text — Phone Number*"
     },
     {
       "selector": "#phoneNumber--extension",
@@ -59,7 +94,7 @@
       "note": "text — Phone Extension"
     },
     {
-      "selector": "#j7x79",
+      "selector": "#majh8",
       "expect": "",
       "review": true,
       "note": "radio — Have you previously worked for Stanley Black & Decker? If Yes, please "
@@ -69,6 +104,12 @@
       "expect": "",
       "review": true,
       "note": "radio — Suffix"
+    },
+    {
+      "selector": "#majht",
+      "expect": "",
+      "review": true,
+      "note": "radio — Phone"
     },
     {
       "selector": "#source--source",

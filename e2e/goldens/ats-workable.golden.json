@@ -4,8 +4,50 @@
   "minRecall": 1,
   "_note": "Workable (apply.workable.com) SPA form, captured live.",
   "fields": [
-    { "selector": "#firstname", "expect": "Jordan", "gate": true },
-    { "selector": "#lastname", "expect": "Rivera", "gate": true },
-    { "selector": "#email", "expect": "jordan.rivera@example.com", "gate": true }
+    {
+      "selector": "#firstname",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#lastname",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#QA_9142614",
+      "expect": "",
+      "review": true,
+      "note": "text — *LinkedIn:"
+    },
+    {
+      "selector": "#QA_12120569",
+      "expect": "",
+      "review": true,
+      "note": "text — *Location (ie: United Kingdom)"
+    },
+    {
+      "selector": "#QA_12120570",
+      "expect": "",
+      "review": true,
+      "note": "textarea — *Describe and link to the most impressive engineering project you've b"
+    },
+    {
+      "selector": "#QA_12120571",
+      "expect": "",
+      "review": true,
+      "note": "textarea — *Describe a specific recent case where an AI coding agent (Claude Code"
+    },
+    {
+      "selector": "#QA_12120572",
+      "expect": "",
+      "review": true,
+      "note": "textarea — *What is the hardest production bug you've tracked down? What made it "
+    }
   ]
 }

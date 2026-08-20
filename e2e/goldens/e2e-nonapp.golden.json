@@ -1,0 +1,43 @@
+{
+  "fixture": "e2e/nonapp.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "#q",
+      "expect": "",
+      "review": true,
+      "note": "text — Search"
+    },
+    {
+      "selector": "#fn",
+      "expect": "",
+      "review": true,
+      "note": "text — First name"
+    },
+    {
+      "selector": "#ln",
+      "expect": "",
+      "review": true,
+      "note": "text — Last name"
+    },
+    {
+      "selector": "#em",
+      "expect": "",
+      "review": true,
+      "note": "text — Email"
+    },
+    {
+      "selector": "#ph",
+      "expect": "",
+      "review": true,
+      "note": "text — Phone"
+    },
+    {
+      "selector": "#co",
+      "expect": "",
+      "review": true,
+      "note": "text — Company"
+    }
+  ]
+}

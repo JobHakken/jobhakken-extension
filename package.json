@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "node build.mjs",
-    "package": "NODE_ENV=production node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged \u2192 jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
+    "package": "NODE_ENV=production node build.mjs && cd dist && rm -f ../jobhakken-extension.zip && zip -qr ../jobhakken-extension.zip . && cd .. && echo \"packaged → jobhakken-extension.zip (upload this to the Chrome Web Store)\"",
     "test": "jest --config ./jest.config.ts",
     "test:e2e": "E2E=1 npm run build && playwright test",
     "test:e2e:headed": "E2E=1 npm run build && PWHEAD=1 playwright test",
@@ -29,7 +29,8 @@
     "check:permissions": "node scripts/check-permissions.mjs",
     "capture:static": "E2E=1 npm run build && CAPTURE=1 playwright test e2e/tools/capture-static.spec.ts",
     "verify:live": "E2E=1 npm run build && VERIFY=1 playwright test e2e/tools/verify-live.spec.ts",
-    "gen:h1b-roles": "node scripts/gen-h1b-roles.mjs"
+    "gen:h1b-roles": "node scripts/gen-h1b-roles.mjs",
+    "gen:goldens": "node e2e/tools/gen-goldens.mjs"
   },
   "dependencies": {
     "@jobhakken/autofill": "^0.2.1"

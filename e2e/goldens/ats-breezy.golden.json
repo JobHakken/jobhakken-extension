@@ -1,0 +1,97 @@
+{
+  "fixture": "ats-breezy.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "[name=\"cName\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Full Name"
+    },
+    {
+      "selector": "[name=\"cEmail\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Email Address"
+    },
+    {
+      "selector": "[name=\"cPhoneNumber\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Phone Number"
+    },
+    {
+      "selector": "[name=\"cSummary\"]",
+      "expect": "",
+      "review": true,
+      "note": "textarea — Experience Summary"
+    },
+    {
+      "selector": "[name=\"cCoverLetter\"]",
+      "expect": "",
+      "review": true,
+      "note": "textarea — Cover Letter"
+    },
+    {
+      "selector": "[name=\"section_1776267224428_question_0\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — What 2 or 3 program languages are you most comfortable with?*"
+    },
+    {
+      "selector": "[name=\"section_1776267224428_question_1\"]",
+      "expect": "",
+      "review": true,
+      "note": "textarea — If yes, explain:"
+    },
+    {
+      "selector": "[name=\"section_1776267224428_question_2\"]",
+      "expect": "",
+      "review": true,
+      "note": "text — Please list your best project here:"
+    },
+    {
+      "selector": "[name=\"smsConsent\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio — Phone Number"
+    },
+    {
+      "selector": "[name=\"section_1776267224428_question_3\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio — Are you legally authorized to work in the United States?*"
+    },
+    {
+      "selector": "[name=\"section_1776267224428_question_4\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio — Will you now or in the future require sponsorship to work within the U"
+    },
+    {
+      "selector": "#race_white",
+      "expect": "",
+      "review": true,
+      "note": "radio — Race or Ethnicity"
+    },
+    {
+      "selector": "#gender_male",
+      "expect": "",
+      "review": true,
+      "note": "radio — Gender"
+    },
+    {
+      "selector": "#vet_yes",
+      "expect": "",
+      "review": true,
+      "note": "radio — Please check one of the boxes below:"
+    },
+    {
+      "selector": "#disability_yes",
+      "expect": "",
+      "review": true,
+      "note": "radio — Please check one of the boxes below:"
+    }
+  ]
+}
