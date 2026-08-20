@@ -4,6 +4,20 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.35.3
+- **Fixed: an unchecked checkbox could still show the green "we filled this" outline.** A standalone
+  checkbox's "did this fill?" check read a static attribute instead of whether it was actually checked.
+- **Fixed: a job-availability date ("when can you start") could land in a resume-history field** —
+  Education's and Employment's own "Start date" asked a completely different question, and the answer
+  to one was leaking into the other. Both now correctly stay blank and ask you instead of guessing.
+- **Fixed: field outlines looked like a clean box on some fields and a stray underline on others**, for
+  the exact same "we filled this" meaning. Marking now finds the field's REAL visible box regardless of
+  what a particular ATS's own markup looks like underneath, and adds a soft glow so it reads consistently
+  as one box everywhere, not just wherever the underlying page happened to draw its own border.
+- **Fields that only appear after answering a prior question** (e.g. Greenhouse's "Race" question,
+  which only renders once "Are you Hispanic/Latino?" is answered) are now caught by Fill all — it
+  re-checks for newly-fillable fields after each pass instead of a single fixed snapshot.
+
 ## 0.35.2
 - **Fixed: a dropdown could show the right answer, then silently revert to blank.** On some comboboxes,
   clicking the matched option didn't actually register — the field looked briefly filled (typed search

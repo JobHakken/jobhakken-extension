@@ -819,12 +819,31 @@ async function fieldOptions(
  * people. Everything is removable, and cleared on unmount.
  */
 const MARK = 'data-jh-mark';
-const MARK_STYLE: Record<string, string> = {
-  know: '2px solid #5C7E48',
-  remember: '2px solid #5A6B8C',
-  ask: '2px dashed #BB6535',
-  sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
+// Each entry pairs a border pattern (still carries the solid/dashed/dotted DISTINCTION between "we
+// filled this" and "you decide" — dotted vs dashed was a deliberate choice so those read differently)
+// with a soft glow. The glow is what makes marking read as a consistent, deliberate "box" regardless of
+// what border/background the underlying page element happens to bring — outline alone landed
+// differently on a plain bordered input vs. a borderless combobox control, one looking like a clean
+// box and the other like a stray underline for the exact same "we filled this" meaning.
+const MARK_STYLE: Record<string, { border: string; glow: string }> = {
+  know: { border: '2px solid #5C7E48', glow: '0 0 0 3px rgba(92,126,72,.18), 0 0 10px 2px rgba(92,126,72,.35)' },
+  remember: { border: '2px solid #5A6B8C', glow: '0 0 0 3px rgba(90,107,140,.18), 0 0 10px 2px rgba(90,107,140,.35)' },
+  ask: { border: '2px dashed #BB6535', glow: '0 0 0 3px rgba(187,101,53,.15), 0 0 10px 2px rgba(187,101,53,.3)' },
+  sensitive: { border: '2px dotted #BB6535', glow: '0 0 0 3px rgba(187,101,53,.15), 0 0 10px 2px rgba(187,101,53,.3)' },
 };
+
+/** True when `node` looks like a real visual container — not a transparent layout wrapper. */
+function looksLikeARealBox(node: Element): boolean {
+  const r = node.getBoundingClientRect();
+  if (r.width <= 20 || r.height <= 10) return false;
+  const cs = getComputedStyle(node);
+  const bgOpaque = !/rgba?\([^)]*,\s*0\s*\)$/.test(cs.backgroundColor) && cs.backgroundColor !== 'transparent';
+  const hasBorder = (['Top', 'Right', 'Bottom', 'Left'] as const).some((side) => {
+    const w = parseFloat(cs[`border${side}Width`]);
+    return w > 0 && cs[`border${side}Style`] !== 'none';
+  });
+  return bgOpaque || hasBorder;
+}
 
 /**
  * Which element(s) an outline should actually land on for `field` — not always `field.el`.
@@ -836,27 +855,43 @@ const MARK_STYLE: Record<string, string> = {
  * A combobox's real interactive element can also be sized down to almost nothing — Greenhouse's
  * Discipline field measured 3.5x20px against a 600x34px visible control box (verified live) — so
  * outlining `field.el` directly draws a near-invisible sliver instead of a box around what a person
- * actually sees on screen. Walk up until something is big enough to be worth outlining.
+ * actually sees on screen. A plain size check isn't enough either: react-select's intermediate wrapper
+ * divs (select__input-container, select__value-container) are ALSO "big enough" by width/height but
+ * fully transparent with no border — landing there drew a box around empty space that only visually
+ * lined up with the real control by coincidence, looking like a clean box on some fields and a stray
+ * underline on others for the exact same meaning (verified live: Start date month vs Start date year
+ * rendered differently even though both got a mark). Walk up until something actually LOOKS like the
+ * box a person associates with the field — has a real background or border, not just enough pixels.
  */
 function markTargets(field: DetectedField): HTMLElement[] {
   if (field.optionEls && field.optionEls.length > 1) return field.optionEls;
   let node: HTMLElement = field.el;
-  for (let i = 0; i < 5; i++) {
-    const r = node.getBoundingClientRect();
-    if (r.width > 20 && r.height > 10) return [node];
+  for (let i = 0; i < 6; i++) {
+    if (looksLikeARealBox(node)) return [node];
     if (!node.parentElement) break;
     node = node.parentElement;
   }
   return [field.el];
 }
 
+function clearMark(el: HTMLElement): void {
+  el.style.outline = '';
+  el.style.outlineOffset = '';
+  el.style.boxShadow = '';
+  el.removeAttribute(MARK);
+}
+
+function applyMark(el: HTMLElement, group: PanelRow['group']): void {
+  const style = MARK_STYLE[group];
+  el.style.outline = style?.border ?? '';
+  el.style.outlineOffset = '1px';
+  el.style.boxShadow = style?.glow ?? '';
+  el.setAttribute(MARK, group);
+}
+
 function markFields(rows: PanelRow[], on: boolean): void {
   if (!on) {
-    document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach((el) => {
-      el.style.outline = '';
-      el.style.outlineOffset = '';
-      el.removeAttribute(MARK);
-    });
+    document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach(clearMark);
     return;
   }
   const fields = new Map(pageFields().map((f) => [f.signature, f]));
@@ -873,20 +908,14 @@ function markFields(rows: PanelRow[], on: boolean): void {
     // flagging what needs the user's attention is the whole point, filled or not.
     if ((r.group === 'know' || r.group === 'remember') && !currentValueFixed(field).trim()) continue;
     for (const el of markTargets(field)) {
-      el.style.outline = MARK_STYLE[r.group] ?? '';
-      el.style.outlineOffset = '1px';
-      el.setAttribute(MARK, r.group);
+      applyMark(el, r.group);
       stillMarked.add(el);
     }
   }
   // Clear anything marked in a PREVIOUS pass that this one didn't re-mark — a "know" field that got
   // filled then un-filled, or a row that dropped out of `rows` after the page changed under us.
   document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach((el) => {
-    if (!stillMarked.has(el)) {
-      el.style.outline = '';
-      el.style.outlineOffset = '';
-      el.removeAttribute(MARK);
-    }
+    if (!stillMarked.has(el)) clearMark(el);
   });
 }
 
@@ -898,11 +927,7 @@ function markFields(rows: PanelRow[], on: boolean): void {
  * erase every mark a panel-triggered fill had already placed elsewhere on the page. This only ever adds.
  */
 function markOne(field: DetectedField, group: PanelRow['group']): void {
-  for (const el of markTargets(field)) {
-    el.style.outline = MARK_STYLE[group] ?? '';
-    el.style.outlineOffset = '1px';
-    el.setAttribute(MARK, group);
-  }
+  for (const el of markTargets(field)) applyMark(el, group);
 }
 
 /** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
