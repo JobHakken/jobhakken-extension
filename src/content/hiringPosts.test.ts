@@ -12,13 +12,18 @@ import {
   applyHiringPostFilters,
   buildFindPostUrl,
   detectPosts,
+  includeFilterStatus,
+  isHiringSearch,
   isLikelyHiringPost,
   isPostSearchPage,
 } from './hiringPosts';
 
-function setLocation(hostname: string, pathname: string): void {
+// Defaults to a hiring-flavoured query (`?keywords=hiring`) so every EXISTING call site in this file —
+// written before #189 — keeps testing what it always tested: a hiring search. Tests for #189's
+// non-hiring-search behaviour pass an explicit non-hiring `search` string.
+function setLocation(hostname: string, pathname: string, search = '?keywords=hiring'): void {
   Object.defineProperty(window, 'location', {
-    value: { hostname, pathname, href: `https://${hostname}${pathname}` },
+    value: { hostname, pathname, href: `https://${hostname}${pathname}${search}` },
     writable: true,
   });
 }
@@ -45,23 +50,54 @@ function installChrome(
   return { sendMessage, storage };
 }
 
-function card(opts: { name: string; body: string; hiring?: boolean; profile?: string; jobId?: string }): string {
-  const { name, body, hiring = false, profile = '/in/jordan-rivera-000', jobId } = opts;
+/**
+ * Shaped like the REAL captured markup (#182), not just a plausible guess: LinkedIn puts the author's
+ * name, connection degree, headline AND post timestamp each in their own `<p>`, ahead of the post's
+ * own `<p>`s — verified against a real 78-post capture, where a card's own text always starts
+ * immediately after its "Open control menu for post by X" button, in this exact relative order:
+ * avatar/name/degree, headline, timestamp, Follow button, control-menu button, THEN the post's `<p>`s.
+ */
+function card(opts: {
+  name: string;
+  body: string;
+  hiring?: boolean;
+  profile?: string;
+  jobId?: string;
+  headline?: string;
+  mention?: string; // an @-mention of someone ELSE inside the post's own body (regression case)
+}): string {
+  const {
+    name,
+    body,
+    hiring = false,
+    profile = '/in/jordan-rivera-000',
+    jobId,
+    headline = 'Engineering Manager',
+  } = opts;
   const jobCard = jobId ? `<div><a href="/jobs/view/${jobId}/?trackingId=abc"><span>View job</span></a></div>` : '';
+  const mention = opts.mention
+    ? `<a href="/in/other"><span aria-label="View ${opts.mention}'s profile"></span>${opts.mention}</a>`
+    : '';
   return `
   <div class="_94b267c9" componentkey="auto-component-1">
     <h2><span>Feed post</span></h2>
-    <div aria-label="${name}, ${hiring ? 'Hiring Premium Profile ' : ''}3rd+">
-      <a href="${profile}?miniProfileUrn=abc"><span>${name}</span></a>
-      <svg role="img" aria-label="View ${name}'s profile${hiring ? ', hiring' : ''}"></svg>
-      <span>Engineering Manager</span>
+    <div>
+      <a href="${profile}?miniProfileUrn=abc">
+        <svg role="img" aria-label="View ${name}'s profile${hiring ? ', hiring' : ''}"></svg>
+        <div aria-label="${name} ${hiring ? 'Hiring ' : ''}Premium Profile 3rd+">
+          <div><p><span>${name}</span></p></div>
+          <div><p><span>• 3rd+</span></p></div>
+        </div>
+      </a>
+      <div><p><span>${headline}</span></p></div>
+      <div><p><span>2w •</span></p></div>
       <button aria-label="Follow ${name}"><span>Follow</span></button>
       <button aria-label="Open control menu for post by ${name}"></button>
     </div>
     <div>${body
       .split('\n')
       .map((line) => `<p>${line}</p>`)
-      .join('')}<span>…</span><span>more</span></div>
+      .join('')}${mention}<span>…</span><span>more</span></div>
     ${jobCard}
   </div>`;
 }
@@ -89,6 +125,45 @@ describe('isPostSearchPage', () => {
     setLocation('www.indeed.com', '/search/results/content/');
     expect(isPostSearchPage()).toBe(false);
   });
+
+  // #189 acceptance criterion: this feature must never run on the home feed — an infinite feed makes
+  // "tag every post" unbounded cost/privacy, and a general feed cleaner is arguably a second product
+  // under the Chrome Web Store's single-purpose policy (see the issue). Pinned explicitly since nothing
+  // else in the suite exercises a feed URL.
+  it('is false on the home feed', () => {
+    setLocation('www.linkedin.com', '/feed/');
+    expect(isPostSearchPage()).toBe(false);
+  });
+});
+
+// #189: the query itself is the signal for whether the automatic hiring-post fade should run at all —
+// checked against the `keywords` search param, never against any individual post's text.
+describe('isHiringSearch', () => {
+  it('is true for the obvious cases', () => {
+    for (const q of ['hiring', 'we%27re%20hiring%20firmware', '%23hiring', 'embedded%20recruiter']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(true);
+    }
+  });
+
+  it('is true for role/hiring-domain vocabulary beyond the literal word "hiring"', () => {
+    for (const q of ['open%20positions', 'headcount', 'talent%20acquisition', 'job%20openings']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(true);
+    }
+  });
+
+  it('is false for an unrelated content search', () => {
+    for (const q of ['microsoft', 'AI%20trends', 'layoffs', 'remote%20work%20culture']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(false);
+    }
+  });
+
+  it('is false with no keywords param at all', () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '');
+    expect(isHiringSearch()).toBe(false);
+  });
 });
 
 describe('detectPosts', () => {
@@ -101,9 +176,49 @@ describe('detectPosts', () => {
     const posts = detectPosts();
     expect(posts).toHaveLength(1);
     expect(posts[0].authorName).toBe('Jordan Rivera');
+    expect(posts[0].authorHeadline).toBe('Engineering Manager');
     expect(posts[0].hiringBadge).toBe(true);
     expect(posts[0].body).toContain('secure boot');
     expect(posts[0].jobUrl).toBe('https://www.linkedin.com/jobs/view/4443875906/');
+  });
+
+  // #182: LinkedIn puts the author's name, connection degree, headline and post age in their own
+  // <p>s ahead of the post's own text, so a blind `querySelectorAll('p')` produced a body reading
+  // "Simran Jiwani • 3rd+ Lead Recruiter at Motive Workforce 4w • Hiring: Firmware QA Engineer …" on
+  // a real captured post — the author's name and headline BEFORE the post's own first word. Confirmed
+  // by running detectPosts() against a saved 78-post capture.
+  it('scopes body to the post’s own text — the author’s name/degree/headline/timestamp never appear in it', () => {
+    document.body.innerHTML = card({
+      name: 'Simran Jiwani',
+      headline: 'Lead Recruiter at Motive Workforce',
+      body: 'Hiring: Firmware QA Engineer (Embedded Test Engineer)\nWestlake Village, CA (100% Onsite)',
+    });
+    const posts = detectPosts();
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body.startsWith('Hiring: Firmware QA Engineer')).toBe(true);
+    expect(posts[0].body).not.toContain('Simran Jiwani');
+    expect(posts[0].body).not.toContain('Lead Recruiter at Motive Workforce');
+    expect(posts[0].body).not.toContain('3rd+');
+    expect(posts[0].body).not.toContain('2w •');
+    // The real headline is still captured separately (still sent to the AI as `headline`, per issue's
+    // own scope) — #182 is about it not ALSO leaking into `body`, not about hiding it altogether.
+    expect(posts[0].authorHeadline).toBe('Lead Recruiter at Motive Workforce');
+  });
+
+  // Regression for a real bug this fix could have introduced: a post that itself @-mentions someone
+  // ELSE renders that mention with the identical "View {name}'s profile" aria-label shape the header
+  // boundary looks for. An unscoped "latest match wins" search real-world-broke on exactly this (a KLA
+  // hiring post tagging four colleagues at the end) — it pushed the boundary past the post's own
+  // paragraph entirely, leaving body empty and silently dropping the post from the 78-post capture.
+  it('does not let an @-mention of someone else inside the post push the header boundary past the post’s own text', () => {
+    document.body.innerHTML = card({
+      name: 'Dana Okafor',
+      body: 'We are hiring a firmware engineer. Great team led by',
+      mention: 'Alex Chen',
+    });
+    const posts = detectPosts();
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body).toContain('We are hiring a firmware engineer');
   });
 
   it('does not merge two short posts into one — the card boundary is structural, not size-based', () => {
@@ -185,8 +300,11 @@ describe('isLikelyHiringPost', () => {
   });
 
   // All five bodies below are taken from a real saved LinkedIn post-search (78 posts). Before these
-  // patterns existed, 37 of those 78 were rejected; afterwards 10 are, and the remaining 10 are
-  // genuinely not hiring posts.
+  // patterns existed, 37 of those 78 were rejected; afterwards 10 (with the pre-#182 body, which also
+  // carried the author's name/headline). After #182 scoped `body` to the post's own text, 9 remain
+  // rejected and are genuinely not hiring posts — the 10th ("Hiring Embedded software engineers for
+  // Amazon…") was a false negative caused by header pollution burying its own "Hiring" opener behind
+  // unrelated name/headline text, and is now correctly recognised once the body is clean.
   it('keeps a recruiter post that merely TAGS #OpenToWork to reach seekers', () => {
     const body = '#hiring for #Embedded_Security_Engineer 10+ Location: San Jose, CA (Remote) #OpenToWork #C2C';
     expect(isLikelyHiringPost({ body, hiringBadge: false })).toBe(true);
@@ -275,7 +393,7 @@ describe('applyHiringPostFilters', () => {
   });
 
   it('dims a seeker post deterministically — no AI call spent on it', async () => {
-    setLocation('www.linkedin.com', '/search/results/content/');
+    setLocation('www.linkedin.com', '/search/results/content/'); // default keywords=hiring
     const { sendMessage } = installChrome();
     document.body.innerHTML = card({ name: 'Alex Chen', body: SEEKER_BODY });
 
@@ -285,6 +403,40 @@ describe('applyHiringPostFilters', () => {
     const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
     expect(cardEl.style.opacity).toBe('0.35');
     expect(cardEl.textContent).toContain('Not a hiring post');
+  });
+
+  // #189: on a NON-hiring content search, the automatic "not a hiring post" fade must not run at all —
+  // only the person's own exclude/include rules do. Reusing SEEKER_BODY (which would be dimmed
+  // automatically on a hiring search, per the test above) isolates exactly this behaviour.
+  it('does not auto-fade anything on a non-hiring content search — only the person’s own rules apply', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '?keywords=microsoft%20layoffs');
+    const { sendMessage } = installChrome();
+    document.body.innerHTML = card({ name: 'Priya Nair', body: SEEKER_BODY });
+
+    await applyHiringPostFilters();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+    expect(cardEl.style.opacity).toBe(''); // not dimmed — no automatic judgment on a non-hiring search
+    expect(cardEl.textContent).not.toContain('Not a hiring post');
+    // The general exclude-tag machinery is untouched by the query — the AI is still asked for tags so
+    // the person's own rules have something to match against.
+    expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-hp-tags' }));
+  });
+
+  it('still hides a post matching the person’s own exclude rule on a non-hiring search', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '?keywords=microsoft');
+    const { sendMessage } = installChrome({
+      storage: fakeStorage({ f2a_hp_excluded_tags: ['layoffs'] }),
+    });
+    document.body.innerHTML = card({ name: 'Jamie Lee', body: 'Sharing my thoughts on the recent layoffs news.' });
+
+    await applyHiringPostFilters();
+
+    expect(sendMessage).not.toHaveBeenCalled(); // matched the excluded tag locally
+    const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+    expect(cardEl.style.opacity).toBe('0.35');
+    expect(cardEl.textContent).toContain('layoffs');
   });
 
   it('asks the service worker for tags on a real hiring post, and renders the tag chips', async () => {
@@ -380,5 +532,112 @@ describe('applyHiringPostFilters', () => {
     const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
     expect(cardEl.style.opacity).toBe('0.35');
     expect(cardEl.textContent).toContain('recruiter agency');
+  });
+
+  // #186: "only show posts matching" — a separate, independent list from the exclude rules above.
+  describe('the "only show posts matching" include list', () => {
+    it('dims a post matching NONE of the include terms', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }) });
+      document.body.innerHTML = card({ name: 'Alex Chen', body: HIRING_BODY }); // no "zephyr" anywhere
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe('0.35');
+      expect(cardEl.textContent).toContain('only show');
+    });
+
+    it('leaves a matching post alone — checked BEFORE the hiring-relevance fade and exclude matching', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      const { sendMessage } = installChrome({
+        tags: ['recruiter agency'],
+        storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }),
+      });
+      document.body.innerHTML = card({
+        name: 'Dana Okafor',
+        body: 'We are hiring a Zephyr RTOS firmware engineer. Apply here.',
+        jobId: '111',
+      });
+
+      await applyHiringPostFilters();
+      await new Promise((r) => setTimeout(r, 0));
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // not dimmed by the include filter
+      expect(cardEl.textContent).not.toContain('only show');
+      // Everything downstream of the include check still ran normally (tag suggestion included).
+      expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-hp-tags' }));
+    });
+
+    it('one term matching is enough — OR, not AND, across multiple include terms', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr', 'nonexistent-term-xyz'] }) });
+      document.body.innerHTML = card({ name: 'Jordan Rivera', body: 'We are hiring a Zephyr RTOS engineer.' });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // matched "zephyr" alone — the missing second term doesn't matter
+    });
+
+    it('clearing the include terms restores the full feed', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: [] }) });
+      document.body.innerHTML = card({ name: 'Sam Lee', body: 'We are hiring a firmware engineer for Amazon.' });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // empty include list — no automatic narrowing at all
+    });
+
+    it('an included post carrying an excluded tag still ends up hidden — exclude rules apply ON TOP', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({
+        storage: fakeStorage({
+          f2a_hp_include_terms: ['zephyr'],
+          f2a_hp_excluded_tags: ['staffing firm'],
+        }),
+      });
+      document.body.innerHTML = card({
+        name: 'Priya Nair',
+        body: 'We are hiring: a Zephyr RTOS engineer. Staffing firm reaching out on behalf of our client.',
+      });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      // Passed the include check (matched "zephyr"), but the exclude rule still hides it.
+      expect(cardEl.style.opacity).toBe('0.35');
+      expect(cardEl.textContent).toContain('staffing firm');
+      expect(cardEl.textContent).not.toContain('only show');
+    });
+  });
+});
+
+describe('includeFilterStatus', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('reports every post as visible when the include list is empty', async () => {
+    installChrome({ storage: fakeStorage({ f2a_hp_include_terms: [] }) });
+    document.body.innerHTML =
+      card({ name: 'Jordan Rivera', body: HIRING_BODY, profile: '/in/jordan-rivera-000' }) +
+      card({ name: 'Alex Chen', body: SEEKER_BODY, profile: '/in/alex-chen-111' });
+
+    const status = await includeFilterStatus();
+    expect(status).toEqual({ terms: [], visible: 2, total: 2 });
+  });
+
+  it('counts only the posts matching at least one include term', async () => {
+    installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }) });
+    document.body.innerHTML =
+      card({ name: 'Jordan Rivera', body: 'We are hiring a Zephyr RTOS engineer.', profile: '/in/jordan-rivera-000' }) +
+      card({ name: 'Alex Chen', body: HIRING_BODY, profile: '/in/alex-chen-111' }); // no "zephyr"
+
+    const status = await includeFilterStatus();
+    expect(status).toEqual({ terms: ['zephyr'], visible: 1, total: 2 });
   });
 });

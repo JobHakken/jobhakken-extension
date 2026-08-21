@@ -71,7 +71,7 @@ import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js';
 import { applyH1bBadges, getH1bVerdict } from './h1b.js';
-import { applyHiringPostFilters, isPostSearchPage } from './hiringPosts.js';
+import { applyHiringPostFilters, includeFilterStatus, isPostSearchPage } from './hiringPosts.js';
 import { addExcludedTag, loadExcludedTags, removeExcludedTag } from '../lib/hiringPostFilterStore.js';
 import { applyJobTileFilters, isJobSearchPage } from './jobTiles.js';
 import {
@@ -86,6 +86,10 @@ import {
   setLabelRule,
   setShowHiddenJobTiles,
 } from '../lib/jobTileFilterStore.js';
+import {
+  addIncludeTerm as addIncludeTermToStore,
+  removeIncludeTerm as removeIncludeTermFromStore,
+} from '../lib/hiringPostIncludeStore.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -887,6 +891,16 @@ function syncRail(): void {
       }
       await applyJobTileFilters();
     },
+    addIncludeTerm: async (term: string) => {
+      const terms = await addIncludeTermToStore(term);
+      await applyHiringPostFilters(); // #186 — dims whatever no longer matches, immediately
+      return terms;
+    },
+    removeIncludeTerm: async (term: string) => {
+      const terms = await removeIncludeTermFromStore(term);
+      await applyHiringPostFilters(); // gives back whatever this term was the only match for
+      return terms;
+    },
     learnFromPage,
     noteUse: (label) => noteRememberedUse(label),
     promote: (label, on) => setPromoted(label, on),
@@ -1502,7 +1516,6 @@ async function panelFields(): Promise<{
   rows: PanelRow[];
   ats: string | null;
   host: string;
-  postFilter?: { tags: string[] };
   jobTileFilter?: {
     rules: Awaited<ReturnType<typeof loadJobTileRules>>;
     hide: boolean;
@@ -1510,11 +1523,19 @@ async function panelFields(): Promise<{
     shown: number;
     total: number;
   };
+  postFilter?: { tags: string[]; include?: { terms: string[]; visible: number; total: number } };
 }> {
   // LinkedIn post search has no application fields, so skip detection entirely and hand the rail the
-  // one thing it renders there: the person's own exclude-tag rules.
+  // two things it renders there: the person's own exclude-tag rules and "only show" include terms
+  // (#186) — the count comes from hiringPosts.ts's includeFilterStatus(), so the actual matching logic
+  // lives in exactly one place.
   if (isPostSearchPage()) {
-    return { rows: [], ats: null, host: location.hostname, postFilter: { tags: await loadExcludedTags() } };
+    return {
+      rows: [],
+      ats: null,
+      host: location.hostname,
+      postFilter: { tags: await loadExcludedTags(), include: await includeFilterStatus() },
+    };
   }
   // Same reasoning for LinkedIn's job SEARCH page (#183/#190): re-apply (idempotent — LinkedIn wipes
   // inline styles on re-render, so every pass recomputes) and hand back the fresh counts + rules.
