@@ -561,7 +561,49 @@ function looksFormish(): boolean {
 function updateBadge(): void {
   const fields = pageFields();
   fieldCount = fields.length;
-  const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
+  // `detectFileInputs` promotes the first document-accepting upload to kind 'resume' when nothing is
+  // explicitly labelled one — and it treats an input with NO `accept` attribute as a document slot. That
+  // guess is right when we already know the page is an application (it finds the upload to attach to),
+  // but it is the wrong thing to decide that a page IS an application: ChatGPT's attach button, Gmail,
+  // Slack and any support form all have a bare <input type=file>, and every one of them was getting the
+  // rail. Require the upload to actually look like a résumé slot before treating it as proof.
+  const RESUME_SLOT = /resume|résumé|\bcv\b|curriculum|vitae/i;
+  const hasResume = detectFileInputs(document).some((f) => {
+    if (f.kind !== 'resume') return false;
+    const el = f.el as HTMLInputElement;
+    // Real ATS rarely label the input itself: BambooHR's carries aria-label="file-input" and puts
+    // "Resume*" in a sibling paragraph. So look at the smallest enclosing block that has text, not just
+    // the element's own attributes — bounded in size so this can never match a whole page's prose.
+    // Test EACH enclosing block, don't stop at the first one with text: BambooHR's immediate wrapper
+    // reads "Choose File / No file selected" and the actual "Resume*" caption sits a couple of levels
+    // further out. Each level is size-capped so this can never end up matching a whole page's prose.
+    let near = '';
+    let node: HTMLElement | null = el.parentElement;
+    for (let i = 0; node && i < 5; i++) {
+      const txt = (node.textContent ?? '').replace(/\s+/g, ' ').trim();
+      if (txt && txt.length <= 400) {
+        near = txt;
+        if (RESUME_SLOT.test(txt)) break;
+      }
+      node = node.parentElement;
+    }
+    const siblingNames = [...(el.parentElement?.querySelectorAll('input[name]') ?? [])]
+      .map((x) => x.getAttribute('name'))
+      .join(' ');
+    const hay = [
+      el.getAttribute('name'),
+      el.id,
+      el.getAttribute('aria-label'),
+      el.getAttribute('accept'),
+      el.closest('label')?.textContent,
+      el.labels?.[0]?.textContent,
+      siblingNames,
+      near,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    return RESUME_SLOT.test(hay);
+  });
   const hasAppSignal = fields.some((f) => {
     const key = resolveField(f)?.key;
     return key ? APPLICATION_KEYS.has(key) : false;

@@ -115,10 +115,14 @@ describe('detectPosts', () => {
     expect(posts.map((p) => p.authorName).sort()).toEqual(['Alex Chen', 'Jordan Rivera']);
   });
 
-  it('skips a card already marked processed', () => {
+  it('RE-EVALUATES a card it already processed, so a wiped dim can be repaired', () => {
+    // LinkedIn resets the `style` attribute on re-render, which wipes the dim while leaving our note
+    // behind — a post reading 'Hidden — matches "senior"' at full brightness. Skipping processed cards
+    // made that unrepairable, so detection deliberately returns them again.
     document.body.innerHTML = card({ name: 'Jordan Rivera', body: HIRING_BODY });
-    document.querySelector('div[componentkey]')?.setAttribute('data-f2a-hp', '1');
-    expect(detectPosts()).toHaveLength(0);
+    const el = document.querySelector('[componentkey]') as HTMLElement;
+    el.setAttribute('data-f2a-hp', '1');
+    expect(detectPosts()).toHaveLength(1);
   });
 });
 

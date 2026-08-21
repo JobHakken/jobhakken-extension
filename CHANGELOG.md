@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.4
+- **Fixed: the sidebar still appeared on ordinary websites** — anywhere with a plain file-upload button,
+  which includes ChatGPT, webmail and most support forms. A page only counts as a job application now if
+  its upload is actually a résumé slot, rather than any upload at all.
+- **Fixed: a hidden post stayed at full brightness.** Posts matching one of your hidden tags were
+  labelled "Hidden — matches …" but not dimmed, because LinkedIn re-renders and wipes the dim, and we
+  only ever applied it once per post. It's now re-applied as the feed changes, so it can't be lost.
+
 ## 0.37.3
 - **Fixed: the H-1B and sponsorship tags never appeared while browsing jobs.** They were only applied on
   pages that also contained an application form — and a job search or "Top job picks" page doesn't have

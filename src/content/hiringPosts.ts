@@ -97,7 +97,12 @@ export function detectPosts(root: ParentNode = document): DetectedPost[] {
 
   const out: DetectedPost[] = [];
   for (const card of cards.keys()) {
-    if (card.hasAttribute(PROCESSED_ATTR)) continue;
+    // Deliberately NOT skipping cards we've already processed. LinkedIn re-renders constantly and
+    // resets the `style` attribute, which wipes the dim while leaving our appended note behind — the
+    // reported symptom was a post reading 'Hidden — matches "senior"' at full brightness. Keying
+    // idempotency on a one-time flag means we can never repair that; re-evaluating every pass makes the
+    // dim self-healing. Repeat work is cheap: `stateByKey` short-circuits before any AI call, `dim()`
+    // updates the existing note rather than stacking, and the row is guarded on already being present.
 
     const body = clean(
       Array.from(card.querySelectorAll('p'))
