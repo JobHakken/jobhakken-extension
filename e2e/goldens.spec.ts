@@ -176,10 +176,6 @@ const goldens: Golden[] = readdirSync(GOLDEN_DIR)
 // via the linked issue, never delete. Un-quarantine when the underlying autofill gap is fixed.
 const QUARANTINE: Record<string, string> = {
   'greenhouse-jobboards.html': '#123 (React job-boards variant: #first_name unfilled + autofill hangs)',
-  // Its mustStayEmpty assertions are written and correct — autofill really does fill this ordinary
-  // non-application page with the user's name/email/phone. Quarantined so the finding is tracked
-  // without holding the other 24 fixtures hostage; un-quarantine as the last step of the fix.
-  'e2e/nonapp.html': '#176 (autofill writes PII into a non-application page)',
 };
 
 for (const g of goldens) {

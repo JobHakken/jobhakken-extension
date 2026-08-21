@@ -506,7 +506,25 @@ const APPLICATION_KEYS = new Set([
  *     (work authorization, sponsorship, cover letter, salary, veteran/disability, …).
  */
 function isRelevantPage(): boolean {
-  return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
+  return isAtsHost(location.hostname) || isAtsPage(document) || localAtsFingerprint() || siteOptedIn || appLike;
+}
+
+/**
+ * ATS fingerprints the packaged detector misses.
+ *
+ * `detectAts` recognises Jobvite only by an iframe/script/link/form URL containing "jobvite" — which a
+ * company-hosted embed does not necessarily have. On a real Jobvite application the only such URL is a
+ * footer `<a class="jv-powered-by">`, and an `<a>` is not one of the four elements it inspects. The
+ * page is otherwise unmistakable: an Angular app whose markup is dense with `jv-`-prefixed classes.
+ * Mirrors the packaged Workday heuristic (3+ `data-automation-id` elements) rather than trusting a
+ * single marker, so an incidental class named `jv-something` cannot qualify a page on its own.
+ */
+function localAtsFingerprint(): boolean {
+  try {
+    return document.querySelectorAll('[class^="jv-"], [class*=" jv-"]').length >= 3;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -2472,6 +2490,17 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           sendResponse(await fillOne(String(msg.params?.signature ?? ''), String(msg.params?.value ?? '')));
           break;
         case 'autofill': {
+          // Refuse a page that is not an application (#176). The rail already declines to appear on one
+          // (#174), but that is a UI guard, not a safety property: this RPC fills whatever it is pointed
+          // at, and the toolbar popup can point it anywhere. Verified by the golden gate — on an
+          // ordinary login/contact form it typed the person's name, email, phone and company into
+          // someone else's website. Data never leaving the browser to US means nothing if we hand it to
+          // an arbitrary third party's form. `siteOptedIn` remains the escape hatch for an ATS we do not
+          // recognise, so this refuses the unrecognised, never the merely unsupported.
+          if (!isRelevantPage()) {
+            sendResponse({ filled: 0, refused: 'not-an-application-page' });
+            break;
+          }
           autofillAbort?.abort(); // supersede any in-flight run
           const ctrl = (autofillAbort = new AbortController());
           // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)
