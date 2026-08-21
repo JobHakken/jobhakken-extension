@@ -30,7 +30,18 @@ function clean(s: string | null | undefined): string {
 
 /** Is the current tab a LinkedIn post/content search results page? Cheap — checked before any DOM work. */
 export function isPostSearchPage(): boolean {
-  return location.hostname.endsWith('linkedin.com') && location.pathname.startsWith('/search/results/content');
+  if (!location.hostname.endsWith('linkedin.com')) return false;
+  // Both verticals that actually render posts. Typing a search into LinkedIn's box lands on `all`
+  // first — a MIXED page carrying People, Jobs and Company cards next to a Posts section — and only a
+  // deliberate click on the Posts tab reaches `content`. Filtering only `content` meant the feature
+  // appeared broken for anyone who just searched.
+  //
+  // Safe on the mixed page because detectPosts() is anchored structurally: it starts from an <h2>
+  // reading exactly "Feed post" (LinkedIn's own accessibility heading for a post card), then requires
+  // both body text and an author. A People or Jobs card has no such anchor, so it cannot be detected,
+  // let alone dimmed. Covered by a mixed-vertical test.
+  const p = location.pathname;
+  return p.startsWith('/search/results/content') || p.startsWith('/search/results/all');
 }
 
 export type DetectedPost = {
@@ -251,6 +262,13 @@ function dim(card: HTMLElement, reason: string): void {
   card.appendChild(note);
 }
 
+/** Undo `dim`. Removing a rule has to visibly give the post back, or the rail's remove button looks
+ *  broken: the re-run stops MATCHING the card but nothing ever restored its opacity. */
+function undim(card: HTMLElement): void {
+  styleBlock(card, { opacity: '1' });
+  card.querySelector(`.${UI_CLASS}-reason`)?.remove();
+}
+
 function renderRow(post: DetectedPost, tags: string[], onExclude: (tag: string) => void): HTMLElement {
   const row = document.createElement('div');
   row.className = UI_CLASS;
@@ -302,8 +320,10 @@ export async function applyHiringPostFilters(): Promise<void> {
     if (already?.status === 'done') {
       const matched = already.tags.find((t) => excluded.includes(t));
       if (matched) dim(post.card, `Hidden — matches "${matched}"`);
-      else if (!post.card.querySelector(`.${UI_CLASS}`))
-        post.card.appendChild(renderRow(post, already.tags, onExclude));
+      else {
+        undim(post.card); // a rule was removed (or never matched) — give the post back
+        if (!post.card.querySelector(`.${UI_CLASS}`)) post.card.appendChild(renderRow(post, already.tags, onExclude));
+      }
       continue;
     }
     if (already?.status === 'pending') continue; // an AI call for this post is already in flight

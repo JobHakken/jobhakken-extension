@@ -75,6 +75,11 @@ describe('isPostSearchPage', () => {
     expect(isPostSearchPage()).toBe(true);
   });
 
+  it('is true on the mixed "all" vertical — where a typed search actually lands', () => {
+    setLocation('www.linkedin.com', '/search/results/all/');
+    expect(isPostSearchPage()).toBe(true);
+  });
+
   it('is false on a LinkedIn jobs page — a different vertical', () => {
     setLocation('www.linkedin.com', '/jobs/search-results/');
     expect(isPostSearchPage()).toBe(false);
@@ -114,6 +119,35 @@ describe('detectPosts', () => {
     document.body.innerHTML = card({ name: 'Jordan Rivera', body: HIRING_BODY });
     document.querySelector('div[componentkey]')?.setAttribute('data-f2a-hp', '1');
     expect(detectPosts()).toHaveLength(0);
+  });
+});
+
+describe('detectPosts on the mixed "all" vertical', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  // The `all` results page puts People/Jobs/Company cards next to posts. Those carry names, headlines
+  // and links just like a post does, so the ONLY thing keeping us off them is the structural "Feed
+  // post" anchor. If that ever stops holding, we would dim a stranger's People card — visible damage on
+  // a page nobody asked us to touch. Pin it.
+  it('detects only the post, never the People/Jobs/Company cards beside it', () => {
+    document.body.innerHTML = `
+      <section>
+        <h2><span>People</span></h2>
+        <div aria-label="Simran Jiwani, 3rd+"><a href="/in/simran"><span>Simran Jiwani</span></a>
+          <p>Lead Recruiter at Motive Workforce — hiring firmware engineers</p></div>
+      </section>
+      <section>
+        <h2><span>Jobs</span></h2>
+        <div aria-label="Firmware QA Engineer"><a href="/jobs/view/999/"><span>Firmware QA Engineer</span></a>
+          <p>We are hiring a firmware engineer, apply now</p></div>
+      </section>
+      <section>${card({ name: 'Thomas Anderson', body: HIRING_BODY, hiring: true })}</section>`;
+
+    const posts = detectPosts();
+    expect(posts).toHaveLength(1);
+    expect(posts[0].authorName).toBe('Thomas Anderson');
   });
 });
 

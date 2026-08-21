@@ -72,6 +72,7 @@ import { TEST_PROFILE } from '../lib/testProfile.js';
 import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js';
 import { applyH1bBadges, getH1bVerdict } from './h1b.js';
 import { applyHiringPostFilters, isPostSearchPage } from './hiringPosts.js';
+import { addExcludedTag, loadExcludedTags, removeExcludedTag } from '../lib/hiringPostFilterStore.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -776,7 +777,10 @@ function syncRail(): void {
   // job-application pages, never on ordinary sites"). Beyond being noise, UI appearing on unrelated
   // sites reads as "this extension watches everything I do", which is the opposite of the local-always
   // promise we make. An unrecognised ATS is still reachable: `siteOptedIn` forces the rail on.
-  const wanted = isRelevantPage();
+  // LinkedIn's post search is not an application, so it can never satisfy `isRelevantPage()` — it gets
+  // its OWN branch here rather than being smuggled in by loosening that gate. Loosening it is what put
+  // the launcher on most of the web (#174); the rail renders only the post-filter section there.
+  const wanted = isRelevantPage() || isPostSearchPage();
   if (!wanted) {
     unmountRail();
     return;
@@ -788,6 +792,16 @@ function syncRail(): void {
     panelFields,
     fillOne,
     rawFieldValue,
+    addPostFilterTag: async (tag: string) => {
+      const tags = await addExcludedTag(tag);
+      await applyHiringPostFilters(); // take effect on the page under the rail, immediately
+      return tags;
+    },
+    removePostFilterTag: async (tag: string) => {
+      const tags = await removeExcludedTag(tag);
+      await applyHiringPostFilters(); // un-dims whatever that rule was hiding
+      return tags;
+    },
     learnFromPage,
     noteUse: (label) => noteRememberedUse(label),
     promote: (label, on) => setPromoted(label, on),
@@ -1369,7 +1383,17 @@ async function setSiteDisabled(on: boolean): Promise<void> {
   if (on) stopProgressive();
 }
 
-async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
+async function panelFields(): Promise<{
+  rows: PanelRow[];
+  ats: string | null;
+  host: string;
+  postFilter?: { tags: string[] };
+}> {
+  // LinkedIn post search has no application fields, so skip detection entirely and hand the rail the
+  // one thing it renders there: the person's own exclude-tag rules.
+  if (isPostSearchPage()) {
+    return { rows: [], ats: null, host: location.hostname, postFilter: { tags: await loadExcludedTags() } };
+  }
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);

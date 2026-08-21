@@ -4,6 +4,19 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.0
+- **The sidebar now manages your LinkedIn post filters.** Until now the only way to undo a "hide posts
+  like this" choice was to scroll back and find the exact chip you clicked days ago. The sidebar now
+  lists every tag you're hiding, on LinkedIn's post search, with a box to add one and an ✕ to remove
+  one — and the feed updates as you edit. Removing a rule gives those posts back immediately, which it
+  previously never did: the post stayed faded even after the rule was gone.
+- **Filtering now works on the results page you actually land on.** Typing a search into LinkedIn's box
+  lands on the "All" tab, but filtering only ran on the "Posts" tab, so the feature looked dead unless
+  you knew to click across. Both work now. Only posts are ever touched — People, Jobs and Company
+  cards on that mixed page are left completely alone.
+- The sidebar still appears nowhere else: on LinkedIn it shows the filter list and nothing about form
+  filling, and on ordinary websites it stays away entirely.
+
 ## 0.36.2
 - **Fixed: real hiring posts on LinkedIn were being dimmed as "someone looking for work".** A post that
   opens with the most common wording of all — `Hiring: Firmware QA Engineer…` — was not recognised as a

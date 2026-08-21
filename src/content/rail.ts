@@ -21,6 +21,10 @@ export type RailApi = {
   /** Read a control's current displayed value by DOM id, independent of the panel's own field
    *  detection — see content.ts's `rawFieldValue` for why that independence matters (#164/#165). */
   rawFieldValue(id: string): string;
+  /** LinkedIn post-filter rules. Both re-apply the filter to the live page before resolving, so the
+   *  feed under the rail updates as the list is edited. */
+  addPostFilterTag(tag: string): Promise<string[]>;
+  removePostFilterTag(tag: string): Promise<string[]>;
   learnFromPage(): Promise<number>;
   noteUse(label: string): Promise<number>;
   promote(label: string, on: boolean): Promise<void>;
@@ -71,8 +75,33 @@ export type PanelRow = {
   addable?: boolean;
   choices?: { count: number | null; searchable: boolean };
 };
-export type PanelData = { rows: PanelRow[]; ats: string | null; host: string };
+export type PanelData = {
+  rows: PanelRow[];
+  ats: string | null;
+  host: string;
+  /** Present only on LinkedIn's post search, where the rail shows the filter section INSTEAD of the
+   *  field sections — that page is a feed, not an application, so it has no fields to offer. */
+  postFilter?: { tags: string[] };
+};
 type FillResult = { filled: boolean; reason?: string };
+
+const HP_CSS = `
+.hpBody { padding: 0 12px 12px; }
+.hpRule { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line-soft);
+  border-radius: 7px; padding: 7px 9px; margin-bottom: 6px; }
+.hpRule .hpT { flex: 1; font-size: 12.5px; word-break: break-word; }
+.hpRule .hpX { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 14px;
+  line-height: 1; padding: 2px 4px; border-radius: 4px; font-family: inherit; }
+.hpRule .hpX:hover { background: var(--sunk); color: var(--fg); }
+.hpAdd { display: flex; gap: 6px; margin-top: 9px; }
+.hpAdd input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--card); color: var(--fg);
+  border-radius: 7px; padding: 7px 9px; font: inherit; font-size: 12.5px; }
+.hpAdd input:focus-visible { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(92,126,72,.18); }
+.hpBtn { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 7px;
+  padding: 7px 11px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.hpBtn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent-deep); }
+.hpNote { font-size: 11px; color: var(--muted); margin: 9px 0 0; }
+`;
 
 const OPEN_KEY = 'f2a_rail_open';
 const FOLD_KEY = 'f2a_rail_folds';
@@ -91,7 +120,9 @@ function esc(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-const CSS = `
+const CSS =
+  HP_CSS +
+  `
 :host { all: initial; }
 *, *::before, *::after { box-sizing: border-box; }
 .wrap {
@@ -400,8 +431,46 @@ export function mountRail(api: RailApi): void {
     </div>`;
   }
 
+  /** The LinkedIn post-filter section: the person's exclude rules, in one place they can audit.
+   *  The dim/tag chips stay ON the posts — those are about that post. A growing rule list is what
+   *  benefits from being centralised, instead of being re-found as a chip somewhere back in a feed. */
+  function postFilterHtml(tags: string[]): string {
+    const rules = tags.length
+      ? tags
+          .map(
+            (tag) =>
+              `<div class="hpRule"><span class="hpT">${esc(tag)}</span>` +
+              `<button class="hpX" data-hp-remove="${esc(tag)}" title="Stop hiding these" aria-label="Stop hiding ${esc(tag)}">✕</button></div>`,
+          )
+          .join('')
+      : `<p class="empty"><b>Nothing hidden yet</b>Tag a post below to start.</p>`;
+    return (
+      `<section class="grp">` +
+      `<div class="acc"><span class="sp">Hidden post types</span><span class="n">${tags.length || ''}</span></div>` +
+      `<div class="hpBody">${rules}` +
+      `<form class="hpAdd" id="hpAdd"><input id="hpIn" type="text" placeholder="Add a tag to hide…" autocomplete="off" />` +
+      `<button class="hpBtn" type="submit">Add</button></form>` +
+      `<p class="hpNote">Only your tag choices are saved — never post text.</p></div></section>`
+    );
+  }
+
   function render(d: PanelData): void {
     rows = d.rows;
+    // A feed, not an application: show the filter rules and nothing else. Returning early keeps every
+    // field-shaped control (Fill, the tallies, the switches) off a page where none of them mean anything.
+    if (d.postFilter) {
+      $('badge').className = 'badge named';
+      $('bname').textContent = 'LinkedIn';
+      $('bsub').textContent = 'post search';
+      $('ctx').textContent = `${d.postFilter.tags.length} rule${d.postFilter.tags.length === 1 ? '' : 's'}`;
+      $('tally').innerHTML = '';
+      $('note').textContent = 'filtering posts';
+      $<HTMLButtonElement>('fillAll').hidden = true;
+      (root.querySelector('.switches') as HTMLElement).hidden = true;
+      $('body').innerHTML = postFilterHtml(d.postFilter.tags);
+      return;
+    }
+    (root.querySelector('.switches') as HTMLElement).hidden = false;
     const badge = $('badge');
     const tested = d.ats ? TESTED[d.ats] : undefined;
     if (d.ats && tested) {
@@ -725,6 +794,12 @@ export function mountRail(api: RailApi): void {
       return;
     }
     const t = e.target as HTMLElement;
+    const hpRemove = t.closest<HTMLElement>('[data-hp-remove]');
+    if (hpRemove) {
+      const tag = hpRemove.dataset.hpRemove ?? '';
+      void api.removePostFilterTag(tag).then(() => refresh());
+      return;
+    }
     const more = t.closest<HTMLElement>('[data-more]');
     if (more) {
       expanded.add(more.dataset.more ?? '');
@@ -987,6 +1062,18 @@ export function mountRail(api: RailApi): void {
   });
 
   // Learn what the user typed whenever they come back to the rail, then re-read.
+  // A <form>, so Enter submits the way anyone typing a tag expects; the button is the same path.
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('#hpAdd');
+    if (!form) return;
+    e.preventDefault();
+    const input = root.getElementById('hpIn') as HTMLInputElement | null;
+    const tag = (input?.value ?? '').trim();
+    if (!tag) return;
+    if (input) input.value = '';
+    void api.addPostFilterTag(tag).then(() => refresh());
+  });
+
   wrap.addEventListener('mouseenter', () => {
     if (!$('rail').hidden) void api.learnFromPage().then(() => refresh());
   });
