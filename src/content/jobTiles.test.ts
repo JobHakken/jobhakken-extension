@@ -131,6 +131,37 @@ describe('detectTiles against the REAL logged-in collections capture (7 tiles)',
   });
 });
 
+describe('detectTiles against the REAL logged-in /jobs list capture (25 tiles)', () => {
+  // This layout defeats every class-based hook: obfuscated class names, no `job-card-container`, no
+  // `data-occludable-job-id`, no `.job-card-container__footer-item`, and the tiles are not <li>. It is
+  // why the live page reported "Showing 0 of 0" while the two earlier fixtures passed. Detection is
+  // anchored on the per-tile dismiss control instead, whose aria-label is an accessibility contract.
+  beforeEach(() => {
+    loadFixture('jobs-list-loggedin.html');
+  });
+
+  it('finds all 25 tiles with no class-based hook available', () => {
+    expect(detectTiles()).toHaveLength(25);
+  });
+
+  it('takes the title from the dismiss control and the company from the line beneath it', () => {
+    const first = detectTiles()[0];
+    expect(first.title).toBe('Senior Embedded Firmware Engineer');
+    expect(first.company).toBe('Atoms');
+  });
+
+  it('reads the Viewed labels that render as plain tile text here', () => {
+    expect(detectTiles().filter((t) => t.labels.has('viewed'))).toHaveLength(6);
+  });
+
+  it('does not read the company "Applied Intuition" as an already-applied job', () => {
+    // A loose word match did exactly that. The label is the bare word or the word plus a time.
+    for (const tile of detectTiles()) {
+      if (/^Applied\b/i.test(tile.company)) expect(tile.labels.has('applied')).toBe(false);
+    }
+  });
+});
+
 describe('applyJobTileFilters — matching, dimming, and the never-touch-a-non-match guarantee', () => {
   beforeEach(() => {
     document.body.innerHTML = '';

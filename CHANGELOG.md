@@ -4,6 +4,20 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.40.0
+- **Fixed: the sidebar only appeared after a manual refresh.** LinkedIn never reloads the page when you
+  switch between the All and Posts tabs or run a new search, and the code that decides whether to show
+  the sidebar was skipped on exactly those pages — so it could only ever appear on a fresh page load.
+  It now follows you as you navigate.
+- **Fixed: the job filters found no jobs at all** ("Showing 0 of 0"), which is why hiding Reposted or
+  Viewed did nothing. Every class name on LinkedIn's signed-in job list is scrambled and changes
+  regularly, and we were looking for names that no longer exist. Job tiles are now found by their own
+  Dismiss button — a label LinkedIn has to keep accurate for screen readers — so the filters no longer
+  depend on styling that can change underneath them. Verified against a real signed-in capture: 25 of 25
+  tiles found, with their titles, companies and Viewed labels.
+- **Fixed: a job at "Applied Intuition" was treated as a job you had already applied to**, because the
+  company name begins with the same word as the label.
+
 ## 0.39.1
 - **Fixed: real job posts were greyed out as "someone looking for work".** A full job description — an
   OpenAI firmware role, with salary and a View job button attached — was faded with a reason that said

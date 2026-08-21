@@ -62,8 +62,59 @@ export type DetectedTile = {
 const TILE_SELECTOR =
   'li[data-occludable-job-id], li.scaffold-layout__list-item, .jobs-search-results__list-item, [data-job-id]';
 
+/**
+ * The DISMISS button is the one dependable per-tile anchor on the logged-in list.
+ *
+ * Every class on that layout is obfuscated and rotates — a real capture shows tiles built from
+ * `cdb0f575 a604e966 _2b213015`, no `job-card-container` anywhere, no `data-occludable-job-id`, and the
+ * tiles are not even `<li>` (56 `<li>` on the page, none containing exactly one job link). So none of
+ * TILE_SELECTOR's hooks exist there and detection found zero tiles — the reported "Showing 0 of 0".
+ *
+ * Each tile does carry a dismiss control labelled `Dismiss <job title> job`, one per tile (25 tiles →
+ * 25 buttons in the capture). An aria-label is an accessibility contract rather than a styling detail,
+ * so it survives the class churn that breaks everything else. Climb from it to the outermost element
+ * still containing exactly that one dismiss control: that is the tile, found structurally, with no
+ * class names involved.
+ */
+function tileFromDismiss(btn: HTMLElement): HTMLElement | null {
+  let node: HTMLElement | null = btn.parentElement;
+  let best: HTMLElement | null = null;
+  while (node && node !== document.body && node !== document.documentElement) {
+    if (node.querySelectorAll(DISMISS_SELECTOR).length > 1) break; // reached a container of several tiles
+    best = node;
+    node = node.parentElement;
+  }
+  return best;
+}
+
+// Both ends anchored: a bare `^="Dismiss"` also matches LinkedIn's sign-in modal close button, which
+// made the logged-out capture report 6 "tiles" that were all the same modal. The job control is always
+// "Dismiss <job title> job".
+const DISMISS_SELECTOR = '[aria-label^="Dismiss" i][aria-label$="job" i]';
+
 function tileBoundary(a: HTMLElement): HTMLElement | null {
-  return a.closest<HTMLElement>(TILE_SELECTOR) ?? a.closest<HTMLElement>('li');
+  // Class-based hooks first (they hold on the logged-out layout and on older markup), then the
+  // class-agnostic dismiss anchor, then a plain <li> as a last resort.
+  const byClass = a.closest<HTMLElement>(TILE_SELECTOR);
+  if (byClass) return byClass;
+  const dismiss = a.closest<HTMLElement>(DISMISS_SELECTOR)
+    ? a
+    : (a.parentElement?.querySelector<HTMLElement>(DISMISS_SELECTOR) ?? null);
+  if (dismiss) {
+    const tile = tileFromDismiss(dismiss);
+    if (tile) return tile;
+  }
+  return a.closest<HTMLElement>('li');
+}
+
+/** Every tile on the page, found without depending on a single class name. */
+export function tileRoots(): HTMLElement[] {
+  const out = new Set<HTMLElement>();
+  for (const btn of document.querySelectorAll<HTMLElement>(DISMISS_SELECTOR)) {
+    const tile = tileFromDismiss(btn);
+    if (tile) out.add(tile);
+  }
+  return [...out];
 }
 
 // Company: public search fixture puts it in an `a.hidden-nested-link` inside the subtitle heading;
@@ -77,16 +128,43 @@ const COMPANY_SELECTORS = [
 ];
 
 function companyOf(tile: HTMLElement): string {
+  // Precise class hooks first — they exist on the logged-out and older layouts and are exact.
   for (const sel of COMPANY_SELECTORS) {
     const t = clean(tile.querySelector(sel)?.textContent);
     if (t) return t;
+  }
+  // On the logged-in layout the company is simply the line after the title — every class here is
+  // obfuscated, so position in the tile's own text is the only stable handle. Verified against a real
+  // capture: "Senior Embedded Firmware Engineer / Atoms / San Francisco, CA (On-site) / ...".
+  // LinkedIn doubles the title line (visible + screen-reader copy), so drop any line that starts with
+  // the title, then take the first line left that isn't a state label, a location or a meta line.
+  const title = titleFromDismiss(tile);
+  if (title) {
+    const META =
+      /^(viewed|promoted|reposted|applied|·|,|\d)|^(you|be an early|actively|\d+ (school|connection))|\(on-site\)|\(hybrid\)|\(remote\)|benefits?$|ago$|applicants?$/i;
+    for (const raw of tileLines(tile)) {
+      const line = raw;
+      if (!line || line.startsWith(title) || title.startsWith(line)) continue;
+      if (META.test(line)) continue;
+      if (line.length > 60) continue; // a description line, not a company
+      return line;
+    }
   }
   return '';
 }
 
 const TITLE_SELECTORS = ['h3.base-search-card__title', '.job-card-list__title--link', '.job-card-container__link'];
 
+/** "Dismiss Senior Embedded Firmware Engineer job" -> "Senior Embedded Firmware Engineer". The tile's
+ *  own dismiss control names the job, which beats guessing at an obfuscated title class. */
+function titleFromDismiss(tile: HTMLElement): string {
+  const aria = tile.querySelector(DISMISS_SELECTOR)?.getAttribute('aria-label') ?? '';
+  return clean(aria.replace(/^\s*dismiss\s+/i, '').replace(/\s+job\s*$/i, ''));
+}
+
 function titleOf(tile: HTMLElement): string {
+  const fromDismiss = titleFromDismiss(tile);
+  if (fromDismiss) return fromDismiss;
   for (const sel of TITLE_SELECTORS) {
     const t = clean(tile.querySelector(sel)?.textContent);
     if (t) return t;
@@ -108,15 +186,48 @@ const FOOTER_ITEM_SELECTOR = '.job-card-container__footer-item';
 // with a literal apostrophe once (0.37.1) and it's cheap to avoid it here from the start.
 const DISMISSED_RE = /we\s+won.t\s+show\s+you\s+this\s+job\s+again/i;
 
+/**
+ * A tile's visible text as lines, without relying on `innerText`.
+ *
+ * `innerText` is layout-dependent and simply absent under jsdom, so anything built on it works in the
+ * browser and silently reads `undefined` in tests. Collect the leaf elements' text instead: it gives
+ * the same one-segment-per-line shape in both places, and does not depend on CSS at all.
+ */
+function tileLines(tile: HTMLElement): string[] {
+  const out: string[] = [];
+  for (const el of Array.from(tile.querySelectorAll<HTMLElement>('*'))) {
+    if (el.children.length) continue; // not a leaf — its text belongs to its children
+    const line = clean(el.textContent);
+    if (line) out.push(line);
+  }
+  return out;
+}
+
 function labelsOf(tile: HTMLElement): Set<JobTileLabelKey> {
   const out = new Set<JobTileLabelKey>();
-  for (const li of Array.from(tile.querySelectorAll(FOOTER_ITEM_SELECTOR))) {
-    const t = clean(li.textContent).toLowerCase();
-    if (t === 'promoted') out.add('promoted');
-    else if (t === 'viewed') out.add('viewed');
-    else if (t === 'applied' || t.startsWith('applied ')) out.add('applied');
-    else if (t === 'reposted' || t.startsWith('reposted ')) out.add('reposted');
-  }
+  const add = (raw: string) => {
+    const t = clean(raw).toLowerCase();
+    // The state labels are either the bare word or the word plus a time ("Applied 2 weeks ago",
+    // "Reposted 1 week ago"). A loose `startsWith('applied ')` tagged the company "Applied Intuition"
+    // as a job the person had already applied to — caught by the fixture test, and exactly the kind of
+    // wrong-but-plausible match that reading a tile's text invites.
+    const timed = (word: string) =>
+      t === word ||
+      new RegExp(`^${word}\\s+(\\d|a |an |about |over |yesterday|today)`).test(t) ||
+      t === `${word} by hirer`;
+    if (timed('promoted')) out.add('promoted');
+    else if (timed('viewed')) out.add('viewed');
+    else if (timed('applied')) out.add('applied');
+    else if (timed('reposted')) out.add('reposted');
+  };
+  // The footer-item elements, where they exist (logged-out layout and older markup).
+  for (const li of Array.from(tile.querySelectorAll(FOOTER_ITEM_SELECTOR))) add(li.textContent ?? '');
+  // On the logged-in layout there are none: a real capture has ZERO `.job-card-container__footer-item`
+  // and zero `job-card-container` anything, yet the labels are plainly on screen. They render as
+  // ordinary tile text, so read the tile's own lines. Split on newlines and the separator LinkedIn puts
+  // between meta items, and match whole segments only — a substring match would tag any tile whose
+  // DESCRIPTION happens to contain "promoted".
+  for (const line of tileLines(tile)) for (const seg of line.split(/[·•|]+/)) add(seg);
   if (DISMISSED_RE.test(clean(tile.textContent))) out.add('dismissed');
   return out;
 }
@@ -125,11 +236,20 @@ function labelsOf(tile: HTMLElement): Set<JobTileLabelKey> {
  *  can carry more than one `/jobs/view/` anchor — an image link and a title link — that must
  *  collapse to the same entry, not count twice). */
 export function detectTiles(root: ParentNode = document): DetectedTile[] {
-  const anchors = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[href*="/jobs/view/"]'));
+  // Dismiss buttons FIRST, and exclusively when present. They are one-per-tile and mean nothing else,
+  // whereas `currentJobId` appears in plenty of links that are not tiles — on a job DETAIL page the
+  // anchor sweep picked up the company's post cards and reported them as jobs. Anchors stay as the
+  // fallback for a list that has no dismiss controls (the logged-out layout).
   const tiles = new Map<HTMLElement, true>();
-  for (const a of anchors) {
-    const t = tileBoundary(a);
-    if (t) tiles.set(t, true);
+  for (const el of root === document ? tileRoots() : []) tiles.set(el, true);
+  if (!tiles.size) {
+    const anchors = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>('a[href*="/jobs/view/"], a[href*="currentJobId"]'),
+    );
+    for (const a of anchors) {
+      const t = tileBoundary(a);
+      if (t) tiles.set(t, true);
+    }
   }
   return Array.from(tiles.keys()).map((el) => ({
     el,

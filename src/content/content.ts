@@ -2542,6 +2542,12 @@ async function init() {
       // and returned on its own — same cheap-gate discipline, a different page shape.
       if (isPostSearchPage()) {
         void applyHiringPostFilters();
+        // syncRail() BEFORE returning. LinkedIn is a single-page app: switching between the All and
+        // Posts verticals, or typing a new search, never reloads the document, so this mutation handler
+        // is the only thing that runs. Returning here meant the rail could only ever mount from the
+        // one-time call at page load — which is exactly the reported behaviour, that the sidebar
+        // appears only after a manual refresh and vanishes when you navigate.
+        syncRail();
         return;
       }
       // A job LISTING page (LinkedIn's /jobs/, a board's results) is never "formish" — it has no
