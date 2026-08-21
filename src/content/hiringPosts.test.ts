@@ -125,6 +125,15 @@ describe('isPostSearchPage', () => {
     setLocation('www.indeed.com', '/search/results/content/');
     expect(isPostSearchPage()).toBe(false);
   });
+
+  // #189 acceptance criterion: this feature must never run on the home feed — an infinite feed makes
+  // "tag every post" unbounded cost/privacy, and a general feed cleaner is arguably a second product
+  // under the Chrome Web Store's single-purpose policy (see the issue). Pinned explicitly since nothing
+  // else in the suite exercises a feed URL.
+  it('is false on the home feed', () => {
+    setLocation('www.linkedin.com', '/feed/');
+    expect(isPostSearchPage()).toBe(false);
+  });
 });
 
 // #189: the query itself is the signal for whether the automatic hiring-post fade should run at all —
