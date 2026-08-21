@@ -45,23 +45,54 @@ function installChrome(
   return { sendMessage, storage };
 }
 
-function card(opts: { name: string; body: string; hiring?: boolean; profile?: string; jobId?: string }): string {
-  const { name, body, hiring = false, profile = '/in/jordan-rivera-000', jobId } = opts;
+/**
+ * Shaped like the REAL captured markup (#182), not just a plausible guess: LinkedIn puts the author's
+ * name, connection degree, headline AND post timestamp each in their own `<p>`, ahead of the post's
+ * own `<p>`s — verified against a real 78-post capture, where a card's own text always starts
+ * immediately after its "Open control menu for post by X" button, in this exact relative order:
+ * avatar/name/degree, headline, timestamp, Follow button, control-menu button, THEN the post's `<p>`s.
+ */
+function card(opts: {
+  name: string;
+  body: string;
+  hiring?: boolean;
+  profile?: string;
+  jobId?: string;
+  headline?: string;
+  mention?: string; // an @-mention of someone ELSE inside the post's own body (regression case)
+}): string {
+  const {
+    name,
+    body,
+    hiring = false,
+    profile = '/in/jordan-rivera-000',
+    jobId,
+    headline = 'Engineering Manager',
+  } = opts;
   const jobCard = jobId ? `<div><a href="/jobs/view/${jobId}/?trackingId=abc"><span>View job</span></a></div>` : '';
+  const mention = opts.mention
+    ? `<a href="/in/other"><span aria-label="View ${opts.mention}'s profile"></span>${opts.mention}</a>`
+    : '';
   return `
   <div class="_94b267c9" componentkey="auto-component-1">
     <h2><span>Feed post</span></h2>
-    <div aria-label="${name}, ${hiring ? 'Hiring Premium Profile ' : ''}3rd+">
-      <a href="${profile}?miniProfileUrn=abc"><span>${name}</span></a>
-      <svg role="img" aria-label="View ${name}'s profile${hiring ? ', hiring' : ''}"></svg>
-      <span>Engineering Manager</span>
+    <div>
+      <a href="${profile}?miniProfileUrn=abc">
+        <svg role="img" aria-label="View ${name}'s profile${hiring ? ', hiring' : ''}"></svg>
+        <div aria-label="${name} ${hiring ? 'Hiring ' : ''}Premium Profile 3rd+">
+          <div><p><span>${name}</span></p></div>
+          <div><p><span>• 3rd+</span></p></div>
+        </div>
+      </a>
+      <div><p><span>${headline}</span></p></div>
+      <div><p><span>2w •</span></p></div>
       <button aria-label="Follow ${name}"><span>Follow</span></button>
       <button aria-label="Open control menu for post by ${name}"></button>
     </div>
     <div>${body
       .split('\n')
       .map((line) => `<p>${line}</p>`)
-      .join('')}<span>…</span><span>more</span></div>
+      .join('')}${mention}<span>…</span><span>more</span></div>
     ${jobCard}
   </div>`;
 }
@@ -101,9 +132,49 @@ describe('detectPosts', () => {
     const posts = detectPosts();
     expect(posts).toHaveLength(1);
     expect(posts[0].authorName).toBe('Jordan Rivera');
+    expect(posts[0].authorHeadline).toBe('Engineering Manager');
     expect(posts[0].hiringBadge).toBe(true);
     expect(posts[0].body).toContain('secure boot');
     expect(posts[0].jobUrl).toBe('https://www.linkedin.com/jobs/view/4443875906/');
+  });
+
+  // #182: LinkedIn puts the author's name, connection degree, headline and post age in their own
+  // <p>s ahead of the post's own text, so a blind `querySelectorAll('p')` produced a body reading
+  // "Simran Jiwani • 3rd+ Lead Recruiter at Motive Workforce 4w • Hiring: Firmware QA Engineer …" on
+  // a real captured post — the author's name and headline BEFORE the post's own first word. Confirmed
+  // by running detectPosts() against a saved 78-post capture.
+  it('scopes body to the post’s own text — the author’s name/degree/headline/timestamp never appear in it', () => {
+    document.body.innerHTML = card({
+      name: 'Simran Jiwani',
+      headline: 'Lead Recruiter at Motive Workforce',
+      body: 'Hiring: Firmware QA Engineer (Embedded Test Engineer)\nWestlake Village, CA (100% Onsite)',
+    });
+    const posts = detectPosts();
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body.startsWith('Hiring: Firmware QA Engineer')).toBe(true);
+    expect(posts[0].body).not.toContain('Simran Jiwani');
+    expect(posts[0].body).not.toContain('Lead Recruiter at Motive Workforce');
+    expect(posts[0].body).not.toContain('3rd+');
+    expect(posts[0].body).not.toContain('2w •');
+    // The real headline is still captured separately (still sent to the AI as `headline`, per issue's
+    // own scope) — #182 is about it not ALSO leaking into `body`, not about hiding it altogether.
+    expect(posts[0].authorHeadline).toBe('Lead Recruiter at Motive Workforce');
+  });
+
+  // Regression for a real bug this fix could have introduced: a post that itself @-mentions someone
+  // ELSE renders that mention with the identical "View {name}'s profile" aria-label shape the header
+  // boundary looks for. An unscoped "latest match wins" search real-world-broke on exactly this (a KLA
+  // hiring post tagging four colleagues at the end) — it pushed the boundary past the post's own
+  // paragraph entirely, leaving body empty and silently dropping the post from the 78-post capture.
+  it('does not let an @-mention of someone else inside the post push the header boundary past the post’s own text', () => {
+    document.body.innerHTML = card({
+      name: 'Dana Okafor',
+      body: 'We are hiring a firmware engineer. Great team led by',
+      mention: 'Alex Chen',
+    });
+    const posts = detectPosts();
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body).toContain('We are hiring a firmware engineer');
   });
 
   it('does not merge two short posts into one — the card boundary is structural, not size-based', () => {
@@ -185,8 +256,11 @@ describe('isLikelyHiringPost', () => {
   });
 
   // All five bodies below are taken from a real saved LinkedIn post-search (78 posts). Before these
-  // patterns existed, 37 of those 78 were rejected; afterwards 10 are, and the remaining 10 are
-  // genuinely not hiring posts.
+  // patterns existed, 37 of those 78 were rejected; afterwards 10 (with the pre-#182 body, which also
+  // carried the author's name/headline). After #182 scoped `body` to the post's own text, 9 remain
+  // rejected and are genuinely not hiring posts — the 10th ("Hiring Embedded software engineers for
+  // Amazon…") was a false negative caused by header pollution burying its own "Hiring" opener behind
+  // unrelated name/headline text, and is now correctly recognised once the body is clean.
   it('keeps a recruiter post that merely TAGS #OpenToWork to reach seekers', () => {
     const body = '#hiring for #Embedded_Security_Engineer 10+ Location: San Jose, CA (Remote) #OpenToWork #C2C';
     expect(isLikelyHiringPost({ body, hiringBadge: false })).toBe(true);

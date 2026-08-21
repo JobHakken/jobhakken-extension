@@ -57,19 +57,79 @@ function anchorCount(el: Element): number {
   return Array.from(el.querySelectorAll('h2')).filter((h) => clean(h.textContent) === 'Feed post').length;
 }
 
-function authorFromAria(card: Element): string {
-  const patterns: Array<[string, RegExp]> = [
-    ['[aria-label^="Open control menu for post by"]', /^Open control menu for post by\s+(.+?)\s*$/i],
-    ['[aria-label^="Follow"]', /^Follow\s+(.+?)\s*$/i],
-    ['[aria-label^="View"]', /^View\s+(.+?)[’']s profile/i],
-  ];
-  for (const [sel, re] of patterns) {
+// Shared by authorFromAria() (extracts the name) and authorHeaderBoundary() (finds where the header
+// ends), so the two can never disagree about which elements identify the author.
+const AUTHOR_ARIA_PATTERNS: Array<[string, RegExp]> = [
+  ['[aria-label^="Open control menu for post by"]', /^Open control menu for post by\s+(.+?)\s*$/i],
+  ['[aria-label^="Follow"]', /^Follow\s+(.+?)\s*$/i],
+  ['[aria-label^="View"]', /^View\s+(.+?)[’']s profile/i],
+];
+
+/** Every element in the card matching one of the author-identifying aria-label shapes, paired with the
+ *  name each one captured. A post's own text routinely @-mentions OTHER people ("Sarah Nelson", tagged
+ *  colleagues) using this exact same aria-label shape, so callers MUST filter by name — see
+ *  authorHeaderBoundary()'s comment for why that isn't optional. */
+function authorMatches(card: Element): Array<{ el: Element; name: string }> {
+  const out: Array<{ el: Element; name: string }> = [];
+  for (const [sel, re] of AUTHOR_ARIA_PATTERNS) {
     for (const el of Array.from(card.querySelectorAll(sel))) {
       const m = re.exec(clean(el.getAttribute('aria-label')));
-      if (m?.[1]) return m[1].replace(/,\s*hiring$/i, '').trim();
+      if (m?.[1]) out.push({ el, name: m[1].replace(/,\s*hiring$/i, '').trim() });
     }
   }
-  return '';
+  return out;
+}
+
+function authorFromAria(card: Element): string {
+  return authorMatches(card)[0]?.name ?? '';
+}
+
+/**
+ * Where the author header ends and the post's own text begins (#182). LinkedIn's header — avatar,
+ * name, connection degree, headline, timestamp, Follow/control-menu buttons — puts several of its own
+ * pieces in `<p>` tags too, not just the post text, so a blind `card.querySelectorAll('p')` picks up
+ * "Simran Jiwani • 3rd+ Lead Recruiter at Motive Workforce 4w •" ahead of the post's own words.
+ *
+ * The header has no single element carrying an aria-label for the WHOLE block, but its LAST piece in
+ * document order is always one of the author-identifying aria-labels above — verified against a real
+ * 78-post capture: every post's body starts immediately after its own "Open control menu for post by
+ * X" button, regardless of Follow/hiring-badge/connection-degree variation (some posts have no Follow
+ * button at all — 1st-degree connections — and the control-menu button still lands last).
+ *
+ * MUST filter matches down to `authorName`: a post that itself @-mentions someone else renders that
+ * mention as a link carrying the identical "View {other person}'s profile" aria-label shape, deep
+ * inside the post's own text. An unfiltered "latest match wins" search real-world-broke on exactly
+ * this — a KLA hiring post that tagged four colleagues by name at the bottom pushed the computed
+ * boundary past the post's own paragraph entirely, leaving `body` empty and dropping the post. Only
+ * elements naming the CARD'S OWN author are eligible to move the boundary.
+ */
+function authorHeaderBoundary(card: Element, authorName: string): Element | null {
+  let boundary: Element | null = null;
+  for (const { el, name } of authorMatches(card)) {
+    if (name.toLowerCase() !== authorName.toLowerCase()) continue;
+    if (!boundary || (boundary.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) {
+      boundary = el;
+    }
+  }
+  return boundary;
+}
+
+/** Our own injected UI (tag chips, the dim reason note) is never part of the post — exclude it from
+ *  both body and headline extraction so re-scanning an already-decorated card (see the "RE-EVALUATES"
+ *  note below) never feeds our own text back into itself. */
+function isOwnUi(el: Element): boolean {
+  return el.closest(`.${UI_CLASS}, .${UI_CLASS}-reason`) !== null;
+}
+
+function isAfter(boundary: Element, el: Element): boolean {
+  return (boundary.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+}
+
+/** The post's own `<p>`s — everything after the author header boundary, minus anything we injected. */
+function bodyParagraphs(card: Element, authorName: string): HTMLElement[] {
+  const all = Array.from(card.querySelectorAll('p')) as HTMLElement[];
+  const boundary = authorHeaderBoundary(card, authorName);
+  return all.filter((p) => !isOwnUi(p)).filter((p) => !boundary || isAfter(boundary, p));
 }
 
 /**
@@ -104,16 +164,17 @@ export function detectPosts(root: ParentNode = document): DetectedPost[] {
     // dim self-healing. Repeat work is cheap: `stateByKey` short-circuits before any AI call, `dim()`
     // updates the existing note rather than stacking, and the row is guarded on already being present.
 
+    const authorName = authorFromAria(card);
+    if (!authorName) continue;
+
+    const boundary = authorHeaderBoundary(card, authorName);
     const body = clean(
-      Array.from(card.querySelectorAll('p'))
+      bodyParagraphs(card, authorName)
         .map((p) => clean(p.textContent))
         .filter((t) => t && !CHROME.has(t.toLowerCase()))
         .join(' '),
     ).replace(/\s*…\s*more\s*$/i, '');
     if (!body) continue;
-
-    const authorName = authorFromAria(card);
-    if (!authorName) continue;
 
     const hiringBadge = Array.from(card.querySelectorAll('[aria-label]')).some((el) => {
       const l = clean(el.getAttribute('aria-label'));
@@ -129,8 +190,13 @@ export function detectPosts(root: ParentNode = document): DetectedPost[] {
       ? (rawJobHref.startsWith('http') ? rawJobHref : `https://www.linkedin.com${rawJobHref}`).split('?')[0]
       : undefined;
 
+    // Headline candidates come from the HEADER only (before the same boundary that scopes body) — the
+    // post's own content can embed other widgets (e.g. an attached job-listing card reading "Senior
+    // Firmware Engineer I & 1 other (Verified job)") that would otherwise out-compete the author's
+    // actual headline for "longest leaf text in the card" and get sent to the AI as if it were one.
     const leaves = Array.from(card.querySelectorAll('span,div'))
-      .filter((e) => e.children.length === 0)
+      .filter((e) => e.children.length === 0 && !isOwnUi(e))
+      .filter((e) => !boundary || !isAfter(boundary, e))
       .map((e) => clean(e.textContent))
       .filter(Boolean);
     const authorHeadline = leaves
@@ -171,9 +237,13 @@ export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadg
   // Measured against a real saved post-search: 8 of 78 posts were rejected for exactly that reason.
   //
   // Each alternative here has to be something a job SEEKER would not write about themselves — "hiring:",
-  // "hiring alert", "N openings". Deliberately NOT a bare "hiring", which appears in half the recruiter
-  // headlines on this search ("Hiring-Manager Outreach", "Technology Hiring @ X") and would match a
-  // career-coach's bio.
+  // "hiring alert", "N openings". Deliberately NOT a bare "hiring": #182 scoped `body` to the post's own
+  // text (it used to also carry the author's headline, e.g. "Hiring-Manager Outreach", "Technology
+  // Hiring @ X" — a career-coach's bio, not the post), but a bare "hiring" is still ambiguous even in a
+  // clean body — a real post from this search reads "Embedded Firmware Hiring Managers, this is for
+  // you: if you're hiring embedded firmware… engineers, this is the profile for you", which is someone
+  // PITCHING THEMSELVES to hiring managers, not a company hiring. So the caution stays, just for a
+  // different, still-real reason.
   const strongHiring =
     /\bhiring\s*[:!]|\bhiring alert\b|#hiring\b|\b(hiring|recruiting) for\b|\bwe(?:'| a)?re hiring\b|\bi(?:'| a)?m hiring\b|\bhiring (multiple|several|\d+)\b|\b\d+\s+openings?\b|\bmultiple openings?\b|\bopenings? for\b/i.test(
       body,
