@@ -4,6 +4,21 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.36.1
+- **The sidebar no longer appears on ordinary websites.** It was showing up anywhere a page had three
+  form fields — logins, contact forms, newsletter signups, checkouts, most settings screens. It now
+  appears only on real job applications: a known ATS, a page fingerprinted as one, a résumé upload or a
+  screening question, or a site you switched on yourself.
+- **We now refuse to autofill a page that isn't a job application at all.** Testing caught autofill
+  typing a name, email, phone and company into an ordinary contact form. Not filling a form on some
+  unrelated website is the whole point — "your data stays in your browser" means nothing if we type it
+  into someone else's page ourselves. A site you explicitly switch on still fills.
+- **Fixed: Jobvite applications weren't recognised**, so nothing filled on them. We only spotted Jobvite
+  by a link in the page's plumbing that company-hosted applications don't always have.
+- **Fixed: a dropdown that silently refused to keep your answer.** Some dropdowns only accept a real
+  click, others only the keyboard. A fix for one kind had quietly broken the other; now each is tried in
+  turn and checked before moving on, so both work.
+
 ## 0.36.0
 - **Scroll-fill is no longer torn down while the page is still changing.** Enabling "fill as I scroll"
   built a watcher, but any change to the page rebuilt it from scratch — and on a modern application
