@@ -73,6 +73,19 @@ import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js'
 import { applyH1bBadges, getH1bVerdict } from './h1b.js';
 import { applyHiringPostFilters, isPostSearchPage } from './hiringPosts.js';
 import { addExcludedTag, loadExcludedTags, removeExcludedTag } from '../lib/hiringPostFilterStore.js';
+import { applyJobTileFilters, isJobSearchPage } from './jobTiles.js';
+import {
+  addCompanyRule,
+  addKeywordRule,
+  loadHideJobTiles,
+  loadJobTileRules,
+  loadShowHiddenJobTiles,
+  removeCompanyRule,
+  removeKeywordRule,
+  setHideJobTiles,
+  setLabelRule,
+  setShowHiddenJobTiles,
+} from '../lib/jobTileFilterStore.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -822,7 +835,9 @@ function syncRail(): void {
   // LinkedIn's post search is not an application, so it can never satisfy `isRelevantPage()` — it gets
   // its OWN branch here rather than being smuggled in by loosening that gate. Loosening it is what put
   // the launcher on most of the web (#174); the rail renders only the post-filter section there.
-  const wanted = isRelevantPage() || isPostSearchPage();
+  // Same reasoning for LinkedIn's job SEARCH page (#183/#190): a results list has no fields either,
+  // so it gets its own OR clause rather than widening isRelevantPage() itself.
+  const wanted = isRelevantPage() || isPostSearchPage() || isJobSearchPage();
   if (!wanted) {
     unmountRail();
     return;
@@ -843,6 +858,34 @@ function syncRail(): void {
       const tags = await removeExcludedTag(tag);
       await applyHiringPostFilters(); // un-dims whatever that rule was hiding
       return tags;
+    },
+    // #183/#190 job-tile filter rules — one store call per action, then re-apply immediately (same
+    // "take effect under the rail right away" precedent as addPostFilterTag/removePostFilterTag).
+    jobTileRule: async (action) => {
+      switch (action.type) {
+        case 'addCompany':
+          await addCompanyRule(action.value);
+          break;
+        case 'removeCompany':
+          await removeCompanyRule(action.value);
+          break;
+        case 'addKeyword':
+          await addKeywordRule(action.value);
+          break;
+        case 'removeKeyword':
+          await removeKeywordRule(action.value);
+          break;
+        case 'setLabel':
+          await setLabelRule(action.label, action.on);
+          break;
+        case 'setHide':
+          await setHideJobTiles(action.on);
+          break;
+        case 'setShowHidden':
+          await setShowHiddenJobTiles(action.on);
+          break;
+      }
+      await applyJobTileFilters();
     },
     learnFromPage,
     noteUse: (label) => noteRememberedUse(label),
@@ -1460,11 +1503,34 @@ async function panelFields(): Promise<{
   ats: string | null;
   host: string;
   postFilter?: { tags: string[] };
+  jobTileFilter?: {
+    rules: Awaited<ReturnType<typeof loadJobTileRules>>;
+    hide: boolean;
+    showHidden: boolean;
+    shown: number;
+    total: number;
+  };
 }> {
   // LinkedIn post search has no application fields, so skip detection entirely and hand the rail the
   // one thing it renders there: the person's own exclude-tag rules.
   if (isPostSearchPage()) {
     return { rows: [], ats: null, host: location.hostname, postFilter: { tags: await loadExcludedTags() } };
+  }
+  // Same reasoning for LinkedIn's job SEARCH page (#183/#190): re-apply (idempotent — LinkedIn wipes
+  // inline styles on re-render, so every pass recomputes) and hand back the fresh counts + rules.
+  if (isJobSearchPage()) {
+    const [rules, hide, showHidden, summary] = await Promise.all([
+      loadJobTileRules(),
+      loadHideJobTiles(),
+      loadShowHiddenJobTiles(),
+      applyJobTileFilters(),
+    ]);
+    return {
+      rows: [],
+      ats: null,
+      host: location.hostname,
+      jobTileFilter: { rules, hide, showHidden, shown: summary?.shown ?? 0, total: summary?.total ?? 0 },
+    };
   }
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
@@ -2438,6 +2504,7 @@ async function init() {
   updateBadge(); // toolbar-icon field count
   applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
   if (isPostSearchPage()) void applyHiringPostFilters(); // LinkedIn content-search only — unrelated to badges/rail below
+  if (isJobSearchPage()) void applyJobTileFilters(); // #183/#190 — LinkedIn job-search tiles, same fire-and-forget shape
   syncRail(); // the rail + its launcher, once we know this page is an application
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
@@ -2466,6 +2533,10 @@ async function init() {
       if (document.querySelector('a[href*="/jobs/view/"], a[href*="currentJobId="]')) {
         updateBadge();
         applyBadges();
+        // #183/#190 — same tiles this block already scans; re-apply so a rule keeps holding across
+        // LinkedIn's React re-renders (it resets inline styles, not the DOM structure the query above
+        // depends on).
+        if (isJobSearchPage()) void applyJobTileFilters();
       }
       if (!looksFormish()) return;
       updateBadge();

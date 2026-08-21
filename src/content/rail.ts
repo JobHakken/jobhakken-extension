@@ -25,6 +25,10 @@ export type RailApi = {
    *  feed under the rail updates as the list is edited. */
   addPostFilterTag(tag: string): Promise<string[]>;
   removePostFilterTag(tag: string): Promise<string[]>;
+  /** LinkedIn job-SEARCH tile filter rules (#183/#190) — one method, one action union, so this
+   *  whole feature is a single additional line on this type regardless of what else lands here.
+   *  Re-applies the filter to the live tiles before resolving, same as the post-filter methods above. */
+  jobTileRule(action: JobTileRuleAction): Promise<void>;
   learnFromPage(): Promise<number>;
   noteUse(label: string): Promise<number>;
   promote(label: string, on: boolean): Promise<void>;
@@ -82,8 +86,30 @@ export type PanelData = {
   /** Present only on LinkedIn's post search, where the rail shows the filter section INSTEAD of the
    *  field sections — that page is a feed, not an application, so it has no fields to offer. */
   postFilter?: { tags: string[] };
+  /** Present only on a LinkedIn job SEARCH page (#183/#190) — same reasoning as postFilter just
+   *  above: a job list has no fields to fill either, so the rail shows the tile-filter rules instead. */
+  jobTileFilter?: {
+    rules: {
+      companies: string[];
+      keywords: string[];
+      labels: Record<'promoted' | 'reposted' | 'applied' | 'viewed' | 'dismissed', boolean>;
+    };
+    hide: boolean;
+    showHidden: boolean;
+    shown: number;
+    total: number;
+  };
 };
 type FillResult = { filled: boolean; reason?: string };
+export type JobTileLabelKey = 'promoted' | 'reposted' | 'applied' | 'viewed' | 'dismissed';
+export type JobTileRuleAction =
+  | { type: 'addCompany'; value: string }
+  | { type: 'removeCompany'; value: string }
+  | { type: 'addKeyword'; value: string }
+  | { type: 'removeKeyword'; value: string }
+  | { type: 'setLabel'; label: JobTileLabelKey; on: boolean }
+  | { type: 'setHide'; on: boolean }
+  | { type: 'setShowHidden'; on: boolean };
 
 const HP_CSS = `
 .hpBody { padding: 0 12px 12px; }
@@ -101,6 +127,20 @@ const HP_CSS = `
   padding: 7px 11px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .hpBtn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent-deep); }
 .hpNote { font-size: 11px; color: var(--muted); margin: 9px 0 0; }
+`;
+
+// #183/#190 job-tile filter section. Reuses .hpRule/.hpAdd/.hpBtn/.hpNote above for the
+// company/keyword rows — only the pieces those don't cover (the count/audit button, the label
+// checkboxes, the subheadings) get their own rules here.
+const JT_CSS = `
+.jtCount { display: block; width: 100%; text-align: left; border: 1px solid var(--line-soft); background: var(--sunk);
+  color: var(--fg); border-radius: 7px; padding: 7px 9px; font: inherit; font-size: 12.5px; font-weight: 650;
+  cursor: pointer; margin-bottom: 10px; }
+.jtCount:hover { border-color: var(--accent); }
+.jtSub { font-size: 11px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: .02em;
+  margin: 12px 0 6px; }
+.jtLabel { display: flex; align-items: center; gap: 7px; font-size: 12.5px; padding: 4px 0; cursor: pointer; }
+.jtHidePref { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted); }
 `;
 
 const OPEN_KEY = 'f2a_rail_open';
@@ -122,6 +162,7 @@ function esc(s: string): string {
 
 const CSS =
   HP_CSS +
+  JT_CSS +
   `
 :host { all: initial; }
 *, *::before, *::after { box-sizing: border-box; }
@@ -470,6 +511,22 @@ export function mountRail(api: RailApi): void {
       $('body').innerHTML = postFilterHtml(d.postFilter.tags);
       return;
     }
+    // #183/#190 — a LinkedIn job SEARCH page, same reasoning as postFilter just above: no fields to
+    // fill, so the rail shows the tile-filter rules instead. Kept as its own branch (not folded into
+    // the one above) so neither page type's rendering depends on the other's shape.
+    if (d.jobTileFilter) {
+      const { shown, total } = d.jobTileFilter;
+      $('badge').className = 'badge named';
+      $('bname').textContent = 'LinkedIn';
+      $('bsub').textContent = 'job search';
+      $('ctx').textContent = total ? `${shown} of ${total} shown` : '';
+      $('tally').innerHTML = '';
+      $('note').textContent = 'filtering jobs';
+      $<HTMLButtonElement>('fillAll').hidden = true;
+      (root.querySelector('.switches') as HTMLElement).hidden = true;
+      $('body').innerHTML = jobTileFilterHtml(d.jobTileFilter);
+      return;
+    }
     (root.querySelector('.switches') as HTMLElement).hidden = false;
     const badge = $('badge');
     const tested = d.ats ? TESTED[d.ats] : undefined;
@@ -800,6 +857,13 @@ export function mountRail(api: RailApi): void {
       void api.removePostFilterTag(tag).then(() => refresh());
       return;
     }
+    // #183/#190 job-tile filter section — one dispatcher, one data-attribute scheme, so this whole
+    // feature's click handling is a single addition here regardless of what else changes in this file.
+    const jt = t.closest<HTMLElement>('[data-jt]');
+    if (jt) {
+      void handleJobTileAction(jt, api).then(() => refresh());
+      return;
+    }
     const more = t.closest<HTMLElement>('[data-more]');
     if (more) {
       expanded.add(more.dataset.more ?? '');
@@ -1074,6 +1138,14 @@ export function mountRail(api: RailApi): void {
     void api.addPostFilterTag(tag).then(() => refresh());
   });
 
+  // #183/#190 job-tile filter section — the two "add a company/keyword" forms, one dispatcher.
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest<HTMLElement>('[data-jt-form]');
+    if (!form) return;
+    e.preventDefault();
+    void handleJobTileSubmit(form, api).then(() => refresh());
+  });
+
   wrap.addEventListener('mouseenter', () => {
     if (!$('rail').hidden) void api.learnFromPage().then(() => refresh());
   });
@@ -1098,4 +1170,115 @@ export function mountRail(api: RailApi): void {
 export function unmountRail(): void {
   document.getElementById('jh-rail-host')?.remove();
   document.documentElement.style.marginRight = '';
+}
+
+const JT_LABELS: Record<JobTileLabelKey, string> = {
+  promoted: 'Promoted',
+  reposted: 'Reposted',
+  applied: 'Applied',
+  viewed: 'Viewed',
+  dismissed: 'Dismissed ("won’t show again")',
+};
+
+/**
+ * The LinkedIn job-SEARCH tile filter section (#183/#190) — same pattern as postFilterHtml above:
+ * the person's own rules, in one place they can audit and undo. The dim/hide itself happens ON the
+ * tiles (content/jobTiles.ts); this only manages the rules that drive it. Top-level and pure (only
+ * needs `esc`), and its two handlers below take `api` as a parameter rather than closing over
+ * mountRail's scope — so this whole feature's rail code is three self-contained additions, not a
+ * change threaded through the existing closure.
+ */
+function jobTileFilterHtml(d: NonNullable<PanelData['jobTileFilter']>): string {
+  const { rules, hide, showHidden, shown, total } = d;
+  const hasRules = rules.companies.length > 0 || rules.keywords.length > 0 || Object.values(rules.labels).some(Boolean);
+
+  const countHtml = hasRules
+    ? `<button type="button" class="jtCount" data-jt="setShowHidden" data-jt-value="${showHidden ? '0' : '1'}">` +
+      `Showing ${shown} of ${total}${showHidden ? ' · showing hidden ▾' : ' · show hidden ▸'}` +
+      `</button>`
+    : '';
+
+  const companyRows = rules.companies.length
+    ? rules.companies
+        .map(
+          (c) =>
+            `<div class="hpRule"><span class="hpT">${esc(c)}</span>` +
+            `<button class="hpX" data-jt="removeCompany" data-jt-value="${esc(c)}" title="Stop hiding ${esc(c)}" aria-label="Stop hiding ${esc(c)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty">No companies hidden.</p>`;
+
+  const keywordRows = rules.keywords.length
+    ? rules.keywords
+        .map(
+          (k) =>
+            `<div class="hpRule"><span class="hpT">${esc(k)}</span>` +
+            `<button class="hpX" data-jt="removeKeyword" data-jt-value="${esc(k)}" title="Stop hiding &quot;${esc(k)}&quot;" aria-label="Stop hiding ${esc(k)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty">No keywords hidden.</p>`;
+
+  const labelToggles = (Object.keys(JT_LABELS) as JobTileLabelKey[])
+    .map(
+      (key) =>
+        `<label class="jtLabel"><input type="checkbox" data-jt="setLabel" data-jt-label="${key}" ${
+          rules.labels[key] ? 'checked' : ''
+        } /> Hide ${esc(JT_LABELS[key])}</label>`,
+    )
+    .join('');
+
+  return (
+    `<section class="grp">` +
+    `<div class="acc"><span class="sp">Job search filters</span></div>` +
+    `<div class="hpBody">` +
+    countHtml +
+    `<p class="jtSub">Hide by company</p>${companyRows}` +
+    `<form class="hpAdd" data-jt-form="company"><input class="jtIn" data-jt-input="company" type="text" placeholder="Company to hide…" autocomplete="off" /><button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="jtSub">Hide by keyword (title)</p>${keywordRows}` +
+    `<form class="hpAdd" data-jt-form="keyword"><input class="jtIn" data-jt-input="keyword" type="text" placeholder="Keyword to hide…" autocomplete="off" /><button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="jtSub">Hide by label</p>${labelToggles}` +
+    `<label class="jtLabel jtHidePref"><input type="checkbox" data-jt="setHide" ${hide ? 'checked' : ''} /> Hide matches completely (default just dims them)</label>` +
+    `<p class="hpNote">Only your own rules are saved — never job data.</p>` +
+    `</div></section>`
+  );
+}
+
+/** Route a click inside the job-tile filter section to the right RailApi call. */
+async function handleJobTileAction(el: HTMLElement, api: RailApi): Promise<void> {
+  const action = el.dataset.jt;
+  const value = el.dataset.jtValue ?? '';
+  switch (action) {
+    case 'removeCompany':
+      await api.jobTileRule({ type: 'removeCompany', value });
+      break;
+    case 'removeKeyword':
+      await api.jobTileRule({ type: 'removeKeyword', value });
+      break;
+    case 'setLabel':
+      await api.jobTileRule({
+        type: 'setLabel',
+        label: (el.dataset.jtLabel ?? 'promoted') as JobTileLabelKey,
+        on: (el as HTMLInputElement).checked,
+      });
+      break;
+    case 'setHide':
+      await api.jobTileRule({ type: 'setHide', on: (el as HTMLInputElement).checked });
+      break;
+    case 'setShowHidden':
+      await api.jobTileRule({ type: 'setShowHidden', on: value === '1' });
+      break;
+    default:
+      break;
+  }
+}
+
+/** Route a submit from either "add a company/keyword" form to the right RailApi call. */
+async function handleJobTileSubmit(form: HTMLElement, api: RailApi): Promise<void> {
+  const kind = form.dataset.jtForm;
+  const input = form.querySelector<HTMLInputElement>('[data-jt-input]');
+  const value = (input?.value ?? '').trim();
+  if (!value) return;
+  if (input) input.value = '';
+  if (kind === 'company') await api.jobTileRule({ type: 'addCompany', value });
+  else if (kind === 'keyword') await api.jobTileRule({ type: 'addKeyword', value });
 }
