@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.2
+- **Far fewer real hiring posts greyed out by mistake.** Measured against a saved copy of a real search
+  of 78 posts: 37 were being dismissed as "not a hiring post", now 10 are — and those ten genuinely
+  aren't (a career coach's bio, a graphic designer, an opinion post, people actually job hunting).
+  - Recruiters tag their own hiring posts `#OpenToWork` to reach job seekers, and that hashtag alone was
+    enough to dismiss the post. A clear hiring statement now wins over it.
+  - Openers we didn't recognise: `Hiring: …`, `💥 Hiring Alert`, `#hiring!`, `Multiple openings for …`.
+  - A bare mention of the word "hiring" still isn't treated as a signal — it appears in half the
+    recruiter headlines on this search, so it would grey out the wrong things in the other direction.
+
 ## 0.37.1
 - **Fixed: genuine hiring posts were being greyed out as "someone looking for work".** A post opening
   "We’re hiring: Firmware Engineers" was not recognised, because LinkedIn writes that apostrophe as a

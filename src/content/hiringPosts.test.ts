@@ -180,6 +180,45 @@ describe('isLikelyHiringPost', () => {
     ).toBe(false);
   });
 
+  // All five bodies below are taken from a real saved LinkedIn post-search (78 posts). Before these
+  // patterns existed, 37 of those 78 were rejected; afterwards 10 are, and the remaining 10 are
+  // genuinely not hiring posts.
+  it('keeps a recruiter post that merely TAGS #OpenToWork to reach seekers', () => {
+    const body = '#hiring for #Embedded_Security_Engineer 10+ Location: San Jose, CA (Remote) #OpenToWork #C2C';
+    expect(isLikelyHiringPost({ body, hiringBadge: false })).toBe(true);
+  });
+
+  it('keeps "Hiring Alert" and emoji-prefixed "Hiring:" openers', () => {
+    expect(
+      isLikelyHiringPost({
+        body: '\u{1F4A5} Hiring Alert \u{1F4A5} We are looking for Embedded Firmware engineers',
+        hiringBadge: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLikelyHiringPost({
+        body: '\u{1F680} Hiring: Wi-Fi Embedded C Developers (5 Openings) Englewood, CO',
+        hiringBadge: false,
+      }),
+    ).toBe(true);
+  });
+
+  it('still rejects career-coach and commentary posts that merely say the word hiring', () => {
+    // A bare "hiring" is deliberately NOT a signal: it is in half the recruiter headlines on this search.
+    expect(
+      isLikelyHiringPost({
+        body: 'Veteran Career Coach | Recruiter-Ready Resumes | Hiring-Manager Outreach. Meet the hiring managers.',
+        hiringBadge: false,
+      }),
+    ).toBe(false);
+    expect(
+      isLikelyHiringPost({
+        body: 'Unpopular opinion: the biggest reason companies are losing embedded and firmware engineers is pay.',
+        hiringBadge: false,
+      }),
+    ).toBe(false);
+  });
+
   it('rejects job seekers — the dominant noise in this search', () => {
     for (const body of [
       '#OpenToWork looking for a new firmware role after being impacted by layoffs',

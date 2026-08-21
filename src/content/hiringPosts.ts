@@ -160,6 +160,21 @@ export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadg
   const norm = (s: string) => s.replace(/[‘’ʼ′]/g, "'").replace(/[“”]/g, '"');
   const body = norm(post.body);
   const b = body.toLowerCase();
+  // An UNAMBIGUOUS hiring statement wins over a seeker phrase, and is therefore checked first.
+  // Recruiters routinely tag their own hiring posts #OpenToWork to reach seekers, so the veto below was
+  // firing on the hashtag block of posts that plainly said "#hiring for #Embedded_Security_Engineer".
+  // Measured against a real saved post-search: 8 of 78 posts were rejected for exactly that reason.
+  //
+  // Each alternative here has to be something a job SEEKER would not write about themselves — "hiring:",
+  // "hiring alert", "N openings". Deliberately NOT a bare "hiring", which appears in half the recruiter
+  // headlines on this search ("Hiring-Manager Outreach", "Technology Hiring @ X") and would match a
+  // career-coach's bio.
+  const strongHiring =
+    /\bhiring\s*[:!]|\bhiring alert\b|#hiring\b|\b(hiring|recruiting) for\b|\bwe(?:'| a)?re hiring\b|\bi(?:'| a)?m hiring\b|\bhiring (multiple|several|\d+)\b|\b\d+\s+openings?\b|\bmultiple openings?\b|\bopenings? for\b/i.test(
+      body,
+    );
+  if (strongHiring) return true;
+
   const seeker =
     /\b(open to work|opentowork|looking for (a |my )?(new )?(role|job|opportunit|position)|seeking (a )?(new )?(role|job|opportunit|position)|i was (laid off|impacted)|my last day|available immediately for)\b/.test(
       b,
