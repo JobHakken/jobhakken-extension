@@ -4,6 +4,21 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.39.0
+- **Show only the posts you want.** Alongside hiding post types, you can now list keywords a post MUST
+  mention to stay visible — search broadly on LinkedIn, then narrow to `zephyr` or `bare metal` without
+  redoing the search. The sidebar always shows how many posts are visible out of the total, because a
+  too-narrow rule that hides everything otherwise looks exactly like the extension being broken.
+- **Post filtering now works on any content search, not just hiring searches.** Your hide and show rules
+  apply to whatever you searched for. The automatic "not a hiring post" fade still only happens when the
+  search itself is about hiring — on any other search nothing is faded until you say so. Your home feed
+  is never touched.
+- **Fixed: the author's name and headline were being treated as part of the post.** Every post's text
+  silently began with something like "Simran Jiwani · Lead Recruiter at Motive Workforce · 4w ·", which
+  meant recruiter job titles polluted the matching, and a stranger's real name was sent to the AI that
+  suggests tags. The text now starts where the post does. One more genuine hiring post is correctly
+  recognised as a result, and your keyword rules no longer match on someone's job title by accident.
+
 ## 0.38.0
 - **Filter the LinkedIn job list.** On job search and "Top job picks", you can now hide roles you don't
   want to see: by company, by keyword in the title, or by LinkedIn's own labels — promoted, already
