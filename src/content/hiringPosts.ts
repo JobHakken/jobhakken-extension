@@ -148,6 +148,13 @@ export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadg
     );
   if (seeker) return false;
   if (post.hiringBadge) return true;
+  // A bare "Hiring:" / "#hiring" / "We're hiring" opener is the single most common way these posts are
+  // written, and the earlier pattern list missed all of the bare forms — it only matched "hiring" when
+  // glued to another word ("is hiring", "now hiring"). So a post opening "Hiring: Firmware QA Engineer,
+  // $85,000" was classed as a JOB SEEKER and dimmed with "looks like someone looking for work", which is
+  // both wrong and the exact opposite of what it says. Verified against a real LinkedIn post-search.
+  if (/(^|\n)\s*#?hiring\b\s*[:\-–—!]?/i.test(post.body)) return true;
+  if (/\b(hiring|recruiting) for\b|\bwe(?:'| a)?re hiring\b|\b#hiring\b/i.test(post.body)) return true;
   return /\b(we(?:'| a)?re hiring|hiring now|is hiring|now hiring|join (our|the) team|open (role|position|headcount)|we have an opening|apply (here|now|via)|dm me if|send (me )?your (cv|resume)|referrals? welcome)\b/.test(
     b,
   );

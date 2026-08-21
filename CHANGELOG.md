@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.36.2
+- **Fixed: real hiring posts on LinkedIn were being dimmed as "someone looking for work".** A post that
+  opens with the most common wording of all — `Hiring: Firmware QA Engineer…` — was not recognised as a
+  hiring post unless its author also had the #HIRING photo ring, so genuine roles were faded out with a
+  reason that said the opposite of what the post said. Bare `Hiring:`, `#hiring` and `hiring for` are
+  now recognised. Posts from people actually looking for work are still filtered out as before.
+
 ## 0.36.1
 - **The sidebar no longer appears on ordinary websites.** It was showing up anywhere a page had three
   form fields — logins, contact forms, newsletter signups, checkouts, most settings screens. It now

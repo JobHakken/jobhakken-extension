@@ -124,6 +124,20 @@ describe('isLikelyHiringPost', () => {
     ).toBe(true);
   });
 
+  it('keeps a bare "Hiring:" opener — the most common form, and previously dimmed as a seeker', () => {
+    // Real post from a LinkedIn post-search that this used to mislabel "someone looking for work".
+    const body =
+      'Hiring: Firmware QA Engineer (Embedded Test Engineer)\nWestlake Village, CA (100% Onsite)\n$85,000 + Benefits';
+    expect(isLikelyHiringPost({ body, hiringBadge: false })).toBe(true);
+    expect(isLikelyHiringPost({ body: '#hiring firmware engineers in Austin', hiringBadge: false })).toBe(true);
+  });
+
+  it('still lets a seeker signal veto a "hiring" mention', () => {
+    expect(
+      isLikelyHiringPost({ body: 'Hiring managers: I am open to work and looking for a role', hiringBadge: false }),
+    ).toBe(false);
+  });
+
   it('rejects job seekers — the dominant noise in this search', () => {
     for (const body of [
       '#OpenToWork looking for a new firmware role after being impacted by layoffs',
