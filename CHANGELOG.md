@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.38.0
+- **Filter the LinkedIn job list.** On job search and "Top job picks", you can now hide roles you don't
+  want to see: by company, by keyword in the title, or by LinkedIn's own labels — promoted, already
+  applied, already viewed, reposted, and dismissed. Rules live in the sidebar so you can see and undo
+  every one of them in one place.
+- **A count you can always see, and a way to check it.** Whenever a filter is on, the sidebar shows
+  "Showing 38 of 60" — a filter that quietly removes most of the page is otherwise indistinguishable
+  from the extension being broken. Click the count to reveal what was hidden, each row labelled with the
+  rule that hid it, so a rule that's too aggressive is easy to spot and remove.
+
 ## 0.37.5
 - **Fixed (properly this time): hidden posts now actually fade.** A post matching one of your hidden
   tags was labelled "Hidden — matches …" but stayed at full brightness. LinkedIn wraps every post in an
