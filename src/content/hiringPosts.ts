@@ -152,7 +152,14 @@ export function detectPosts(root: ParentNode = document): DetectedPost[] {
  * every keyword this search uses, so a seeker signal vetoes even a badged profile.
  */
 export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadge'>): boolean {
-  const b = post.body.toLowerCase();
+  // Fold typographic punctuation to ASCII FIRST. LinkedIn renders "We’re hiring" with a curly
+  // apostrophe (U+2019), so every pattern written with a straight one silently failed against the real
+  // site — verified on a live post-search: "**FILLED** We’re hiring: Firmware Engineers (6 openings!)"
+  // was labelled "looks like someone looking for work". Tests used straight quotes and passed happily,
+  // which is exactly how this survived.
+  const norm = (s: string) => s.replace(/[‘’ʼ′]/g, "'").replace(/[“”]/g, '"');
+  const body = norm(post.body);
+  const b = body.toLowerCase();
   const seeker =
     /\b(open to work|opentowork|looking for (a |my )?(new )?(role|job|opportunit|position)|seeking (a )?(new )?(role|job|opportunit|position)|i was (laid off|impacted)|my last day|available immediately for)\b/.test(
       b,
@@ -164,8 +171,8 @@ export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadg
   // glued to another word ("is hiring", "now hiring"). So a post opening "Hiring: Firmware QA Engineer,
   // $85,000" was classed as a JOB SEEKER and dimmed with "looks like someone looking for work", which is
   // both wrong and the exact opposite of what it says. Verified against a real LinkedIn post-search.
-  if (/(^|\n)\s*#?hiring\b\s*[:\-–—!]?/i.test(post.body)) return true;
-  if (/\b(hiring|recruiting) for\b|\bwe(?:'| a)?re hiring\b|\b#hiring\b/i.test(post.body)) return true;
+  if (/(^|\n)\s*#?hiring\b\s*[:\-–—!]?/i.test(body)) return true;
+  if (/\b(hiring|recruiting) for\b|\bwe(?:'| a)?re hiring\b|\b#hiring\b/i.test(body)) return true;
   return /\b(we(?:'| a)?re hiring|hiring now|is hiring|now hiring|join (our|the) team|open (role|position|headcount)|we have an opening|apply (here|now|via)|dm me if|send (me )?your (cv|resume)|referrals? welcome)\b/.test(
     b,
   );
@@ -224,24 +231,6 @@ function tagChip(tag: string, card: HTMLElement, onExclude: (tag: string) => voi
   return chip;
 }
 
-function linkButton(label: string, href: string): HTMLAnchorElement {
-  const a = document.createElement('a');
-  a.href = href;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  a.textContent = label;
-  styleBlock(a, {
-    font: '600 11px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
-    padding: '3px 10px',
-    borderRadius: '999px',
-    border: '1px solid #0a66c2',
-    color: '#0a66c2',
-    textDecoration: 'none',
-    cursor: 'pointer',
-  });
-  return a;
-}
-
 /** Dim a card in place and label why. Never removes it — it's the user's own browser showing their
  *  own search results; this only de-emphasizes, the same restraint h1b.ts uses for badges. */
 function dim(card: HTMLElement, reason: string): void {
@@ -274,8 +263,9 @@ function renderRow(post: DetectedPost, tags: string[], onExclude: (tag: string) 
   row.className = UI_CLASS;
   styleBlock(row, { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', padding: '8px 0 4px' });
 
-  if (post.jobUrl) row.appendChild(linkButton('View job ↗', post.jobUrl));
-  row.appendChild(linkButton('Find this post ↗', buildFindPostUrl(post.body)));
+  // No "View job" / "Find this post" links: LinkedIn already puts its own job card on the post, so ours
+  // duplicated a button sitting inches away, and "Find this post" was a best-effort text search that
+  // could land on the wrong post. The row is the filtering controls now — the thing only we provide.
   for (const tag of tags) row.appendChild(tagChip(tag, post.card, onExclude));
   return row;
 }
@@ -322,7 +312,8 @@ export async function applyHiringPostFilters(): Promise<void> {
       if (matched) dim(post.card, `Hidden — matches "${matched}"`);
       else {
         undim(post.card); // a rule was removed (or never matched) — give the post back
-        if (!post.card.querySelector(`.${UI_CLASS}`)) post.card.appendChild(renderRow(post, already.tags, onExclude));
+        if (already.tags.length && !post.card.querySelector(`.${UI_CLASS}`))
+          post.card.appendChild(renderRow(post, already.tags, onExclude));
       }
       continue;
     }
@@ -345,7 +336,7 @@ export async function applyHiringPostFilters(): Promise<void> {
       // The card may have been wiped by a React re-render while the AI call was in flight — only
       // inject if it's still the one attached to the live document.
       if (document.contains(post.card) && !post.card.querySelector(`.${UI_CLASS}`)) {
-        post.card.appendChild(renderRow(post, tags, onExclude));
+        if (tags.length) post.card.appendChild(renderRow(post, tags, onExclude));
       }
     });
   }

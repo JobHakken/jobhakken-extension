@@ -158,6 +158,14 @@ describe('isLikelyHiringPost', () => {
     ).toBe(true);
   });
 
+  it('keeps "We\u2019re hiring" written with LinkedIn\u2019s curly apostrophe', () => {
+    // The real site renders U+2019, not '. Every pattern written with a straight apostrophe missed it,
+    // and the tests missed the miss because they were written with straight quotes too.
+    const body =
+      '**FILLED** \u{1F527} We\u2019re hiring: Firmware Engineers (6 openings!)\nCarlsbad, CA, 8-month contract';
+    expect(isLikelyHiringPost({ body, hiringBadge: false })).toBe(true);
+  });
+
   it('keeps a bare "Hiring:" opener — the most common form, and previously dimmed as a seeker', () => {
     // Real post from a LinkedIn post-search that this used to mislabel "someone looking for work".
     const body =
@@ -236,7 +244,7 @@ describe('applyHiringPostFilters', () => {
     expect(cardEl.textContent).toContain('Not a hiring post');
   });
 
-  it('asks the service worker for tags on a real hiring post, and renders link buttons + chips', async () => {
+  it('asks the service worker for tags on a real hiring post, and renders the tag chips', async () => {
     setLocation('www.linkedin.com', '/search/results/content/');
     const { sendMessage } = installChrome({ tags: ['recruiter agency'] });
     document.body.innerHTML = card({ name: 'Jordan Rivera', body: HIRING_BODY, jobId: '999' });
@@ -247,9 +255,30 @@ describe('applyHiringPostFilters', () => {
     expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-hp-tags' }));
     const row = document.querySelector('.f2a-hp-ui');
     expect(row).not.toBeNull();
-    expect(row?.textContent).toContain('View job ↗');
-    expect(row?.textContent).toContain('Find this post ↗');
     expect(row?.textContent).toContain('recruiter agency');
+    // The two link buttons were removed deliberately: LinkedIn already renders its own job card on the
+    // post, so ours duplicated a button inches away, and "Find this post" was a best-effort text search
+    // that could land on the wrong post. Pin their absence so they don't creep back.
+    expect(row?.textContent).not.toContain('View job');
+    expect(row?.textContent).not.toContain('Find this post');
+  });
+
+  it('adds no row at all when there are no tags to offer', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/');
+    installChrome({ tags: [] });
+    // A DISTINCT body: the per-post cache is module-level and keyed on the post, so reusing
+    // HIRING_BODY here would hit the tags an earlier test already cached for it.
+    document.body.innerHTML = card({
+      name: 'Dana Okafor',
+      body: 'Hiring: Embedded Linux Engineer in Austin. Apply via the link.',
+      jobId: '888',
+    });
+
+    await applyHiringPostFilters();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // With the links gone, a tagless post would otherwise get an empty strip under it.
+    expect(document.querySelector('.f2a-hp-ui')).toBeNull();
   });
 
   it('clicking a tag chip dims the card AND persists the tag for future posts', async () => {

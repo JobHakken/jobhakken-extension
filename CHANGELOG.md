@@ -4,6 +4,16 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.1
+- **Fixed: genuine hiring posts were being greyed out as "someone looking for work".** A post opening
+  "We’re hiring: Firmware Engineers" was not recognised, because LinkedIn writes that apostrophe as a
+  curly ’ and we were only looking for a straight '. Every pattern written with a straight apostrophe
+  silently missed the real site.
+- **Removed the "View job" and "Find this post" links from under each post.** LinkedIn already shows its
+  own job card on the post, so ours repeated a button sitting inches away, and "Find this post" was a
+  best-effort text search that could land on the wrong post. The row under a post is now just the tags
+  you can hide by — the part only we provide — and posts with no tags get no row at all.
+
 ## 0.37.0
 - **The sidebar now manages your LinkedIn post filters.** Until now the only way to undo a "hide posts
   like this" choice was to scroll back and find the exact chip you clicked days ago. The sidebar now

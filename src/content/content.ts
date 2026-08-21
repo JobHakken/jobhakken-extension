@@ -1145,8 +1145,38 @@ function widgetVisible(el: Element): boolean {
  * answering Race with a decline collapses the linked ethnicity pair and deletes the Race control
  * outright, and that field must NOT linger in the panel afterwards.
  */
+/**
+ * Make every signature unique on this page.
+ *
+ * A signature is `[section, label, type]`, and `section` comes from a fieldset legend — which repeatable
+ * sections mostly do not use. So a form with two Education rows produces "start date month|combobox"
+ * TWICE, and `fillOne` locates its target with `.find()`, which returns the first match. Filling the
+ * second row's date therefore wrote to the first row's, marking outlined the wrong control, and the
+ * panel showed two identical rows that both drove one field. Measured across the corpus: 18 fields on 6
+ * captured pages collide this way — Greenhouse's Education/Employment start+end months, Workday's
+ * From/To, "When can you start?" (3x) and "Date" (3x).
+ *
+ * Refusing them would be the safe-but-lossy answer and would leave "Add another" sections unfillable
+ * forever. Numbering the repeats instead keeps the first occurrence's signature EXACTLY as it was —
+ * so nothing that already worked changes — and gives every later one an addressable identity.
+ */
+function disambiguate(fields: DetectedField[]): DetectedField[] {
+  const total = new Map<string, number>();
+  for (const f of fields) total.set(f.signature, (total.get(f.signature) ?? 0) + 1);
+  if (![...total.values()].some((n) => n > 1)) return fields;
+  const seen = new Map<string, number>();
+  return fields.map((f) => {
+    if ((total.get(f.signature) ?? 0) < 2) return f;
+    const n = (seen.get(f.signature) ?? 0) + 1;
+    seen.set(f.signature, n);
+    return n === 1 ? f : { ...f, signature: `${f.signature}#${n}` };
+  });
+}
+
 function pageFields(): ReturnType<typeof detectFields> {
-  const fresh = detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+  const fresh = disambiguate(
+    detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el)),
+  );
   const live = new Set(fresh.map((f) => f.signature));
   for (const f of fresh) seenFields.set(f.signature, f);
   const rescued: DetectedField[] = [];
