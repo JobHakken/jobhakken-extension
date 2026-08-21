@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.5
+- **Fixed (properly this time): hidden posts now actually fade.** A post matching one of your hidden
+  tags was labelled "Hidden — matches …" but stayed at full brightness. LinkedIn wraps every post in an
+  element that draws nothing of its own, and fading that element has no effect at all — so the fade was
+  being applied to something invisible. It now lands on the part of the post you can actually see.
+
 ## 0.37.4
 - **Fixed: the sidebar still appeared on ordinary websites** — anywhere with a plain file-upload button,
   which includes ChatGPT, webmail and most support forms. A page only counts as a job application now if

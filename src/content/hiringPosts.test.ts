@@ -324,6 +324,28 @@ describe('applyHiringPostFilters', () => {
     expect(document.querySelector('.f2a-hp-ui')).toBeNull();
   });
 
+  it('fades a card whose wrapper is display:contents (LinkedIn\u2019s real shape)', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/');
+    // Seed the EXCLUDE list in storage; installChrome's `tags` is the AI response, not the rule list.
+    installChrome({ storage: fakeStorage({ f2a_hp_excluded_tags: ['dimtest'] }) });
+    // LinkedIn wraps every post in a display:contents element. Such an element generates NO BOX, so
+    // `opacity` on it is ignored by the spec and the post stayed at full brightness while still being
+    // labelled "Hidden — matches …". Verified against a real capture: every detected card reported
+    // display:contents with height 0. The fade must land on a descendant that actually renders.
+    // A DISTINCT body: the per-post cache is module-level, so reusing HIRING_BODY would hit state an
+    // earlier test cached for it and take the undim branch instead.
+    const body = 'Hiring: Embedded firmware engineer at Zephyr Labs. dimtest marker. Apply here.';
+    document.body.innerHTML = `<div style="display:contents">${card({ name: 'Dana Okafor', body })}</div>`;
+
+    await applyHiringPostFilters();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Something inside the card must carry the fade — not merely the box-less wrapper.
+    const faded = document.querySelectorAll('[data-f2a-hp-dim]');
+    expect(faded.length).toBeGreaterThan(0);
+    for (const el of faded) expect((el as HTMLElement).style.opacity).toBe('0.35');
+  });
+
   it('clicking a tag chip dims the card AND persists the tag for future posts', async () => {
     setLocation('www.linkedin.com', '/search/results/content/');
     const { storage } = installChrome({ tags: ['recruiter agency'] });

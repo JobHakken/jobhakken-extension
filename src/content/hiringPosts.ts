@@ -251,10 +251,46 @@ function tagChip(tag: string, card: HTMLElement, onExclude: (tag: string) => voi
   return chip;
 }
 
+const DIMMED_ATTR = 'data-f2a-hp-dim';
+
+/**
+ * The elements to actually fade. Not simply the card: LinkedIn renders every post wrapper as
+ * `display: contents`, which generates NO BOX — so `opacity` on it is silently ignored by the spec and
+ * the children render at full strength. Verified against a real saved post-search: every detected card
+ * reported `display:contents`, `height: 0`, and `opacity` reading back as "0.35" while nothing changed
+ * on screen. That is why a post could sit there labelled 'Hidden — matches "senior"' at full brightness,
+ * and why re-applying the dim on every pass did not help — it was re-applying a no-op.
+ *
+ * So descend to the nearest elements that genuinely render, and fade those instead. Our own injected
+ * note is skipped so the explanation stays readable against the faded post.
+ */
+function boxesOf(el: HTMLElement): HTMLElement[] {
+  const cs = getComputedStyle(el);
+  if (cs.display !== 'contents') {
+    // Geometry only means something once something has measured it. Under jsdom every rect is all-zero,
+    // so requiring height > 0 there finds no boxes at all and nothing is ever faded — the same
+    // no-layout caveat detectFields' visibility gate documents. So demand a positive height only when
+    // real layout exists, and otherwise trust the element.
+    const r = el.getBoundingClientRect();
+    const hasLayout = r.width > 0 || r.height > 0 || r.top !== 0 || r.left !== 0;
+    if (!hasLayout || r.height > 0) return [el];
+  }
+  const out: HTMLElement[] = [];
+  for (const child of Array.from(el.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+    if (child.classList.contains(UI_CLASS) || child.classList.contains(`${UI_CLASS}-reason`)) continue;
+    out.push(...boxesOf(child));
+  }
+  return out;
+}
+
 /** Dim a card in place and label why. Never removes it — it's the user's own browser showing their
  *  own search results; this only de-emphasizes, the same restraint h1b.ts uses for badges. */
 function dim(card: HTMLElement, reason: string): void {
-  styleBlock(card, { opacity: '0.35' });
+  for (const box of boxesOf(card)) {
+    box.style.setProperty('opacity', '0.35', 'important');
+    box.setAttribute(DIMMED_ATTR, '1');
+  }
   const existing = card.querySelector(`.${UI_CLASS}-reason`);
   if (existing) {
     existing.textContent = reason;
@@ -274,7 +310,14 @@ function dim(card: HTMLElement, reason: string): void {
 /** Undo `dim`. Removing a rule has to visibly give the post back, or the rail's remove button looks
  *  broken: the re-run stops MATCHING the card but nothing ever restored its opacity. */
 function undim(card: HTMLElement): void {
-  styleBlock(card, { opacity: '1' });
+  // Clear by MARKER, not by recomputing boxesOf: the layout may have changed since we dimmed, and a
+  // post left permanently faded is worse than one never dimmed.
+  const marked = [...card.querySelectorAll<HTMLElement>(`[${DIMMED_ATTR}]`)];
+  if (card.hasAttribute(DIMMED_ATTR)) marked.push(card);
+  for (const el of marked) {
+    el.style.removeProperty('opacity');
+    el.removeAttribute(DIMMED_ATTR);
+  }
   card.querySelector(`.${UI_CLASS}-reason`)?.remove();
 }
 
