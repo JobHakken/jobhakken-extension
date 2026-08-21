@@ -246,7 +246,15 @@ export function detectPosts(root: ParentNode = document): DetectedPost[] {
  * isLikelyHiringPost — the dominant noise on `hiring "X"` is job seekers ("#OpenToWork…"), who match
  * every keyword this search uses, so a seeker signal vetoes even a badged profile.
  */
-export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadge'>): boolean {
+export function isLikelyHiringPost(post: Pick<DetectedPost, 'body' | 'hiringBadge' | 'jobUrl'>): boolean {
+  // An ATTACHED JOB LISTING settles it before any text matching. LinkedIn only renders that card when
+  // the author attached a real posting, and nobody advertising their own availability attaches one — so
+  // it is a far stronger signal than any phrase, and it is the signal we were throwing away. 29 of 78
+  // posts in the saved capture carry one. Without this, a full job description — an OpenAI firmware
+  // role with salary and a View job button — was faded as "looks like someone looking for work",
+  // because a formal JD often never says "we're hiring" anywhere in its text.
+  if (post.jobUrl) return true;
+
   // Fold typographic punctuation to ASCII FIRST. LinkedIn renders "We’re hiring" with a curly
   // apostrophe (U+2019), so every pattern written with a straight one silently failed against the real
   // site — verified on a live post-search: "**FILLED** We’re hiring: Firmware Engineers (6 openings!)"

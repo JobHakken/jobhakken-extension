@@ -341,6 +341,22 @@ describe('isLikelyHiringPost', () => {
     ).toBe(false);
   });
 
+  it('keeps a formal job description on the strength of its attached job card', () => {
+    // A real OpenAI firmware role was faded as "looks like someone looking for work": a formal JD lists
+    // responsibilities and requirements and often never says "we're hiring" anywhere. The attached job
+    // listing is the signal — LinkedIn only renders that card when the author attached a real posting,
+    // and nobody advertising their own availability attaches one.
+    const body =
+      'Bring up and debug new boards. Analyze performance, memory, and power profiles. ' +
+      'You Might Thrive In This Role If You Have deep experience shipping embedded systems.';
+    expect(isLikelyHiringPost({ body, hiringBadge: false, jobUrl: undefined })).toBe(false);
+    expect(isLikelyHiringPost({ body, hiringBadge: false, jobUrl: '/jobs/view/4414177103/' })).toBe(true);
+  });
+
+  it('still rejects a job seeker even if a job card is absent', () => {
+    expect(isLikelyHiringPost({ body: SEEKER_BODY, hiringBadge: false, jobUrl: undefined })).toBe(false);
+  });
+
   it('rejects job seekers — the dominant noise in this search', () => {
     for (const body of [
       '#OpenToWork looking for a new firmware role after being impacted by layoffs',

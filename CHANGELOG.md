@@ -4,6 +4,15 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.39.1
+- **Fixed: real job posts were greyed out as "someone looking for work".** A full job description — an
+  OpenAI firmware role, with salary and a View job button attached — was faded with a reason that said
+  the opposite of what the post plainly was. A formal job description lists responsibilities and
+  requirements and often never says "we're hiring" anywhere in its text, so no phrase matched. When a
+  post has a job listing attached, that now settles it: LinkedIn only shows that card when the author
+  attached a real posting, and nobody advertising their own availability attaches one. Measured on a
+  saved search of 78 real posts: 71 now correctly recognised, up from 69.
+
 ## 0.39.0
 - **Show only the posts you want.** Alongside hiding post types, you can now list keywords a post MUST
   mention to stay visible — search broadly on LinkedIn, then narrow to `zephyr` or `bare metal` without
