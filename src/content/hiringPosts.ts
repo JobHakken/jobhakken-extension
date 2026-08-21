@@ -13,6 +13,7 @@
  */
 
 import { addExcludedTag, loadExcludedTags } from '../lib/hiringPostFilterStore.js';
+import { loadIncludeTerms } from '../lib/hiringPostIncludeStore.js';
 
 const PROCESSED_ATTR = 'data-f2a-hp';
 const UI_CLASS = 'f2a-hp-ui';
@@ -442,6 +443,16 @@ async function suggestTags(post: DetectedPost): Promise<string[]> {
   }
 }
 
+/** Does this post match at least one of the person's "only show" include terms? (#186) Matched against
+ *  `body` only, per the issue — headline is a separate, noisier field, and matching against it would
+ *  make an included post's visibility depend on someone else's professional bio, not the post itself.
+ *  One term matching is enough (OR, not AND): requiring every term to match would hide nearly
+ *  everything, defeating the point of a "show me more" filter. */
+function matchesAnyInclude(post: Pick<DetectedPost, 'body'>, terms: string[]): boolean {
+  const b = post.body.toLowerCase();
+  return terms.some((t) => b.includes(t));
+}
+
 /**
  * Run one pass over the current page. Cheap URL gate first (see isPostSearchPage) — this must be
  * checked before any DOM work, the same discipline content.ts already applies to its own
@@ -451,16 +462,29 @@ export async function applyHiringPostFilters(): Promise<void> {
   if (!isPostSearchPage()) return;
 
   // #189: the automatic "fade non-hiring posts" behaviour only makes sense when the person searched
-  // with hiring intent. On any other content search this stays off entirely — the exclude-tag rules
-  // below (and the include list — see hiringPostFilterStore.ts) are the person's own choices and apply
-  // regardless; only the AUTOMATIC judgment of "is this even a hiring post" is gated on the query.
+  // with hiring intent. On any other content search this stays off entirely — the exclude-tag and
+  // include-term rules below (hiringPostFilterStore.ts / hiringPostIncludeStore.ts) are the person's
+  // own choices and apply regardless; only the AUTOMATIC judgment of "is this even a hiring post" is
+  // gated on the query.
   const hiringSearch = isHiringSearch();
   const excluded = await loadExcludedTags();
+  const included = await loadIncludeTerms();
   const posts = detectPosts();
 
   for (const post of posts) {
     post.card.setAttribute(PROCESSED_ATTR, '1');
     const key = dedupeKey(post);
+
+    // #186: checked FIRST and unconditionally (not gated on hiringSearch) — an explicit "only show me
+    // X" rule is the person's own deliberate choice, and it takes precedence over any automatic guess.
+    // Falling through when it DOES match (or when the list is empty) lets every existing check below —
+    // the hiring-relevance fade, exclude-tag matching — still run exactly as before, which is how an
+    // included post can still end up hidden by an exclude rule (see the issue's own acceptance
+    // criteria).
+    if (included.length && !matchesAnyInclude(post, included)) {
+      dim(post.card, 'Hidden — doesn’t match your "only show" filter');
+      continue;
+    }
 
     if (hiringSearch && !isLikelyHiringPost(post)) {
       dim(post.card, 'Not a hiring post — looks like someone looking for work, not offering a role');
@@ -505,4 +529,19 @@ export async function applyHiringPostFilters(): Promise<void> {
 
 async function onExclude(tag: string): Promise<void> {
   await addExcludedTag(tag.toLowerCase().trim());
+}
+
+/**
+ * For the rail's "only show posts matching" section (#186): how many of the currently-detected posts
+ * would survive the include filter, out of how many total — the permanent "showing X of Y" count the
+ * issue calls for, so a too-narrow term can never look identical to the feature silently breaking.
+ * Read-only and cheap (DOM query only, same as detectPosts() elsewhere); the actual dimming happens in
+ * applyHiringPostFilters() above, not here.
+ */
+export async function includeFilterStatus(): Promise<{ terms: string[]; visible: number; total: number }> {
+  const terms = await loadIncludeTerms();
+  const posts = detectPosts();
+  const total = posts.length;
+  const visible = terms.length ? posts.filter((post) => matchesAnyInclude(post, terms)).length : total;
+  return { terms, visible, total };
 }

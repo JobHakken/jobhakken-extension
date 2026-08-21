@@ -25,6 +25,10 @@ export type RailApi = {
    *  feed under the rail updates as the list is edited. */
   addPostFilterTag(tag: string): Promise<string[]>;
   removePostFilterTag(tag: string): Promise<string[]>;
+  /** #186: the separate "only show posts matching" include-term list — same re-apply-immediately
+   *  contract as the exclude-tag pair above. */
+  addIncludeTerm(term: string): Promise<string[]>;
+  removeIncludeTerm(term: string): Promise<string[]>;
   learnFromPage(): Promise<number>;
   noteUse(label: string): Promise<number>;
   promote(label: string, on: boolean): Promise<void>;
@@ -81,7 +85,7 @@ export type PanelData = {
   host: string;
   /** Present only on LinkedIn's post search, where the rail shows the filter section INSTEAD of the
    *  field sections — that page is a feed, not an application, so it has no fields to offer. */
-  postFilter?: { tags: string[] };
+  postFilter?: { tags: string[]; include?: { terms: string[]; visible: number; total: number } };
 };
 type FillResult = { filled: boolean; reason?: string };
 
@@ -101,6 +105,9 @@ const HP_CSS = `
   padding: 7px 11px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .hpBtn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent-deep); }
 .hpNote { font-size: 11px; color: var(--muted); margin: 9px 0 0; }
+/* #186: always-visible while an include rule is active — a too-narrow term must never look identical
+   to the feature silently breaking. */
+.hpCount { font-size: 11.5px; font-weight: 650; color: var(--fg); margin: 0 0 8px; }
 `;
 
 const OPEN_KEY = 'f2a_rail_open';
@@ -118,6 +125,62 @@ function esc(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/**
+ * The "only show posts matching" section (#186) — a second, independent rule list next to the exclude
+ * list above (postFilterHtml), reusing its visual language (`.hpRule`/`.hpAdd`/`.hpBtn`/`.hpNote`) but
+ * kept structurally separate: distinct heading, distinct data-attributes (`data-hp-inc-*`), and — the
+ * one thing the exclude list doesn't need — a PERMANENT count. An include list is brutal in a way an
+ * exclude list isn't: one over-narrow term hides everything else, and that failure looks identical to
+ * the feature being broken unless the count says otherwise.
+ */
+function includeFilterHtml(include?: { terms: string[]; visible: number; total: number }): string {
+  if (!include) return '';
+  const { terms, visible, total } = include;
+  const rules = terms.length
+    ? terms
+        .map(
+          (term) =>
+            `<div class="hpRule"><span class="hpT">${esc(term)}</span>` +
+            `<button class="hpX" data-hp-inc-remove="${esc(term)}" title="Stop requiring this" aria-label="Stop requiring ${esc(term)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty"><b>Showing everything</b>Add a term below to only show posts matching it.</p>`;
+  const count = terms.length ? `<p class="hpCount">Showing ${visible} of ${total}</p>` : '';
+  return (
+    `<section class="grp">` +
+    `<div class="acc"><span class="sp">Only show posts matching</span><span class="n">${terms.length || ''}</span></div>` +
+    `<div class="hpBody">${count}${rules}` +
+    `<form class="hpAdd" id="hpIncAdd"><input id="hpIncIn" type="text" placeholder="Only show posts mentioning…" autocomplete="off" />` +
+    `<button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="hpNote">Matching just one term is enough — exclude rules above still apply on top.</p></div></section>`
+  );
+}
+
+/**
+ * Self-contained wiring for the include-terms section above: its own delegated click/submit listeners,
+ * matching only `data-hp-inc-*`/`#hpIncAdd` — kept entirely separate from the exclude list's existing
+ * handlers so this never needs to touch them. Delegated on `wrap` (never replaced across re-renders),
+ * so one call at mount time keeps working against every freshly-rendered include section afterward.
+ */
+function wireIncludeFilter(wrap: HTMLElement, api: RailApi, refresh: () => Promise<void>): void {
+  wrap.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-hp-inc-remove]');
+    if (!btn) return;
+    e.preventDefault();
+    void api.removeIncludeTerm(btn.dataset.hpIncRemove ?? '').then(() => refresh());
+  });
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('#hpIncAdd');
+    if (!form) return;
+    e.preventDefault();
+    const input = wrap.querySelector<HTMLInputElement>('#hpIncIn');
+    const term = (input?.value ?? '').trim();
+    if (!term) return;
+    if (input) input.value = '';
+    void api.addIncludeTerm(term).then(() => refresh());
+  });
 }
 
 const CSS =
@@ -359,6 +422,7 @@ export function mountRail(api: RailApi): void {
     </section>`;
   root.append(wrap);
   (document.body ?? document.documentElement).append(host);
+  wireIncludeFilter(wrap, api, refresh); // #186 — self-contained; see the function's own comment
 
   const $ = <T extends HTMLElement>(id: string) => root.getElementById(id) as T;
   let rows: PanelRow[] = [];
@@ -467,7 +531,7 @@ export function mountRail(api: RailApi): void {
       $('note').textContent = 'filtering posts';
       $<HTMLButtonElement>('fillAll').hidden = true;
       (root.querySelector('.switches') as HTMLElement).hidden = true;
-      $('body').innerHTML = postFilterHtml(d.postFilter.tags);
+      $('body').innerHTML = postFilterHtml(d.postFilter.tags) + includeFilterHtml(d.postFilter.include);
       return;
     }
     (root.querySelector('.switches') as HTMLElement).hidden = false;

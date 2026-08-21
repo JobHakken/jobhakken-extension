@@ -12,6 +12,7 @@ import {
   applyHiringPostFilters,
   buildFindPostUrl,
   detectPosts,
+  includeFilterStatus,
   isHiringSearch,
   isLikelyHiringPost,
   isPostSearchPage,
@@ -522,5 +523,112 @@ describe('applyHiringPostFilters', () => {
     const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
     expect(cardEl.style.opacity).toBe('0.35');
     expect(cardEl.textContent).toContain('recruiter agency');
+  });
+
+  // #186: "only show posts matching" — a separate, independent list from the exclude rules above.
+  describe('the "only show posts matching" include list', () => {
+    it('dims a post matching NONE of the include terms', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }) });
+      document.body.innerHTML = card({ name: 'Alex Chen', body: HIRING_BODY }); // no "zephyr" anywhere
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe('0.35');
+      expect(cardEl.textContent).toContain('only show');
+    });
+
+    it('leaves a matching post alone — checked BEFORE the hiring-relevance fade and exclude matching', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      const { sendMessage } = installChrome({
+        tags: ['recruiter agency'],
+        storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }),
+      });
+      document.body.innerHTML = card({
+        name: 'Dana Okafor',
+        body: 'We are hiring a Zephyr RTOS firmware engineer. Apply here.',
+        jobId: '111',
+      });
+
+      await applyHiringPostFilters();
+      await new Promise((r) => setTimeout(r, 0));
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // not dimmed by the include filter
+      expect(cardEl.textContent).not.toContain('only show');
+      // Everything downstream of the include check still ran normally (tag suggestion included).
+      expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-hp-tags' }));
+    });
+
+    it('one term matching is enough — OR, not AND, across multiple include terms', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr', 'nonexistent-term-xyz'] }) });
+      document.body.innerHTML = card({ name: 'Jordan Rivera', body: 'We are hiring a Zephyr RTOS engineer.' });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // matched "zephyr" alone — the missing second term doesn't matter
+    });
+
+    it('clearing the include terms restores the full feed', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({ storage: fakeStorage({ f2a_hp_include_terms: [] }) });
+      document.body.innerHTML = card({ name: 'Sam Lee', body: 'We are hiring a firmware engineer for Amazon.' });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      expect(cardEl.style.opacity).toBe(''); // empty include list — no automatic narrowing at all
+    });
+
+    it('an included post carrying an excluded tag still ends up hidden — exclude rules apply ON TOP', async () => {
+      setLocation('www.linkedin.com', '/search/results/content/');
+      installChrome({
+        storage: fakeStorage({
+          f2a_hp_include_terms: ['zephyr'],
+          f2a_hp_excluded_tags: ['staffing firm'],
+        }),
+      });
+      document.body.innerHTML = card({
+        name: 'Priya Nair',
+        body: 'We are hiring: a Zephyr RTOS engineer. Staffing firm reaching out on behalf of our client.',
+      });
+
+      await applyHiringPostFilters();
+
+      const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+      // Passed the include check (matched "zephyr"), but the exclude rule still hides it.
+      expect(cardEl.style.opacity).toBe('0.35');
+      expect(cardEl.textContent).toContain('staffing firm');
+      expect(cardEl.textContent).not.toContain('only show');
+    });
+  });
+});
+
+describe('includeFilterStatus', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('reports every post as visible when the include list is empty', async () => {
+    installChrome({ storage: fakeStorage({ f2a_hp_include_terms: [] }) });
+    document.body.innerHTML =
+      card({ name: 'Jordan Rivera', body: HIRING_BODY, profile: '/in/jordan-rivera-000' }) +
+      card({ name: 'Alex Chen', body: SEEKER_BODY, profile: '/in/alex-chen-111' });
+
+    const status = await includeFilterStatus();
+    expect(status).toEqual({ terms: [], visible: 2, total: 2 });
+  });
+
+  it('counts only the posts matching at least one include term', async () => {
+    installChrome({ storage: fakeStorage({ f2a_hp_include_terms: ['zephyr'] }) });
+    document.body.innerHTML =
+      card({ name: 'Jordan Rivera', body: 'We are hiring a Zephyr RTOS engineer.', profile: '/in/jordan-rivera-000' }) +
+      card({ name: 'Alex Chen', body: HIRING_BODY, profile: '/in/alex-chen-111' }); // no "zephyr"
+
+    const status = await includeFilterStatus();
+    expect(status).toEqual({ terms: ['zephyr'], visible: 1, total: 2 });
   });
 });
