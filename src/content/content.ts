@@ -2414,6 +2414,17 @@ async function init() {
         void applyHiringPostFilters();
         return;
       }
+      // A job LISTING page (LinkedIn's /jobs/, a board's results) is never "formish" — it has no
+      // application fields — so the gate below returned before `applyBadges()` could run. That put the
+      // H-1B and sponsorship badges out of reach on the one surface they exist for, and made the
+      // "re-run as you switch jobs" below unreachable on the exact page where you switch jobs. The
+      // badges only ever appeared if a listing happened to sit on a page that also had a form.
+      // Verified against a saved /jobs/collections/recommended/ capture: 24 job links, zero of our
+      // markup anywhere in it. Cheap check, and it does not depend on recognising a particular board.
+      if (document.querySelector('a[href*="/jobs/view/"], a[href*="currentJobId="]')) {
+        updateBadge();
+        applyBadges();
+      }
       if (!looksFormish()) return;
       updateBadge();
       syncRail();

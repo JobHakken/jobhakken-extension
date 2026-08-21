@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.37.3
+- **Fixed: the H-1B and sponsorship tags never appeared while browsing jobs.** They were only applied on
+  pages that also contained an application form — and a job search or "Top job picks" page doesn't have
+  one, so the badges were skipped on exactly the pages they exist for. They now show as you move
+  between jobs.
+
 ## 0.37.2
 - **Far fewer real hiring posts greyed out by mistake.** Measured against a saved copy of a real search
   of 78 posts: 37 were being dismissed as "not a hiring post", now 10 are — and those ten genuinely
