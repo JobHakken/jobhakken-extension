@@ -44,6 +44,29 @@ export function isPostSearchPage(): boolean {
   return p.startsWith('/search/results/content') || p.startsWith('/search/results/all');
 }
 
+// Words that signal the SEARCH ITSELF was made with hiring intent — checked against the query the
+// person typed, not any individual post's text. "hiring"/"#hiring" are the obvious cases; the rest are
+// role/hiring-domain vocabulary someone would type looking for hiring posts specifically ("recruiter",
+// "opening", "position", "headcount"), not simply mentioning a job title.
+const HIRING_QUERY_SIGNAL =
+  /#hiring|\bhiring\b|\brecruiters?\b|\brecruiting\b|\btalent acquisition\b|\bheadcounts?\b|\bopenings?\b|\bpositions?\b|\bvacanc(?:y|ies)\b|\bjob openings?\b/i;
+
+/**
+ * Did the person search with hiring intent? (#189) The automatic "fade posts that don't look like
+ * hiring posts" behaviour is only correct when they did — on an unrelated content search ("AI trends",
+ * "layoffs", a company name), fading everything that isn't ITSELF a hiring post would fade almost
+ * everything on the page, which is exactly backwards: the person didn't ask for hiring posts, so
+ * nothing should be judged against that yardstick. The query itself is the signal.
+ */
+export function isHiringSearch(): boolean {
+  try {
+    const q = new URL(location.href).searchParams.get('keywords') ?? '';
+    return HIRING_QUERY_SIGNAL.test(q);
+  } catch {
+    return false;
+  }
+}
+
 export type DetectedPost = {
   card: HTMLElement;
   authorName: string;
@@ -427,6 +450,11 @@ async function suggestTags(post: DetectedPost): Promise<string[]> {
 export async function applyHiringPostFilters(): Promise<void> {
   if (!isPostSearchPage()) return;
 
+  // #189: the automatic "fade non-hiring posts" behaviour only makes sense when the person searched
+  // with hiring intent. On any other content search this stays off entirely — the exclude-tag rules
+  // below (and the include list — see hiringPostFilterStore.ts) are the person's own choices and apply
+  // regardless; only the AUTOMATIC judgment of "is this even a hiring post" is gated on the query.
+  const hiringSearch = isHiringSearch();
   const excluded = await loadExcludedTags();
   const posts = detectPosts();
 
@@ -434,7 +462,7 @@ export async function applyHiringPostFilters(): Promise<void> {
     post.card.setAttribute(PROCESSED_ATTR, '1');
     const key = dedupeKey(post);
 
-    if (!isLikelyHiringPost(post)) {
+    if (hiringSearch && !isLikelyHiringPost(post)) {
       dim(post.card, 'Not a hiring post — looks like someone looking for work, not offering a role');
       continue;
     }

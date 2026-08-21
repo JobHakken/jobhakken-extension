@@ -12,13 +12,17 @@ import {
   applyHiringPostFilters,
   buildFindPostUrl,
   detectPosts,
+  isHiringSearch,
   isLikelyHiringPost,
   isPostSearchPage,
 } from './hiringPosts';
 
-function setLocation(hostname: string, pathname: string): void {
+// Defaults to a hiring-flavoured query (`?keywords=hiring`) so every EXISTING call site in this file —
+// written before #189 — keeps testing what it always tested: a hiring search. Tests for #189's
+// non-hiring-search behaviour pass an explicit non-hiring `search` string.
+function setLocation(hostname: string, pathname: string, search = '?keywords=hiring'): void {
   Object.defineProperty(window, 'location', {
-    value: { hostname, pathname, href: `https://${hostname}${pathname}` },
+    value: { hostname, pathname, href: `https://${hostname}${pathname}${search}` },
     writable: true,
   });
 }
@@ -119,6 +123,36 @@ describe('isPostSearchPage', () => {
   it('is false on a non-LinkedIn page', () => {
     setLocation('www.indeed.com', '/search/results/content/');
     expect(isPostSearchPage()).toBe(false);
+  });
+});
+
+// #189: the query itself is the signal for whether the automatic hiring-post fade should run at all —
+// checked against the `keywords` search param, never against any individual post's text.
+describe('isHiringSearch', () => {
+  it('is true for the obvious cases', () => {
+    for (const q of ['hiring', 'we%27re%20hiring%20firmware', '%23hiring', 'embedded%20recruiter']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(true);
+    }
+  });
+
+  it('is true for role/hiring-domain vocabulary beyond the literal word "hiring"', () => {
+    for (const q of ['open%20positions', 'headcount', 'talent%20acquisition', 'job%20openings']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(true);
+    }
+  });
+
+  it('is false for an unrelated content search', () => {
+    for (const q of ['microsoft', 'AI%20trends', 'layoffs', 'remote%20work%20culture']) {
+      setLocation('www.linkedin.com', '/search/results/content/', `?keywords=${q}`);
+      expect(isHiringSearch()).toBe(false);
+    }
+  });
+
+  it('is false with no keywords param at all', () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '');
+    expect(isHiringSearch()).toBe(false);
   });
 });
 
@@ -349,7 +383,7 @@ describe('applyHiringPostFilters', () => {
   });
 
   it('dims a seeker post deterministically — no AI call spent on it', async () => {
-    setLocation('www.linkedin.com', '/search/results/content/');
+    setLocation('www.linkedin.com', '/search/results/content/'); // default keywords=hiring
     const { sendMessage } = installChrome();
     document.body.innerHTML = card({ name: 'Alex Chen', body: SEEKER_BODY });
 
@@ -359,6 +393,40 @@ describe('applyHiringPostFilters', () => {
     const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
     expect(cardEl.style.opacity).toBe('0.35');
     expect(cardEl.textContent).toContain('Not a hiring post');
+  });
+
+  // #189: on a NON-hiring content search, the automatic "not a hiring post" fade must not run at all —
+  // only the person's own exclude/include rules do. Reusing SEEKER_BODY (which would be dimmed
+  // automatically on a hiring search, per the test above) isolates exactly this behaviour.
+  it('does not auto-fade anything on a non-hiring content search — only the person’s own rules apply', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '?keywords=microsoft%20layoffs');
+    const { sendMessage } = installChrome();
+    document.body.innerHTML = card({ name: 'Priya Nair', body: SEEKER_BODY });
+
+    await applyHiringPostFilters();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+    expect(cardEl.style.opacity).toBe(''); // not dimmed — no automatic judgment on a non-hiring search
+    expect(cardEl.textContent).not.toContain('Not a hiring post');
+    // The general exclude-tag machinery is untouched by the query — the AI is still asked for tags so
+    // the person's own rules have something to match against.
+    expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'f2a-hp-tags' }));
+  });
+
+  it('still hides a post matching the person’s own exclude rule on a non-hiring search', async () => {
+    setLocation('www.linkedin.com', '/search/results/content/', '?keywords=microsoft');
+    const { sendMessage } = installChrome({
+      storage: fakeStorage({ f2a_hp_excluded_tags: ['layoffs'] }),
+    });
+    document.body.innerHTML = card({ name: 'Jamie Lee', body: 'Sharing my thoughts on the recent layoffs news.' });
+
+    await applyHiringPostFilters();
+
+    expect(sendMessage).not.toHaveBeenCalled(); // matched the excluded tag locally
+    const cardEl = document.querySelector('div[componentkey]') as HTMLElement;
+    expect(cardEl.style.opacity).toBe('0.35');
+    expect(cardEl.textContent).toContain('layoffs');
   });
 
   it('asks the service worker for tags on a real hiring post, and renders the tag chips', async () => {
