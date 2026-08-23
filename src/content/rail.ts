@@ -424,6 +424,25 @@ export function mountRail(api: RailApi): void {
 
   const host = document.createElement('div');
   host.id = 'jh-rail-host';
+  // The stacking has to live on the HOST, not inside the shadow root. `.wrap` already carries a near-max
+  // z-index, but z-index only orders elements WITHIN a stacking context — the shadow content competes
+  // with its siblings inside the host, never with the page's own layers. The host itself was a plain
+  // div with no position and no z-index, so against a site's pinned widgets (LinkedIn's messaging bar,
+  // its modals) it had nothing to compete with and lost: the rail rendered underneath them.
+  //
+  // Fixed with zero size takes it out of flow so it can never shift the page, while the fixed `.wrap`
+  // inside still resolves against the transformed <html> and fills the right edge as before. `important`
+  // because a hostile or merely aggressive page stylesheet must not be able to reorder us.
+  for (const [k, v] of Object.entries({
+    position: 'fixed',
+    top: '0',
+    right: '0',
+    width: '0',
+    height: '0',
+    'z-index': '2147483647',
+  })) {
+    host.style.setProperty(k, v, 'important');
+  }
   const root = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = CSS;
@@ -462,7 +481,10 @@ export function mountRail(api: RailApi): void {
       </footer>
     </section>`;
   root.append(wrap);
-  (document.body ?? document.documentElement).append(host);
+  // Attached to <html>, deliberately NOT to <body>: body carries the containment transform while the
+  // rail is open, and anything inside a transformed element is positioned against it rather than the
+  // viewport. Sitting outside body keeps the rail pinned to the real window edge.
+  document.documentElement.append(host);
   wireIncludeFilter(wrap, api, refresh); // #186 — self-contained; see the function's own comment
 
   const $ = <T extends HTMLElement>(id: string) => root.getElementById(id) as T;
@@ -490,7 +512,12 @@ export function mountRail(api: RailApi): void {
     // Any non-`none` transform makes an element the containing block for its fixed-position
     // descendants (CSS Transforms spec), so with one on <html> those elements resolve against the
     // narrowed box and stop at the rail's edge. `translateZ(0)` is the cheapest such value.
-    el.style.transform = open ? 'translateZ(0)' : '';
+    // The transform goes on BODY, not on <html>. On <html> it contains every fixed element in the
+    // document — including our own rail, whose `right: 0` then resolved to the narrowed box (1280 of a
+    // 1600px window) and slid the panel 320px left, on top of the content it was supposed to sit beside.
+    // On <body> it contains the PAGE's pinned widgets while the rail, attached outside <body>, still
+    // resolves against the real viewport and stays flush to the edge.
+    if (document.body) document.body.style.transform = open ? 'translateZ(0)' : '';
   }
 
   /**
@@ -510,7 +537,7 @@ export function mountRail(api: RailApi): void {
   const layoutGuard = new MutationObserver(() => {
     const open = !$('rail').hidden;
     const de = document.documentElement;
-    if (open && (de.style.marginRight !== `${WIDTH}px` || !de.style.transform)) reflow(true);
+    if (open && (de.style.marginRight !== `${WIDTH}px` || !document.body?.style.transform)) reflow(true);
   });
   layoutGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
   // unmountRail() is the teardown path and it only has the host element to work from, so hang the
@@ -1270,6 +1297,7 @@ export function unmountRail(): void {
   host?.remove();
   document.documentElement.style.marginRight = '';
   document.documentElement.style.transform = '';
+  if (document.body) document.body.style.transform = '';
 }
 
 const JT_LABELS: Record<JobTileLabelKey, string> = {

@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.40.5
+- **Fixed: the sidebar could be drawn underneath a site's own pinned panels**, such as LinkedIn's
+  messaging bar, so it appeared to slide behind them. The sidebar now sits above whatever a page pins on
+  top of itself.
+- **Fixed: the sidebar drifted inward from the edge of the window** in 0.40.4, overlapping the page
+  instead of sitting beside it. Making room for the panel was being applied in a way that also moved the
+  panel itself.
+
 ## 0.40.4
 - **Fixed: the sidebar covered part of the site, on every site.** Making room for the panel moved the
   page's normal content across, but anything a site pins in place — its top bar, chat widget, pop-up
