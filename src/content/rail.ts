@@ -482,6 +482,15 @@ export function mountRail(api: RailApi): void {
     const el = document.documentElement;
     el.style.transition = 'margin-right .15s ease';
     el.style.marginRight = open ? `${WIDTH}px` : '';
+    // A `position: fixed` element is placed against the VIEWPORT, not against <html>, so the margin
+    // above does not move it: measured on LinkedIn with a 1600px window and a 320px rail, its fixed
+    // overlays still reported right = 1600 and slid straight under the panel. That is the content
+    // getting cut — not the document flow, which the margin handles correctly.
+    //
+    // Any non-`none` transform makes an element the containing block for its fixed-position
+    // descendants (CSS Transforms spec), so with one on <html> those elements resolve against the
+    // narrowed box and stop at the rail's edge. `translateZ(0)` is the cheapest such value.
+    el.style.transform = open ? 'translateZ(0)' : '';
   }
 
   /**
@@ -500,7 +509,8 @@ export function mountRail(api: RailApi): void {
    */
   const layoutGuard = new MutationObserver(() => {
     const open = !$('rail').hidden;
-    if (open && document.documentElement.style.marginRight !== `${WIDTH}px`) reflow(true);
+    const de = document.documentElement;
+    if (open && (de.style.marginRight !== `${WIDTH}px` || !de.style.transform)) reflow(true);
   });
   layoutGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
   // unmountRail() is the teardown path and it only has the host element to work from, so hang the
@@ -1259,6 +1269,7 @@ export function unmountRail(): void {
   (host as unknown as { __jhLayoutGuard?: MutationObserver } | null)?.__jhLayoutGuard?.disconnect();
   host?.remove();
   document.documentElement.style.marginRight = '';
+  document.documentElement.style.transform = '';
 }
 
 const JT_LABELS: Record<JobTileLabelKey, string> = {

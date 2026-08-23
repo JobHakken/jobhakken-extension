@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.40.4
+- **Fixed: the sidebar covered part of the site, on every site.** Making room for the panel moved the
+  page's normal content across, but anything a site pins in place — its top bar, chat widget, pop-up
+  dialogs — is positioned against the window rather than the page, so it kept running the full width and
+  disappearing underneath. Those now stop at the sidebar's edge too. Measured on LinkedIn: four pinned
+  elements were running under the panel, now none.
+
 ## 0.40.3
 - **Fixed: nothing appeared on the jobs page until you refreshed.** Clicking through to Jobs never
   brought the sidebar up — only a full page reload did. LinkedIn swaps pages without reloading, and the
