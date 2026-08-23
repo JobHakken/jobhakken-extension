@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.claude/
 *.zip
 *.log
 .DS_Store
@@ -12,3 +13,6 @@ full_website/
 # live-canary artefacts (regenerated  run; job URLs rot)
 e2e/live/targets.live.json
 e2e/live/live-report.json
+
+# local testing seed — carries an API key, never commit
+e2e/fixtures/demo-import.local.json

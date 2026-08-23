@@ -1,11 +1,61 @@
 {
   "fixture": "ats-workable.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
   "_note": "Workable (apply.workable.com) SPA form, captured live.",
   "fields": [
-    { "selector": "#firstname", "expect": "Jordan", "gate": true },
-    { "selector": "#lastname", "expect": "Rivera", "gate": true },
-    { "selector": "#email", "expect": "jordan.rivera@example.com", "gate": true }
-  ]
+    {
+      "selector": "#firstname",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#lastname",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#QA_9142614",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *LinkedIn:"
+    },
+    {
+      "selector": "#QA_12120569",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *Location (ie: United Kingdom)"
+    },
+    {
+      "selector": "#QA_12120570",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 *Describe and link to the most impressive engineering project you've b"
+    },
+    {
+      "selector": "#QA_12120571",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 *Describe a specific recent case where an AI coding agent (Claude Code"
+    },
+    {
+      "selector": "#QA_12120572",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 *What is the hardest production bug you've tracked down? What made it "
+    },
+    {
+      "selector": "#input_files_input_B413GwIL6Cb3tRZM",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    }
+  ],
+  "minPrecision": 1
 }

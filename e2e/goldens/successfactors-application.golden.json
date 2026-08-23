@@ -1,13 +1,179 @@
 {
   "fixture": "successfactors/01-application.html",
   "minRecall": 1,
-  "profile": "TEST_PROFILE — Jordan Rivera (dummy identity)",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera (dummy identity)",
   "_note": "SuccessFactors uses volatile numeric ids (e.g. 274:_txtFld), so match by LABEL, not selector. Confirmed 5/5 fill; core PII gated, middle/phone reported.",
   "fields": [
-    { "label": "First Name", "expect": "Jordan", "gate": true },
-    { "label": "Last Name", "expect": "Rivera", "gate": true },
-    { "label": "Email", "expect": "jordan.rivera@example.com", "gate": true },
-    { "label": "Middle Name", "expect": "Alex", "gate": false },
-    { "label": "Primary Phone", "expect": "555", "match": "contains", "gate": false }
-  ]
+    {
+      "label": "First Name",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "label": "Last Name",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "label": "Email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "label": "Middle Name",
+      "expect": "Alex",
+      "gate": false
+    },
+    {
+      "label": "Primary Phone",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "[id=\"274:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0First Name:"
+    },
+    {
+      "selector": "[id=\"278:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Middle Name:"
+    },
+    {
+      "selector": "[id=\"282:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0Last Name:"
+    },
+    {
+      "selector": "[id=\"286:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0Address:"
+    },
+    {
+      "selector": "[id=\"290:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Address Line 2:"
+    },
+    {
+      "selector": "[id=\"294:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0City:"
+    },
+    {
+      "selector": "[id=\"312:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0Zip:"
+    },
+    {
+      "selector": "[id=\"316:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0Primary Phone:"
+    },
+    {
+      "selector": "[id=\"320:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 *\u00a0Email:"
+    },
+    {
+      "selector": "[id=\"331:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Secondary Phone"
+    },
+    {
+      "selector": "[id=\"664:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 If yes, please provide the name of the affiliate"
+    },
+    {
+      "selector": "[id=\"668:_txtFld\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 What are your salary expectations?"
+    },
+    {
+      "selector": "[id=\"16:\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Language"
+    },
+    {
+      "selector": "[id=\"299:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Country"
+    },
+    {
+      "selector": "[id=\"306:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0State:"
+    },
+    {
+      "selector": "[id=\"325:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Preferred method of communication"
+    },
+    {
+      "selector": "[id=\"644:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Do you now or in the future require immigration sponsorship or other"
+    },
+    {
+      "selector": "[id=\"651:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Are you authorized to work for any employer in the [redacted]?"
+    },
+    {
+      "selector": "[id=\"658:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Have you ever previously worked for Leonardo DRS or one of its affil"
+    },
+    {
+      "selector": "[id=\"677:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Veteran Self ID"
+    },
+    {
+      "selector": "[id=\"692:_input\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 *\u00a0Disability Self ID:"
+    },
+    {
+      "selector": "#adv-cookies-switch-1",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#advcookieswitchGoogleAnalytics",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#advcookieswitchLinkedIn",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    }
+  ],
+  "minPrecision": 1
 }

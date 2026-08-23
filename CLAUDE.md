@@ -10,12 +10,25 @@ boards and autofills applications, working alongside the desktop app. Split out 
 (`JobHakken/JobHakken`) with full history; it is **standalone** — it builds from a fresh clone with no
 `extends` into monorepo configs and no `workspace:*` deps.
 
-Shared logic is consumed from **GitHub Packages** (private): `@jobhakken/core` (domain logic) and
-`@jobhakken/autofill` (form detection/fill). esbuild **bundles** these at build time — they are not
-runtime deps of the shipped extension, and nothing is ever fetched at runtime.
+**Dependency state (2026-08-20, see `JobHakken/JobHakken` ADR 0013 for the full decision):**
+
+- `@jobhakken/core` is **gone**. Its extension-facing slice — a company-name normalizer, the
+  sponsorship-eligibility classifier, and the BYOK LLM client stack, ~980 lines, none of it touching
+  billing/entitlement state — is vendored into [`src/lib/vendor/`](src/lib/vendor/). `core` itself stays
+  proprietary (billing, sync, matching — the actual business) and is untouched by this.
+  **If you're changing `core`'s `eligibility.ts`, `sponsors.ts`, or `llm/providers.ts`+
+  `createLlmClient.ts`: check whether `src/lib/vendor/` needs the same change.** Vendoring broke the
+  guarantee that this extension and the desktop app never disagree on those; nothing enforces the sync
+  automatically anymore.
+- `@jobhakken/autofill` is still consumed from **GitHub Packages (private)** — the one dependency left.
+  It's been extracted to its own repo, `github.com/JobHakken/autofill` (MIT, zero deps, verified
+  standalone), currently private pending a visibility decision. esbuild bundles it at build time; it's
+  not a runtime dependency of the shipped extension.
 
 Live: [Chrome Web Store](https://chromewebstore.google.com/detail/jobhakken-%E2%80%94-apply-copilot/lochgcghpahlooibepjlmmcdjgicncil).
-**Proprietary & confidential** (see `LICENSE`).
+**Licensed AGPL-3.0** (see `LICENSE`) — chosen deliberately over a permissive license: this repo is the
+product itself (the rail UI, the fill/learning model), not generic infrastructure like `autofill`, so
+AGPL keeps it open to contributors while blocking a closed-source competing fork or hosted service.
 
 ## Layout
 

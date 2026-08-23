@@ -4,6 +4,273 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.1
+- **The button now shows on far more application sites.** Oracle Recruiting, Recruitee, Breezy, JazzHR,
+  Teamtailor, Personio, BrassRing, ADP, Paylocity, Dayforce, UltiPro, Eightfold, Avature and others were
+  all missing it. It also appears on a company's own careers pages — `acme.com/careers`, `/jobs`,
+  `/apply` — which is where most applications actually start, and which nothing recognised before.
+  Ordinary sites are still untouched.
+
+## 0.41.0
+- **The JobHakken button now stays with you across job sites.** It appears on LinkedIn, Indeed,
+  Glassdoor, ZipRecruiter, Monster, Dice, Wellfound, Built In and every ATS we recognise — so you can
+  open the sidebar whenever you want, not only once you've reached an application form. It still never
+  appears on ordinary sites: not on ChatGPT, webmail, or a support form.
+- **Fixed: room made for the sidebar could be quietly undone** as a page redrew itself, letting the
+  page's pinned panels slide back underneath it.
+
+## 0.40.5
+- **Fixed: the sidebar could be drawn underneath a site's own pinned panels**, such as LinkedIn's
+  messaging bar, so it appeared to slide behind them. The sidebar now sits above whatever a page pins on
+  top of itself.
+- **Fixed: the sidebar drifted inward from the edge of the window** in 0.40.4, overlapping the page
+  instead of sitting beside it. Making room for the panel was being applied in a way that also moved the
+  panel itself.
+
+## 0.40.4
+- **Fixed: the sidebar covered part of the site, on every site.** Making room for the panel moved the
+  page's normal content across, but anything a site pins in place — its top bar, chat widget, pop-up
+  dialogs — is positioned against the window rather than the page, so it kept running the full width and
+  disappearing underneath. Those now stop at the sidebar's edge too. Measured on LinkedIn: four pinned
+  elements were running under the panel, now none.
+
+## 0.40.3
+- **Fixed: nothing appeared on the jobs page until you refreshed.** Clicking through to Jobs never
+  brought the sidebar up — only a full page reload did. LinkedIn swaps pages without reloading, and the
+  sidebar was only being set up on a real load. It now appears as you navigate, the same as it already
+  did on post search.
+
+## 0.40.2
+- **Fixed: the sidebar sometimes covered the page instead of making room for it**, cutting off whatever
+  was on the right. The page was moved over once, when you opened the sidebar — but LinkedIn rewrites
+  the page's styling as you browse, which quietly undid it, so whether the layout fitted depended on
+  whether the page happened to redraw after you opened the panel. It now notices and puts the space
+  back straight away.
+
+## 0.40.1
+- **Fixed: the job filters found nothing on the real jobs page.** LinkedIn's signed-in job list is built
+  from scrambled class names that change over time, and the sidebar was looking for names that simply
+  aren't there — so it reported "Showing 0 of 0" and no filter did anything. It now finds each job by
+  its own Dismiss button instead, which LinkedIn labels properly for screen readers and doesn't rename.
+- **Hide Promoted, Hide Viewed and the company name now work on the signed-in job list.** The labels are
+  read from the job card as shown, rather than from an element that only exists on the signed-out page.
+  A job whose *description* happens to mention "promoted" is still left alone.
+
+## 0.40.0
+- **Fixed: the sidebar only appeared after a manual refresh.** LinkedIn never reloads the page when you
+  switch between the All and Posts tabs or run a new search, and the code that decides whether to show
+  the sidebar was skipped on exactly those pages — so it could only ever appear on a fresh page load.
+  It now follows you as you navigate.
+- **Fixed: the job filters found no jobs at all** ("Showing 0 of 0"), which is why hiding Reposted or
+  Viewed did nothing. Every class name on LinkedIn's signed-in job list is scrambled and changes
+  regularly, and we were looking for names that no longer exist. Job tiles are now found by their own
+  Dismiss button — a label LinkedIn has to keep accurate for screen readers — so the filters no longer
+  depend on styling that can change underneath them. Verified against a real signed-in capture: 25 of 25
+  tiles found, with their titles, companies and Viewed labels.
+- **Fixed: a job at "Applied Intuition" was treated as a job you had already applied to**, because the
+  company name begins with the same word as the label.
+
+## 0.39.1
+- **Fixed: real job posts were greyed out as "someone looking for work".** A full job description — an
+  OpenAI firmware role, with salary and a View job button attached — was faded with a reason that said
+  the opposite of what the post plainly was. A formal job description lists responsibilities and
+  requirements and often never says "we're hiring" anywhere in its text, so no phrase matched. When a
+  post has a job listing attached, that now settles it: LinkedIn only shows that card when the author
+  attached a real posting, and nobody advertising their own availability attaches one. Measured on a
+  saved search of 78 real posts: 71 now correctly recognised, up from 69.
+
+## 0.39.0
+- **Show only the posts you want.** Alongside hiding post types, you can now list keywords a post MUST
+  mention to stay visible — search broadly on LinkedIn, then narrow to `zephyr` or `bare metal` without
+  redoing the search. The sidebar always shows how many posts are visible out of the total, because a
+  too-narrow rule that hides everything otherwise looks exactly like the extension being broken.
+- **Post filtering now works on any content search, not just hiring searches.** Your hide and show rules
+  apply to whatever you searched for. The automatic "not a hiring post" fade still only happens when the
+  search itself is about hiring — on any other search nothing is faded until you say so. Your home feed
+  is never touched.
+- **Fixed: the author's name and headline were being treated as part of the post.** Every post's text
+  silently began with something like "Simran Jiwani · Lead Recruiter at Motive Workforce · 4w ·", which
+  meant recruiter job titles polluted the matching, and a stranger's real name was sent to the AI that
+  suggests tags. The text now starts where the post does. One more genuine hiring post is correctly
+  recognised as a result, and your keyword rules no longer match on someone's job title by accident.
+
+## 0.38.0
+- **Filter the LinkedIn job list.** On job search and "Top job picks", you can now hide roles you don't
+  want to see: by company, by keyword in the title, or by LinkedIn's own labels — promoted, already
+  applied, already viewed, reposted, and dismissed. Rules live in the sidebar so you can see and undo
+  every one of them in one place.
+- **A count you can always see, and a way to check it.** Whenever a filter is on, the sidebar shows
+  "Showing 38 of 60" — a filter that quietly removes most of the page is otherwise indistinguishable
+  from the extension being broken. Click the count to reveal what was hidden, each row labelled with the
+  rule that hid it, so a rule that's too aggressive is easy to spot and remove.
+
+## 0.37.5
+- **Fixed (properly this time): hidden posts now actually fade.** A post matching one of your hidden
+  tags was labelled "Hidden — matches …" but stayed at full brightness. LinkedIn wraps every post in an
+  element that draws nothing of its own, and fading that element has no effect at all — so the fade was
+  being applied to something invisible. It now lands on the part of the post you can actually see.
+
+## 0.37.4
+- **Fixed: the sidebar still appeared on ordinary websites** — anywhere with a plain file-upload button,
+  which includes ChatGPT, webmail and most support forms. A page only counts as a job application now if
+  its upload is actually a résumé slot, rather than any upload at all.
+- **Fixed: a hidden post stayed at full brightness.** Posts matching one of your hidden tags were
+  labelled "Hidden — matches …" but not dimmed, because LinkedIn re-renders and wipes the dim, and we
+  only ever applied it once per post. It's now re-applied as the feed changes, so it can't be lost.
+
+## 0.37.3
+- **Fixed: the H-1B and sponsorship tags never appeared while browsing jobs.** They were only applied on
+  pages that also contained an application form — and a job search or "Top job picks" page doesn't have
+  one, so the badges were skipped on exactly the pages they exist for. They now show as you move
+  between jobs.
+
+## 0.37.2
+- **Far fewer real hiring posts greyed out by mistake.** Measured against a saved copy of a real search
+  of 78 posts: 37 were being dismissed as "not a hiring post", now 10 are — and those ten genuinely
+  aren't (a career coach's bio, a graphic designer, an opinion post, people actually job hunting).
+  - Recruiters tag their own hiring posts `#OpenToWork` to reach job seekers, and that hashtag alone was
+    enough to dismiss the post. A clear hiring statement now wins over it.
+  - Openers we didn't recognise: `Hiring: …`, `💥 Hiring Alert`, `#hiring!`, `Multiple openings for …`.
+  - A bare mention of the word "hiring" still isn't treated as a signal — it appears in half the
+    recruiter headlines on this search, so it would grey out the wrong things in the other direction.
+
+## 0.37.1
+- **Fixed: genuine hiring posts were being greyed out as "someone looking for work".** A post opening
+  "We’re hiring: Firmware Engineers" was not recognised, because LinkedIn writes that apostrophe as a
+  curly ’ and we were only looking for a straight '. Every pattern written with a straight apostrophe
+  silently missed the real site.
+- **Removed the "View job" and "Find this post" links from under each post.** LinkedIn already shows its
+  own job card on the post, so ours repeated a button sitting inches away, and "Find this post" was a
+  best-effort text search that could land on the wrong post. The row under a post is now just the tags
+  you can hide by — the part only we provide — and posts with no tags get no row at all.
+
+## 0.37.0
+- **The sidebar now manages your LinkedIn post filters.** Until now the only way to undo a "hide posts
+  like this" choice was to scroll back and find the exact chip you clicked days ago. The sidebar now
+  lists every tag you're hiding, on LinkedIn's post search, with a box to add one and an ✕ to remove
+  one — and the feed updates as you edit. Removing a rule gives those posts back immediately, which it
+  previously never did: the post stayed faded even after the rule was gone.
+- **Filtering now works on the results page you actually land on.** Typing a search into LinkedIn's box
+  lands on the "All" tab, but filtering only ran on the "Posts" tab, so the feature looked dead unless
+  you knew to click across. Both work now. Only posts are ever touched — People, Jobs and Company
+  cards on that mixed page are left completely alone.
+- The sidebar still appears nowhere else: on LinkedIn it shows the filter list and nothing about form
+  filling, and on ordinary websites it stays away entirely.
+
+## 0.36.2
+- **Fixed: real hiring posts on LinkedIn were being dimmed as "someone looking for work".** A post that
+  opens with the most common wording of all — `Hiring: Firmware QA Engineer…` — was not recognised as a
+  hiring post unless its author also had the #HIRING photo ring, so genuine roles were faded out with a
+  reason that said the opposite of what the post said. Bare `Hiring:`, `#hiring` and `hiring for` are
+  now recognised. Posts from people actually looking for work are still filtered out as before.
+
+## 0.36.1
+- **The sidebar no longer appears on ordinary websites.** It was showing up anywhere a page had three
+  form fields — logins, contact forms, newsletter signups, checkouts, most settings screens. It now
+  appears only on real job applications: a known ATS, a page fingerprinted as one, a résumé upload or a
+  screening question, or a site you switched on yourself.
+- **We now refuse to autofill a page that isn't a job application at all.** Testing caught autofill
+  typing a name, email, phone and company into an ordinary contact form. Not filling a form on some
+  unrelated website is the whole point — "your data stays in your browser" means nothing if we type it
+  into someone else's page ourselves. A site you explicitly switch on still fills.
+- **Fixed: Jobvite applications weren't recognised**, so nothing filled on them. We only spotted Jobvite
+  by a link in the page's plumbing that company-hosted applications don't always have.
+- **Fixed: a dropdown that silently refused to keep your answer.** Some dropdowns only accept a real
+  click, others only the keyboard. A fix for one kind had quietly broken the other; now each is tried in
+  turn and checked before moving on, so both work.
+
+## 0.36.0
+- **Scroll-fill is no longer torn down while the page is still changing.** Enabling "fill as I scroll"
+  built a watcher, but any change to the page rebuilt it from scratch — and on a modern application
+  form the page changes constantly. The rebuild dropped the watcher *first* and then did its slow work,
+  so for a moment nothing was being watched, and a field you scrolled past in that moment was never
+  filled (a watcher only notices a field *entering* view, not one already sitting there). The watcher is
+  now kept alive and updated in place, so nothing is missed mid-rebuild, and fields a previous answer
+  revealed get picked up as they appear.
+- **Turning "fill as I scroll" back on now gives the page a fresh pass**, instead of permanently
+  skipping fields it had already visited earlier in the session. It still never touches a field that
+  already holds a value or that you're typing in.
+- **Hiring-post filter on LinkedIn's content search.** On LinkedIn's own post-search results page
+  (e.g. searching `hiring "firmware"`), each post now gets a quiet "View job ↗" / "Find this post ↗"
+  row, and posts that aren't actually a hiring pitch (job seekers, the dominant noise on this search)
+  are dimmed automatically. An AI pass can also suggest short tags ("recruiter agency", "contract role")
+  — click one to hide every post like it from then on. Nothing about the page is stored: no post text,
+  no author name, no per-post record — only the tags you've chosen to exclude, so future posts can be
+  matched against them without another AI call. Runs only on the page you're already viewing; nothing
+  is fetched or scraped in the background.
+- **Fixed: a dropdown disappeared from the panel the moment it was filled.** Every custom dropdown
+  (react-select, used by Greenhouse and most modern ATS) hides its own text box once you pick a value,
+  and our field scanner read that as "the page is hiding this field from me" and dropped it. So a
+  correctly-filled dropdown silently vanished from the side panel, couldn't be outlined on the page,
+  and couldn't be re-filled or corrected — Fill all reported "gone" about a field sitting in plain
+  sight. The scanner now judges the dropdown's own visible box rather than the hidden text box inside
+  it, so filled dropdowns stay visible and editable. The underlying check is a safety guard against a
+  posting hiding a field to harvest your data on autofill; that guard is unchanged — a field the page
+  genuinely hides, or removes, is still ignored.
+- **Fixed: one field failing to fill could silently stop later fields from filling at all.** After a
+  form rewrote a field behind our back, every field filled afterwards was wrongly blamed for it and
+  skipped. Verified on a real Greenhouse posting: gender, veteran status, disability status and
+  discipline were all being skipped as a result.
+- **Fill all is ~2.7× faster** (about 40s → 15s on a long Greenhouse application). It was pausing after
+  every single field to watch for the form reacting; it now notices that while moving on to the next
+  field instead of waiting.
+- **Linked EEO questions now settle correctly.** Some forms render one question as two dropdowns —
+  Greenhouse asks Hispanic/Latino yes-no *plus* a race dropdown that only exists while the answer is
+  "No" — and declining the race question is the same statement as declining the whole question, so the
+  form collapses the pair. Fill all no longer fights that: it stops re-trying the field that triggered
+  the collapse, leaving the required field visibly unfilled for you rather than flip-flopping between
+  two states and landing on an arbitrary one.
+- Demo data now answers the race question with a concrete category instead of "prefer not to say", so
+  demo mode has something visible to show on forms that collapse a declined answer.
+
+## 0.35.3
+- **Fixed: an unchecked checkbox could still show the green "we filled this" outline.** A standalone
+  checkbox's "did this fill?" check read a static attribute instead of whether it was actually checked.
+- **Fixed: a job-availability date ("when can you start") could land in a resume-history field** —
+  Education's and Employment's own "Start date" asked a completely different question, and the answer
+  to one was leaking into the other. Both now correctly stay blank and ask you instead of guessing.
+- **Fixed: field outlines looked like a clean box on some fields and a stray underline on others**, for
+  the exact same "we filled this" meaning. Marking now finds the field's REAL visible box regardless of
+  what a particular ATS's own markup looks like underneath, and adds a soft glow so it reads consistently
+  as one box everywhere, not just wherever the underlying page happened to draw its own border.
+- **Fields that only appear after answering a prior question** (e.g. Greenhouse's "Race" question,
+  which only renders once "Are you Hispanic/Latino?" is answered) are now caught by Fill all — it
+  re-checks for newly-fillable fields after each pass instead of a single fixed snapshot.
+
+## 0.35.2
+- **Fixed: a dropdown could show the right answer, then silently revert to blank.** On some comboboxes,
+  clicking the matched option didn't actually register — the field looked briefly filled (typed search
+  text sitting in the box), then reverted the moment you pressed Escape, scrolled away, or the next
+  field filled. Now falls back to the same keyboard selection a person would use when a click doesn't
+  take, and the "did this work?" check no longer treats leftover typed text as a success.
+- **Fixed: a "select all that apply" checkbox question only outlined its first checkbox**, making it
+  look like one random checkbox needed attention instead of the whole question. All of them mark now.
+- **Fixed: some field outlines were a nearly-invisible sliver** instead of a box around the visible
+  control — a few widgets keep their real interactive element sized down to almost nothing.
+- **Fill-as-you-scroll now shows what it filled**, the same green/blue outline a manual Fill gets. It
+  was the one fill path that left no visible trace before.
+## 0.35.1
+- **Fixed: fields like School or Location (City) silently stayed blank.** These only show real choices
+  once you start typing — nothing renders on open — and the fill logic never tried typing into a field
+  that opened empty. It now does, the same way a person would.
+- **Fixed: a filled dropdown could be reported as still empty**, which sometimes made the field's own
+  "was this filled?" check silently retry or misreport, especially right after picking a search result.
+- **Fixed: the green "we filled this" outline could appear on a field before it actually held a value.**
+  It showed up the moment ANY field got auto-filled, coloring every other high-confidence field on the
+  page too — even ones you hadn't clicked Fill on yet. The outline now only appears once a field
+  genuinely holds a value; "need you" fields still mark regardless, since that's a prompt, not a claim
+  of success.
+
+## 0.35.0
+- **Back up & restore moved to Settings**, under Account & settings, where it belongs — it's account-level,
+  not per-site, and not part of filling a form. The two icons are gone from the sidebar.
+- **Fixed: backup and restore threw an error in the sidebar.** After reloading the extension, an open page
+  keeps a disconnected copy of the sidebar, and anything you clicked failed with a raw error. The sidebar
+  now says *"Extension was reloaded — refresh this page to reconnect"* instead, and backup lives on a page
+  that can't be disconnected that way.
+- **Backups now include your AI key**, so you don't re-enter it after every reinstall. The summary warns
+  you that the file is private — don't attach it to an issue or paste it into a chat.
+
 ## 0.34.0
 - **A ready-made demo file to import.** `e2e/fixtures/demo-import.json` seeds a full placeholder profile,
   a résumé, a cover-letter template and a couple of remembered answers, so testing no longer starts with

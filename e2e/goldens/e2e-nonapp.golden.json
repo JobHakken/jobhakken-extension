@@ -1,0 +1,44 @@
+{
+  "fixture": "e2e/nonapp.html",
+  "_note": "A deliberately NON-application page (login/contact form). Every field must stay empty: filling here is the failure.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "#q",
+      "expect": "",
+      "note": "text \u2014 Search",
+      "mustStayEmpty": true
+    },
+    {
+      "selector": "#fn",
+      "expect": "",
+      "note": "text \u2014 First name",
+      "mustStayEmpty": true
+    },
+    {
+      "selector": "#ln",
+      "expect": "",
+      "note": "text \u2014 Last name",
+      "mustStayEmpty": true
+    },
+    {
+      "selector": "#em",
+      "expect": "",
+      "note": "text \u2014 Email",
+      "mustStayEmpty": true
+    },
+    {
+      "selector": "#ph",
+      "expect": "",
+      "note": "text \u2014 Phone",
+      "mustStayEmpty": true
+    },
+    {
+      "selector": "#co",
+      "expect": "",
+      "note": "text \u2014 Company",
+      "mustStayEmpty": true
+    }
+  ],
+  "minPrecision": 1
+}

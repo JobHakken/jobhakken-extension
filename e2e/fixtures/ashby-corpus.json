@@ -1,0 +1,2478 @@
+{
+  "ats": "ashby",
+  "schema": 2,
+  "boards": {
+    "ramp": [
+      {
+        "url": "https://jobs.ashbyhq.com/ramp/f564dcf9-9390-4a3f-896f-8047a5086040/application",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/ramp/4e64ab86-4e30-403b-b1b9-41dc052570ce/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/ramp/1db75064-e38c-4b21-8310-21471943d0be/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/ramp/34413f8d-26bf-4bbc-8ade-eb309a0e2245/application",
+        "fields": 11
+      }
+    ],
+    "linear": [
+      {
+        "url": "https://jobs.ashbyhq.com/linear/d3bc1ced-3ce4-4086-a050-555055dbb1ff/application",
+        "fields": 13
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/linear/cd5ae036-0223-427a-b038-ba16ef9dcb32/application",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/linear/069c4628-88d7-4e4d-b393-c996fc7f3076/application",
+        "fields": 13
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/linear/453f1ba0-a35e-4ed2-8215-1514e0a30b92/application",
+        "fields": 8
+      }
+    ],
+    "vanta": [
+      {
+        "url": "https://jobs.ashbyhq.com/vanta/cf4358d4-1f34-40cc-b5b4-31a2e001136f/application",
+        "fields": 17
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/vanta/dbd4e02c-0c6c-4031-a658-f57e88ec9943/application",
+        "fields": 12
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/vanta/7e8b02ec-cf23-41de-87c7-3910459f34a2/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/vanta/fe5fd1a4-12ff-4703-bed5-6c2f34ba7768/application",
+        "fields": 12
+      }
+    ],
+    "openai": [
+      {
+        "url": "https://jobs.ashbyhq.com/openai/8fb1615c-34bf-47c4-a1d1-b7b2f836bbd3/application",
+        "fields": 14
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/openai/240d459b-696d-43eb-8497-fab3e56ecd9b/application",
+        "fields": 46
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/openai/18f58952-c242-4562-8732-073a0ae8029e/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/openai/13995549-e8cc-498f-9eaa-1869067ac35b/application",
+        "fields": 14
+      }
+    ],
+    "notion": [
+      {
+        "url": "https://jobs.ashbyhq.com/notion/05e14247-17c4-4e98-9a13-53828a4e2f13/application",
+        "fields": 17
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/notion/d177d052-ef57-4900-acf2-d58e9eded620/application",
+        "fields": 18
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/notion/b21fef72-4864-4a3e-a627-91557a0f8a36/application",
+        "fields": 17
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/notion/c64a2cda-4c84-45bd-823d-f9141c316733/application",
+        "fields": 14
+      }
+    ],
+    "replit": [
+      {
+        "url": "https://jobs.ashbyhq.com/replit/2f1de5f1-48c2-4104-a697-a51fe1620508/application",
+        "fields": 16
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/replit/47235851-fadd-4bd7-9cc6-61f545059ac1/application",
+        "fields": 16
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/replit/8fbbe594-596a-4a4f-844b-dc00111e717f/application",
+        "fields": 16
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/replit/447a6e11-b06b-4cc5-9203-cd55883f2af4/application",
+        "fields": 16
+      }
+    ],
+    "baseten": [
+      {
+        "url": "https://jobs.ashbyhq.com/baseten/df2f0ebb-a84a-45c2-bc74-dc9589fcc1ae/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/baseten/fc6e5f2e-eb2d-4a6c-8a51-8422e8662bde/application",
+        "fields": 10
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/baseten/d29e748c-7209-460d-a024-8f77ae0a3d4d/application",
+        "fields": 9
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/baseten/84c1801c-1a65-49fb-aaaa-beeafd530e7e/application",
+        "fields": 9
+      }
+    ],
+    "runway": [
+      {
+        "url": "https://jobs.ashbyhq.com/runway/950876a1-709e-49b7-93f3-6e130efdf6fa/application",
+        "fields": 5
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/runway/6dc52fd2-0ec0-4d93-9c67-23ebe95c2c4b/application",
+        "fields": 5
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/runway/e22fd0c9-06f5-4b27-9157-f3d8bac5b80a/application",
+        "fields": 5
+      },
+      {
+        "url": "https://jobs.ashbyhq.com/runway/82789f66-9216-4ef3-bfeb-6cef4b416e63/application",
+        "fields": 5
+      }
+    ],
+    "sierra": [
+      {
+        "url": "https://jobs.ashbyhq.com/sierra/8152eaf6-012b-4154-95e2-7d6c52faba93/application",
+        "fields": 35
+      }
+    ]
+  },
+  "questions": {
+    "email": {
+      "label": "Email",
+      "kinds": {
+        "email": 33
+      },
+      "seen": 33,
+      "boards": [
+        "ramp",
+        "linear",
+        "vanta",
+        "openai",
+        "notion",
+        "replit",
+        "baseten",
+        "runway",
+        "sierra"
+      ],
+      "required": 33,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_email"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "resume": {
+      "label": "Resume",
+      "kinds": {
+        "file": 32
+      },
+      "seen": 32,
+      "boards": [
+        "ramp",
+        "linear",
+        "vanta",
+        "openai",
+        "notion",
+        "replit",
+        "baseten",
+        "runway",
+        "sierra"
+      ],
+      "required": 31,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_resume"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "linkedin profile": {
+      "label": "LinkedIn Profile",
+      "kinds": {
+        "text": 17
+      },
+      "seen": 17,
+      "boards": [
+        "ramp",
+        "linear",
+        "vanta",
+        "openai",
+        "notion",
+        "baseten"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_18831815002",
+        "question_22812575002",
+        "question_21772985002",
+        "dc915b3a-c535-49df-abd6-dc8f3ddf6728",
+        "question_10174608004",
+        "dbb7e595-3d7b-4a1f-b0b6-76497b74b4cb",
+        "eeff57b7-e060-44b0-b8cb-7bdd3740aadf",
+        "bc661585-ae31-4e40-963e-afafc464cc34",
+        "c4388e96-9d43-488a-bc16-90cfbc930f9c"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "gender": {
+      "label": "Gender",
+      "kinds": {
+        "radiogroup": 17
+      },
+      "seen": 17,
+      "boards": [
+        "vanta",
+        "openai",
+        "notion",
+        "replit",
+        "baseten"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Male",
+        "Female",
+        "Decline to self-identify"
+      ],
+      "searchable": false
+    },
+    "race": {
+      "label": "Race",
+      "kinds": {
+        "radiogroup": 17
+      },
+      "seen": 17,
+      "boards": [
+        "vanta",
+        "openai",
+        "notion",
+        "replit",
+        "baseten"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Hispanic or Latino",
+        "White (Not Hispanic or Latino)",
+        "Black or African American (Not Hispanic or Latino)",
+        "Native Hawaiian or Other Pacific Islander (Not Hispanic or Latino)",
+        "Asian (Not Hispanic or Latino)",
+        "American Indian or Alaska Native (Not Hispanic or Latino)",
+        "Two or More Races (Not Hispanic or Latino)",
+        "Decline to self-identify"
+      ],
+      "searchable": false
+    },
+    "veteran status": {
+      "label": "Veteran Status",
+      "kinds": {
+        "radiogroup": 17
+      },
+      "seen": 17,
+      "boards": [
+        "vanta",
+        "openai",
+        "notion",
+        "replit",
+        "baseten"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "I identify as one or more of the classifications of protected veteran listed above",
+        "I am not a protected veteran",
+        "I decline to self-identify for protected veteran status"
+      ],
+      "searchable": false
+    },
+    "full name": {
+      "label": "Full Name",
+      "kinds": {
+        "text": 16
+      },
+      "seen": 16,
+      "boards": [
+        "vanta",
+        "notion",
+        "replit",
+        "runway"
+      ],
+      "required": 16,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_name"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "phone number": {
+      "label": "Phone Number",
+      "kinds": {
+        "radiogroup": 4,
+        "tel": 7,
+        "text": 4
+      },
+      "seen": 15,
+      "boards": [
+        "vanta",
+        "openai",
+        "replit",
+        "baseten"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "e4197ade-2b17-45c7-8cca-a2ad772e1dce",
+        "a3a97ef7-3ced-439e-8c72-42b0c8bfefff",
+        "e3504628-488e-4ed4-8b1a-86ce4bbcc199",
+        "b79cdbd7-1956-47af-aa43-9bc188e7a1cb"
+      ],
+      "options": [
+        "Yes - I consent to receiving text messages",
+        "No - I do not consent to receiving text messages"
+      ],
+      "searchable": false
+    },
+    "location": {
+      "label": "Location",
+      "kinds": {
+        "combobox": 12
+      },
+      "seen": 12,
+      "boards": [
+        "vanta",
+        "notion",
+        "replit",
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": true
+    },
+    "name": {
+      "label": "Name",
+      "kinds": {
+        "text": 11
+      },
+      "seen": 11,
+      "boards": [
+        "ramp",
+        "linear",
+        "openai",
+        "baseten",
+        "sierra"
+      ],
+      "required": 11,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_name"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "phone": {
+      "label": "Phone",
+      "kinds": {
+        "text": 3,
+        "radiogroup": 2,
+        "tel": 5
+      },
+      "seen": 10,
+      "boards": [
+        "ramp",
+        "openai",
+        "notion",
+        "sierra"
+      ],
+      "required": 7,
+      "widgetIds": [],
+      "fieldIds": [
+        "phone"
+      ],
+      "options": [
+        "Yes - I consent to receiving text messages",
+        "No - I do not consent to receiving text messages"
+      ],
+      "searchable": false
+    },
+    "linkedin": {
+      "label": "LinkedIn",
+      "kinds": {
+        "text": 4,
+        "checkbox": 5
+      },
+      "seen": 9,
+      "boards": [
+        "linear",
+        "openai",
+        "notion",
+        "sierra"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "ca5c9d78-ec13-4bf2-86b8-bce6ff32e45e",
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-0",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-0",
+        "faf2ba69-2c39-4a7b-89da-5bb8dcc283c2"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "cover letter": {
+      "label": "Cover Letter",
+      "kinds": {
+        "file": 5,
+        "textarea": 3
+      },
+      "seen": 8,
+      "boards": [
+        "ramp",
+        "linear",
+        "openai"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "cover_letter"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "legal name": {
+      "label": "Legal Name",
+      "kinds": {
+        "text": 6
+      },
+      "seen": 6,
+      "boards": [
+        "ramp",
+        "openai"
+      ],
+      "required": 6,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_name"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "linkedin profile url": {
+      "label": "LinkedIn Profile URL",
+      "kinds": {
+        "text": 5
+      },
+      "seen": 5,
+      "boards": [
+        "vanta",
+        "replit"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "d3cb94e9-34e1-497b-8da8-1f0a313ed6c8"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "glassdoor": {
+      "label": "Glassdoor",
+      "kinds": {
+        "checkbox": 5
+      },
+      "seen": 5,
+      "boards": [
+        "openai",
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-1",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-1"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "github": {
+      "label": "Github",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "ramp",
+        "linear"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_23641585002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "twitter": {
+      "label": "Twitter",
+      "kinds": {
+        "text": 3,
+        "checkbox": 1
+      },
+      "seen": 4,
+      "boards": [
+        "linear",
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "cfb884a0-fef5-4b6a-b840-9fcd1e170f50",
+        "e91068c0-4dde-4292-bc29-9fa19139de2e"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what country are you based in": {
+      "label": "What country are you based in",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "linear"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "b617d074-3a16-46ec-bb02-550e30cb0e50",
+        "a245ad9a-4b77-4ff8-884c-55c1b65c41c4",
+        "e544a913-c07d-41e6-ad3f-26b08fecd65b",
+        "fff2b6ea-da93-42f0-933c-b69bf28291fb"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "has someone at linear referred you for this role? if so, please include their name here": {
+      "label": "Has someone at Linear referred you for this role? If so, please include their name here",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "linear"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "a860932f-a4c3-4aa9-a6d8-c8fc30f368f4"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "current/most recent company name": {
+      "label": "Current/Most Recent Company Name",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "vanta"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "ff70ae34-7987-45ed-83c5-f48c911ccc40",
+        "a4b8539e-9475-41dc-a284-a949fbe28936",
+        "bda8d900-0cf3-45fd-92b5-b27939491378"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "current/most recent job title": {
+      "label": "Current/Most Recent Job Title",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "vanta"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "a173ff67-d65b-4735-b14e-cfc78c7c765f"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "when can you start a new role": {
+      "label": "When can you start a new role",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "openai"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174618004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "additional information": {
+      "label": "Additional Information",
+      "kinds": {
+        "textarea": 3,
+        "text": 1
+      },
+      "seen": 4,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "f189fed2-624b-41a1-a76f-0c67a2611d1a",
+        "question_10174621004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "i confirm i have read the above": {
+      "label": "I confirm I have read the above",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e63d06f2-4b0f-4ae1-b8ef-4dce139b2866_7fe82de7-a1d7-4d8a-95a5-e5cc9adc84ea-labeled-checkbox-0"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what pronouns would you like our team to use when addressing you": {
+      "label": "What pronouns would you like our team to use when addressing you",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "He/Him",
+        "She/Her",
+        "They/Them",
+        "Prefer not to say",
+        "Not represented here"
+      ],
+      "searchable": false
+    },
+    "notion blog": {
+      "label": "Notion Blog",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-2",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-2"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "notion employee": {
+      "label": "Notion Employee",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-3",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-3"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "notion website": {
+      "label": "Notion Website",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-4",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-4"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "billboard/outdoor ads": {
+      "label": "Billboard/Outdoor Ads",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-5",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-5"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "conference or meetup": {
+      "label": "Conference or Meetup",
+      "kinds": {
+        "checkbox": 4
+      },
+      "seen": 4,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e1e83de6-dfda-4ec6-be5e-1d52c707786b_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-6",
+        "c686f1ea-3ba3-46f3-ad70-f20931826a4a_0b3b7773-f6d9-4032-9ab1-368c4164e95a-labeled-checkbox-6"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "how many years of relevant professional experience do you have": {
+      "label": "How many years of relevant professional experience do you have",
+      "kinds": {
+        "radiogroup": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "1-2 years",
+        "3-5 years",
+        "6-8 years",
+        "8+"
+      ],
+      "searchable": false
+    },
+    "replit profile url": {
+      "label": "Replit Profile URL",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "e6d21c84-8743-4de3-afff-365035b9508f"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "portfolio url": {
+      "label": "Portfolio URL",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "github profile url": {
+      "label": "Github Profile URL",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "what excites you about replit": {
+      "label": "What excites you about Replit",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "if you want to share something you built with replit please share below": {
+      "label": "If you want to share something you built with Replit please share below",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "ca243fbb-58a3-47a1-ae56-13c163342e3d"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what is your desired salary range": {
+      "label": "What is your desired salary range",
+      "kinds": {
+        "text": 4
+      },
+      "seen": 4,
+      "boards": [
+        "replit"
+      ],
+      "required": 4,
+      "widgetIds": [],
+      "fieldIds": [
+        "cec8aa89-75e2-4828-88fa-b8ab4e6df1a3"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "why do you want to join runway": {
+      "label": "Why do you want to join Runway",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "runway"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "why do our mission and values resonate with you": {
+      "label": "Why do our mission and values resonate with you",
+      "kinds": {
+        "textarea": 4
+      },
+      "seen": 4,
+      "boards": [
+        "runway"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "ac07c4a5-4558-4af1-953f-1ecac15ee749"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what are your pronouns? (optional)": {
+      "label": "What are your pronouns? (Optional)",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "vanta"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "disability status": {
+      "label": "Disability Status",
+      "kinds": {
+        "radiogroup": 3
+      },
+      "seen": 3,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes, I have a disability, or have had one in the past",
+        "No, I do not have a disability and have not had one in the past",
+        "I do not want to answer"
+      ],
+      "searchable": false
+    },
+    "preferred name (if applicable)": {
+      "label": "Preferred Name (if applicable)",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "where are you currently located": {
+      "label": "Where are you currently located",
+      "kinds": {
+        "combobox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": true
+    },
+    "i acknowledge that i have opened, read, and understood the arbitration agreement. i understand that by submitting my application, i am agree": {
+      "label": "I acknowledge that I have opened, read, and understood the Arbitration Agreement. I understand that by submitting my application, I am agreeing to be bound by the terms of the Arbitration Agreement",
+      "kinds": {
+        "checkbox": 3
+      },
+      "seen": 3,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "current company": {
+      "label": "Current Company",
+      "kinds": {
+        "text": 3
+      },
+      "seen": 3,
+      "boards": [
+        "baseten"
+      ],
+      "required": 3,
+      "widgetIds": [],
+      "fieldIds": [
+        "db6c75be-2fc6-4578-966e-64a394ff3a26",
+        "eabb9e21-c47d-4ce4-8a23-d87d1e21039f"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "we believe exceptional performance in one area is a good indication of performance in other areas. do you have any examples of exceptional p": {
+      "label": "We believe exceptional performance in one area is a good indication of performance in other areas. Do you have any examples of exceptional performance you want to highlight",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "notice period": {
+      "label": "Notice Period",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "linear"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "ce587bdf-31fa-4768-9e92-7741b7ad2317"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "what would you want to work on? tell us about the features you would want to implement in your first month": {
+      "label": "What would you want to work on? Tell us about the features you would want to implement in your first month",
+      "kinds": {
+        "textarea": 2
+      },
+      "seen": 2,
+      "boards": [
+        "linear"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "what are you extremely good at? what could you teach the team": {
+      "label": "What are you extremely good at? What could you teach the team",
+      "kinds": {
+        "textarea": 2
+      },
+      "seen": 2,
+      "boards": [
+        "linear"
+      ],
+      "required": 2,
+      "widgetIds": [],
+      "fieldIds": [
+        "c4b19ee4-d084-47fa-89df-ca00e63a7721"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "website": {
+      "label": "Website",
+      "kinds": {
+        "text": 2
+      },
+      "seen": 2,
+      "boards": [
+        "ramp",
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_21772986002",
+        "question_10174609004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "please provide a link to the app store and/or personal portfolio showcasing your top 1-2 app(s)!": {
+      "label": "Please provide a link to the App Store and/or personal portfolio showcasing your top 1-2 app(s)!",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_23341706002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "please share some details about your proudest android feature in 2 to 3 sentences. what made it challenging and what was the impact": {
+      "label": "Please share some details about your proudest Android feature in 2 to 3 sentences. What made it challenging and what was the impact",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_22072318002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "have you contributed to a mobile app(s) and/or several features that reached a large number of users? please describe": {
+      "label": "Have you contributed to a mobile app(s) and/or several features that reached a large number of users? Please describe",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_22639844002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "github / website": {
+      "label": "Github / Website",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_22838854002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have proficiency in javascript and react? please describe": {
+      "label": "Do you have proficiency in JavaScript and React? Please describe",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "tell us of a time you had to put your pm hat on to solve a complex product problem": {
+      "label": "Tell us of a time you had to put your PM hat on to solve a complex product problem",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "linear"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "e8a6b6ee-0550-4c69-85ab-05bd9b26c702"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "tell us more": {
+      "label": "Tell us more",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "linear"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "f6bd78d9-497c-48b4-97a9-b9f3551794ce"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "please describe your experience with project management methodologies and practices": {
+      "label": "Please describe your experience with project management methodologies and practices",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_23125735002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "please outline your experience translating a high-level roadmap into a set of discrete technical projects": {
+      "label": "Please outline your experience translating a high-level roadmap into a set of discrete technical projects",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_23125736002"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "where do you plan on working from (for payroll tax purposes)": {
+      "label": "Where do you plan on working from (for payroll tax purposes)",
+      "kinds": {
+        "combobox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": true
+    },
+    "please elaborate on your experience building software in aws (with terraform)": {
+      "label": "Please elaborate on your experience building software in AWS (with Terraform)",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "here's some text encoded in a common format. figure out the correct secret and submit it in the field below. iyevdxnyl2jpbi9lbnygchl0ag9umwo": {
+      "label": "Here's some text encoded in a common format. Figure out the correct secret and submit it in the field below. IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoKJycnCktlZXAgdXMgb3V0IG9mIGdvb2dsZSBzZWFyY2ggcmVzdWx0cy4uCgokIG9kIC1kIC9kZXYvdXJhbmRvbSB8IGhlYWQKMDAwMDAwMCAgICAgNjAyMTUgICAyODc3OCAgIDI5MjI3ICAgMjg1NDggICA2MjY4NiAgIDQ1MTcxICAgIDc4MjYgICA0ODc2NgowMDAwMDIwICAgICAxNzExOCAgIDE1MjI1ICAgMTI4NTIgICAzNDc4MSAgIDMxOTU1ICAgMTkwODcgICAzOTU2MyAgIDQzNjE0CjAwMDAwNDAgICAgICA2NzEwICAgMzg1MTUgICAxNDU3MyAgIDY0MDg3ICAgMTcwMjYgICAyNTU5OCAgIDQyOTEzICAgMTQyMDkKMDAwMDA2MCAgICAgMTA3MjMgICAzMTMwNyAgIDE5MDcxICAgMTQ3OTggICAgMjQ2MiAgIDQ2MjUzICAgMzU2MjYgICAzMjQzNgowMDAwMTAwICAgICAgMTczOSAgIDI3NzEyICAgIDU2NjcgICAxMjIxMiAgIDQ3MDc3ICAgNDE3MjIgICA1NDQ1MiAgIDM4NDYxCjAwMDAxMjAgICAgICA0ODE2ICAgMTUwMTQgICAyODYyMyAgIDEwOTI4ICAgNTQwMjggICA2NDUyMyAgIDU0NjMyICAgNTQxODcKMDAwMDE0MCAgICAgNjE2MzEgICA1NDQ5OSAgIDE4MzA3ICAgIDU1MTQgICA1MDc0MyAgIDUwNTkxICAgMjUxNzIgICA1NDAxOAowMDAwMTYwICAgICAzMTk5MCAgIDI2MjQ4ICAgIDQzODMgICA0NjQ1MiAgIDQyMTU2ICAgNjIzMjAgICA1MTA1MiAgIDI4NjIxCjAwMDAyMDAgICAgIDI3MjI2ICAgNjUyOTYgICA1NjMwNSAgIDMzMzc1ICAgIDQ4MTMgICA0MjI4MyAgIDE5OTgwICAgIDE5MjIKMDAwMDIyMCAgICAgNTcwNjEgICAyOTMyMiAgIDI3MDczICAgNjQ5ODYgICAxNTIxOSAgIDI2MjM0ICAgMjQxMDAgICAyMTIwNAonJycKCicnJwpDb3B5IHRoaXMgZmlsZSBhbmQgcnVuIGBwYnBhc3RlIHwgYmFzZTY0YCB0byBnZW5lcmF0ZSBjaGFsbGVuZ2UgdGV4dC4gQ29waW91cwp3aGl0ZSBzcGFjZSBpcyBhdCB0aGUgYm90dG9tIG9mIHRoZSBmaWxlIHRvIGVuc3VyZSB0cmFpbGluZyBgPT1gIGFuZCBoaW50IGF0CmJhc2U2NC4KJycnCgppbXBvcnQgY29kZWNzCmltcG9ydCBzdHJpbmcKaW1wb3J0IHN5cwppbXBvcnQgdGltZQoKZnJvbSBjcnlwdG9ncmFwaHkuaGF6bWF0LmJhY2tlbmRzIGltcG9ydCBkZWZhdWx0X2JhY2tlbmQKZnJvbSBjcnlwdG9ncmFwaHkuaGF6bWF0LnByaW1pdGl2ZXMuaGFzaGVzIGltcG9ydCBTSEExCmZyb20gY3J5cHRvZ3JhcGh5Lmhhem1hdC5wcmltaXRpdmVzLnR3b2ZhY3Rvci50b3RwIGltcG9ydCBUT1RQCgoKT05FX1dFRUtfSU5fU0VDT05EUyA9IDYwNF84MDAKCgpkZWYgZ2VuZXJhdGVfc2VjcmV0KCk6CiAgICB0b3RwID0gVE9UUCgKICAgICAgICBrZXk9Y29kZWNzLmVuY29kZShzdHJpbmcuYXNjaWlfbGV0dGVycywgZW5jb2Rpbmc9InV0Zi04IiksCiAgICAgICAgbGVuZ3RoPTgsCiAgICAgICAgYWxnb3JpdGhtPVNIQTEoKSwKICAgICAgICB0aW1lX3N0ZXA9T05FX1dFRUtfSU5fU0VDT05EUywKICAgICAgICBiYWNrZW5kPWRlZmF1bHRfYmFja2VuZCgpLAogICAgKQogICAgc2VlZCA9IGludCh0aW1lLnRpbWUoKSkKICAgIHRva2VuID0gY29kZWNzLmRlY29kZSh0b3RwLmdlbmVyYXRlKHNlZWQpLCBlbmNvZGluZz0idXRmLTgiKQogICAgcmV0dXJuIGYie3Rva2VufS17c2VlZH0iCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIHN5cy5zdGRvdXQud3JpdGUoCiAgICAgICAgZiJQbGVhc2UgaGVhZCB0byBodHRwczovL3JhbXAuY29tL2NhcmVlcnMgYW5kIHVzZSB0aGlzIHNlY3JldCB3aGVuICIKICAgICAgICBmInlvdSBhcHBseToge2dlbmVyYXRlX3NlY3JldCgpfVxuIgogICAgKQoKCg==",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "c88f753e-ac4c-461c-81ec-3495a671c5bd"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "in the above question, we ask you to figure out a secret to prove two things: (1) that you are not a bot auto-applying to the role and (2) t": {
+      "label": "In the above question, we ask you to figure out a secret to prove two things: (1) that you are not a bot auto-applying to the role and (2) that you are able to read and interact with code. With those goals in mind, what are the security properties (if any) of the resulting secret? Do we achieve our goals? How could we do so more effectively",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "ramp"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "tell us about a time you had to put your pm hat on to solve a complex product problem": {
+      "label": "Tell us about a time you had to put your PM hat on to solve a complex product problem",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "linear"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "why linear": {
+      "label": "Why Linear",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "linear"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "twitter handle": {
+      "label": "Twitter handle",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "linear"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "are you legally authorized to work in the location where this role is based": {
+      "label": "Are you legally authorized to work in the location where this role is based",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "a2ef70dc-0d44-4584-b721-ffcf0302c9e5"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "will you now or in the future require visa sponsorship": {
+      "label": "Will you now or in the future require visa sponsorship",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "cb5797fa-72b6-4b09-8f57-e00a4005c885"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "do you have any pre-planned vacations in the upcoming 90 days? if so, please note the dates/duration": {
+      "label": "Do you have any pre-planned vacations in the upcoming 90 days? If so, please note the dates/duration",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "please list any software tools you have used or been trained on": {
+      "label": "Please list any software tools you have used or been trained on",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "do you have any outbound calling or prospecting experience? if so please share metrics or kpis as well": {
+      "label": "Do you have any outbound calling or prospecting experience? If so please share metrics or KPIS as well",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "cv / resume": {
+      "label": "CV / Resume",
+      "kinds": {
+        "file": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "_systemfield_resume"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "i agree": {
+      "label": "I agree",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "vanta"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "dd9893bc-6b6d-4163-bbdf-cb3c183c8d44__systemfield_data_consent_ack-labeled-checkbox-0"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "how many years of relevant experience do you have outside internships/academia": {
+      "label": "How many years of relevant experience do you have outside internships/academia",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "7+",
+        "5-7",
+        "2-4",
+        "0-1"
+      ],
+      "searchable": false
+    },
+    "are you authorized to work lawfully in the us": {
+      "label": "Are you authorized to work lawfully in the US",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Other",
+        "No",
+        "Yes"
+      ],
+      "searchable": false
+    },
+    "what is your most significant technical achievement": {
+      "label": "What is your most significant technical achievement",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174610004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "please provide an example or evidence of your exceptional ability": {
+      "label": "Please provide an example or evidence of your exceptional ability",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174611004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "where can we find samples of your code": {
+      "label": "Where can we find samples of your code",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174612004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "where can we find your publications, papers or research": {
+      "label": "Where can we find your publications, papers or research",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174613004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "are there areas of research you are particularly interested in? if so, please let us know which areas.": {
+      "label": "Are there areas of research you are particularly interested in? If so, please let us know which areas.",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174614004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "other source (indicate in additional information)": {
+      "label": "Other source (indicate in Additional Information)",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "wonder women tech": {
+      "label": "Wonder Women Tech",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "underdog": {
+      "label": "Underdog",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "the plug - tp insights": {
+      "label": "The Plug - TP Insights",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "techqueria": {
+      "label": "Techqueria",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "openai employee": {
+      "label": "OpenAI Employee",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "openai blog": {
+      "label": "OpenAI Blog",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "jopwell": {
+      "label": "Jopwell",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "hacker news": {
+      "label": "Hacker News",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "girlgeekx": {
+      "label": "GirlGeekX",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "diversityx": {
+      "label": "DiversityX",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - other": {
+      "label": "Conference - other",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - scale transform 2021": {
+      "label": "Conference - Scale Transform 2021",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - neurips": {
+      "label": "Conference - NeurIPS",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - icpr": {
+      "label": "Conference - ICPR",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - icml": {
+      "label": "Conference - ICML",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - iclr": {
+      "label": "Conference - ICLR",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "conference - ai for good": {
+      "label": "Conference - AI for Good",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "breakout list": {
+      "label": "Breakout List",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "80,000 hours": {
+      "label": "80,000 Hours",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "where can we learn more about you": {
+      "label": "Where can we learn more about you",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "openai"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "question_10174620004"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "portfolio link": {
+      "label": "Portfolio Link",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "notion"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "portfolio password": {
+      "label": "Portfolio Password",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "notion"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "aa227727-b67d-4ec0-8ed2-b4f6a6e6e945"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "why do you want to work at baseten": {
+      "label": "Why do you want to work at Baseten",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "baseten"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "what about baseten and this role interests you": {
+      "label": "What about Baseten and this role interests you",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "baseten"
+      ],
+      "required": 1,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "are you legally authorized to work in the united states": {
+      "label": "Are you legally authorized to work in the United States",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "d76b77e3-30e2-41bc-b5e9-324d52695200_541ac3cb-e970-4d84-97c6-a043e64bedd6": {
+      "label": "d76b77e3-30e2-41bc-b5e9-324d52695200_541ac3cb-e970-4d84-97c6-a043e64bedd6",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "d76b77e3-30e2-41bc-b5e9-324d52695200_8424ed4e-1d18-4ffd-a6ac-5379df3fcaa3": {
+      "label": "d76b77e3-30e2-41bc-b5e9-324d52695200_8424ed4e-1d18-4ffd-a6ac-5379df3fcaa3",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "searchable": false
+    },
+    "how did you hear about this opportunity": {
+      "label": "How did you hear about this opportunity",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Blog or news article",
+        "Company website",
+        "Current employee",
+        "Event",
+        "LinkedIn",
+        "Other",
+        "Podcast",
+        "Search engine"
+      ],
+      "searchable": false
+    },
+    "what is your current age": {
+      "label": "What is your current age",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Under 30",
+        "30-39",
+        "40-49",
+        "50-59",
+        "60 or older",
+        "I prefer not to answer"
+      ],
+      "searchable": false
+    },
+    "what is your gender identity": {
+      "label": "What is your gender identity",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Man",
+        "Woman",
+        "Non-Binary",
+        "Another Gender Identity",
+        "I prefer not to answer"
+      ],
+      "searchable": false
+    },
+    "do you identify as transgender": {
+      "label": "Do you identify as transgender",
+      "kinds": {
+        "radiogroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Yes",
+        "No",
+        "I prefer not to answer"
+      ],
+      "searchable": false
+    },
+    "how do you identify your sexual orientation? please select all that apply": {
+      "label": "How do you identify your sexual orientation? Please select all that apply",
+      "kinds": {
+        "checkboxgroup": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [
+        "Other",
+        "Other"
+      ],
+      "searchable": false
+    },
+    "what's your favorite junk food": {
+      "label": "What's your favorite junk food",
+      "kinds": {
+        "text": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "do you have a preference in industry (financial services, healthcare, media, retail, telecommunications, technology, or travel, transportati": {
+      "label": "Do you have a preference in Industry (Financial Services, Healthcare, Media, Retail, Telecommunications, Technology, or Travel, Transportation & Hospitality)? Share your preference and any relevant industry experience below — we'll do our best to match it, though team placement is based on multiple factors including your skills and experience alongside organizational needs and role availability",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "cc408950-f54f-4ae1-a167-7eb707f68fbe"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "anything else? (optional)": {
+      "label": "Anything else? (Optional)",
+      "kinds": {
+        "textarea": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [
+        "a2f048a3-6410-45f0-97ce-8c5b4d94eb9b"
+      ],
+      "options": [],
+      "searchable": false
+    },
+    "bisexual": {
+      "label": "Bisexual",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "lesbian": {
+      "label": "Lesbian",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "gay": {
+      "label": "Gay",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "queer": {
+      "label": "Queer",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "heterosexual / straight": {
+      "label": "Heterosexual / straight",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "i prefer not to answer": {
+      "label": "I prefer not to answer",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "asian or asian american": {
+      "label": "Asian or Asian American",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "black or african american": {
+      "label": "Black or African American",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "hispanic or latine": {
+      "label": "Hispanic or Latine",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "indigenous or native american": {
+      "label": "Indigenous or Native American",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "native hawaiian or other pacific islander": {
+      "label": "Native Hawaiian or Other Pacific Islander",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "white": {
+      "label": "White",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "person with disability": {
+      "label": "Person with disability",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "neurodiverse": {
+      "label": "Neurodiverse",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "veteran": {
+      "label": "Veteran",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "parent": {
+      "label": "Parent",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "refugee or immigrant": {
+      "label": "Refugee or immigrant",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    },
+    "none of the above": {
+      "label": "None of the above",
+      "kinds": {
+        "checkbox": 1
+      },
+      "seen": 1,
+      "boards": [
+        "sierra"
+      ],
+      "required": 0,
+      "widgetIds": [],
+      "fieldIds": [],
+      "options": [],
+      "searchable": false
+    }
+  },
+  "dropdownOpenRate": 0
+}

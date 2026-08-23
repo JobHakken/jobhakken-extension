@@ -5,23 +5,38 @@ applications, working alongside the [JobHakken desktop app](https://jobhakken.co
 
 **Live:** [Chrome Web Store — JobHakken · Apply Copilot](https://chromewebstore.google.com/detail/jobhakken-%E2%80%94-apply-copilot/lochgcghpahlooibepjlmmcdjgicncil)
 
-> **Proprietary & confidential** — see [`LICENSE`](LICENSE). Not open source.
+> **Licensed AGPL-3.0** — see [`LICENSE`](LICENSE). Status: in transition to open source; see below
+> before assuming a plain `npm install` works for you yet.
 
 ## Repo layout
 
 This is a standalone MV3 extension. It was split out of the JobHakken monorepo with full history.
-It shares two libraries with the desktop app, consumed from **GitHub Packages** (private):
 
-- `@jobhakken/core` — framework-agnostic domain logic
-- `@jobhakken/autofill` — form-detection / autofill engine
+It used to share two libraries with the desktop app, both consumed from GitHub Packages (private).
+That's down to one:
 
-esbuild **bundles** these at build time (they are not runtime deps of the shipped extension).
+- **`@jobhakken/core`** — no longer a dependency. The extension's actual needs from it (a company-name
+  normalizer, the sponsorship-eligibility classifier, and the BYOK LLM client stack — nothing touching
+  billing or entitlements) are now vendored directly into [`src/lib/vendor/`](src/lib/vendor/), each
+  file with a provenance header. `core` itself stays proprietary — it's the company's actual business
+  logic (billing, sync, matching). See `JobHakken/JobHakken` ADR 0013 for the full reasoning and the
+  one real tradeoff it introduces (these vendored files can now drift from `core`'s own copies without
+  someone noticing — flagged there for whoever next changes either side).
+- **`@jobhakken/autofill`** — still a private-registry dependency **for now**. It's been extracted to
+  its own repo, [`github.com/JobHakken/autofill`](https://github.com/JobHakken/autofill) (MIT-licensed,
+  zero dependencies, verified standalone) — currently private, pending a separate decision on making it
+  public. Until that happens, building this repo from a fresh clone still needs org access.
+
+esbuild **bundles** whatever's imported at build time — none of this is a runtime dependency of the
+shipped extension.
 
 ## Prerequisites
 
 - **Node 22** (`.nvmrc`)
-- A GitHub token with **`read:packages`** to install the `@jobhakken/*` packages. Export it as
-  `NODE_AUTH_TOKEN` (`.npmrc` is already configured to use it). In CI, `GITHUB_TOKEN` covers this.
+- **For now:** a GitHub token with **`read:packages`**, to install `@jobhakken/autofill` — the one
+  remaining private dependency. Export it as `NODE_AUTH_TOKEN` (`.npmrc` is already configured to use
+  it). In CI, `GITHUB_TOKEN` covers this. This requirement goes away once `autofill`'s own visibility
+  is resolved.
 
 ## Develop
 

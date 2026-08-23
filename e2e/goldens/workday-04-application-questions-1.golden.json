@@ -1,0 +1,50 @@
+{
+  "fixture": "workday/04-application-questions-1.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "#primaryQuestionnaire--e3a44fa3c40d1001a2167de458a30001-dateSectionMonth-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 When can you start?*"
+    },
+    {
+      "selector": "#primaryQuestionnaire--e3a44fa3c40d1001a2167de458a30001-dateSectionDay-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 When can you start?*"
+    },
+    {
+      "selector": "#primaryQuestionnaire--e3a44fa3c40d1001a2167de458a30001-dateSectionYear-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 When can you start?*"
+    },
+    {
+      "selector": "#primaryQuestionnaire--e3a44fa3c40d1001a2167cb088df0000",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Do you currently or will you in the future require sponsorship for vis"
+    },
+    {
+      "selector": "#primaryQuestionnaire--e3a44fa3c40d1001a2167de458a30002",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 What are your base salary expectations?*"
+    },
+    {
+      "selector": ":nth-match(input, 1)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 5)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    }
+  ],
+  "minPrecision": 1
+}

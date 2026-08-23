@@ -1,10 +1,214 @@
 {
   "fixture": "ats-ashby.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
   "_note": "Ashby (jobs.ashbyhq.com) SPA form, captured live via improved capture:static (wait-for-field).",
   "fields": [
-    { "selector": "#_systemfield_name", "expect": "Jordan", "match": "contains", "gate": true },
-    { "selector": "#_systemfield_email", "expect": "jordan.rivera@example.com", "gate": true }
-  ]
+    {
+      "selector": "#_systemfield_name",
+      "expect": "Jordan",
+      "match": "contains",
+      "gate": true
+    },
+    {
+      "selector": "#_systemfield_email",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "[id=\"_systemfield_name\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Legal Name"
+    },
+    {
+      "selector": "[id=\"09a328e0-8d57-4f88-86ab-688de1657b17\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Preferred Name (if applicable)"
+    },
+    {
+      "selector": "[id=\"_systemfield_email\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Email"
+    },
+    {
+      "selector": "[id=\"20f8883c-d278-427c-9465-dc614f612e1f\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone Number"
+    },
+    {
+      "label": "Pick date\\.\\.\\.",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Pick date..."
+    },
+    {
+      "selector": "#f189fed2-624b-41a1-a76f-0c67a2611d1a",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 Additional Information"
+    },
+    {
+      "selector": "[name=\"bed95633-1b6e-4cd0-9eaf-c5a9f75ac35d\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Are you authorized to work in the country where the job is located?"
+    },
+    {
+      "selector": "[name=\"bda78810-f000-4f1c-99c5-f783e161f2f7\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 We may provide immigration and sponsorship support to new employees ba"
+    },
+    {
+      "selector": "[name=\"d33e2a8f-3742-4e5e-b91c-b7607d3cdf63\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Are you able to work from our US office three days per week?"
+    },
+    {
+      "selector": "[id=\"94289604-aba1-476b-bbe1-19c24bccc38f_a90e16d2-baaf-4c31-b3e5-70b53f261040-labeled-checkbox-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Applicant Arbitration Agreement"
+    },
+    {
+      "selector": "[id=\"94289604-aba1-476b-bbe1-19c24bccc38f_7fe82de7-a1d7-4d8a-95a5-e5cc9adc84ea-labeled-checkbox-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 OpenAI is not seeking, nor should you disclose, any information that m"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_gender-labeled-radio-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Input gender"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Hispanic or Latino - A person of Cuban, Mexican, Puerto Rican, South o"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_veteran_status-labeled-radio-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Veteran Status"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_disability_status-labeled-radio-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Disability Status"
+    },
+    {
+      "selector": ":nth-match(input, 8)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Pick date..."
+    },
+    {
+      "selector": ":nth-match(input, 7)",
+      "expect": "",
+      "review": true,
+      "note": "combobox"
+    },
+    {
+      "selector": ":nth-match(input, 1)",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "[id=\"_systemfield_resume\"]",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_gender-labeled-radio-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_gender-labeled-radio-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-5\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-6\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_race-labeled-radio-7\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_veteran_status-labeled-radio-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_veteran_status-labeled-radio-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_disability_status-labeled-radio-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"2e11b181-e0a6-4adb-ad13-5509eeecaa31__systemfield_eeoc_disability_status-labeled-radio-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    }
+  ],
+  "minPrecision": 1
 }

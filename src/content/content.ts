@@ -19,11 +19,13 @@ import {
   setInputFile,
   unmappedQuestions,
   type CoverageReport,
+  type DetectedField,
   type FullProfile,
   type MappingSource,
   type MappingStore,
   type Profile,
   type ProfileKey,
+  type Resolution,
 } from '@jobhakken/autofill';
 
 import { mountRail, unmountRail } from './rail.js';
@@ -69,6 +71,25 @@ import { dummyCoverLetterFile, dummyResumeFile } from '../lib/testFiles.js';
 import { TEST_PROFILE } from '../lib/testProfile.js';
 import { applyEligibilityFilter, getEligibilityVerdict } from './eligibility.js';
 import { applyH1bBadges, getH1bVerdict } from './h1b.js';
+import { applyHiringPostFilters, includeFilterStatus, isPostSearchPage } from './hiringPosts.js';
+import { addExcludedTag, loadExcludedTags, removeExcludedTag } from '../lib/hiringPostFilterStore.js';
+import { applyJobTileFilters, isJobSearchPage } from './jobTiles.js';
+import {
+  addCompanyRule,
+  addKeywordRule,
+  loadHideJobTiles,
+  loadJobTileRules,
+  loadShowHiddenJobTiles,
+  removeCompanyRule,
+  removeKeywordRule,
+  setHideJobTiles,
+  setLabelRule,
+  setShowHiddenJobTiles,
+} from '../lib/jobTileFilterStore.js';
+import {
+  addIncludeTerm as addIncludeTermToStore,
+  removeIncludeTerm as removeIncludeTermFromStore,
+} from '../lib/hiringPostIncludeStore.js';
 
 /**
  * Content script (Phase 7.2/7.3): injects the docked panel, keeps the toolbar badge
@@ -503,7 +524,75 @@ const APPLICATION_KEYS = new Set([
  *     (work authorization, sponsorship, cover letter, salary, veteran/disability, …).
  */
 function isRelevantPage(): boolean {
-  return isAtsHost(location.hostname) || isAtsPage(document) || siteOptedIn || appLike;
+  return isAtsHost(location.hostname) || isAtsPage(document) || localAtsFingerprint() || siteOptedIn || appLike;
+}
+
+/** Job boards worth showing the launcher on even when the current page is not itself an application. */
+const JOB_BOARD_HOSTS =
+  /(^|\.)(linkedin\.com|indeed\.[a-z.]+|glassdoor\.[a-z.]+|ziprecruiter\.com|monster\.[a-z.]+|dice\.com|wellfound\.com|angel\.co|builtin\.com|otta\.com|hired\.com|simplyhired\.[a-z.]+)$/i;
+
+/**
+ * ATS hosts for LAUNCHER purposes only.
+ *
+ * Deliberately separate from `isAtsHost` in captureStore, which also authorises automatic capture — a
+ * privacy decision that should not widen just because we want a button somewhere. This list only
+ * decides where the collapsed launcher appears.
+ *
+ * `isAtsHost` covers Workday, Greenhouse, Lever, Ashby, iCIMS, SmartRecruiters, Workable, Taleo,
+ * SuccessFactors, BambooHR and Jobvite. Everything below is an ATS a real applicant hits regularly that
+ * it does not — Oracle Recruiting most notably, which is one of the platforms we have no autofill
+ * coverage for at all.
+ */
+const MORE_ATS_HOSTS =
+  /(^|\.)(oraclecloud\.com|recruitee\.com|breezy\.hr|applytojob\.com|teamtailor\.com|personio\.[a-z.]+|brassring\.com|paylocity\.com|paycomonline\.net|adp\.com|workforcenow\.adp\.com|dayforcehcm\.com|ultipro\.com|eightfold\.ai|avature\.net|phenompeople\.com|clearcompany\.com|jazz\.co|comeet\.co|pinpointhq\.com|homerun\.co|rippling\.com|gusto\.com|hibob\.com|factorialhr\.com|jobscore\.com|silkroad\.com|hirebridge\.com)$/i;
+
+/**
+ * A careers/apply URL on a company's own domain.
+ *
+ * Company-hosted ATS is the real gap: careers.acme.com running Workday or iCIMS behind the scenes
+ * matches no host pattern, and the packaged fingerprint misses it whenever the vendor's script URL
+ * isn't in the markup. The path is the giveaway and costs nothing to check. It cannot fire on ChatGPT,
+ * webmail or a support form, which is what the host allow-list exists to avoid.
+ */
+const JOB_PATH_HINT = /\/(careers?|jobs?|apply|application|vacanc\w*|openings?|positions?|join-us|work-with-us)(\/|$|\?|#)/i;
+
+/**
+ * Is this somewhere the launcher belongs, even with no form on screen?
+ *
+ * Deliberately a HOST allow-list rather than "does this page have inputs". The field-count test is what
+ * put the launcher on most of the web (#174) — a chat box, a webmail compose window and a support form
+ * all look like somewhere you might type. Keying on the site instead means the button is there while you
+ * browse a board or an ATS and never appears on ChatGPT.
+ *
+ * Only the collapsed launcher is offered on these pages; the panel itself still has nothing to fill
+ * until you reach a real application, and opening it is always the person's own click.
+ */
+function isJobSite(): boolean {
+  return (
+    JOB_BOARD_HOSTS.test(location.hostname) ||
+    isAtsHost(location.hostname) ||
+    MORE_ATS_HOSTS.test(location.hostname) ||
+    JOB_PATH_HINT.test(location.pathname) ||
+    siteOptedIn
+  );
+}
+
+/**
+ * ATS fingerprints the packaged detector misses.
+ *
+ * `detectAts` recognises Jobvite only by an iframe/script/link/form URL containing "jobvite" — which a
+ * company-hosted embed does not necessarily have. On a real Jobvite application the only such URL is a
+ * footer `<a class="jv-powered-by">`, and an `<a>` is not one of the four elements it inspects. The
+ * page is otherwise unmistakable: an Angular app whose markup is dense with `jv-`-prefixed classes.
+ * Mirrors the packaged Workday heuristic (3+ `data-automation-id` elements) rather than trusting a
+ * single marker, so an incidental class named `jv-something` cannot qualify a page on its own.
+ */
+function localAtsFingerprint(): boolean {
+  try {
+    return document.querySelectorAll('[class^="jv-"], [class*=" jv-"]').length >= 3;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -539,7 +628,49 @@ function looksFormish(): boolean {
 function updateBadge(): void {
   const fields = pageFields();
   fieldCount = fields.length;
-  const hasResume = detectFileInputs(document).some((f) => f.kind === 'resume');
+  // `detectFileInputs` promotes the first document-accepting upload to kind 'resume' when nothing is
+  // explicitly labelled one — and it treats an input with NO `accept` attribute as a document slot. That
+  // guess is right when we already know the page is an application (it finds the upload to attach to),
+  // but it is the wrong thing to decide that a page IS an application: ChatGPT's attach button, Gmail,
+  // Slack and any support form all have a bare <input type=file>, and every one of them was getting the
+  // rail. Require the upload to actually look like a résumé slot before treating it as proof.
+  const RESUME_SLOT = /resume|résumé|\bcv\b|curriculum|vitae/i;
+  const hasResume = detectFileInputs(document).some((f) => {
+    if (f.kind !== 'resume') return false;
+    const el = f.el as HTMLInputElement;
+    // Real ATS rarely label the input itself: BambooHR's carries aria-label="file-input" and puts
+    // "Resume*" in a sibling paragraph. So look at the smallest enclosing block that has text, not just
+    // the element's own attributes — bounded in size so this can never match a whole page's prose.
+    // Test EACH enclosing block, don't stop at the first one with text: BambooHR's immediate wrapper
+    // reads "Choose File / No file selected" and the actual "Resume*" caption sits a couple of levels
+    // further out. Each level is size-capped so this can never end up matching a whole page's prose.
+    let near = '';
+    let node: HTMLElement | null = el.parentElement;
+    for (let i = 0; node && i < 5; i++) {
+      const txt = (node.textContent ?? '').replace(/\s+/g, ' ').trim();
+      if (txt && txt.length <= 400) {
+        near = txt;
+        if (RESUME_SLOT.test(txt)) break;
+      }
+      node = node.parentElement;
+    }
+    const siblingNames = [...(el.parentElement?.querySelectorAll('input[name]') ?? [])]
+      .map((x) => x.getAttribute('name'))
+      .join(' ');
+    const hay = [
+      el.getAttribute('name'),
+      el.id,
+      el.getAttribute('aria-label'),
+      el.getAttribute('accept'),
+      el.closest('label')?.textContent,
+      el.labels?.[0]?.textContent,
+      siblingNames,
+      near,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    return RESUME_SLOT.test(hay);
+  });
   const hasAppSignal = fields.some((f) => {
     const key = resolveField(f)?.key;
     return key ? APPLICATION_KEYS.has(key) : false;
@@ -626,6 +757,9 @@ async function recordUnfillable(field: { kind: string; label: string }): Promise
  */
 export type PanelRow = {
   signature: string;
+  /** The control's DOM id, when it has one — lets a caller re-read its value later via `rawFieldValue`,
+   *  bypassing `detectFields()`'s visibility gate (see `rawFieldValue`'s own comment for why that matters). */
+  id?: string;
   label: string;
   kind: string;
   group: 'know' | 'ask' | 'remember' | 'sensitive';
@@ -693,13 +827,13 @@ async function learnFromPage(): Promise<number> {
   const store = await answerStore();
   let learned = 0;
   for (const field of pageFields()) {
-    const typed = currentValue(field).trim();
+    const typed = currentValueFixed(field).trim();
     if (!typed) continue;
     const label = field.label || field.name || field.id;
     // A question we can offer back needs a real question as its key. A bare name/id ("q3", "input-2")
     // will never match anywhere else, so banking it only grows the store.
     if (!label || label.length < 8 || !/[a-z]{3}.*[a-z]{3}/i.test(label)) continue;
-    const res = resolveField(field, { userRules: rules, store });
+    const res = rejectMisscopedStartDate(field, resolveField(field, { userRules: rules, store }));
     if (res?.key && EEO.has(res.key)) continue; // never bank a demographic answer
     // Only learn what we COULDN'T answer. If the profile already supplies a value for this field, a
     // remembered answer would never be offered anyway (the profile wins in panelFields), so banking it
@@ -745,7 +879,19 @@ async function draftTwo(label: string): Promise<{ options: string[]; error?: str
  * something. Re-checked on SPA mutations, since an application form often renders after first paint.
  */
 function syncRail(): void {
-  const wanted = isRelevantPage() || fieldCount >= 3;
+  // `isRelevantPage()` alone — deliberately NOT `|| fieldCount >= 3` (#174). A bare field count is not
+  // an application signal: a login form, a contact form, a newsletter signup, a checkout and most
+  // settings screens all clear three fields, so that clause put our launcher on most of the web. It
+  // also contradicted the documented contract on `isRelevantPage` right above ("opens ONLY on
+  // job-application pages, never on ordinary sites"). Beyond being noise, UI appearing on unrelated
+  // sites reads as "this extension watches everything I do", which is the opposite of the local-always
+  // promise we make. An unrecognised ATS is still reachable: `siteOptedIn` forces the rail on.
+  // LinkedIn's post search is not an application, so it can never satisfy `isRelevantPage()` — it gets
+  // its OWN branch here rather than being smuggled in by loosening that gate. Loosening it is what put
+  // the launcher on most of the web (#174); the rail renders only the post-filter section there.
+  // Same reasoning for LinkedIn's job SEARCH page (#183/#190): a results list has no fields either,
+  // so it gets its own OR clause rather than widening isRelevantPage() itself.
+  const wanted = isRelevantPage() || isPostSearchPage() || isJobSearchPage() || isJobSite();
   if (!wanted) {
     unmountRail();
     return;
@@ -756,6 +902,55 @@ function syncRail(): void {
   mountRail({
     panelFields,
     fillOne,
+    rawFieldValue,
+    addPostFilterTag: async (tag: string) => {
+      const tags = await addExcludedTag(tag);
+      await applyHiringPostFilters(); // take effect on the page under the rail, immediately
+      return tags;
+    },
+    removePostFilterTag: async (tag: string) => {
+      const tags = await removeExcludedTag(tag);
+      await applyHiringPostFilters(); // un-dims whatever that rule was hiding
+      return tags;
+    },
+    // #183/#190 job-tile filter rules — one store call per action, then re-apply immediately (same
+    // "take effect under the rail right away" precedent as addPostFilterTag/removePostFilterTag).
+    jobTileRule: async (action) => {
+      switch (action.type) {
+        case 'addCompany':
+          await addCompanyRule(action.value);
+          break;
+        case 'removeCompany':
+          await removeCompanyRule(action.value);
+          break;
+        case 'addKeyword':
+          await addKeywordRule(action.value);
+          break;
+        case 'removeKeyword':
+          await removeKeywordRule(action.value);
+          break;
+        case 'setLabel':
+          await setLabelRule(action.label, action.on);
+          break;
+        case 'setHide':
+          await setHideJobTiles(action.on);
+          break;
+        case 'setShowHidden':
+          await setShowHiddenJobTiles(action.on);
+          break;
+      }
+      await applyJobTileFilters();
+    },
+    addIncludeTerm: async (term: string) => {
+      const terms = await addIncludeTermToStore(term);
+      await applyHiringPostFilters(); // #186 — dims whatever no longer matches, immediately
+      return terms;
+    },
+    removeIncludeTerm: async (term: string) => {
+      const terms = await removeIncludeTermFromStore(term);
+      await applyHiringPostFilters(); // gives back whatever this term was the only match for
+      return terms;
+    },
     learnFromPage,
     noteUse: (label) => noteRememberedUse(label),
     promote: (label, on) => setPromoted(label, on),
@@ -763,8 +958,6 @@ function syncRail(): void {
     siteInsight: async () => ({ host: location.hostname, rows: await statsForHost(location.hostname) }),
     fieldOptions,
     markFields,
-    exportData,
-    importData,
     getProgressive: progressiveEnabled,
     setProgressive,
     getSiteDisabled: siteDisabled,
@@ -819,31 +1012,115 @@ async function fieldOptions(
  * people. Everything is removable, and cleared on unmount.
  */
 const MARK = 'data-jh-mark';
+// Each entry pairs a border pattern (still carries the solid/dashed/dotted DISTINCTION between "we
+// filled this" and "you decide" — dotted vs dashed was a deliberate choice so those read differently)
+// with a soft glow. The glow is what makes marking read as a consistent, deliberate "box" regardless of
+// what border/background the underlying page element happens to bring — outline alone landed
+// differently on a plain bordered input vs. a borderless combobox control, one looking like a clean
+// box and the other like a stray underline for the exact same "we filled this" meaning.
+const MARK_STYLE: Record<string, { border: string; glow: string }> = {
+  know: { border: '2px solid #5C7E48', glow: '0 0 0 3px rgba(92,126,72,.18), 0 0 10px 2px rgba(92,126,72,.35)' },
+  remember: { border: '2px solid #5A6B8C', glow: '0 0 0 3px rgba(90,107,140,.18), 0 0 10px 2px rgba(90,107,140,.35)' },
+  ask: { border: '2px dashed #BB6535', glow: '0 0 0 3px rgba(187,101,53,.15), 0 0 10px 2px rgba(187,101,53,.3)' },
+  sensitive: { border: '2px dotted #BB6535', glow: '0 0 0 3px rgba(187,101,53,.15), 0 0 10px 2px rgba(187,101,53,.3)' },
+};
+
+/** True when `node` looks like a real visual container — not a transparent layout wrapper. */
+function looksLikeARealBox(node: Element): boolean {
+  const r = node.getBoundingClientRect();
+  if (r.width <= 20 || r.height <= 10) return false;
+  const cs = getComputedStyle(node);
+  const bgOpaque = !/rgba?\([^)]*,\s*0\s*\)$/.test(cs.backgroundColor) && cs.backgroundColor !== 'transparent';
+  const hasBorder = (['Top', 'Right', 'Bottom', 'Left'] as const).some((side) => {
+    const w = parseFloat(cs[`border${side}Width`]);
+    return w > 0 && cs[`border${side}Style`] !== 'none';
+  });
+  return bgOpaque || hasBorder;
+}
+
+/**
+ * Which element(s) an outline should actually land on for `field` — not always `field.el`.
+ *
+ * A radio/checkbox GROUP is one question with several member inputs (`field.el` is just the first —
+ * see `detectRadioGroups`); outlining only that one made a 7-checkbox "select all that apply" question
+ * look like just its FIRST checkbox needed attention, not the whole question.
+ *
+ * A combobox's real interactive element can also be sized down to almost nothing — Greenhouse's
+ * Discipline field measured 3.5x20px against a 600x34px visible control box (verified live) — so
+ * outlining `field.el` directly draws a near-invisible sliver instead of a box around what a person
+ * actually sees on screen. A plain size check isn't enough either: react-select's intermediate wrapper
+ * divs (select__input-container, select__value-container) are ALSO "big enough" by width/height but
+ * fully transparent with no border — landing there drew a box around empty space that only visually
+ * lined up with the real control by coincidence, looking like a clean box on some fields and a stray
+ * underline on others for the exact same meaning (verified live: Start date month vs Start date year
+ * rendered differently even though both got a mark). Walk up until something actually LOOKS like the
+ * box a person associates with the field — has a real background or border, not just enough pixels.
+ */
+function markTargets(field: DetectedField): HTMLElement[] {
+  if (field.optionEls && field.optionEls.length > 1) return field.optionEls;
+  let node: HTMLElement = field.el;
+  for (let i = 0; i < 6; i++) {
+    if (looksLikeARealBox(node)) return [node];
+    if (!node.parentElement) break;
+    node = node.parentElement;
+  }
+  return [field.el];
+}
+
+function clearMark(el: HTMLElement): void {
+  el.style.outline = '';
+  el.style.outlineOffset = '';
+  el.style.boxShadow = '';
+  el.removeAttribute(MARK);
+}
+
+function applyMark(el: HTMLElement, group: PanelRow['group']): void {
+  const style = MARK_STYLE[group];
+  el.style.outline = style?.border ?? '';
+  el.style.outlineOffset = '1px';
+  el.style.boxShadow = style?.glow ?? '';
+  el.setAttribute(MARK, group);
+}
+
 function markFields(rows: PanelRow[], on: boolean): void {
-  const fields = new Map(pageFields().map((f) => [f.signature, f.el]));
   if (!on) {
-    for (const el of fields.values()) {
-      if (el.hasAttribute(MARK)) {
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-        el.removeAttribute(MARK);
-      }
-    }
+    document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach(clearMark);
     return;
   }
-  const style: Record<string, string> = {
-    know: '2px solid #5C7E48',
-    remember: '2px solid #5A6B8C',
-    ask: '2px dashed #BB6535',
-    sensitive: '2px dotted #BB6535', // dotted, so "yours to decide" reads differently from "we couldn't"
-  };
+  const fields = new Map(pageFields().map((f) => [f.signature, f]));
+  const stillMarked = new Set<HTMLElement>();
   for (const r of rows) {
-    const el = fields.get(r.signature);
-    if (!el) continue;
-    el.style.outline = style[r.group] ?? '';
-    el.style.outlineOffset = '1px';
-    el.setAttribute(MARK, r.group);
+    const field = fields.get(r.signature);
+    if (!field) continue;
+    // "know"/"remember" claim a fill actually happened — that's only true once the control HOLDS the
+    // value, not merely because we're confident we COULD fill it. `r.current` (the panelFields()
+    // snapshot) goes stale the moment a single field is filled without a full panel refresh, so check
+    // the LIVE DOM here rather than trust it — otherwise a field the user hasn't touched yet gets
+    // marked green the next time ANYTHING re-renders the panel, which reads as a false success.
+    // "ask"/"sensitive" are prompts, not success claims — they mark regardless of current state, since
+    // flagging what needs the user's attention is the whole point, filled or not.
+    if ((r.group === 'know' || r.group === 'remember') && !currentValueFixed(field).trim()) continue;
+    for (const el of markTargets(field)) {
+      applyMark(el, r.group);
+      stillMarked.add(el);
+    }
   }
+  // Clear anything marked in a PREVIOUS pass that this one didn't re-mark — a "know" field that got
+  // filled then un-filled, or a row that dropped out of `rows` after the page changed under us.
+  document.querySelectorAll<HTMLElement>(`[${MARK}]`).forEach((el) => {
+    if (!stillMarked.has(el)) clearMark(el);
+  });
+}
+
+/**
+ * Mark a SINGLE field right after it's filled, without touching any other field's mark.
+ *
+ * Progressive (fill-as-you-scroll) fills one field at a time as it enters the viewport — calling the
+ * full `markFields(rows, true)` for that would re-run its "clear anything not in this pass" sweep and
+ * erase every mark a panel-triggered fill had already placed elsewhere on the page. This only ever adds.
+ */
+function markOne(field: DetectedField, group: PanelRow['group']): void {
+  for (const el of markTargets(field)) applyMark(el, group);
 }
 
 /** Documents for this application: which résumés exist, which one applies here, cover-letter state. */
@@ -967,8 +1244,172 @@ async function importData(text: string): Promise<{ ok: boolean; summary?: string
  * textarea was being reported as a form field to fill — visible as a "Need you" row labelled with our
  * own placeholder. Anything inside the rail host is ours, never the application's.
  */
+/**
+ * Fields a previous scan found, keyed by signature — the basis for the rescue pass in `pageFields`.
+ * Per-page and never persisted: it holds live element handles, not answers.
+ */
+const seenFields = new Map<string, DetectedField>();
+
+/**
+ * Is the control's own VISIBLE WIDGET genuinely rendered — as opposed to the (possibly transparent)
+ * input inside it?
+ *
+ * `detectFields`'s visibility gate is a security control: it drops any input the browser isn't really
+ * rendering, so a malicious posting can't park an EEO field off-screen and harvest protected-class data
+ * on autofill. That gate is right to exist, but react-select trips it as a false positive — committing a
+ * value sets the inner SEARCH INPUT to `opacity:0` (the choice renders as a sibling span instead). The
+ * gate sees `opacity:0` and drops the field, so EVERY dropdown disappeared from EVERY later scan the
+ * instant it was filled: the panel silently lost the row, marking couldn't reach it, and `fillOne`
+ * answered `gone` about a field sitting in plain sight. Verified live on Greenhouse — a filled control's
+ * input was `opacity:0` while its own `select__control` was a fully visible 34px-tall box.
+ *
+ * So judge the widget, not the transparent input: walk up to the rendered control and demand it be
+ * genuinely visible at a real size and on-screen. A field the page actually hid still fails this, which
+ * keeps the original guarantee intact.
+ */
+function widgetVisible(el: Element): boolean {
+  let node: Element | null = el;
+  for (let i = 0; node && i < 6; i++) {
+    const cs = getComputedStyle(node);
+    const opacity = parseFloat(cs.opacity);
+    const hiddenHere = cs.display === 'none' || cs.visibility === 'hidden' || cs.visibility === 'collapse';
+    // An ancestor with display:none / visibility:hidden hides everything below it, so that's terminal —
+    // no point walking further up looking for a visible box that can't be showing.
+    if (hiddenHere) return false;
+    const r = node.getBoundingClientRect();
+    const onScreen = r.right > -2000 && r.bottom > -2000 && r.left < 100000 && r.top < 100000;
+    if (!Number.isNaN(opacity) && opacity > 0.01 && r.width > 20 && r.height > 10 && onScreen) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
+/**
+ * The page's fields, excluding our own, plus any the visibility gate has dropped since we last saw them
+ * while their widget stayed on screen (see `widgetVisible`).
+ *
+ * A rescued field keeps its ORIGINAL signature, so row identity — and therefore every `fillOne` call,
+ * panel row and mark keyed on it — survives the field being filled. Rescue requires the element still
+ * be `isConnected`, so a control the page genuinely removes is correctly forgotten: on Greenhouse,
+ * answering Race with a decline collapses the linked ethnicity pair and deletes the Race control
+ * outright, and that field must NOT linger in the panel afterwards.
+ */
+/**
+ * Make every signature unique on this page.
+ *
+ * A signature is `[section, label, type]`, and `section` comes from a fieldset legend — which repeatable
+ * sections mostly do not use. So a form with two Education rows produces "start date month|combobox"
+ * TWICE, and `fillOne` locates its target with `.find()`, which returns the first match. Filling the
+ * second row's date therefore wrote to the first row's, marking outlined the wrong control, and the
+ * panel showed two identical rows that both drove one field. Measured across the corpus: 18 fields on 6
+ * captured pages collide this way — Greenhouse's Education/Employment start+end months, Workday's
+ * From/To, "When can you start?" (3x) and "Date" (3x).
+ *
+ * Refusing them would be the safe-but-lossy answer and would leave "Add another" sections unfillable
+ * forever. Numbering the repeats instead keeps the first occurrence's signature EXACTLY as it was —
+ * so nothing that already worked changes — and gives every later one an addressable identity.
+ */
+function disambiguate(fields: DetectedField[]): DetectedField[] {
+  const total = new Map<string, number>();
+  for (const f of fields) total.set(f.signature, (total.get(f.signature) ?? 0) + 1);
+  if (![...total.values()].some((n) => n > 1)) return fields;
+  const seen = new Map<string, number>();
+  return fields.map((f) => {
+    if ((total.get(f.signature) ?? 0) < 2) return f;
+    const n = (seen.get(f.signature) ?? 0) + 1;
+    seen.set(f.signature, n);
+    return n === 1 ? f : { ...f, signature: `${f.signature}#${n}` };
+  });
+}
+
 function pageFields(): ReturnType<typeof detectFields> {
-  return detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el));
+  const fresh = disambiguate(
+    detectFields(document).filter((f) => !f.el.closest?.('#jh-rail-host') && !insideRail(f.el)),
+  );
+  const live = new Set(fresh.map((f) => f.signature));
+  for (const f of fresh) seenFields.set(f.signature, f);
+  const rescued: DetectedField[] = [];
+  for (const [sig, f] of seenFields) {
+    if (live.has(sig)) continue;
+    if (!f.el.isConnected || !widgetVisible(f.el)) {
+      seenFields.delete(sig); // gone for real, or genuinely hidden — stop tracking it
+      continue;
+    }
+    rescued.push(f);
+  }
+  return [...fresh, ...rescued];
+}
+
+/**
+ * `currentValue()` from @jobhakken/autofill doesn't special-case a standalone checkbox — it falls back
+ * to `.value`, which is a STATIC STRING (e.g. "1"/"true") present whether or not the box is checked.
+ * That made an UNCHECKED "Current role" checkbox report as "filled", which markFields()'s "only mark
+ * know/remember once the field actually holds a value" check (see markFields below) relies on being
+ * accurate — verified live (Samsung Semiconductor Greenhouse: `checked: false`, `value: "1"`, and the
+ * field still showed a green "we filled this" outline). Filed upstream (#163); wrapped here until the
+ * fix ships in a published @jobhakken/autofill release.
+ */
+function currentValueFixed(field: DetectedField): string {
+  if (field.kind !== 'radio' && field.el instanceof HTMLInputElement && field.el.type === 'checkbox') {
+    return field.el.checked ? 'checked' : '';
+  }
+  return currentValue(field);
+}
+
+/**
+ * Read what a combobox currently shows, by DOM id, independent of `detectFields()`'s visibility gate.
+ *
+ * A committed react-select value hides its own search input (`opacity:0`) once an option is chosen —
+ * the choice renders via a sibling span instead. `detectFields()`'s visibility gate treats that input
+ * as "not genuinely rendered" and drops the WHOLE field from every later scan (upstream, #165). That's
+ * harmless for "don't re-fill something already correct" — an absent row is never re-attempted either
+ * way — but it means `panelFields()` can never again report a value for a field the instant it's
+ * correctly filled, which blinds any check for whether a SIBLING's later fill silently reset it (#164:
+ * verified live, Greenhouse resets "Are you Hispanic/Latino?" when Race is set to "Decline To Self
+ * Identify"). Read the DOM directly by id instead, walking up for rendered text the same way `shown()`
+ * does in pageBridge — robust to whichever wrapper div a given vendor happens to use.
+ */
+function rawFieldValue(id: string): string {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  // A checkbox/radio's `.value` is a static attribute unrelated to whether it's actually checked (the
+  // same quirk `currentValueFixed` works around above) — verified live, it produced a false "regressed"
+  // read (a "Current role" checkbox reporting the string "Senior Engineer" regardless of checked state).
+  if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+    return el.checked ? 'checked' : '';
+  }
+  // A plain input's value lives in `.value`, never in `textContent` — check that first (this is what a
+  // walk-up-for-text search would miss entirely, since a text input's own value renders nothing a
+  // sibling/parent's `textContent` would ever pick up; verified live, it grabbed the field's LABEL text
+  // instead). Only fall back to reading rendered text for combobox-style widgets, which show their
+  // committed choice as a sibling span rather than in the (possibly hidden) search input's `.value`.
+  const v = String((el as HTMLInputElement).value ?? '').trim();
+  if (v) return v;
+  if (el.getAttribute('role') !== 'combobox' && el.getAttribute('aria-haspopup') !== 'listbox') return '';
+  let node: Element | null = el.parentElement;
+  for (let i = 0; node && i < 8; i++) {
+    const txt = (node.textContent ?? '').trim();
+    if (txt) return txt;
+    node = node.parentElement;
+  }
+  return '';
+}
+
+/**
+ * The `startDate` seed rule (@jobhakken/autofill) is written for a job-application availability
+ * question ("When can you start [this new job]?") and matches the bare phrase "start date" with no
+ * check on which SECTION the field is in. `deriveFullProfile()` computes a genuinely reasonable
+ * near-term date for that legitimate question — the bug isn't the value, it's WHERE it lands.
+ * Greenhouse's own history sections label their fields "Start date" too, for a completely different
+ * meaning: Education's is "when did you start this degree", Employment's is "when did you start this
+ * PAST job" — verified live, both wrongly resolved to the same job-availability answer (education:
+ * `education--*` ancestor class; employment: `employment--*`). Filed upstream (#161); reject the match
+ * locally for either until a section-aware fix ships — a real history date should stay unresolved
+ * (dashed "needs you") rather than assert something about a role the applicant never claimed.
+ */
+function rejectMisscopedStartDate(field: DetectedField, res: Resolution | null): Resolution | null {
+  if (res?.key === 'startDate' && field.el.closest('[class*="education" i], [class*="employment" i]')) return null;
+  return res;
 }
 
 /** True when an element lives inside the rail's shadow tree (closest() cannot cross that boundary). */
@@ -992,6 +1433,25 @@ function insideRail(el: Element): boolean {
 const PROGRESSIVE_KEY = 'f2a_progressive';
 let progressiveObserver: IntersectionObserver | null = null;
 const progressiveDone = new Set<string>();
+/**
+ * What we intend to fill, kept CURRENT rather than snapshotted per observer.
+ *
+ * The page-wide MutationObserver re-runs `syncRail()` (debounced 800ms) on any DOM change, and a React
+ * application form mutates constantly — so `startProgressive()` gets called over and over. It used to
+ * `stopProgressive()` FIRST and then `await` slow work (per-field resolution + storage reads) before
+ * building the replacement, which left the page unobserved for the whole gap. Anything scrolled past
+ * during a gap was missed for good, because an IntersectionObserver only reports a field re-entering
+ * the viewport, not one already sitting in it. That's what made scroll-fill look like it "sometimes
+ * works": whether a field filled depended on whether a rebuild happened to be in flight as it came
+ * into view. Refreshing the page appeared to fix it only because the reload re-ran the whole pass.
+ *
+ * So the observer is now created once and never torn down on a refresh — these maps are updated in
+ * place and newly-appeared fields are simply added to it, which also picks up controls a prior fill
+ * revealed (e.g. Greenhouse's Race question, which only exists once Hispanic/Latino is answered).
+ */
+const progressiveWanted = new Map<string, PanelRow>();
+const progressiveByEl = new Map<Element, string>();
+let progressiveSyncing = false;
 
 export async function progressiveEnabled(): Promise<boolean> {
   try {
@@ -1003,48 +1463,83 @@ export async function progressiveEnabled(): Promise<boolean> {
 
 async function setProgressive(on: boolean): Promise<void> {
   await chrome.storage.local.set({ [PROGRESSIVE_KEY]: on }).catch(() => {});
-  if (on) void startProgressive();
-  else stopProgressive();
+  if (!on) {
+    stopProgressive();
+    return;
+  }
+  // Switching it on is an explicit request for a pass over this page, so forget what a previous
+  // enable-then-disable already visited — otherwise a field skipped earlier in the session could never
+  // be reconsidered. Safe to re-offer: the observer still refuses to touch a field that holds a value
+  // or that the person is typing in, so this can't overwrite anything.
+  progressiveDone.clear();
+  void startProgressive();
 }
 
 function stopProgressive(): void {
   progressiveObserver?.disconnect();
   progressiveObserver = null;
+  progressiveWanted.clear();
+  progressiveByEl.clear();
 }
 
-async function startProgressive(): Promise<void> {
-  stopProgressive();
-  if (await siteDisabled()) return;
-  const data = await panelFields();
-  const fillSensitive = await loadFillSensitive();
-  const byEl = new Map(pageFields().map((f) => [f.el, f.signature]));
-  const wanted = new Map(
-    data.rows
-      .filter((r) => r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive)))
-      .map((r) => [r.signature, r]),
-  );
+/** One long-lived observer's callback — reads the live maps, never a per-build snapshot. */
+function onProgressiveIntersect(entries: IntersectionObserverEntry[]): void {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const sig = progressiveByEl.get(e.target);
+    const row = sig ? progressiveWanted.get(sig) : undefined;
+    if (!sig || !row || progressiveDone.has(sig)) continue;
+    // Never write into what the person is typing in, and never overwrite what they typed.
+    if (document.activeElement === e.target) continue;
+    const live = pageFields().find((f) => f.signature === sig);
+    if (!live || currentValueFixed(live).trim()) {
+      progressiveDone.add(sig); // already answered, by us or by them
+      continue;
+    }
+    progressiveDone.add(sig);
+    // Show what just happened the same way a panel-triggered fill does — otherwise the one fill
+    // path a person never explicitly asked for is also the only one that leaves no visible trace.
+    void fillOne(sig, row.value).then((res) => {
+      if (res.filled) markOne(live, row.group);
+    });
+  }
+}
 
-  progressiveObserver = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        const sig = byEl.get(e.target as HTMLElement);
-        const row = sig ? wanted.get(sig) : undefined;
-        if (!sig || !row || progressiveDone.has(sig)) continue;
-        // Never write into what the person is typing in, and never overwrite what they typed.
-        if (document.activeElement === e.target) continue;
-        const live = pageFields().find((f) => f.signature === sig);
-        if (!live || currentValue(live).trim()) {
-          progressiveDone.add(sig); // already answered, by us or by them
-          continue;
-        }
-        progressiveDone.add(sig);
-        void fillOne(sig, row.value);
+/**
+ * Start scroll-filling, or refresh what it's watching. Safe to call repeatedly — the page-wide
+ * MutationObserver does exactly that. Never disconnects an existing observer (see `progressiveWanted`
+ * for why that mattered); it updates the maps in place and observes anything newly eligible.
+ */
+async function startProgressive(): Promise<void> {
+  if (await siteDisabled()) {
+    stopProgressive();
+    return;
+  }
+  if (progressiveSyncing) return; // a refresh is already in flight; it will pick up current DOM state
+  progressiveSyncing = true;
+  try {
+    const data = await panelFields();
+    const fillSensitive = await loadFillSensitive();
+    progressiveWanted.clear();
+    for (const r of data.rows) {
+      if (r.value && (r.group === 'know' || (r.group === 'sensitive' && fillSensitive))) {
+        progressiveWanted.set(r.signature, r);
       }
-    },
-    { rootMargin: '0px 0px -15% 0px', threshold: 0.35 },
-  );
-  for (const [el, sig] of byEl) if (wanted.has(sig)) progressiveObserver.observe(el);
+    }
+    for (const [el] of progressiveByEl) if (!el.isConnected) progressiveByEl.delete(el); // drop replaced nodes
+    for (const f of pageFields()) progressiveByEl.set(f.el, f.signature);
+    // Built AFTER the awaits above, so there is never a window with no observer attached.
+    progressiveObserver ??= new IntersectionObserver(onProgressiveIntersect, {
+      rootMargin: '0px 0px -15% 0px',
+      threshold: 0.35,
+    });
+    // observe() is idempotent per element, so re-observing an already-watched field costs nothing.
+    for (const [el, sig] of progressiveByEl) {
+      if (progressiveWanted.has(sig) && !progressiveDone.has(sig)) progressiveObserver.observe(el);
+    }
+  } finally {
+    progressiveSyncing = false;
+  }
 }
 
 /** Per-site escape hatch: silence us on one employer's page without disabling the extension. */
@@ -1067,7 +1562,47 @@ async function setSiteDisabled(on: boolean): Promise<void> {
   if (on) stopProgressive();
 }
 
-async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; host: string }> {
+async function panelFields(): Promise<{
+  rows: PanelRow[];
+  ats: string | null;
+  host: string;
+  jobTileFilter?: {
+    rules: Awaited<ReturnType<typeof loadJobTileRules>>;
+    hide: boolean;
+    showHidden: boolean;
+    shown: number;
+    total: number;
+  };
+  postFilter?: { tags: string[]; include?: { terms: string[]; visible: number; total: number } };
+}> {
+  // LinkedIn post search has no application fields, so skip detection entirely and hand the rail the
+  // two things it renders there: the person's own exclude-tag rules and "only show" include terms
+  // (#186) — the count comes from hiringPosts.ts's includeFilterStatus(), so the actual matching logic
+  // lives in exactly one place.
+  if (isPostSearchPage()) {
+    return {
+      rows: [],
+      ats: null,
+      host: location.hostname,
+      postFilter: { tags: await loadExcludedTags(), include: await includeFilterStatus() },
+    };
+  }
+  // Same reasoning for LinkedIn's job SEARCH page (#183/#190): re-apply (idempotent — LinkedIn wipes
+  // inline styles on re-render, so every pass recomputes) and hand back the fresh counts + rules.
+  if (isJobSearchPage()) {
+    const [rules, hide, showHidden, summary] = await Promise.all([
+      loadJobTileRules(),
+      loadHideJobTiles(),
+      loadShowHiddenJobTiles(),
+      applyJobTileFilters(),
+    ]);
+    return {
+      rows: [],
+      ats: null,
+      host: location.hostname,
+      jobTileFilter: { rules, hide, showHidden, shown: summary?.shown ?? 0, total: summary?.total ?? 0 },
+    };
+  }
   const fp = await getFullProfile();
   const profile: Profile = fp?.profile ?? {};
   const rules = withBuiltinRules(fp?.rules);
@@ -1079,7 +1614,7 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
   for (const field of fields) {
     const label = field.label || field.name || field.id;
     const q = normalizeQuestion(label);
-    const res = resolveField(field, { userRules: rules, store });
+    const res = rejectMisscopedStartDate(field, resolveField(field, { userRules: rules, store }));
     const key = res?.key;
     const profileValue = res?.literal ?? (key ? (profile[key] ?? '') : '');
     const consequential = !!key && CONSEQUENTIAL.has(key);
@@ -1128,11 +1663,12 @@ async function panelFields(): Promise<{ rows: PanelRow[]; ats: string | null; ho
         ? { count: optCount > 0 ? optCount : null, searchable: field.kind === 'combobox' && optCount === 0 }
         : undefined,
       signature: field.signature,
+      id: field.id || undefined,
       label,
       kind: field.kind,
       group,
       value,
-      current: currentValue(field),
+      current: currentValueFixed(field),
       source: group === 'remember' ? 'learned' : source,
       why,
       consequential,
@@ -2038,6 +2574,8 @@ async function init() {
 
   updateBadge(); // toolbar-icon field count
   applyBadges(); // mark/hide won't-sponsor tiles + H-1B sponsor badges
+  if (isPostSearchPage()) void applyHiringPostFilters(); // LinkedIn content-search only — unrelated to badges/rail below
+  if (isJobSearchPage()) void applyJobTileFilters(); // #183/#190 — LinkedIn job-search tiles, same fire-and-forget shape
   syncRail(); // the rail + its launcher, once we know this page is an application
 
   // Re-detect on SPA/DOM changes (debounced) → refresh badge + eligibility + passive capture.
@@ -2050,6 +2588,42 @@ async function init() {
       // constantly. Running the full detectFields + per-field resolution + badge passes there was
       // continuous wasted work and a real risk to browser responsiveness. A single querySelectorAll
       // costs nothing and rules out the overwhelming majority of pages.
+      // LinkedIn's content-search page is never "formish" (no application fields), so it's checked
+      // and returned on its own — same cheap-gate discipline, a different page shape.
+      if (isPostSearchPage()) {
+        void applyHiringPostFilters();
+        // syncRail() BEFORE returning. LinkedIn is a single-page app: switching between the All and
+        // Posts verticals, or typing a new search, never reloads the document, so this mutation handler
+        // is the only thing that runs. Returning here meant the rail could only ever mount from the
+        // one-time call at page load — which is exactly the reported behaviour, that the sidebar
+        // appears only after a manual refresh and vanishes when you navigate.
+        syncRail();
+        return;
+      }
+      // A job LISTING page (LinkedIn's /jobs/, a board's results) is never "formish" — it has no
+      // application fields — so the gate below returned before `applyBadges()` could run. That put the
+      // H-1B and sponsorship badges out of reach on the one surface they exist for, and made the
+      // "re-run as you switch jobs" below unreachable on the exact page where you switch jobs. The
+      // badges only ever appeared if a listing happened to sit on a page that also had a form.
+      // Verified against a saved /jobs/collections/recommended/ capture: 24 job links, zero of our
+      // markup anywhere in it. Cheap check, and it does not depend on recognising a particular board.
+      if (document.querySelector('a[href*="/jobs/view/"], a[href*="currentJobId="]')) {
+        updateBadge();
+        applyBadges();
+        // #183/#190 — same tiles this block already scans; re-apply so a rule keeps holding across
+        // LinkedIn's React re-renders (it resets inline styles, not the DOM structure the query above
+        // depends on).
+        if (isJobSearchPage()) {
+          void applyJobTileFilters();
+          // And mount the rail HERE, before the form gate below returns. A jobs page has no application
+          // fields, so `looksFormish()` is false and this handler used to return before ever reaching
+          // syncRail() — leaving the rail mountable only by the one-time call at page load. LinkedIn is
+          // a single-page app, so arriving at /jobs/collections/ by clicking rather than loading meant
+          // no rail until a manual refresh. Same fix already applied to the post-search branch above;
+          // this is the other half of it.
+          syncRail();
+        }
+      }
       if (!looksFormish()) return;
       updateBadge();
       syncRail();
@@ -2180,6 +2754,17 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           sendResponse(await fillOne(String(msg.params?.signature ?? ''), String(msg.params?.value ?? '')));
           break;
         case 'autofill': {
+          // Refuse a page that is not an application (#176). The rail already declines to appear on one
+          // (#174), but that is a UI guard, not a safety property: this RPC fills whatever it is pointed
+          // at, and the toolbar popup can point it anywhere. Verified by the golden gate — on an
+          // ordinary login/contact form it typed the person's name, email, phone and company into
+          // someone else's website. Data never leaving the browser to US means nothing if we hand it to
+          // an arbitrary third party's form. `siteOptedIn` remains the escape hatch for an ATS we do not
+          // recognise, so this refuses the unrecognised, never the merely unsupported.
+          if (!isRelevantPage()) {
+            sendResponse({ filled: 0, refused: 'not-an-application-page' });
+            break;
+          }
           autofillAbort?.abort(); // supersede any in-flight run
           const ctrl = (autofillAbort = new AbortController());
           // one click fills the WHOLE application — advances multi-step wizards (Workday/Oracle/…)

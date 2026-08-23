@@ -16,6 +16,10 @@ export default tseslint.config(
       // Playwright dev harnesses: they embed browser code inside page.evaluate() callbacks (document,
       // window, …) that ESLint's Node parse can't reason about. Not shipped code — exclude from lint.
       'e2e/tools/',
+      // Agent worktrees live under .claude/ (gitignored, but ESLint walks the filesystem, not git).
+      // Linting another checkout's copy of the repo reported hundreds of errors from code that is not
+      // this working tree's, and made `npm run verify` — the documented merge gate — impossible to pass.
+      '.claude/',
       'full_website/',
       'playwright-report/',
       'test-results/',

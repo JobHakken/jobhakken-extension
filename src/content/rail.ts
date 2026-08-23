@@ -18,6 +18,21 @@
 export type RailApi = {
   panelFields(): Promise<PanelData>;
   fillOne(signature: string, value: string): Promise<FillResult>;
+  /** Read a control's current displayed value by DOM id, independent of the panel's own field
+   *  detection — see content.ts's `rawFieldValue` for why that independence matters (#164/#165). */
+  rawFieldValue(id: string): string;
+  /** LinkedIn post-filter rules. Both re-apply the filter to the live page before resolving, so the
+   *  feed under the rail updates as the list is edited. */
+  addPostFilterTag(tag: string): Promise<string[]>;
+  removePostFilterTag(tag: string): Promise<string[]>;
+  /** LinkedIn job-SEARCH tile filter rules (#183/#190) — one method, one action union, so this
+   *  whole feature is a single additional line on this type regardless of what else lands here.
+   *  Re-applies the filter to the live tiles before resolving, same as the post-filter methods above. */
+  jobTileRule(action: JobTileRuleAction): Promise<void>;
+  /** #186: the separate "only show posts matching" include-term list — same re-apply-immediately
+   *  contract as the exclude-tag pair above. */
+  addIncludeTerm(term: string): Promise<string[]>;
+  removeIncludeTerm(term: string): Promise<string[]>;
   learnFromPage(): Promise<number>;
   noteUse(label: string): Promise<number>;
   promote(label: string, on: boolean): Promise<void>;
@@ -36,8 +51,6 @@ export type RailApi = {
   attachCover(text: string): Promise<{ ok: boolean; how?: string }>;
   addResume(file: File): Promise<void>;
   saveTemplate(text: string): Promise<void>;
-  exportData(): Promise<{ ok: boolean; name?: string; summary?: string }>;
-  importData(text: string): Promise<{ ok: boolean; summary?: string; error?: string }>;
   getProgressive(): Promise<boolean>;
   setProgressive(on: boolean): Promise<void>;
   getSiteDisabled(): Promise<boolean>;
@@ -55,6 +68,8 @@ export type RailApi = {
 type Group = 'know' | 'ask' | 'remember' | 'sensitive';
 export type PanelRow = {
   signature: string;
+  /** The control's DOM id, when it has one — see content.ts's `rawFieldValue` for why a caller needs it. */
+  id?: string;
   label: string;
   kind: string;
   group: Group;
@@ -68,8 +83,72 @@ export type PanelRow = {
   addable?: boolean;
   choices?: { count: number | null; searchable: boolean };
 };
-export type PanelData = { rows: PanelRow[]; ats: string | null; host: string };
+export type PanelData = {
+  rows: PanelRow[];
+  ats: string | null;
+  host: string;
+  /** Present only on LinkedIn's post search, where the rail shows the filter section INSTEAD of the
+   *  field sections — that page is a feed, not an application, so it has no fields to offer. */
+  /** Present only on a LinkedIn job SEARCH page (#183/#190) — same reasoning as postFilter just
+   *  above: a job list has no fields to fill either, so the rail shows the tile-filter rules instead. */
+  jobTileFilter?: {
+    rules: {
+      companies: string[];
+      keywords: string[];
+      labels: Record<'promoted' | 'reposted' | 'applied' | 'viewed' | 'dismissed', boolean>;
+    };
+    hide: boolean;
+    showHidden: boolean;
+    shown: number;
+    total: number;
+  };
+  postFilter?: { tags: string[]; include?: { terms: string[]; visible: number; total: number } };
+};
 type FillResult = { filled: boolean; reason?: string };
+export type JobTileLabelKey = 'promoted' | 'reposted' | 'applied' | 'viewed' | 'dismissed';
+export type JobTileRuleAction =
+  | { type: 'addCompany'; value: string }
+  | { type: 'removeCompany'; value: string }
+  | { type: 'addKeyword'; value: string }
+  | { type: 'removeKeyword'; value: string }
+  | { type: 'setLabel'; label: JobTileLabelKey; on: boolean }
+  | { type: 'setHide'; on: boolean }
+  | { type: 'setShowHidden'; on: boolean };
+
+const HP_CSS = `
+.hpBody { padding: 0 12px 12px; }
+.hpRule { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line-soft);
+  border-radius: 7px; padding: 7px 9px; margin-bottom: 6px; }
+.hpRule .hpT { flex: 1; font-size: 12.5px; word-break: break-word; }
+.hpRule .hpX { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 14px;
+  line-height: 1; padding: 2px 4px; border-radius: 4px; font-family: inherit; }
+.hpRule .hpX:hover { background: var(--sunk); color: var(--fg); }
+.hpAdd { display: flex; gap: 6px; margin-top: 9px; }
+.hpAdd input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--card); color: var(--fg);
+  border-radius: 7px; padding: 7px 9px; font: inherit; font-size: 12.5px; }
+.hpAdd input:focus-visible { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(92,126,72,.18); }
+.hpBtn { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 7px;
+  padding: 7px 11px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.hpBtn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent-deep); }
+.hpNote { font-size: 11px; color: var(--muted); margin: 9px 0 0; }
+/* #186: always-visible while an include rule is active — a too-narrow term must never look identical
+   to the feature silently breaking. */
+.hpCount { font-size: 11.5px; font-weight: 650; color: var(--fg); margin: 0 0 8px; }
+`;
+
+// #183/#190 job-tile filter section. Reuses .hpRule/.hpAdd/.hpBtn/.hpNote above for the
+// company/keyword rows — only the pieces those don't cover (the count/audit button, the label
+// checkboxes, the subheadings) get their own rules here.
+const JT_CSS = `
+.jtCount { display: block; width: 100%; text-align: left; border: 1px solid var(--line-soft); background: var(--sunk);
+  color: var(--fg); border-radius: 7px; padding: 7px 9px; font: inherit; font-size: 12.5px; font-weight: 650;
+  cursor: pointer; margin-bottom: 10px; }
+.jtCount:hover { border-color: var(--accent); }
+.jtSub { font-size: 11px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: .02em;
+  margin: 12px 0 6px; }
+.jtLabel { display: flex; align-items: center; gap: 7px; font-size: 12.5px; padding: 4px 0; cursor: pointer; }
+.jtHidePref { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted); }
+`;
 
 const OPEN_KEY = 'f2a_rail_open';
 const FOLD_KEY = 'f2a_rail_folds';
@@ -88,7 +167,66 @@ function esc(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-const CSS = `
+/**
+ * The "only show posts matching" section (#186) — a second, independent rule list next to the exclude
+ * list above (postFilterHtml), reusing its visual language (`.hpRule`/`.hpAdd`/`.hpBtn`/`.hpNote`) but
+ * kept structurally separate: distinct heading, distinct data-attributes (`data-hp-inc-*`), and — the
+ * one thing the exclude list doesn't need — a PERMANENT count. An include list is brutal in a way an
+ * exclude list isn't: one over-narrow term hides everything else, and that failure looks identical to
+ * the feature being broken unless the count says otherwise.
+ */
+function includeFilterHtml(include?: { terms: string[]; visible: number; total: number }): string {
+  if (!include) return '';
+  const { terms, visible, total } = include;
+  const rules = terms.length
+    ? terms
+        .map(
+          (term) =>
+            `<div class="hpRule"><span class="hpT">${esc(term)}</span>` +
+            `<button class="hpX" data-hp-inc-remove="${esc(term)}" title="Stop requiring this" aria-label="Stop requiring ${esc(term)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty"><b>Showing everything</b>Add a term below to only show posts matching it.</p>`;
+  const count = terms.length ? `<p class="hpCount">Showing ${visible} of ${total}</p>` : '';
+  return (
+    `<section class="grp">` +
+    `<div class="acc"><span class="sp">Only show posts matching</span><span class="n">${terms.length || ''}</span></div>` +
+    `<div class="hpBody">${count}${rules}` +
+    `<form class="hpAdd" id="hpIncAdd"><input id="hpIncIn" type="text" placeholder="Only show posts mentioning…" autocomplete="off" />` +
+    `<button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="hpNote">Matching just one term is enough — exclude rules above still apply on top.</p></div></section>`
+  );
+}
+
+/**
+ * Self-contained wiring for the include-terms section above: its own delegated click/submit listeners,
+ * matching only `data-hp-inc-*`/`#hpIncAdd` — kept entirely separate from the exclude list's existing
+ * handlers so this never needs to touch them. Delegated on `wrap` (never replaced across re-renders),
+ * so one call at mount time keeps working against every freshly-rendered include section afterward.
+ */
+function wireIncludeFilter(wrap: HTMLElement, api: RailApi, refresh: () => Promise<void>): void {
+  wrap.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-hp-inc-remove]');
+    if (!btn) return;
+    e.preventDefault();
+    void api.removeIncludeTerm(btn.dataset.hpIncRemove ?? '').then(() => refresh());
+  });
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('#hpIncAdd');
+    if (!form) return;
+    e.preventDefault();
+    const input = wrap.querySelector<HTMLInputElement>('#hpIncIn');
+    const term = (input?.value ?? '').trim();
+    if (!term) return;
+    if (input) input.value = '';
+    void api.addIncludeTerm(term).then(() => refresh());
+  });
+}
+
+const CSS =
+  HP_CSS +
+  JT_CSS +
+  `
 :host { all: initial; }
 *, *::before, *::after { box-sizing: border-box; }
 .wrap {
@@ -267,11 +405,44 @@ const TITLES: Record<Group, string> = {
   sensitive: 'Sensitive — your call',
 };
 
+/**
+ * True when this content script has been severed from the extension — which happens the moment the
+ * extension is reloaded while a page stays open. `chrome.storage` then reads as undefined, and any call
+ * throws "Cannot read properties of undefined (reading 'local')" at whatever the user just clicked.
+ * Better to say so and offer the fix than to surface a TypeError.
+ */
+function orphaned(): boolean {
+  try {
+    return !chrome?.runtime?.id || !chrome?.storage?.local;
+  } catch {
+    return true;
+  }
+}
+
 export function mountRail(api: RailApi): void {
   if (document.getElementById('jh-rail-host')) return; // idempotent: SPA re-renders must not stack rails
 
   const host = document.createElement('div');
   host.id = 'jh-rail-host';
+  // The stacking has to live on the HOST, not inside the shadow root. `.wrap` already carries a near-max
+  // z-index, but z-index only orders elements WITHIN a stacking context — the shadow content competes
+  // with its siblings inside the host, never with the page's own layers. The host itself was a plain
+  // div with no position and no z-index, so against a site's pinned widgets (LinkedIn's messaging bar,
+  // its modals) it had nothing to compete with and lost: the rail rendered underneath them.
+  //
+  // Fixed with zero size takes it out of flow so it can never shift the page, while the fixed `.wrap`
+  // inside still resolves against the transformed <html> and fills the right edge as before. `important`
+  // because a hostile or merely aggressive page stylesheet must not be able to reorder us.
+  for (const [k, v] of Object.entries({
+    position: 'fixed',
+    top: '0',
+    right: '0',
+    width: '0',
+    height: '0',
+    'z-index': '2147483647',
+  })) {
+    host.style.setProperty(k, v, 'important');
+  }
   const root = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = CSS;
@@ -305,14 +476,16 @@ export function mountRail(api: RailApi): void {
         <span class="note" id="note"></span>
         <span class="hbtns">
           <button id="marks" title="Outline these fields on the page">▣</button>
-          <button id="export" title="Back up everything this extension has learned, all sites">⤓</button>
-          <button id="import" title="Restore a backup">⤒</button>
         </span>
         <button class="cta" id="fillAll" hidden>Fill</button>
       </footer>
     </section>`;
   root.append(wrap);
-  (document.body ?? document.documentElement).append(host);
+  // Attached to <html>, deliberately NOT to <body>: body carries the containment transform while the
+  // rail is open, and anything inside a transformed element is positioned against it rather than the
+  // viewport. Sitting outside body keeps the rail pinned to the real window edge.
+  document.documentElement.append(host);
+  wireIncludeFilter(wrap, api, refresh); // #186 — self-contained; see the function's own comment
 
   const $ = <T extends HTMLElement>(id: string) => root.getElementById(id) as T;
   let rows: PanelRow[] = [];
@@ -331,7 +504,50 @@ export function mountRail(api: RailApi): void {
     const el = document.documentElement;
     el.style.transition = 'margin-right .15s ease';
     el.style.marginRight = open ? `${WIDTH}px` : '';
+    // A `position: fixed` element is placed against the VIEWPORT, not against <html>, so the margin
+    // above does not move it: measured on LinkedIn with a 1600px window and a 320px rail, its fixed
+    // overlays still reported right = 1600 and slid straight under the panel. That is the content
+    // getting cut — not the document flow, which the margin handles correctly.
+    //
+    // Any non-`none` transform makes an element the containing block for its fixed-position
+    // descendants (CSS Transforms spec), so with one on <html> those elements resolve against the
+    // narrowed box and stop at the rail's edge. `translateZ(0)` is the cheapest such value.
+    // The transform goes on BODY, not on <html>. On <html> it contains every fixed element in the
+    // document — including our own rail, whose `right: 0` then resolved to the narrowed box (1280 of a
+    // 1600px window) and slid the panel 320px left, on top of the content it was supposed to sit beside.
+    // On <body> it contains the PAGE's pinned widgets while the rail, attached outside <body>, still
+    // resolves against the real viewport and stays flush to the edge.
+    if (document.body) document.body.style.transform = open ? 'translateZ(0)' : '';
   }
+
+  /**
+   * Put the margin back when the page throws it away.
+   *
+   * `reflow` runs once, on open. LinkedIn rewrites `documentElement`'s style attribute during its own
+   * re-renders and on SPA navigation, which silently drops the margin while the rail stays open — so
+   * the panel ends up covering the page instead of pushing it, and the right-hand content is cut off.
+   * That is the "sometimes it fits, sometimes it doesn't" report: it depends purely on whether the page
+   * happened to re-render after you opened the rail.
+   *
+   * This is the third time inline styles have been wiped out from under us (the faded post, the faded
+   * tile, now the page margin), so the fix is the same one that worked twice: never trust a one-time
+   * write — watch the actual state and restore it. Writing the margin back re-triggers this observer,
+   * but the equality check stops there, so there is no loop.
+   */
+  const layoutGuard = new MutationObserver(() => {
+    const open = !$('rail').hidden;
+    const de = document.documentElement;
+    if (open && (de.style.marginRight !== `${WIDTH}px` || !document.body?.style.transform)) reflow(true);
+  });
+  layoutGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  // Watch BODY too. The margin lives on <html> but the containment transform lives on <body> (see
+  // reflow), and observing only <html> meant a page rewriting body's style silently dropped the
+  // transform with nothing to restore it — measured on LinkedIn's post search, where body's transform
+  // was gone while the margin was still in place.
+  if (document.body) layoutGuard.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+  // unmountRail() is the teardown path and it only has the host element to work from, so hang the
+  // observer off it rather than leaking one per mount.
+  (host as unknown as { __jhLayoutGuard?: MutationObserver }).__jhLayoutGuard = layoutGuard;
 
   async function setOpen(open: boolean, persist = true): Promise<void> {
     $('rail').hidden = !open;
@@ -385,8 +601,62 @@ export function mountRail(api: RailApi): void {
     </div>`;
   }
 
+  /** The LinkedIn post-filter section: the person's exclude rules, in one place they can audit.
+   *  The dim/tag chips stay ON the posts — those are about that post. A growing rule list is what
+   *  benefits from being centralised, instead of being re-found as a chip somewhere back in a feed. */
+  function postFilterHtml(tags: string[]): string {
+    const rules = tags.length
+      ? tags
+          .map(
+            (tag) =>
+              `<div class="hpRule"><span class="hpT">${esc(tag)}</span>` +
+              `<button class="hpX" data-hp-remove="${esc(tag)}" title="Stop hiding these" aria-label="Stop hiding ${esc(tag)}">✕</button></div>`,
+          )
+          .join('')
+      : `<p class="empty"><b>Nothing hidden yet</b>Tag a post below to start.</p>`;
+    return (
+      `<section class="grp">` +
+      `<div class="acc"><span class="sp">Hidden post types</span><span class="n">${tags.length || ''}</span></div>` +
+      `<div class="hpBody">${rules}` +
+      `<form class="hpAdd" id="hpAdd"><input id="hpIn" type="text" placeholder="Add a tag to hide…" autocomplete="off" />` +
+      `<button class="hpBtn" type="submit">Add</button></form>` +
+      `<p class="hpNote">Only your tag choices are saved — never post text.</p></div></section>`
+    );
+  }
+
   function render(d: PanelData): void {
     rows = d.rows;
+    // A feed, not an application: show the filter rules and nothing else. Returning early keeps every
+    // field-shaped control (Fill, the tallies, the switches) off a page where none of them mean anything.
+    if (d.postFilter) {
+      $('badge').className = 'badge named';
+      $('bname').textContent = 'LinkedIn';
+      $('bsub').textContent = 'post search';
+      $('ctx').textContent = `${d.postFilter.tags.length} rule${d.postFilter.tags.length === 1 ? '' : 's'}`;
+      $('tally').innerHTML = '';
+      $('note').textContent = 'filtering posts';
+      $<HTMLButtonElement>('fillAll').hidden = true;
+      (root.querySelector('.switches') as HTMLElement).hidden = true;
+      $('body').innerHTML = postFilterHtml(d.postFilter.tags) + includeFilterHtml(d.postFilter.include);
+      return;
+    }
+    // #183/#190 — a LinkedIn job SEARCH page, same reasoning as postFilter just above: no fields to
+    // fill, so the rail shows the tile-filter rules instead. Kept as its own branch (not folded into
+    // the one above) so neither page type's rendering depends on the other's shape.
+    if (d.jobTileFilter) {
+      const { shown, total } = d.jobTileFilter;
+      $('badge').className = 'badge named';
+      $('bname').textContent = 'LinkedIn';
+      $('bsub').textContent = 'job search';
+      $('ctx').textContent = total ? `${shown} of ${total} shown` : '';
+      $('tally').innerHTML = '';
+      $('note').textContent = 'filtering jobs';
+      $<HTMLButtonElement>('fillAll').hidden = true;
+      (root.querySelector('.switches') as HTMLElement).hidden = true;
+      $('body').innerHTML = jobTileFilterHtml(d.jobTileFilter);
+      return;
+    }
+    (root.querySelector('.switches') as HTMLElement).hidden = false;
     const badge = $('badge');
     const tested = d.ats ? TESTED[d.ats] : undefined;
     if (d.ats && tested) {
@@ -705,7 +975,24 @@ export function mountRail(api: RailApi): void {
   }
 
   wrap.addEventListener('click', (e) => {
+    if (orphaned()) {
+      $('note').textContent = 'Extension was reloaded — refresh this page to reconnect';
+      return;
+    }
     const t = e.target as HTMLElement;
+    const hpRemove = t.closest<HTMLElement>('[data-hp-remove]');
+    if (hpRemove) {
+      const tag = hpRemove.dataset.hpRemove ?? '';
+      void api.removePostFilterTag(tag).then(() => refresh());
+      return;
+    }
+    // #183/#190 job-tile filter section — one dispatcher, one data-attribute scheme, so this whole
+    // feature's click handling is a single addition here regardless of what else changes in this file.
+    const jt = t.closest<HTMLElement>('[data-jt]');
+    if (jt) {
+      void handleJobTileAction(jt, api).then(() => refresh());
+      return;
+    }
     const more = t.closest<HTMLElement>('[data-more]');
     if (more) {
       expanded.add(more.dataset.more ?? '');
@@ -773,26 +1060,6 @@ export function mountRail(api: RailApi): void {
       btn.style.background = taughtMode ? 'var(--slate-soft)' : '';
       return void refresh();
     }
-    if (btn.id === 'export') {
-      void api.exportData().then((r) => {
-        $('note').textContent = r.ok ? (r.summary ?? 'saved') : 'could not export';
-      });
-      return;
-    }
-    if (btn.id === 'import') {
-      const inp = document.createElement('input');
-      inp.type = 'file';
-      inp.accept = 'application/json,.json';
-      inp.addEventListener('change', async () => {
-        const f = inp.files?.[0];
-        if (!f) return;
-        const r = await api.importData(await f.text());
-        $('note').textContent = r.ok ? (r.summary ?? 'restored') : (r.error ?? 'could not restore');
-        if (r.ok) await refresh();
-      });
-      inp.click();
-      return;
-    }
     if (btn.id === 'docs') {
       // The section is always present now; this just takes you to it.
       root.querySelector('.docs-grp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -808,11 +1075,74 @@ export function mountRail(api: RailApi): void {
         btn.disabled = true;
         const before = btn.textContent;
         btn.textContent = 'Filling…';
-        // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
-        for (const r of rows.filter(
-          (x) => x.value && x.current.trim() !== x.value.trim() && (sensitiveOn || x.group !== 'sensitive'),
-        )) {
-          markRow(r.signature, await api.fillOne(r.signature, r.value));
+        let current = rows;
+        // Answering one question can reveal another that didn't exist in the DOM a moment ago —
+        // verified live: Greenhouse's "Race" only renders after "Are you Hispanic/Latino?" is answered
+        // (#162). A single fixed pass over the panel's original snapshot never sees it. Re-check for
+        // newly-fillable rows after each pass instead, bounded so a page that keeps generating "new"
+        // signatures (a bug elsewhere, or genuinely unbounded content) can't loop forever.
+        //
+        // Re-checks every row each pass, not just ones we haven't attempted (#164). Some forms model one
+        // logical question as two linked controls, and answering the second can rewrite the first:
+        // verified live on Greenhouse, whose ethnicity question is a hispanic yes/no PLUS a race dropdown
+        // that only exists while the answer is "No". Declining the race is the same statement as
+        // declining the ethnicity, so the form collapses the pair — hispanic flips to Decline and the
+        // race control is removed. That's correct on the form's part, and no page state holds
+        // hispanic="No" alongside race="Decline", so retrying both every pass just oscillates and lands
+        // on whichever state the pass count's parity stops at. Instead, "poison" a signature once its
+        // fill is seen to rewrite a field we'd already landed: it's never retried, the run converges, and
+        // the collapsed answer stands (a declined pair IS a complete, faithful answer — restoring the
+        // first field would only re-reveal a required control we've stopped trying to fill).
+        const poisoned = new Set<string>();
+        // What each successful fill actually PUT on the page, by DOM id — not the profile's literal
+        // string. A value resolved through a fuzzy tier (the decline-interchangeable mapping: profile
+        // "Prefer not to say" → this form's "Decline To Self Identify") never equals its own `value` as
+        // text, so comparing against `value` would never see those fields as landed — exactly the fields
+        // most likely to be half of a linked pair. Comparing against what landed avoids that entirely.
+        //
+        // Read back through `rawFieldValue` (by DOM id) rather than a row's own `current`, so this stays
+        // correct even for a control that has dropped out of field detection.
+        const confirmed = new Map<string, { id: string; value: string }>();
+        let lastFilled: string | null = null;
+        /**
+         * Attribute any damage the previous fill caused, then stop tracking what it broke.
+         *
+         * Dropping the broken entries is essential, not tidiness: a clobbered value we keep watching
+         * reports "regressed" on every later check, so the next innocent field to be filled — and then
+         * every one after it — would be blamed and skipped.
+         */
+        const noteRegressions = (): void => {
+          const broken = [...confirmed.entries()]
+            .filter(([, c]) => api.rawFieldValue(c.id).trim() !== c.value.trim())
+            .map(([sig]) => sig);
+          if (!broken.length) return;
+          for (const sig of broken) confirmed.delete(sig);
+          if (lastFilled) poisoned.add(lastFilled);
+        };
+        for (let pass = 0; pass < 5; pass++) {
+          const toFill = current.filter(
+            (x) =>
+              x.value &&
+              x.current.trim() !== x.value.trim() &&
+              (sensitiveOn || x.group !== 'sensitive') &&
+              !poisoned.has(x.signature),
+          );
+          if (!toFill.length) break;
+          // Sequential: these drive real widgets, and racing them is what users saw as the page jumping.
+          for (const r of toFill) {
+            // Check for a cascade from the PREVIOUS fill here, rather than sleeping after each one to
+            // wait for it. A form's reaction is its own timing, not ours (measured ~400ms out on
+            // Greenhouse), but driving the next widget already takes longer than that, so by now it has
+            // landed — and this costs no added wall-clock, where polling every field cost ~30s a run.
+            noteRegressions();
+            if (poisoned.has(r.signature)) continue;
+            const fillRes = await api.fillOne(r.signature, r.value);
+            markRow(r.signature, fillRes);
+            lastFilled = r.signature;
+            if (fillRes.filled && r.id) confirmed.set(r.signature, { id: r.id, value: api.rawFieldValue(r.id) });
+            current = (await api.panelFields()).rows;
+          }
+          noteRegressions(); // the pass's last fill has no successor to notice its cascade
         }
         markAfterFill(); // show what just happened on the form itself
         btn.textContent = before;
@@ -925,6 +1255,26 @@ export function mountRail(api: RailApi): void {
   });
 
   // Learn what the user typed whenever they come back to the rail, then re-read.
+  // A <form>, so Enter submits the way anyone typing a tag expects; the button is the same path.
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('#hpAdd');
+    if (!form) return;
+    e.preventDefault();
+    const input = root.getElementById('hpIn') as HTMLInputElement | null;
+    const tag = (input?.value ?? '').trim();
+    if (!tag) return;
+    if (input) input.value = '';
+    void api.addPostFilterTag(tag).then(() => refresh());
+  });
+
+  // #183/#190 job-tile filter section — the two "add a company/keyword" forms, one dispatcher.
+  wrap.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest<HTMLElement>('[data-jt-form]');
+    if (!form) return;
+    e.preventDefault();
+    void handleJobTileSubmit(form, api).then(() => refresh());
+  });
+
   wrap.addEventListener('mouseenter', () => {
     if (!$('rail').hidden) void api.learnFromPage().then(() => refresh());
   });
@@ -947,6 +1297,121 @@ export function mountRail(api: RailApi): void {
 
 /** Remove the rail and undo the page reflow — used when a page turns out not to be an application. */
 export function unmountRail(): void {
-  document.getElementById('jh-rail-host')?.remove();
+  const host = document.getElementById('jh-rail-host');
+  (host as unknown as { __jhLayoutGuard?: MutationObserver } | null)?.__jhLayoutGuard?.disconnect();
+  host?.remove();
   document.documentElement.style.marginRight = '';
+  document.documentElement.style.transform = '';
+  if (document.body) document.body.style.transform = '';
+}
+
+const JT_LABELS: Record<JobTileLabelKey, string> = {
+  promoted: 'Promoted',
+  reposted: 'Reposted',
+  applied: 'Applied',
+  viewed: 'Viewed',
+  dismissed: 'Dismissed ("won’t show again")',
+};
+
+/**
+ * The LinkedIn job-SEARCH tile filter section (#183/#190) — same pattern as postFilterHtml above:
+ * the person's own rules, in one place they can audit and undo. The dim/hide itself happens ON the
+ * tiles (content/jobTiles.ts); this only manages the rules that drive it. Top-level and pure (only
+ * needs `esc`), and its two handlers below take `api` as a parameter rather than closing over
+ * mountRail's scope — so this whole feature's rail code is three self-contained additions, not a
+ * change threaded through the existing closure.
+ */
+function jobTileFilterHtml(d: NonNullable<PanelData['jobTileFilter']>): string {
+  const { rules, hide, showHidden, shown, total } = d;
+  const hasRules = rules.companies.length > 0 || rules.keywords.length > 0 || Object.values(rules.labels).some(Boolean);
+
+  const countHtml = hasRules
+    ? `<button type="button" class="jtCount" data-jt="setShowHidden" data-jt-value="${showHidden ? '0' : '1'}">` +
+      `Showing ${shown} of ${total}${showHidden ? ' · showing hidden ▾' : ' · show hidden ▸'}` +
+      `</button>`
+    : '';
+
+  const companyRows = rules.companies.length
+    ? rules.companies
+        .map(
+          (c) =>
+            `<div class="hpRule"><span class="hpT">${esc(c)}</span>` +
+            `<button class="hpX" data-jt="removeCompany" data-jt-value="${esc(c)}" title="Stop hiding ${esc(c)}" aria-label="Stop hiding ${esc(c)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty">No companies hidden.</p>`;
+
+  const keywordRows = rules.keywords.length
+    ? rules.keywords
+        .map(
+          (k) =>
+            `<div class="hpRule"><span class="hpT">${esc(k)}</span>` +
+            `<button class="hpX" data-jt="removeKeyword" data-jt-value="${esc(k)}" title="Stop hiding &quot;${esc(k)}&quot;" aria-label="Stop hiding ${esc(k)}">✕</button></div>`,
+        )
+        .join('')
+    : `<p class="empty">No keywords hidden.</p>`;
+
+  const labelToggles = (Object.keys(JT_LABELS) as JobTileLabelKey[])
+    .map(
+      (key) =>
+        `<label class="jtLabel"><input type="checkbox" data-jt="setLabel" data-jt-label="${key}" ${
+          rules.labels[key] ? 'checked' : ''
+        } /> Hide ${esc(JT_LABELS[key])}</label>`,
+    )
+    .join('');
+
+  return (
+    `<section class="grp">` +
+    `<div class="acc"><span class="sp">Job search filters</span></div>` +
+    `<div class="hpBody">` +
+    countHtml +
+    `<p class="jtSub">Hide by company</p>${companyRows}` +
+    `<form class="hpAdd" data-jt-form="company"><input class="jtIn" data-jt-input="company" type="text" placeholder="Company to hide…" autocomplete="off" /><button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="jtSub">Hide by keyword (title)</p>${keywordRows}` +
+    `<form class="hpAdd" data-jt-form="keyword"><input class="jtIn" data-jt-input="keyword" type="text" placeholder="Keyword to hide…" autocomplete="off" /><button class="hpBtn" type="submit">Add</button></form>` +
+    `<p class="jtSub">Hide by label</p>${labelToggles}` +
+    `<label class="jtLabel jtHidePref"><input type="checkbox" data-jt="setHide" ${hide ? 'checked' : ''} /> Hide matches completely (default just dims them)</label>` +
+    `<p class="hpNote">Only your own rules are saved — never job data.</p>` +
+    `</div></section>`
+  );
+}
+
+/** Route a click inside the job-tile filter section to the right RailApi call. */
+async function handleJobTileAction(el: HTMLElement, api: RailApi): Promise<void> {
+  const action = el.dataset.jt;
+  const value = el.dataset.jtValue ?? '';
+  switch (action) {
+    case 'removeCompany':
+      await api.jobTileRule({ type: 'removeCompany', value });
+      break;
+    case 'removeKeyword':
+      await api.jobTileRule({ type: 'removeKeyword', value });
+      break;
+    case 'setLabel':
+      await api.jobTileRule({
+        type: 'setLabel',
+        label: (el.dataset.jtLabel ?? 'promoted') as JobTileLabelKey,
+        on: (el as HTMLInputElement).checked,
+      });
+      break;
+    case 'setHide':
+      await api.jobTileRule({ type: 'setHide', on: (el as HTMLInputElement).checked });
+      break;
+    case 'setShowHidden':
+      await api.jobTileRule({ type: 'setShowHidden', on: value === '1' });
+      break;
+    default:
+      break;
+  }
+}
+
+/** Route a submit from either "add a company/keyword" form to the right RailApi call. */
+async function handleJobTileSubmit(form: HTMLElement, api: RailApi): Promise<void> {
+  const kind = form.dataset.jtForm;
+  const input = form.querySelector<HTMLInputElement>('[data-jt-input]');
+  const value = (input?.value ?? '').trim();
+  if (!value) return;
+  if (input) input.value = '';
+  if (kind === 'company') await api.jobTileRule({ type: 'addCompany', value });
+  else if (kind === 'keyword') await api.jobTileRule({ type: 'addKeyword', value });
 }
