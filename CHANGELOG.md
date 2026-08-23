@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.2
+- **Fixed: reporting a problem was flagged as a duplicate of someone else's report.** Every report about
+  the same site carried an identical title, so GitHub assumed it had already been raised — which read as
+  "we know about this" when we didn't. Reports now name the ATS platform and carry a short reference to
+  the specific posting, so two different jobs are never mistaken for the same one. Reporting the *same*
+  page twice still shows as a duplicate, because it is.
+
 ## 0.41.1
 - **The button now shows on far more application sites.** Oracle Recruiting, Recruitee, Breezy, JazzHR,
   Teamtailor, Personio, BrassRing, ADP, Paylocity, Dayforce, UltiPro, Eightfold, Avature and others were

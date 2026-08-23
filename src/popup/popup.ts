@@ -698,7 +698,31 @@ async function openReport(reasonKey: string) {
     '---',
     `_JobHakken extension v${version} · auto-filled from the page. No personal data included (no profile values, résumé, or answers)._`,
   ].join('\n');
-  const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(`[extension] ${reason} — ${company !== '(unknown)' ? company : host}`)}&body=${encodeURIComponent(body)}`;
+  // GitHub offers "this looks like a duplicate" purely on title similarity, and the title used to be
+  // just reason + company — so a second report about a different posting on the same site was
+  // byte-identical to the first and got flagged, which reads as "we already know" when we do not.
+  //
+  // Appending the ATS platform and a short ref derived from the page makes each posting distinct. The
+  // ref is DETERMINISTIC on origin + path (query stripped, since LinkedIn and Greenhouse both hang
+  // tracking ids off their URLs and those would make one posting look like several). So reporting the
+  // SAME page twice still collides — which is a real duplicate and should look like one — while two
+  // different postings never do.
+  const pageRef = (u: string): string => {
+    let clean = u;
+    try {
+      const parsed = new URL(u);
+      clean = parsed.origin + parsed.pathname;
+    } catch {
+      /* not a parseable URL — hash whatever we were given */
+    }
+    let h = 0;
+    for (let i = 0; i < clean.length; i++) h = (Math.imul(31, h) + clean.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36).slice(0, 5);
+  };
+  const where = company !== '(unknown)' ? company : host;
+  const platform = ats && ats !== 'unknown' && ats !== '(none)' ? ` · ${ats}` : '';
+  const issueTitle = `[extension] ${reason} — ${where}${platform} [${pageRef(pageUrl)}]`;
+  const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(body)}`;
   await chrome.tabs.create({ url });
   window.close();
 }
