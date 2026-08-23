@@ -2563,7 +2563,16 @@ async function init() {
         // #183/#190 — same tiles this block already scans; re-apply so a rule keeps holding across
         // LinkedIn's React re-renders (it resets inline styles, not the DOM structure the query above
         // depends on).
-        if (isJobSearchPage()) void applyJobTileFilters();
+        if (isJobSearchPage()) {
+          void applyJobTileFilters();
+          // And mount the rail HERE, before the form gate below returns. A jobs page has no application
+          // fields, so `looksFormish()` is false and this handler used to return before ever reaching
+          // syncRail() — leaving the rail mountable only by the one-time call at page load. LinkedIn is
+          // a single-page app, so arriving at /jobs/collections/ by clicking rather than loading meant
+          // no rail until a manual refresh. Same fix already applied to the post-search branch above;
+          // this is the other half of it.
+          syncRail();
+        }
       }
       if (!looksFormish()) return;
       updateBadge();
