@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JobHakken \u2014 Apply Copilot",
-  "version": "0.40.1",
+  "version": "0.40.2",
   "description": "Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a r\u00e9sum\u00e9 tailored for the job.",
   "icons": {
     "16": "icons/icon-16.png",

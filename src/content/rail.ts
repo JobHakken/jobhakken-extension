@@ -484,6 +484,29 @@ export function mountRail(api: RailApi): void {
     el.style.marginRight = open ? `${WIDTH}px` : '';
   }
 
+  /**
+   * Put the margin back when the page throws it away.
+   *
+   * `reflow` runs once, on open. LinkedIn rewrites `documentElement`'s style attribute during its own
+   * re-renders and on SPA navigation, which silently drops the margin while the rail stays open — so
+   * the panel ends up covering the page instead of pushing it, and the right-hand content is cut off.
+   * That is the "sometimes it fits, sometimes it doesn't" report: it depends purely on whether the page
+   * happened to re-render after you opened the rail.
+   *
+   * This is the third time inline styles have been wiped out from under us (the faded post, the faded
+   * tile, now the page margin), so the fix is the same one that worked twice: never trust a one-time
+   * write — watch the actual state and restore it. Writing the margin back re-triggers this observer,
+   * but the equality check stops there, so there is no loop.
+   */
+  const layoutGuard = new MutationObserver(() => {
+    const open = !$('rail').hidden;
+    if (open && document.documentElement.style.marginRight !== `${WIDTH}px`) reflow(true);
+  });
+  layoutGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  // unmountRail() is the teardown path and it only has the host element to work from, so hang the
+  // observer off it rather than leaking one per mount.
+  (host as unknown as { __jhLayoutGuard?: MutationObserver }).__jhLayoutGuard = layoutGuard;
+
   async function setOpen(open: boolean, persist = true): Promise<void> {
     $('rail').hidden = !open;
     $<HTMLElement>('launch').style.display = open ? 'none' : '';
@@ -1232,7 +1255,9 @@ export function mountRail(api: RailApi): void {
 
 /** Remove the rail and undo the page reflow — used when a page turns out not to be an application. */
 export function unmountRail(): void {
-  document.getElementById('jh-rail-host')?.remove();
+  const host = document.getElementById('jh-rail-host');
+  (host as unknown as { __jhLayoutGuard?: MutationObserver } | null)?.__jhLayoutGuard?.disconnect();
+  host?.remove();
   document.documentElement.style.marginRight = '';
 }
 

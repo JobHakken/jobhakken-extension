@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.40.2
+- **Fixed: the sidebar sometimes covered the page instead of making room for it**, cutting off whatever
+  was on the right. The page was moved over once, when you opened the sidebar — but LinkedIn rewrites
+  the page's styling as you browse, which quietly undid it, so whether the layout fitted depended on
+  whether the page happened to redraw after you opened the panel. It now notices and puts the space
+  back straight away.
+
 ## 0.40.1
 - **Fixed: the job filters found nothing on the real jobs page.** LinkedIn's signed-in job list is built
   from scrambled class names that change over time, and the sidebar was looking for names that simply
