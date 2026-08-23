@@ -4,6 +4,14 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.0
+- **The JobHakken button now stays with you across job sites.** It appears on LinkedIn, Indeed,
+  Glassdoor, ZipRecruiter, Monster, Dice, Wellfound, Built In and every ATS we recognise — so you can
+  open the sidebar whenever you want, not only once you've reached an application form. It still never
+  appears on ordinary sites: not on ChatGPT, webmail, or a support form.
+- **Fixed: room made for the sidebar could be quietly undone** as a page redrew itself, letting the
+  page's pinned panels slide back underneath it.
+
 ## 0.40.5
 - **Fixed: the sidebar could be drawn underneath a site's own pinned panels**, such as LinkedIn's
   messaging bar, so it appeared to slide behind them. The sidebar now sits above whatever a page pins on

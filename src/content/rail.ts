@@ -540,6 +540,11 @@ export function mountRail(api: RailApi): void {
     if (open && (de.style.marginRight !== `${WIDTH}px` || !document.body?.style.transform)) reflow(true);
   });
   layoutGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  // Watch BODY too. The margin lives on <html> but the containment transform lives on <body> (see
+  // reflow), and observing only <html> meant a page rewriting body's style silently dropped the
+  // transform with nothing to restore it — measured on LinkedIn's post search, where body's transform
+  // was gone while the margin was still in place.
+  if (document.body) layoutGuard.observe(document.body, { attributes: true, attributeFilter: ['style'] });
   // unmountRail() is the teardown path and it only has the host element to work from, so hang the
   // observer off it rather than leaking one per mount.
   (host as unknown as { __jhLayoutGuard?: MutationObserver }).__jhLayoutGuard = layoutGuard;

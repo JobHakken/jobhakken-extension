@@ -527,6 +527,25 @@ function isRelevantPage(): boolean {
   return isAtsHost(location.hostname) || isAtsPage(document) || localAtsFingerprint() || siteOptedIn || appLike;
 }
 
+/** Job boards worth showing the launcher on even when the current page is not itself an application. */
+const JOB_BOARD_HOSTS =
+  /(^|\.)(linkedin\.com|indeed\.[a-z.]+|glassdoor\.[a-z.]+|ziprecruiter\.com|monster\.[a-z.]+|dice\.com|wellfound\.com|angel\.co|builtin\.com|otta\.com|hired\.com|simplyhired\.[a-z.]+)$/i;
+
+/**
+ * Is this somewhere the launcher belongs, even with no form on screen?
+ *
+ * Deliberately a HOST allow-list rather than "does this page have inputs". The field-count test is what
+ * put the launcher on most of the web (#174) — a chat box, a webmail compose window and a support form
+ * all look like somewhere you might type. Keying on the site instead means the button is there while you
+ * browse a board or an ATS and never appears on ChatGPT.
+ *
+ * Only the collapsed launcher is offered on these pages; the panel itself still has nothing to fill
+ * until you reach a real application, and opening it is always the person's own click.
+ */
+function isJobSite(): boolean {
+  return JOB_BOARD_HOSTS.test(location.hostname) || isAtsHost(location.hostname) || siteOptedIn;
+}
+
 /**
  * ATS fingerprints the packaged detector misses.
  *
@@ -841,7 +860,7 @@ function syncRail(): void {
   // the launcher on most of the web (#174); the rail renders only the post-filter section there.
   // Same reasoning for LinkedIn's job SEARCH page (#183/#190): a results list has no fields either,
   // so it gets its own OR clause rather than widening isRelevantPage() itself.
-  const wanted = isRelevantPage() || isPostSearchPage() || isJobSearchPage();
+  const wanted = isRelevantPage() || isPostSearchPage() || isJobSearchPage() || isJobSite();
   if (!wanted) {
     unmountRail();
     return;
