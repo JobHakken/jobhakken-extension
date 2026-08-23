@@ -532,6 +532,31 @@ const JOB_BOARD_HOSTS =
   /(^|\.)(linkedin\.com|indeed\.[a-z.]+|glassdoor\.[a-z.]+|ziprecruiter\.com|monster\.[a-z.]+|dice\.com|wellfound\.com|angel\.co|builtin\.com|otta\.com|hired\.com|simplyhired\.[a-z.]+)$/i;
 
 /**
+ * ATS hosts for LAUNCHER purposes only.
+ *
+ * Deliberately separate from `isAtsHost` in captureStore, which also authorises automatic capture — a
+ * privacy decision that should not widen just because we want a button somewhere. This list only
+ * decides where the collapsed launcher appears.
+ *
+ * `isAtsHost` covers Workday, Greenhouse, Lever, Ashby, iCIMS, SmartRecruiters, Workable, Taleo,
+ * SuccessFactors, BambooHR and Jobvite. Everything below is an ATS a real applicant hits regularly that
+ * it does not — Oracle Recruiting most notably, which is one of the platforms we have no autofill
+ * coverage for at all.
+ */
+const MORE_ATS_HOSTS =
+  /(^|\.)(oraclecloud\.com|recruitee\.com|breezy\.hr|applytojob\.com|teamtailor\.com|personio\.[a-z.]+|brassring\.com|paylocity\.com|paycomonline\.net|adp\.com|workforcenow\.adp\.com|dayforcehcm\.com|ultipro\.com|eightfold\.ai|avature\.net|phenompeople\.com|clearcompany\.com|jazz\.co|comeet\.co|pinpointhq\.com|homerun\.co|rippling\.com|gusto\.com|hibob\.com|factorialhr\.com|jobscore\.com|silkroad\.com|hirebridge\.com)$/i;
+
+/**
+ * A careers/apply URL on a company's own domain.
+ *
+ * Company-hosted ATS is the real gap: careers.acme.com running Workday or iCIMS behind the scenes
+ * matches no host pattern, and the packaged fingerprint misses it whenever the vendor's script URL
+ * isn't in the markup. The path is the giveaway and costs nothing to check. It cannot fire on ChatGPT,
+ * webmail or a support form, which is what the host allow-list exists to avoid.
+ */
+const JOB_PATH_HINT = /\/(careers?|jobs?|apply|application|vacanc\w*|openings?|positions?|join-us|work-with-us)(\/|$|\?|#)/i;
+
+/**
  * Is this somewhere the launcher belongs, even with no form on screen?
  *
  * Deliberately a HOST allow-list rather than "does this page have inputs". The field-count test is what
@@ -543,7 +568,13 @@ const JOB_BOARD_HOSTS =
  * until you reach a real application, and opening it is always the person's own click.
  */
 function isJobSite(): boolean {
-  return JOB_BOARD_HOSTS.test(location.hostname) || isAtsHost(location.hostname) || siteOptedIn;
+  return (
+    JOB_BOARD_HOSTS.test(location.hostname) ||
+    isAtsHost(location.hostname) ||
+    MORE_ATS_HOSTS.test(location.hostname) ||
+    JOB_PATH_HINT.test(location.pathname) ||
+    siteOptedIn
+  );
 }
 
 /**

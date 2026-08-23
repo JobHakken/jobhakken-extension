@@ -4,6 +4,13 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.1
+- **The button now shows on far more application sites.** Oracle Recruiting, Recruitee, Breezy, JazzHR,
+  Teamtailor, Personio, BrassRing, ADP, Paylocity, Dayforce, UltiPro, Eightfold, Avature and others were
+  all missing it. It also appears on a company's own careers pages — `acme.com/careers`, `/jobs`,
+  `/apply` — which is where most applications actually start, and which nothing recognised before.
+  Ordinary sites are still untouched.
+
 ## 0.41.0
 - **The JobHakken button now stays with you across job sites.** It appears on LinkedIn, Indeed,
   Glassdoor, ZipRecruiter, Monster, Dice, Wellfound, Built In and every ATS we recognise — so you can
