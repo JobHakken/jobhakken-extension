@@ -4,6 +4,15 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.40.1
+- **Fixed: the job filters found nothing on the real jobs page.** LinkedIn's signed-in job list is built
+  from scrambled class names that change over time, and the sidebar was looking for names that simply
+  aren't there — so it reported "Showing 0 of 0" and no filter did anything. It now finds each job by
+  its own Dismiss button instead, which LinkedIn labels properly for screen readers and doesn't rename.
+- **Hide Promoted, Hide Viewed and the company name now work on the signed-in job list.** The labels are
+  read from the job card as shown, rather than from an element that only exists on the signed-out page.
+  A job whose *description* happens to mention "promoted" is still left alone.
+
 ## 0.40.0
 - **Fixed: the sidebar only appeared after a manual refresh.** LinkedIn never reloads the page when you
   switch between the All and Posts tabs or run a new search, and the code that decides whether to show

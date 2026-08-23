@@ -335,3 +335,38 @@ describe('applyJobTileFilters — matching, dimming, and the never-touch-a-non-m
     expect((document.querySelector('[data-occludable-job-id="1"]') as HTMLElement).style.opacity).toBe('');
   });
 });
+
+describe('the real logged-in tile markup', () => {
+  // Regression pin for the layout that actually broke in the field. Everything about it is hostile to
+  // class-based selectors: obfuscated rotating class names, no `job-card-container`, no
+  // `data-occludable-job-id`, tiles that are not <li>, and no /jobs/view/ anchors. The only stable
+  // hooks are the dismiss control's aria-label and the label text itself.
+  it('reads a tile the way LinkedIn actually renders it', () => {
+    document.body.innerHTML = `
+      <div class="_a1b2c3 _d4e5">
+        <div class="_f6g7">
+          <a href="/jobs/collections/?currentJobId=4414177103"><span>Firmware Engineer</span></a>
+          <div><span>Mind Robotics</span></div>
+          <div><span>Palo Alto, CA (On-site)</span></div>
+          <div><span>Viewed</span><span>·</span><span>Promoted</span></div>
+          <button aria-label="Dismiss Firmware Engineer job">X</button>
+        </div>
+      </div>`;
+    const tiles = detectTiles();
+    expect(tiles).toHaveLength(1);
+    expect(tiles[0].title).toBe('Firmware Engineer');
+    expect([...tiles[0].labels].sort()).toEqual(['promoted', 'viewed']);
+  });
+
+  it('does not tag a tile whose DESCRIPTION merely contains the word promoted', () => {
+    document.body.innerHTML = `
+      <div><div>
+        <a href="/jobs/collections/?currentJobId=999"><span>Growth Engineer</span></a>
+        <div><span>We recently promoted three engineers from this team</span></div>
+        <button aria-label="Dismiss Growth Engineer job">X</button>
+      </div></div>`;
+    const tiles = detectTiles();
+    expect(tiles).toHaveLength(1);
+    expect(tiles[0].labels.has('promoted')).toBe(false);
+  });
+});
