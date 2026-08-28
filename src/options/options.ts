@@ -41,6 +41,7 @@ import {
   saveTestMode,
 } from '../lib/profileStore.js';
 import { resetAllData } from '../lib/resetStore.js';
+import { mountResumeBuilder } from './resumeBuilder.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -49,6 +50,7 @@ let fp: FullProfile = { profile: {}, experience: [], education: [], rules: [] };
 let testModeOn = false; // extension test toggle (import brings dummy data when on)
 
 void initThemeToggle($('theme')); // manual light/dark toggle (default: follow system)
+mountResumeBuilder($('resumeBuilderRoot')); // #482 — native résumé builder, ported from jobhakken-site
 
 // ── sidebar + accordion sections ─────────────────────────────
 function openSection(key: string | undefined, scroll = true): void {
