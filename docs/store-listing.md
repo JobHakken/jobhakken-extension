@@ -25,7 +25,7 @@ in the manifest is the technical source of supported sites — it does not belon
 
 ## Short description (≤132 chars — matches `manifest.json` `description`)
 
-`Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.`
+`🚀 Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.`
 
 ## Detailed description (keyword-spam-free)
 
@@ -35,63 +35,47 @@ in the manifest is the technical source of supported sites — it does not belon
 
 ```
 🚀 JobHakken — AI Job Copilot for Faster, Smarter Applications
+Land more interviews, with less effort.
 
-Land more interviews with less effort.
-
-JobHakken is the privacy-first AI job copilot for international professionals —
-and anyone who wants to apply faster with higher-quality applications. It works
-right on the sites you already use, automating the repetitive parts so you can
-focus on the roles that actually fit.
+The privacy-first AI copilot for job seekers — especially international professionals — who want to apply faster without losing quality. Works right on the sites you already use.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ APPLY IN MINUTES, NOT HOURS
-• One-click autofill across major job boards and 40+ applicant tracking systems.
-• Handles the tricky fields other tools miss — custom dropdowns, comboboxes,
-  and date pickers.
+🖱️ One-click autofill — major job boards + 40+ applicant tracking systems
+🧩 Handles the tricky fields other tools miss: custom dropdowns, comboboxes, date pickers
 
 🎯 KNOW IF A JOB IS WORTH IT — BEFORE YOU APPLY
-• Résumé Match Analysis shows how well your résumé fits each posting: keyword
-  coverage and the skills you're missing.
-• Real, practical insight — not a made-up ATS score.
+📊 Résumé Match Analysis — keyword coverage + the skills you're missing
+✅ Real, practical insight — not a made-up ATS score
 
 🌍 BUILT FOR INTERNATIONAL PROFESSIONALS
-• Spot US H-1B sponsoring employers and UK licensed visa sponsors right on the
-  posting.
-• Stop wasting time on roles that won't sponsor.
+🛂 Spots US H-1B sponsoring employers and UK licensed visa sponsors, right on the posting
+⏱️ Stop wasting time on roles that won't sponsor you
 
 ✍️ TAILOR EVERY APPLICATION
-• Generate a role-specific résumé by reordering and rewriting your real
-  experience — never inventing anything.
-• Draft a personalized cover letter in seconds.
+📄 Role-specific résumé — reorders and rewrites your real experience, never invents
+💌 Personalized cover letter, drafted in seconds
 
 📌 SAVE JOBS WITH ONE CLICK
-• Send interesting roles straight to the JobHakken desktop app to organize,
-  track, and manage your search.
+➡️ Send roles straight to the JobHakken desktop app to organize, track, and manage your search
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔒 PRIVACY FIRST. ALWAYS.
-Unlike most AI tools, JobHakken keeps your data under your control.
-• Local-first — your résumé and application content stay on your own computer,
-  exchanged only with the JobHakken desktop app (localhost). Your content is
-  never uploaded to our servers.
-• AI is 100% opt-in — bring your own AI key or use a managed plan.
-• Anonymous, opt-out usage analytics only (which features are used, success/
-  fail, version) — never your résumé, job, or personal content. Turn it off in
-  Settings anytime.
-• We never train AI models on your data and never sell your personal information.
-• Sensitive EEO fields (gender, race, veteran status, disability) are disabled
-  by default and filled only if you turn them on.
+🏠 Local-first — résumé & application content stay on your computer, exchanged only with the JobHakken desktop app on localhost, never uploaded to our servers
+🤖 AI is 100% opt-in — bring your own key, or use a managed plan
+📉 Analytics are anonymous & opt-out (feature usage, pass/fail, version) — never your résumé, job, or personal content. Toggle off anytime in Settings
+🚫 We never train AI models on your data, and never sell your personal information
+🔕 Sensitive EEO fields (gender, race, veteran status, disability) are off by default — you turn them on, not us
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💼 WORKS WITH THE FREE JOBHAKKEN DESKTOP APP
-Unlock more: Application Tracker · AI Résumé Studio · Job Scanner ·
-Saved Jobs Feed · Career Workspace.
-Download free at jobhakken.com.
+🗂️ Unlocks: Application Tracker · AI Résumé Studio · Job Scanner · Saved Jobs Feed · Career Workspace
+⬇️ Free at jobhakken.com
 
 ✅ Apply faster   ✅ Higher-quality applications   ✅ Better job matching
 ✅ Visa sponsorship insights   ✅ Privacy-first by design
 
-Questions? contact@jobhakken.com
+✉️ Questions? contact@jobhakken.com
 ```
 
 ---
