@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.4
+- **Rewrote the Chrome Web Store listing** (`docs/store-listing.md`) — it was missing the résumé
+  builder entirely and its permission list hadn't caught up to `activeTab`, `scripting`, or the AI
+  provider hosts already in the manifest. The extension's own `description` string is shorter and
+  matches the new listing copy.
+
 ## 0.41.3
 - **Fixed: the H-1B sponsor tag could appear on ordinary websites that have nothing to do with jobs.**
   It was meant for LinkedIn only, but nothing actually enforced that — any site with its own

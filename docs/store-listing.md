@@ -1,111 +1,126 @@
 # Chrome Web Store listing (source of truth)
 
 Paste these into the CWS Developer Dashboard. **Version-controlled so the listing is reviewed like
-code and the keyword-spam rejection can't recur.** Keep in sync with the manifest.
+code and stays honest against the manifest.** Keep in sync with `src/manifest.json`.
 
-## ⚠️ Rejection remediation (Routing ID FZSL — "Keyword Spam", 2026-07)
+## ⚠️ Rules that came from a rejection or a near-miss — don't relitigate these
 
-The previous **detailed description** listed applicant-tracking-system brand names
-("LinkedIn, Indeed, Workday, Greenhouse, Lever, Ashby, iCIMS, SuccessFactors, SmartRecruiters"),
-which CWS flagged as excessive/irrelevant metadata. **Rule going forward: do not enumerate job-board
-or ATS brand names in any store metadata (title, description, screenshots).** Describe the capability
-generically ("major job boards and applicant tracking systems"). The `content_scripts.matches` list
-in the manifest is the technical source of supported sites — it does not belong in marketing copy.
+1. **No ATS/job-board brand names in marketing copy** (Routing ID FZSL, "Keyword Spam", 2026-07).
+   Describe capability generically ("major job boards and 40+ applicant tracking systems"). The
+   `content_scripts.matches` list in the manifest is the technical source of supported sites, not
+   marketing copy.
+2. **Never claim "sends no user content off the device."** False since AI features shipped — the
+   manifest declares AI provider hosts, and cover-letter/answer drafting sends page text to whichever
+   one the user picked. Say what's true: content leaves the device **only** for an opt-in AI request.
+3. **List of hosts/permissions in this doc must match the manifest exactly**, every release. A
+   reviewer diffs them; an undisclosed host is a removal risk, not a warning.
+4. **Filtering is triage, not a second feature.** Job/post filtering is framed as narrowing the list
+   _before_ applying — part of the single purpose. It must stay scoped to search-results pages; if it
+   ever touches the LinkedIn home feed, this framing (and the CWS single-purpose approval) breaks.
 
 ---
 
 ## Single purpose (required)
 
-> JobHakken's Apply Copilot has one purpose: help a user apply to jobs faster by autofilling
-> application forms and surfacing job-fit signals, working alongside the JobHakken desktop app.
+> JobHakken helps the user apply for jobs — narrowing down which roles are worth applying to, then
+> filling in the application. On a search-results page it lets the user hide listings they don't want
+> (by company, keyword, or a state the site shows — promoted, viewed, applied) and flags employers with
+> public visa-sponsorship records. On an application form on a supported job board or ATS, it identifies
+> fields and fills them from the profile the user built in Settings, and can draft an answer or cover
+> letter on request. The user reviews every field; the extension never submits anything.
 
 ## Title
 
 `JobHakken — Apply Copilot`
 
-## Short description (≤132 chars — matches `manifest.json` `description`)
+## Short description (≤132 chars — must match `manifest.json` `description`)
 
-`🚀 Autofill job applications smartly, with a job-description match, H-1B/UK visa signal, and a résumé tailored for the job.`
+`🚀 Autofill applications, match your résumé, spot visa sponsors, and build a tailored résumé — free & local.`
 
-## Detailed description (keyword-spam-free)
+## Detailed description
 
-> Rule: NO enumerated ATS/job-board brand names anywhere (that was the rejection cause). Describe the
-> capability generically ("major job boards and 40+ applicant tracking systems"). CWS renders plain
-> text — the emoji + divider lines below display as-is.
+> No ATS/job-board brand names (rule #1 above). Plain text — emoji/dividers render as-is.
 
 ```
-🚀 JobHakken — AI Job Copilot for Faster, Smarter Applications
-Land more interviews, with less effort.
-
-The privacy-first AI copilot for job seekers — especially international professionals — who want to apply faster without losing quality. Works right on the sites you already use.
+🚀 JobHakken — Apply Copilot
+Find the roles worth your time. Fill the form in one click. Skip the ones that won't sponsor you.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡ APPLY IN MINUTES, NOT HOURS
-🖱️ One-click autofill — major job boards + 40+ applicant tracking systems
-🧩 Handles the tricky fields other tools miss: custom dropdowns, comboboxes, date pickers
+🎯 TRIAGE FIRST
+🧹 Hide listings you don't want — by company, keyword, or promoted/viewed/applied
+🛂 See H-1B (US) and licensed-sponsor (UK) status right on the listing, before you apply
+📊 Résumé-to-job match score — real keyword gaps, not a made-up ATS number
 
-🎯 KNOW IF A JOB IS WORTH IT — BEFORE YOU APPLY
-📊 Résumé Match Analysis — keyword coverage + the skills you're missing
-✅ Real, practical insight — not a made-up ATS score
+⚡ THEN FILL, ONE CLICK
+🖱️ Autofill across major job boards + 40 applicant tracking systems
+🧩 Handles what others miss — custom dropdowns, comboboxes, date pickers, multi-step wizards
+✅ Every field marked by confidence; unsure answers left blank, never guessed
+🚫 Never auto-submits — you always review first
 
-🌍 BUILT FOR INTERNATIONAL PROFESSIONALS
-🛂 Spots US H-1B sponsoring employers and UK licensed visa sponsors, right on the posting
-⏱️ Stop wasting time on roles that won't sponsor you
+📄 BUILD & TAILOR YOUR RÉSUMÉ
+✍️ Free built-in résumé builder — no separate app, no account
+🎯 Reorders and rewrites your real experience per posting, never invents
+💌 Cover letter drafted in seconds
 
-✍️ TAILOR EVERY APPLICATION
-📄 Role-specific résumé — reorders and rewrites your real experience, never invents
-💌 Personalized cover letter, drafted in seconds
-
-📌 SAVE JOBS WITH ONE CLICK
-➡️ Send roles straight to the JobHakken desktop app to organize, track, and manage your search
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔒 PRIVACY FIRST. ALWAYS.
-🏠 Local-first — résumé & application content stay on your computer, exchanged only with the JobHakken desktop app on localhost, never uploaded to our servers
-🤖 AI is 100% opt-in — bring your own key, or use a managed plan
-📉 Analytics are anonymous & opt-out (feature usage, pass/fail, version) — never your résumé, job, or personal content. Toggle off anytime in Settings
-🚫 We never train AI models on your data, and never sell your personal information
-🔕 Sensitive EEO fields (gender, race, veteran status, disability) are off by default — you turn them on, not us
+📌 TRACK YOUR SEARCH
+➡️ Optionally save roles to the free JobHakken desktop app
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💼 WORKS WITH THE FREE JOBHAKKEN DESKTOP APP
-🗂️ Unlocks: Application Tracker · AI Résumé Studio · Job Scanner · Saved Jobs Feed · Career Workspace
-⬇️ Free at jobhakken.com
+🔒 PRIVATE BY DEFAULT
+🏠 Your résumé, profile, and filter rules live on your device — never our servers
+🤖 AI is opt-in — bring your own key or a managed plan. Only the text an AI feature needs is ever sent
+📉 Analytics are anonymous, opt-out, metadata-only — never your content
+🔕 Sensitive EEO fields (gender, race, veteran, disability) are off until you turn them on
+🚫 Never sold, never used to train models
 
-✅ Apply faster   ✅ Higher-quality applications   ✅ Better job matching
-✅ Visa sponsorship insights   ✅ Privacy-first by design
-
-✉️ Questions? contact@jobhakken.com
+✉️ contact@jobhakken.com
 ```
 
 ---
 
 ## Permission justifications (CWS "Privacy practices" → per-permission)
 
-| Permission                                                     | Justification                                                                                                 |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `storage`                                                      | Save the user's autofill profile and preferences locally in the browser.                                      |
-| `unlimitedStorage`                                             | Cache the bundled H-1B sponsor dataset and captured form data without hitting the default storage quota.      |
-| `host_permissions`: `http://127.0.0.1/*`, `http://localhost/*` | Communicate with the user's own JobHakken desktop app over the local loopback bridge.                         |
-| `host_permissions`: `https://www.google-analytics.com/*`       | Send anonymous, metadata-only usage analytics (opt-out) via the GA Measurement Protocol — never user content. |
-| Content scripts (job-board / ATS hosts)                        | Detect job postings and autofill application forms on the sites where the user applies.                       |
+Manifest ground truth: `permissions: storage, unlimitedStorage, activeTab, scripting` · `host_permissions:
+127.0.0.1, localhost, app.jobhakken.com, 12 AI provider APIs, www.google-analytics.com` — check this list
+against `src/manifest.json` every release; add a row here for anything new before submitting.
+
+| Permission                                                                                                                                               | Justification                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`                                                                                                                                                | Save the user's application profile, settings, and filter rules locally in the browser.                                                                                                                         |
+| `unlimitedStorage`                                                                                                                                       | Cache the bundled H-1B sponsor dataset and locally saved form-structure snapshots (scripts/styles/images stripped, values redacted) without hitting the default quota.                                          |
+| `activeTab`                                                                                                                                              | Act on the tab the user just clicked the toolbar button or on-page control on — fill its form, or apply the user's filter rules to its listings. Never runs without that click.                                 |
+| `scripting`                                                                                                                                              | Fill custom dropdown/date-picker components (several ATS platforms) that ignore ordinary programmatic input. Runs only bundled code, never fetched — only on pages the user is applying on.                     |
+| `host_permissions`: `http://127.0.0.1/*`, `http://localhost/*`                                                                                           | Communicate with the user's own, optional JobHakken desktop app over the local loopback bridge (résumé tailoring, job tracking).                                                                                |
+| `host_permissions`: `https://app.jobhakken.com/*`                                                                                                        | Account sign-in and subscription status for users on a managed plan.                                                                                                                                            |
+| `host_permissions`: 12 AI provider APIs (Anthropic, OpenAI, OpenRouter, Google, Groq, Mistral, DeepSeek, Perplexity, Together, xAI, Fireworks, BigModel) | Only for opt-in AI features the user explicitly triggers (cover letter, answer drafting). User picks the provider and supplies their own key, or uses a managed plan. Only the text that request needs is sent. |
+| `host_permissions`: `https://www.google-analytics.com/*`                                                                                                 | Anonymous, opt-out, metadata-only usage analytics (feature used, success/fail, version) — never content.                                                                                                        |
+| Content scripts (job-board / ATS hosts, all frames)                                                                                                      | Detect job postings and application forms and fill them; all-frames because Workday/iCIMS and others render forms inside iframes.                                                                               |
 
 ## Data use disclosure (CWS "Privacy practices" → data collected)
 
-- **Personally identifiable information** (name, contact details, résumé content): handled **only** to
-  provide the core autofill/match features. Exchanged with the user's **local desktop app**; **not**
-  sent to JobHakken servers, **not** sold, **not** used for unrelated purposes.
-- **Anonymous usage analytics** (declare under "User activity"): metadata only — feature-used,
-  success/fail, coarse counts, extension version, browser/OS, and a random pseudonymous install id.
-  **No content, no page URLs, no precise location** (an allowlist enforces this). Sent to **Google
-  Analytics** (third-party) + our first-party endpoint. **Opt-out** in Settings.
-- Certifications: does **not** sell/transfer user data to third parties for advertising; does **not**
-  use data for purposes unrelated to the single purpose; does **not** use data for creditworthiness.
+- **Personally identifiable information**: YES — the profile the user enters, and (only for an opt-in
+  AI request) the text that request needs, sent to the provider the user chose.
+- **Website content**: YES — the extension reads the form/listings on the page. Leaves the device
+  **only** for an opt-in AI request, and only the text that request needs. Never for analytics.
+- **Not sold to third parties.** **Not used for purposes unrelated to core functionality.** **Not used
+  for creditworthiness or lending.**
+- Do **not** resurrect "sends no user content off the device" (rule #2 above) — false once AI is used.
+
+## Remote code
+
+`No, I am not using remote code.` AI providers and analytics are plain data requests, not loaded/executed
+script; the extension's CSP forbids remote code.
+
+## Privacy policy
+
+`https://jobhakken.com/privacy-policy/` — must disclose (1) the optional analytics and (2) that opt-in
+AI features send request text to the user's chosen provider. A reviewer who finds 12 AI host permissions
+and a privacy policy silent on AI will flag the listing.
 
 ## Versioning
 
 Keep this file, `manifest.json` `description`, and `package.json`/`manifest.json` `version` in sync.
-Update this file in the same PR as any user-facing listing change.
+Update this file in the same PR as any user-facing listing, permission, or host change.
 
 ---
 
@@ -124,8 +139,10 @@ Then release with:
 
 ```bash
 # bump version in package.json AND manifest.json (build asserts they match), update CHANGELOG.md, then:
-git tag ext-v0.11.0 && git push origin ext-v0.11.0
+git tag ext-v0.41.3 && git push origin ext-v0.41.3
 ```
 
 The tag push runs the publish job. `workflow_dispatch` with `publish:false` uploads a **draft** only
-(no publish) for a dry run.
+(no publish) for a dry run. This repo currently publishes **manually** via the dashboard (see
+`plans-and-thoughts/extension/manual-publish-guide.md` — not committed here) until the CWS API secrets
+above are added; treat this section as the target-state workflow, not the current one.
