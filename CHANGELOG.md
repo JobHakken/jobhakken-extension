@@ -4,6 +4,12 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.41.3
+- **Fixed: the H-1B sponsor tag could appear on ordinary websites that have nothing to do with jobs.**
+  It was meant for LinkedIn only, but nothing actually enforced that — any site with its own
+  "About the Company" style link could trigger it if that link's text happened to match a known
+  sponsor's name. It now only ever runs on LinkedIn.
+
 ## 0.41.2
 - **Fixed: reporting a problem was flagged as a duplicate of someone else's report.** Every report about
   the same site carried an identical title, so GitHub assumed it had already been raised — which read as

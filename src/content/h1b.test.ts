@@ -23,6 +23,16 @@ function mockWorker(matches: Record<string, number>): void {
   (globalThis as unknown as { chrome: unknown }).chrome = { runtime: { sendMessage } };
 }
 
+/** jsdom's own default hostname is `localhost` — every test below needs it overridden to LinkedIn,
+ *  since applyH1bBadges() now refuses to run anywhere else (see the gate this file's last test pins). */
+function setLocation(hostname: string): void {
+  Object.defineProperty(window, 'location', {
+    value: { hostname, pathname: '/', href: `https://${hostname}/` },
+    writable: true,
+    configurable: true,
+  });
+}
+
 /** A LinkedIn-style detail pane with a single /company/ link (the reliable badge surface). */
 function detailPane(companyText: string): void {
   document.body.innerHTML = `
@@ -34,6 +44,7 @@ function detailPane(companyText: string): void {
 describe('applyH1bBadges (content-script H-1B sponsor matching)', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+    setLocation('www.linkedin.com');
   });
 
   it("badges the opened job's company and records the popup verdict", async () => {
@@ -78,5 +89,35 @@ describe('applyH1bBadges (content-script H-1B sponsor matching)', () => {
 
     expect(sendMessage).not.toHaveBeenCalled();
     expect(getH1bVerdict()).toBeNull();
+  });
+
+  it('never badges an ordinary, non-LinkedIn site — even one with its own "/company/" link', async () => {
+    // The reported bug, reproduced exactly: detailCompany()'s selector — any a[href*="/company/"] —
+    // is not LinkedIn-specific, and applyBadges() ran on every page (content_scripts.matches is
+    // <all_urls>, no gate). An ordinary site's own "About the Company" nav link matched it just as
+    // well as LinkedIn's detail pane does, and if that link's text happened to match a real sponsor —
+    // exactly what this fixture sets up — the badge rendered on a page with nothing to do with jobs.
+    mockWorker({ 'Acme Widgets': 1500 }); // a REAL sponsor match, proving the gate — not a missed lookup
+    setLocation('www.acme-garden-tools.example');
+    document.body.innerHTML = `
+      <nav><a href="/company/about">Acme Widgets</a></nav>
+      <p>Buy our garden tools.</p>`;
+
+    await applyH1bBadges(true);
+
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect(document.querySelector('.f2a-h1b-badge')).toBeNull();
+    expect(getH1bVerdict()).toBeNull();
+  });
+
+  it('still badges normally on LinkedIn itself (the gate does not regress the real feature)', async () => {
+    mockWorker({ 'Acme Widgets': 1500 });
+    setLocation('www.linkedin.com');
+    detailPane('Acme Widgets');
+
+    await applyH1bBadges(true);
+
+    expect(document.querySelector('.f2a-h1b-badge')).not.toBeNull();
+    expect(getH1bVerdict()).toEqual({ company: 'Acme Widgets', approvals: 1500 });
   });
 });
