@@ -96,6 +96,35 @@ against `src/manifest.json` every release; add a row here for anything new befor
 | `host_permissions`: `https://www.google-analytics.com/*`                                                                                                 | Anonymous, opt-out, metadata-only usage analytics (feature used, success/fail, version) — never content.                                                                                                        |
 | Content scripts (job-board / ATS hosts, all frames)                                                                                                      | Detect job postings and application forms and fill them; all-frames because Workday/iCIMS and others render forms inside iframes.                                                                               |
 
+## Broad host permissions justification (content_scripts `<all_urls>`)
+
+`content_scripts.matches` is `<all_urls>` — CWS shows a **"Publishing will be delayed" / Broad Host
+Permissions** modal on submit because of this (not because of the `host_permissions` list above, which
+is already narrow). This is expected for this extension, not a rejection — it just queues an in-depth
+review. Click through it (**Submit for review**, not Edit item) once the text below is pasted into the
+justification field that modal sits in front of:
+
+```
+JobHakken auto-detects job postings and application forms across an open-ended set of sites: every
+applicant tracking system (Workday, Greenhouse, Lever, iCIMS, SmartRecruiters, Taleo, and others) is
+white-labeled onto each individual employer's own domain or subdomain, so there is no fixed, enumerable
+host list — a new employer's careers site is a host we've never seen before. activeTab is not sufficient
+because the extension needs to recognize a job page and offer autofill/filtering as the user browses,
+before any click on that page — requiring a click first would mean the user has to already know a page
+is supported before the extension can tell them it is, defeating the feature.
+
+Once the extension runs on a page, it only acts on the DOM already loaded there: reading the visible job
+listing or application form to fill it from the user's own saved profile, or to apply the user's own
+filter rules. No page content is read or sent anywhere unless the user explicitly triggers an AI feature
+(cover letter, answer drafting) — see the AI provider host justifications above. All frames are required
+because major ATS platforms (Workday, iCIMS) render the application form inside an iframe.
+```
+
+Before submitting past this modal, also confirm the privacy policy page (below) is live with the AI
+disclosure — this is exactly the pass where a reviewer cross-checks that. Expect the review itself to
+run a day or two longer than a routine version bump; that's normal for a first-time broad-host/
+`activeTab`/`scripting` submission, not a sign of a problem.
+
 ## Data use disclosure (CWS "Privacy practices" → data collected)
 
 - **Personally identifiable information**: YES — the profile the user enters, and (only for an opt-in
@@ -139,7 +168,7 @@ Then release with:
 
 ```bash
 # bump version in package.json AND manifest.json (build asserts they match), update CHANGELOG.md, then:
-git tag ext-v0.41.3 && git push origin ext-v0.41.3
+git tag ext-v0.41.4 && git push origin ext-v0.41.4
 ```
 
 The tag push runs the publish job. `workflow_dispatch` with `publish:false` uploads a **draft** only
