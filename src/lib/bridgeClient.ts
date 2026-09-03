@@ -5,6 +5,7 @@
  *
  * `fetchImpl` is injectable so the discovery/RPC logic is unit-testable.
  */
+import { RESUME_SCHEMA_VERSION } from './vendor/resume/model.js';
 
 // Must match the candidate list the desktop bridge binds (extensionBridge.ts).
 export const CANDIDATE_PORTS = [41573, 41574, 41575, 41576, 41577];
@@ -42,10 +43,10 @@ export type BridgeProfile = {
 
 export type BridgeConnection = { port: number; token: string; profile: BridgeProfile; schemaWarning?: string };
 
-// The résumé-payload schema version this build understands (ADR-0005). MIRRORS `RESUME_SCHEMA_VERSION`
-// in @jobhakken/core — TODO: import it once core ≥0.4.1 (which exports it) is published; hardcoded for
-// now so we can validate the bridge payload today. Bump in lockstep with core.
-export const SUPPORTED_RESUME_SCHEMA = 5;
+// The résumé-payload schema version this build understands (ADR-0005). Was a hardcoded literal with a
+// TODO to import it once core published the constant; #482 vendors the résumé model for the native
+// builder, which resolves that TODO as a side effect — this is now the SAME constant the builder writes.
+export const SUPPORTED_RESUME_SCHEMA = RESUME_SCHEMA_VERSION;
 
 /**
  * Validate a résumé payload version received over the bridge (ADR-0005). A NEWER app than this

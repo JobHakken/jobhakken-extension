@@ -50,6 +50,8 @@ import { repairFills, type Attempt } from '../lib/fillRepair.js';
 import { UNMAPPABLE } from '../lib/aiFieldMap.js';
 import { cacheMap, getCachedMap, labelKey } from '../lib/fieldMapCache.js';
 import { isAtsHost, isCaptureAllowed, setSiteOptIn, upsertCapture, type CaptureField } from '../lib/captureStore.js';
+import { markUnknownSiteReported, shouldReportUnknownSite } from '../lib/unknownSiteReportStore.js';
+import { issueUrl, pageRef } from '../lib/issueReportUrl.js';
 import { buildCandidateContext } from '../lib/aiClient.js';
 import { loadConnection } from '../lib/connectionStore.js';
 import { bytesToBase64, getResumeFile } from '../lib/resumeFileStore.js';
@@ -554,7 +556,8 @@ const MORE_ATS_HOSTS =
  * isn't in the markup. The path is the giveaway and costs nothing to check. It cannot fire on ChatGPT,
  * webmail or a support form, which is what the host allow-list exists to avoid.
  */
-const JOB_PATH_HINT = /\/(careers?|jobs?|apply|application|vacanc\w*|openings?|positions?|join-us|work-with-us)(\/|$|\?|#)/i;
+const JOB_PATH_HINT =
+  /\/(careers?|jobs?|apply|application|vacanc\w*|openings?|positions?|join-us|work-with-us)(\/|$|\?|#)/i;
 
 /**
  * Is this somewhere the launcher belongs, even with no form on screen?
@@ -575,6 +578,16 @@ function isJobSite(): boolean {
     JOB_PATH_HINT.test(location.pathname) ||
     siteOptedIn
   );
+}
+
+/**
+ * Every SPECIFIC signal that says "we already know what this site is" — host, fingerprint, opt-in,
+ * or a real application/search-results shape. Everything `syncRail()`'s `wanted` check used to be,
+ * before the `looksFormish()` fallback was added. Reused as the boundary for `reportUnknownSite()`:
+ * a site the launcher shows on for one of THESE reasons is not "unrecognised" — only the fallback is.
+ */
+function isKnownJobSite(): boolean {
+  return isRelevantPage() || isPostSearchPage() || isJobSearchPage() || isJobSite();
 }
 
 /**
@@ -879,19 +892,21 @@ async function draftTwo(label: string): Promise<{ options: string[]; error?: str
  * something. Re-checked on SPA mutations, since an application form often renders after first paint.
  */
 function syncRail(): void {
-  // `isRelevantPage()` alone — deliberately NOT `|| fieldCount >= 3` (#174). A bare field count is not
-  // an application signal: a login form, a contact form, a newsletter signup, a checkout and most
-  // settings screens all clear three fields, so that clause put our launcher on most of the web. It
-  // also contradicted the documented contract on `isRelevantPage` right above ("opens ONLY on
-  // job-application pages, never on ordinary sites"). Beyond being noise, UI appearing on unrelated
-  // sites reads as "this extension watches everything I do", which is the opposite of the local-always
-  // promise we make. An unrecognised ATS is still reachable: `siteOptedIn` forces the rail on.
-  // LinkedIn's post search is not an application, so it can never satisfy `isRelevantPage()` — it gets
-  // its OWN branch here rather than being smuggled in by loosening that gate. Loosening it is what put
-  // the launcher on most of the web (#174); the rail renders only the post-filter section there.
-  // Same reasoning for LinkedIn's job SEARCH page (#183/#190): a results list has no fields either,
-  // so it gets its own OR clause rather than widening isRelevantPage() itself.
-  const wanted = isRelevantPage() || isPostSearchPage() || isJobSearchPage() || isJobSite();
+  // `isRelevantPage()` alone — deliberately NOT `|| fieldCount >= 3` (#174, superseded below). A bare
+  // field count is not an application signal: a login form, a contact form, a newsletter signup, a
+  // checkout and most settings screens all clear three fields, so that clause put our launcher on most
+  // of the web. LinkedIn's post search is not an application, so it can never satisfy `isRelevantPage()`
+  // — it gets its OWN branch here rather than being smuggled in by loosening that gate. Same reasoning
+  // for LinkedIn's job SEARCH page (#183/#190): a results list has no fields either.
+  const wanted = isKnownJobSite() || looksFormish();
+  // `looksFormish()` is the field-count fallback #174 removed, brought back deliberately: the launcher
+  // is now the mechanism for reporting a job-form site we don't yet recognise (reportUnknownSite()
+  // below), so it has to be reachable somewhere the site itself gives no other signal. It DOES
+  // reproduce #174's false positives (a login or newsletter form clears 3 fields too) — that's the
+  // accepted tradeoff, not an oversight. What #174 actually objected to was UI appearing with no
+  // reason and no way to tell whether it meant anything; clicking the launcher on one of those pages
+  // now answers that (nothing gets reported — see reportUnknownSite's own field-count + text gate),
+  // and it stays a collapsed, inert tab until clicked either way.
   if (!wanted) {
     unmountRail();
     return;
@@ -974,6 +989,7 @@ function syncRail(): void {
     coverLetter,
     attachCover,
     openOptions: () => void chrome.runtime.sendMessage({ type: 'f2a-open-options' }).catch(() => {}),
+    reportUnknownSite: () => void reportUnknownSite(),
   });
 }
 
@@ -2336,6 +2352,85 @@ async function captureFlow(): Promise<void> {
     });
   } catch {
     /* capture is best-effort; never disrupt the page */
+  }
+}
+
+// Loose "this looks job-related" text signal — the same words popup.ts's own unsupported-page
+// heuristic (jobFormHeuristic) looks for. Kept independent rather than shared: that one runs via
+// chrome.scripting.executeScript against document.body.innerText from OUTSIDE the page; this one
+// already has direct DOM access from inside it. Exists so `reportUnknownSite` doesn't open a GitHub
+// issue for every login/newsletter/checkout form the field-count fallback now shows the launcher on
+// (see syncRail's comment) — it should fire only for something that actually reads as a job form.
+const APPLYISH = /(apply|application|resume|résumé|\bcv\b|cover letter|job|position|candidate|employment)/i;
+
+// Keep the redacted HTML embedded in the issue body well clear of URL length limits various proxies
+// and GitHub itself impose on a GET request this long — the body is a query parameter, not a payload.
+const REPORT_HTML_CAP = 4000;
+
+/**
+ * Opens a prefilled GitHub issue for a job-application-shaped page the extension doesn't otherwise
+ * recognise — the launcher's own click is the trigger (rail.ts calls this alongside opening the
+ * panel), so this only ever runs when someone who is already looking at the page decides it's worth
+ * flagging. Nothing is created without the user then reviewing and submitting it themselves on
+ * GitHub's own page — same non-auto-filing contract as popup.ts's "Report this page" (see
+ * issueReportUrl.ts). `isKnownJobSite()` — everything BUT the `looksFormish()` fallback — is what
+ * "don't otherwise recognise" means; a real ATS or job board never reaches here.
+ */
+async function reportUnknownSite(): Promise<void> {
+  try {
+    if (isKnownJobSite()) return; // recognised some other way — nothing to report
+    const fields = pageFields();
+    // Same "only a real application" floor captureFlow() uses, plus a loose text check — together
+    // they're the difference between a login form and something actually worth a coverage issue.
+    if (fields.length < 4 || !APPLYISH.test(document.body?.innerText ?? '')) return;
+    const host = location.hostname.replace(/^www\./, '');
+    if (!(await shouldReportUnknownSite(host))) return;
+    const scrub = await scrubValues();
+    let html = cleanClone(formRegion(), scrub);
+    const truncated = html.length > REPORT_HTML_CAP;
+    if (truncated) html = html.slice(0, REPORT_HTML_CAP) + '\n<!-- …truncated … -->';
+    const ats = detectAts(document) ?? '(not recognised by the bundled detector)';
+    const fieldList = fields
+      .slice(0, 40)
+      .map((f) => `- \`${f.kind}\` ${f.label || '(unlabeled)'}`)
+      .join('\n');
+    const body = [
+      '### 🆕 Unsupported job-form site',
+      '',
+      "_Opened automatically from the extension's launcher on a page it doesn't recognise as a",
+      'known job board or ATS. No personal data is included — see the redacted snapshot below._',
+      '',
+      '### Page',
+      `| | |`,
+      `|---|---|`,
+      `| **URL** | ${location.href} |`,
+      `| **Title** | ${document.title.slice(0, 200)} |`,
+      `| **ATS guess** | \`${ats}\` |`,
+      `| **Fillable fields** | ${fields.length} |`,
+      `| **Extension** | v${chrome.runtime.getManifest().version} |`,
+      '',
+      '### Fields detected',
+      fieldList || '_(none labeled)_',
+      '',
+      '### Redacted form HTML' + (truncated ? ` (truncated to ${REPORT_HTML_CAP} chars)` : ''),
+      '<details><summary>expand</summary>',
+      '',
+      '```html',
+      html,
+      '```',
+      '',
+      '</details>',
+      '',
+      '---',
+      '_Auto-filled from the page. Profile values, résumé text, and free-text answers are redacted —',
+      'see the HTML above before submitting if you want to double-check._',
+    ].join('\n');
+    const title = `[extension] Unsupported site — ${host} [${pageRef(location.href)}]`;
+    const url = issueUrl(title, body, ['extension-feedback', 'coverage']);
+    await chrome.runtime.sendMessage({ type: 'f2a-open-tab', url }).catch(() => {});
+    await markUnknownSiteReported(host);
+  } catch {
+    /* best-effort — a hostile/odd page must never block the launcher opening */
   }
 }
 

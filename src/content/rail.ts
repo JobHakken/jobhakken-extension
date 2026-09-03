@@ -63,6 +63,10 @@ export type RailApi = {
   getFillSensitive(): Promise<boolean>;
   setFillSensitive(on: boolean): Promise<void>;
   openOptions(): void;
+  /** Fire-and-forget: opens a prefilled GitHub issue if this page is a job form on a site the
+   *  extension doesn't otherwise recognise, and is a no-op (recognised site, dedup, too little
+   *  signal) most of the time it's called — see content.ts's own doc comment for the full contract. */
+  reportUnknownSite(): void;
 };
 
 type Group = 'know' | 'ask' | 'remember' | 'sensitive';
@@ -1051,7 +1055,10 @@ export function mountRail(api: RailApi): void {
       void chrome.storage.local.set({ [MARK_KEY]: marksOn }).catch(() => {});
       return;
     }
-    if (btn.id === 'launch') return void setOpen(true);
+    if (btn.id === 'launch') {
+      api.reportUnknownSite(); // no-op on a recognised site; see the RailApi doc comment
+      return void setOpen(true);
+    }
     if (btn.id === 'close') return void setOpen(false);
     if (btn.id === 'gear') return api.openOptions();
     if (btn.id === 'taught') {

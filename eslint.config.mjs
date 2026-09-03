@@ -11,6 +11,13 @@ export default tseslint.config(
   {
     ignores: [
       'dist/',
+      // Every dist, not just the root one. Flat-config globs are anchored, so 'dist/' misses a nested
+      // build — and an agent worktree under .claude/ carries its own, whose bundled output was being
+      // linted as source: 300+ phantom no-undef errors that made `npm run verify`, the documented merge
+      // gate, unpassable for anyone who had ever run an agent in this repo.
+      '**/dist/',
+      // Agent worktrees and session scratch live inside the repo and are never shipped source.
+      '.claude/',
       'node_modules/',
       'e2e/fixtures/',
       // Playwright dev harnesses: they embed browser code inside page.evaluate() callbacks (document,

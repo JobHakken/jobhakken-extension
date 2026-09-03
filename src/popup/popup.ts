@@ -6,6 +6,7 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
 import type { H1bDetail } from '../lib/h1bTypes.js';
 import { escapeHtml } from '../lib/html.js';
+import { issueUrl, pageRef } from '../lib/issueReportUrl.js';
 import { loadTestMode } from '../lib/profileStore.js';
 import { hostHash } from '../lib/siteDiscovery.js';
 import { getTelemetryEnabled } from '../lib/telemetry.js';
@@ -170,8 +171,6 @@ async function reportSiteCandidate(): Promise<void> {
   }
 }
 
-// Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
-const REPO = 'https://github.com/JobHakken/JobHakken-issues';
 let lastState: State | null = null;
 // H-1B history panel (premium): company on the current page + whether this user may see the data.
 let h1bCompany = '';
@@ -698,7 +697,14 @@ async function openReport(reasonKey: string) {
     '---',
     `_JobHakken extension v${version} · auto-filled from the page. No personal data included (no profile values, résumé, or answers)._`,
   ].join('\n');
-  const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(`[extension] ${reason} — ${company !== '(unknown)' ? company : host}`)}&body=${encodeURIComponent(body)}`;
+  // GitHub offers "this looks like a duplicate" purely on title similarity, and the title used to be
+  // just reason + company — so a second report about a different posting on the same site was
+  // byte-identical to the first and got flagged, which reads as "we already know" when we do not.
+  // `pageRef` (shared with the rail's unknown-site report — see issueReportUrl.ts) fixes that.
+  const where = company !== '(unknown)' ? company : host;
+  const platform = ats && ats !== 'unknown' && ats !== '(none)' ? ` · ${ats}` : '';
+  const issueTitle = `[extension] ${reason} — ${where}${platform} [${pageRef(pageUrl)}]`;
+  const url = issueUrl(issueTitle, body, ['extension-feedback']);
   await chrome.tabs.create({ url });
   window.close();
 }
