@@ -91,6 +91,20 @@ chrome.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type === 'f2a-open-options') void chrome.runtime.openOptionsPage();
+  // content.ts can't call chrome.tabs.create itself (not available in a content-script context), so
+  // the rail's "report this unrecognised site" flow (reportUnknownSite in content.ts) routes through
+  // here. Restricted to the issue-tracker repo specifically — this must never become a general
+  // open-any-url-from-a-content-script primitive, even though the caller is our own trusted code.
+  if (msg?.type === 'f2a-open-tab' && typeof msg.url === 'string') {
+    let ok = false;
+    try {
+      const u = new URL(msg.url);
+      ok = u.origin === 'https://github.com' && u.pathname.startsWith('/JobHakken/JobHakken-issues/issues/new');
+    } catch {
+      ok = false;
+    }
+    if (ok) void chrome.tabs.create({ url: msg.url });
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg) => {

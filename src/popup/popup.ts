@@ -6,6 +6,7 @@ import { loadConnection } from '../lib/connectionStore.js';
 import { bestFrameId } from '../lib/frameStore.js';
 import type { H1bDetail } from '../lib/h1bTypes.js';
 import { escapeHtml } from '../lib/html.js';
+import { issueUrl, pageRef } from '../lib/issueReportUrl.js';
 import { loadTestMode } from '../lib/profileStore.js';
 import { hostHash } from '../lib/siteDiscovery.js';
 import { getTelemetryEnabled } from '../lib/telemetry.js';
@@ -170,8 +171,6 @@ async function reportSiteCandidate(): Promise<void> {
   }
 }
 
-// Public repo so anyone can file feedback (the main jobhakken repo is private → 404 for users).
-const REPO = 'https://github.com/JobHakken/JobHakken-issues';
 let lastState: State | null = null;
 // H-1B history panel (premium): company on the current page + whether this user may see the data.
 let h1bCompany = '';
@@ -701,28 +700,11 @@ async function openReport(reasonKey: string) {
   // GitHub offers "this looks like a duplicate" purely on title similarity, and the title used to be
   // just reason + company — so a second report about a different posting on the same site was
   // byte-identical to the first and got flagged, which reads as "we already know" when we do not.
-  //
-  // Appending the ATS platform and a short ref derived from the page makes each posting distinct. The
-  // ref is DETERMINISTIC on origin + path (query stripped, since LinkedIn and Greenhouse both hang
-  // tracking ids off their URLs and those would make one posting look like several). So reporting the
-  // SAME page twice still collides — which is a real duplicate and should look like one — while two
-  // different postings never do.
-  const pageRef = (u: string): string => {
-    let clean = u;
-    try {
-      const parsed = new URL(u);
-      clean = parsed.origin + parsed.pathname;
-    } catch {
-      /* not a parseable URL — hash whatever we were given */
-    }
-    let h = 0;
-    for (let i = 0; i < clean.length; i++) h = (Math.imul(31, h) + clean.charCodeAt(i)) | 0;
-    return (h >>> 0).toString(36).slice(0, 5);
-  };
+  // `pageRef` (shared with the rail's unknown-site report — see issueReportUrl.ts) fixes that.
   const where = company !== '(unknown)' ? company : host;
   const platform = ats && ats !== 'unknown' && ats !== '(none)' ? ` · ${ats}` : '';
   const issueTitle = `[extension] ${reason} — ${where}${platform} [${pageRef(pageUrl)}]`;
-  const url = `${REPO}/issues/new?labels=${encodeURIComponent('extension-feedback')}&title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(body)}`;
+  const url = issueUrl(issueTitle, body, ['extension-feedback']);
   await chrome.tabs.create({ url });
   window.close();
 }

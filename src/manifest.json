@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JobHakken \u2014 Apply Copilot",
-  "version": "0.41.4",
+  "version": "0.42.0",
   "description": "Autofill applications, match your r\u00e9sum\u00e9, spot visa sponsors, and build a tailored r\u00e9sum\u00e9 \u2014 free & local.",
   "icons": {
     "16": "icons/icon-16.png",

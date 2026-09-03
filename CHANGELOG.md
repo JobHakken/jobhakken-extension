@@ -4,6 +4,18 @@ Version shown in the toolbar popup + Options footer (`chrome.runtime.getManifest
 SemVer: **patch** (0.0.x) = fixes/tweaks, **minor** (0.x.0) = a new user-facing feature,
 **major** = release milestone. Iterative work stays in patch; minor bumps mark shipped features.
 
+## 0.42.0
+- **The launcher now shows up on any page that looks like a job form, not just recognised job boards
+  and ATS platforms.** Previously it only appeared on a known host or a real application signal (#174) —
+  a genuine but unlisted ATS (a company's own careers site running something we don't recognise) got no
+  launcher at all, and no way to tell us. It's still a collapsed, inert tab until clicked.
+- **Clicking the launcher on one of those unrecognised sites can now open a pre-filled GitHub issue** —
+  a redacted snapshot of the form (structure only; profile values, résumé text, and free-text answers are
+  scrubbed) so we can add real support for it. Nothing is filed automatically: the draft opens for you to
+  review, and you still click Submit on GitHub's own page, or just close the tab. At most one draft per
+  site per week, and only for something that actually reads as a job application — an ordinary login or
+  contact form the launcher now also appears on won't trigger it.
+
 ## 0.41.4
 - **Rewrote the Chrome Web Store listing** (`docs/store-listing.md`) — it was missing the résumé
   builder entirely and its permission list hadn't caught up to `activeTab`, `scripting`, or the AI

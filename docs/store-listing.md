@@ -11,7 +11,14 @@ code and stays honest against the manifest.** Keep in sync with `src/manifest.js
    marketing copy.
 2. **Never claim "sends no user content off the device."** False since AI features shipped — the
    manifest declares AI provider hosts, and cover-letter/answer drafting sends page text to whichever
-   one the user picked. Say what's true: content leaves the device **only** for an opt-in AI request.
+   one the user picked. Also false as of the rail's "report an unrecognised site" flow (0.42.0): a
+   click on the launcher on a job-form page we don't recognise can open a prefilled, redacted
+   `github.com/JobHakken/JobHakken-issues` issue draft — no `github.com` host_permission needed (it's
+   a plain `chrome.tabs.create`, not a fetch), but the draft's URL genuinely does carry page-derived
+   HTML to GitHub as soon as that tab loads, same as the pre-existing popup "Report this page" flow.
+   Nothing is filed until the user reviews and clicks Submit on GitHub's own page. Say what's true:
+   content leaves the device for an opt-in AI request, or when the user's own click opens one of
+   these report drafts.
 3. **List of hosts/permissions in this doc must match the manifest exactly**, every release. A
    reviewer diffs them; an undisclosed host is a removal risk, not a warning.
 4. **Filtering is triage, not a second feature.** Job/post filtering is framed as narrowing the list
@@ -116,8 +123,10 @@ is supported before the extension can tell them it is, defeating the feature.
 Once the extension runs on a page, it only acts on the DOM already loaded there: reading the visible job
 listing or application form to fill it from the user's own saved profile, or to apply the user's own
 filter rules. No page content is read or sent anywhere unless the user explicitly triggers an AI feature
-(cover letter, answer drafting) — see the AI provider host justifications above. All frames are required
-because major ATS platforms (Workday, iCIMS) render the application form inside an iframe.
+(cover letter, answer drafting — see the AI provider host justifications above) or clicks the launcher on
+a job-form page the extension doesn't recognise, which can open a prefilled, redacted GitHub issue draft
+for the user to review before submitting (rule #2 above). All frames are required because major ATS
+platforms (Workday, iCIMS) render the application form inside an iframe.
 ```
 
 Before submitting past this modal, also confirm the privacy policy page (below) is live with the AI
@@ -129,8 +138,10 @@ run a day or two longer than a routine version bump; that's normal for a first-t
 
 - **Personally identifiable information**: YES — the profile the user enters, and (only for an opt-in
   AI request) the text that request needs, sent to the provider the user chose.
-- **Website content**: YES — the extension reads the form/listings on the page. Leaves the device
-  **only** for an opt-in AI request, and only the text that request needs. Never for analytics.
+- **Website content**: YES — the extension reads the form/listings on the page. Leaves the device for
+  an opt-in AI request (only the text that request needs), or when the user clicks the launcher on an
+  unrecognised job-form page and a redacted HTML snapshot goes into a GitHub issue draft they review
+  before submitting. Never for analytics.
 - **Not sold to third parties.** **Not used for purposes unrelated to core functionality.** **Not used
   for creditworthiness or lending.**
 - Do **not** resurrect "sends no user content off the device" (rule #2 above) — false once AI is used.
@@ -168,7 +179,7 @@ Then release with:
 
 ```bash
 # bump version in package.json AND manifest.json (build asserts they match), update CHANGELOG.md, then:
-git tag ext-v0.41.4 && git push origin ext-v0.41.4
+git tag ext-v0.42.0 && git push origin ext-v0.42.0
 ```
 
 The tag push runs the publish job. `workflow_dispatch` with `publish:false` uploads a **draft** only
