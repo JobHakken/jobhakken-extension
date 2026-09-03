@@ -1,12 +1,97 @@
 {
   "fixture": "ats-jazzhr.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
   "_note": "JazzHR (applytojob.com) public apply form (captured live).",
   "fields": [
-    { "selector": "#resumator-firstname-value", "expect": "Jordan", "gate": true },
-    { "selector": "#resumator-lastname-value", "expect": "Rivera", "gate": true },
-    { "selector": "#resumator-email-value", "expect": "jordan.rivera@example.com", "gate": true },
-    { "selector": "#resumator-phone-value", "expect": "555", "match": "contains", "gate": false }
-  ]
+    {
+      "selector": "#resumator-firstname-value",
+      "expect": "Jordan",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-lastname-value",
+      "expect": "Rivera",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-email-value",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "#resumator-phone-value",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "#resumator-address-value",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Address"
+    },
+    {
+      "selector": "#resumator-city-value",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 City"
+    },
+    {
+      "selector": "#resumator-state-value",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 State/Province"
+    },
+    {
+      "selector": "#resumator-postal-value",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Postal"
+    },
+    {
+      "selector": "#resumator-resumetext-value",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 Paste your resume here or Attach resume file"
+    },
+    {
+      "selector": "#resumator-xml-value",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 Resume*"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360362",
+      "expect": "",
+      "review": true,
+      "note": "select \u2014 Are you legally authorized to work in the United States?*"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360366",
+      "expect": "",
+      "review": true,
+      "note": "select \u2014 Will you require sponsorship to work in the United States now or in th"
+    },
+    {
+      "selector": "#resumator-questionnaire-q2360369",
+      "expect": "",
+      "review": true,
+      "note": "select \u2014 Are you willing to relocate to Austin,TX?*"
+    },
+    {
+      "selector": "#resumator-resume-value",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "#g-recaptcha-response",
+      "expect": "",
+      "review": true,
+      "note": "textarea"
+    }
+  ],
+  "minPrecision": 1
 }

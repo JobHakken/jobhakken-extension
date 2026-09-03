@@ -1,11 +1,347 @@
 {
   "fixture": "ats-recruitee.html",
-  "profile": "TEST_PROFILE — Jordan Rivera",
+  "profile": "TEST_PROFILE \u2014 Jordan Rivera",
   "minRecall": 1,
   "_note": "Recruitee public application form (captured live).",
   "fields": [
-    { "selector": "[name=\"candidate.name\"]", "expect": "Jordan", "match": "contains", "gate": true },
-    { "selector": "[name=\"candidate.email\"]", "expect": "jordan.rivera@example.com", "gate": true },
-    { "selector": "[name=\"candidate.phone\"]", "expect": "555", "match": "contains", "gate": false }
-  ]
+    {
+      "selector": "[name=\"candidate.name\"]",
+      "expect": "Jordan",
+      "match": "contains",
+      "gate": true
+    },
+    {
+      "selector": "[name=\"candidate.email\"]",
+      "expect": "jordan.rivera@example.com",
+      "gate": true
+    },
+    {
+      "selector": "[name=\"candidate.phone\"]",
+      "expect": "555",
+      "match": "contains",
+      "gate": false
+    },
+    {
+      "selector": "[id=\"input-candidate.name-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Full name\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.email-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Email address\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.phone-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone number\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862227.content-13\"]",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 Why are you interested in working at cross-ING?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862229.content-15\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 What are the three key technical or professional competencies you poss"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862230.content-16\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 What are the three personal or social competencies that particularly d"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862231.content-17\"]",
+      "expect": "",
+      "review": true,
+      "note": "textarea \u2014 Are there any industries or fields of work that you would generally no"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862233.content-19\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 When did you receive your degree, or when do you expect to receive it?"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862234.content-21\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 What is the earliest date you would be available to commence a new rol"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862239.content-27\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Please indicate your salary expectations (gross annual salary based on"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862240.content-29\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Please specify the work percentage (e.g. 80%, 100%) you are aiming for"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862242.content-31\"]",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Please enter your date of birth\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 How many years of professional experience do you have in the field rel"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862232.multiContent-18-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 What is your highest level of education?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 What is the length of your notice period?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862236.flag-24-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Are your German language skills at level C1 or higher?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862237.flag-25-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Are your English language skills at level C1 or higher?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862238.flag-26-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Are your French language skills at level C1 or higher?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862241.multiContent-30-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Do you have a Swiss or EU passport?\u00a0*"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-0\"]",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 What is your preferred work location?\u00a0*"
+    },
+    {
+      "selector": "[id=\"country-select-input-candidate.phone-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 My information"
+    },
+    {
+      "selector": "[id=\"input-candidate.photo-5\"]",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "[id=\"input-candidate.cv-11\"]",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862228.multiContent-14-5\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862232.multiContent-18-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862232.multiContent-18-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862232.multiContent-18-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862232.multiContent-18-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862235.content-23-5\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862236.flag-24-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862237.flag-25-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862238.flag-26-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862241.multiContent-30-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862241.multiContent-30-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.openQuestionAnswers.6862243.file-33\"]",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-1\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-2\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-3\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-4\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-5\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-6\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-7\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-8\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-9\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "[id=\"input-candidate.locations.value-36-10\"]",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    }
+  ],
+  "minPrecision": 1
 }

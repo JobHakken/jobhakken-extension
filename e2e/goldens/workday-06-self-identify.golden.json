@@ -1,0 +1,44 @@
+{
+  "fixture": "workday/06-self-identify.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": ":nth-match(input, 1)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 2)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": ":nth-match(input, 3)",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    },
+    {
+      "selector": "#personalInfoUS--gender",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Please Select Your Gender.*"
+    },
+    {
+      "selector": "#personalInfoUS--ethnicity",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Please Select Your Ethnicity.*"
+    },
+    {
+      "selector": "#personalInfoUS--veteranStatus",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Please identify your Veteran status.*"
+    }
+  ],
+  "minPrecision": 1
+}

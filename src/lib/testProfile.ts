@@ -39,12 +39,18 @@ export const TEST_PROFILE: FullProfile = {
     willingToRelocate: 'Yes',
     // sensitive — placeholder answers (never auto-submitted; you review on the page)
     workAuthorization: 'Yes',
-    requiresSponsorship: 'No',
+    // Demo data models a candidate who DOES need sponsorship — that's the harder, more common case
+    // for our users, and it exercises the visa/H-1B signals end to end.
+    requiresSponsorship: 'Yes',
     salaryExpectation: '150,000 USD',
     currentSalary: '135,000 USD',
     gender: 'Prefer not to say',
     pronouns: 'they/them',
-    raceEthnicity: 'Prefer not to say',
+    // A concrete category, not "prefer not to say": on a linked EEO pair (Greenhouse renders one
+    // ethnicity question as hispanic-yes/no + race) a declined race is the SAME answer as a declined
+    // ethnicity, so the form correctly collapses the pair and removes the race control. That's a valid
+    // submission but it leaves demo mode with nothing visible to show, so demo data answers concretely.
+    raceEthnicity: 'White',
     hispanicLatino: 'No',
     veteranStatus: 'I am not a protected veteran',
     disabilityStatus: 'No, I do not have a disability',

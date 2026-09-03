@@ -1,0 +1,63 @@
+{
+  "fixture": "workday/03-my-experience.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "selector": "#workExperience-267--jobTitle",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Job Title*"
+    },
+    {
+      "selector": "#workExperience-267--companyName",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Company*"
+    },
+    {
+      "selector": "#workExperience-267--location",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Location*"
+    },
+    {
+      "selector": "#workExperience-267--startDate-dateSectionMonth-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 From*"
+    },
+    {
+      "selector": "#workExperience-267--startDate-dateSectionYear-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 From*"
+    },
+    {
+      "selector": "#workExperience-267--endDate-dateSectionMonth-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 To*"
+    },
+    {
+      "selector": "#workExperience-267--endDate-dateSectionYear-input",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 To*"
+    },
+    {
+      "selector": "#workExperience-267--currentlyWorkHere",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Location*"
+    },
+    {
+      "selector": ":nth-match(input, 9)",
+      "expect": "",
+      "review": true,
+      "read": "file",
+      "note": "file"
+    }
+  ],
+  "minPrecision": 1
+}

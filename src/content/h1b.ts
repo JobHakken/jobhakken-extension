@@ -130,8 +130,24 @@ export function getH1bVerdict(): { company: string; approvals: number } | null {
  * and add a green sponsor badge. Idempotent per anchor. When `active` is false, clears the
  * current verdict (existing page badges are left as-is).
  */
+/**
+ * This module is documented as "for LinkedIn" (see the file header) but nothing ever enforced that:
+ * `applyBadges()` runs unconditionally on every page (`content_scripts.matches` is `<all_urls>`), and
+ * `detailCompany()`'s selector — any `a[href*="/company/"]` — is not LinkedIn-specific at all. An
+ * ordinary site's own "About the Company" nav link matches it just as well as LinkedIn's. Reported from
+ * real use: the H-1B badge appearing on unrelated websites, wherever their own nav happened to have a
+ * "/company/" link whose text matched a known sponsor.
+ *
+ * `tileTargets()`'s selectors (`.job-card-container`, `data-occludable-job-id`, …) are LinkedIn class
+ * names and unlikely to collide elsewhere, but this gate gives BOTH functions one shared, hostname-based
+ * boundary rather than leaving the module's actual scope to be "whatever happens not to match".
+ */
+function isLinkedIn(): boolean {
+  return location.hostname.endsWith('linkedin.com');
+}
+
 export async function applyH1bBadges(active: boolean): Promise<void> {
-  if (!active) {
+  if (!active || !isLinkedIn()) {
     lastH1b = null;
     return;
   }

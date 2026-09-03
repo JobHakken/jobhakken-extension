@@ -6,11 +6,11 @@ import {
   type UserRule,
 } from '@jobhakken/autofill';
 
-import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '@jobhakken/core/build/llm/providers.js';
+import { DEFAULT_PROVIDER_ID, getProvider, LLM_PROVIDERS } from '../lib/vendor/llm/providers.js';
 
 import { DEFAULT_BASE } from '../lib/aiClient.js';
 import { connect, rpc } from '../lib/bridgeClient.js';
-import { clearAiConfig, getAiConfigMeta, setAiConfig } from '../lib/aiKeyStore.js';
+import { clearAiConfig, getAiConfigMeta, getRememberKey, setAiConfig, setRememberKey } from '../lib/aiKeyStore.js';
 import { ensureAiHostPermission, hasAiHostPermission } from '../lib/hostPerms.js';
 import { ACCOUNT_URL, clearIdentity, loadIdentity, LOGIN_URL } from '../lib/authStore.js';
 import { bytesToBase64, clearResumeFile, getResumeFile, setResumeFile } from '../lib/resumeFileStore.js';
@@ -41,6 +41,7 @@ import {
   saveTestMode,
 } from '../lib/profileStore.js';
 import { resetAllData } from '../lib/resetStore.js';
+import { mountResumeBuilder } from './resumeBuilder.js';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -49,6 +50,7 @@ let fp: FullProfile = { profile: {}, experience: [], education: [], rules: [] };
 let testModeOn = false; // extension test toggle (import brings dummy data when on)
 
 void initThemeToggle($('theme')); // manual light/dark toggle (default: follow system)
+mountResumeBuilder($('resumeBuilderRoot')); // #482 — native résumé builder, ported from jobhakken-site
 
 // ── sidebar + accordion sections ─────────────────────────────
 function openSection(key: string | undefined, scroll = true): void {
@@ -848,6 +850,13 @@ async function refreshAi(): Promise<void> {
   ($('aiClear') as HTMLButtonElement).hidden = !m.hasKey;
 }
 
+void (async () => {
+  ($('aiRemember') as HTMLInputElement).checked = await getRememberKey();
+})();
+$('aiRemember').addEventListener('change', async (e) => {
+  await setRememberKey((e.currentTarget as HTMLInputElement).checked);
+  await refreshAi();
+});
 $('aiSave').addEventListener('click', async () => {
   const sel = $('aiProvider') as HTMLSelectElement;
   const p = getProvider(sel.value);
@@ -865,6 +874,7 @@ $('aiSave').addEventListener('click', async () => {
     return;
   }
   const apiKey = p.apiKeyless ? LOCAL_SENTINEL_KEY : typedKey;
+  await setRememberKey(($('aiRemember') as HTMLInputElement).checked);
   await setAiConfig({ apiKey, model: model || undefined, baseUrl: baseUrl || undefined, provider: p.id });
   ($('aiKey') as HTMLInputElement).value = '';
   // Request browser access to the chosen provider now (BYOK hosts are OPTIONAL — kept out of the
@@ -896,4 +906,50 @@ void (async () => {
 $('gsDismiss').addEventListener('click', () => {
   ($('getstarted') as HTMLElement).hidden = true;
   void chrome.storage.local.set({ [ONBOARDING_KEY]: true });
+});
+
+// ── Back up & restore (#143) ───────────────────────────────────────────────────────────────────────
+// This lives in Options, not in the page rail. The rail runs in a CONTENT SCRIPT, which is severed the
+// moment the extension reloads — `chrome.storage` then reads as undefined and any click throws
+// "Cannot read properties of undefined (reading 'local')". An extension page cannot be orphaned that
+// way, and backup/restore is account-level anyway: it is not per-site, and not part of filling a form.
+import { backupFileName, describeBackup, exportBackup, importBackup } from '../lib/backup.js';
+
+$('backupExport').addEventListener('click', async () => {
+  const status = $('backupStatus');
+  try {
+    const b = await exportBackup();
+    const url = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = backupFileName(b);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    status.textContent = describeBackup(b);
+  } catch (e) {
+    status.textContent = e instanceof Error ? e.message : 'Could not save a backup';
+  }
+});
+
+// The file input is created on demand rather than living in the markup: this section sits inside a
+// collapsed accordion (`.acc.collapsed .acc-b { display: none }`), and Chrome will not open a file
+// dialog for an input with a display:none ancestor. A detached element has no such problem.
+$('backupImport').addEventListener('click', () => {
+  const status = $('backupStatus');
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'application/json,.json';
+  inp.addEventListener('change', async () => {
+    const f = inp.files?.[0];
+    if (!f) return;
+    try {
+      const r = await importBackup(JSON.parse(await f.text()) as unknown);
+      status.textContent = `Restored ${r.restored} item${r.restored === 1 ? '' : 's'}${
+        r.skipped.length ? `, skipped ${r.skipped.length}` : ''
+      }. Reload this page to see it.`;
+    } catch (err) {
+      status.textContent = err instanceof Error ? err.message : 'Could not read that file';
+    }
+  });
+  inp.click();
 });

@@ -1,0 +1,194 @@
+{
+  "fixture": "workday/08-my-information-live.html",
+  "_note": "Generated skeleton (npm run gen:goldens). Review each `review: true` field: set `expect`, or `mustStayEmpty`, then delete `review`.",
+  "minRecall": 0,
+  "fields": [
+    {
+      "label": "Country\\*",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Country*"
+    },
+    {
+      "label": "Prefix",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Prefix"
+    },
+    {
+      "selector": "#name--legalName--firstName",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 First Name*"
+    },
+    {
+      "selector": "#name--legalName--middleName",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Middle Name"
+    },
+    {
+      "selector": "#name--legalName--lastName",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Last Name*"
+    },
+    {
+      "label": "Suffix",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Suffix"
+    },
+    {
+      "selector": "#address--addressLine1",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Address Line 1*"
+    },
+    {
+      "selector": "#address--addressLine2",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Address Line 2"
+    },
+    {
+      "selector": "#address--city",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 City*"
+    },
+    {
+      "label": "State\\*",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 State*"
+    },
+    {
+      "selector": "#address--postalCode",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Postal Code*"
+    },
+    {
+      "selector": "#address--regionSubdivision1",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 County"
+    },
+    {
+      "label": "Phone Device Type\\*",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone Device Type*"
+    },
+    {
+      "selector": "#phoneNumber--phoneNumber",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone Number*"
+    },
+    {
+      "selector": "#phoneNumber--extension",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone Extension"
+    },
+    {
+      "selector": "#majh8",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Have you previously worked for Stanley Black & Decker? If Yes, please "
+    },
+    {
+      "selector": "#name--preferredCheck",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Suffix"
+    },
+    {
+      "selector": "#majht",
+      "expect": "",
+      "review": true,
+      "note": "radio \u2014 Phone"
+    },
+    {
+      "selector": "#source--source",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 How Did You Hear About Us?*"
+    },
+    {
+      "selector": "#country--country",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Country*"
+    },
+    {
+      "selector": "#name--legalName--title",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Prefix"
+    },
+    {
+      "selector": "#name--legalName--social",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Suffix"
+    },
+    {
+      "selector": "#address--countryRegion",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 State*"
+    },
+    {
+      "selector": "#phoneNumber--phoneType",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Phone Device Type*"
+    },
+    {
+      "selector": "#phoneNumber--countryPhoneCode",
+      "expect": "",
+      "review": true,
+      "note": "combobox \u2014 Country Phone Code*"
+    },
+    {
+      "selector": ":nth-match(input, 4)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Country*"
+    },
+    {
+      "selector": ":nth-match(input, 5)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Prefix"
+    },
+    {
+      "selector": ":nth-match(input, 9)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Suffix"
+    },
+    {
+      "selector": ":nth-match(input, 14)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 State*"
+    },
+    {
+      "selector": ":nth-match(input, 17)",
+      "expect": "",
+      "review": true,
+      "note": "text \u2014 Phone Device Type*"
+    },
+    {
+      "selector": "#majh9",
+      "expect": "",
+      "review": true,
+      "note": "input"
+    }
+  ],
+  "minPrecision": 1
+}

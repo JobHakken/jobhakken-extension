@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.claude/
 *.zip
 *.log
 .DS_Store
@@ -8,3 +9,15 @@ dist/
 playwright-report/
 test-results/
 full_website/
+
+# live-canary artefacts (regenerated  run; job URLs rot)
+e2e/live/targets.live.json
+e2e/live/live-report.json
+
+# local testing seed — carries an API key, never commit
+e2e/fixtures/demo-import.local.json
+
+# Agent worktrees and session scratch. These live INSIDE the repo, and their build output was being
+# linted as if it were source — 300+ phantom errors that made `npm run verify`, the documented merge
+# gate, impossible to pass for anyone who had ever run an agent here.
+.claude/

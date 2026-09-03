@@ -347,6 +347,171 @@
       .resumeai textarea {
         width: 100%;
       }
+      /* Résumé builder — token names mapped onto this page's own palette from the site's original
+         --sage/--ink/--card/--clay set (see jobhakken-extension#482): --accent/--fg/--surface/--err. */
+      .rb-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 760px) {
+        .rb-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .rb-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+      .rb-privacy {
+        font-size: 12px;
+        color: var(--accent);
+        background: var(--soft);
+        border-radius: 8px;
+        padding: 7px 10px;
+      }
+      .rb-toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .rb-h {
+        margin: 8px 0 0;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .rb-field {
+        display: block;
+      }
+      .rb-field > span {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .rb-input {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--fg);
+        font-family: inherit;
+      }
+      .rb-templates {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .rb-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .rb-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--bg);
+      }
+      .rb-item-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .rb-item-actions {
+        display: flex;
+        gap: 4px;
+      }
+      .rb-move,
+      .rb-remove {
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        padding: 3px 7px;
+        color: var(--muted);
+      }
+      .rb-remove {
+        border-color: transparent;
+        color: var(--err);
+      }
+      .rb-move:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .rb-move:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .rb-preview {
+        position: sticky;
+        top: 12px;
+        min-width: 0;
+      }
+      .rb-frame {
+        width: 100%;
+        height: 70vh;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+      .rt-wrap {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .rt-bar {
+        display: flex;
+        gap: 2px;
+        padding: 4px 5px;
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .rt-bar button {
+        background: none;
+        border: 1px solid transparent;
+        border-radius: 5px;
+        padding: 2px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--muted);
+      }
+      .rt-bar button:hover {
+        border-color: var(--line);
+        color: var(--fg);
+      }
+      .rt-edit {
+        min-height: 64px;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        color: var(--fg);
+        outline: none;
+      }
+      .rt-edit:empty::before {
+        content: attr(data-placeholder);
+        color: var(--muted);
+      }
+      .rt-edit ul {
+        margin: 0 0 0 18px;
+        padding: 0;
+      }
       .uploadbtn {
         display: flex;
         align-items: center;
@@ -1094,6 +1259,7 @@
         <div class="s-item" data-p="work"><span class="ic">▥</span>Work experience</div>
         <div class="s-group">Autofill</div>
         <div class="s-item" data-p="custom"><span class="ic">✎</span>Custom fields</div>
+        <div class="s-item" data-p="resume-builder"><span class="ic">▦</span>Résumé builder</div>
         <div class="s-group">More</div>
         <div class="s-item" data-p="desktop"><span class="ic">⚙</span>Account &amp; settings</div>
       </nav>
@@ -1291,6 +1457,19 @@
           </div>
         </section>
 
+        <section class="acc collapsed" data-p="resume-builder">
+          <div class="acc-h">
+            <span class="ic">▦</span><span class="tt">Résumé builder</span><span class="chev">▾</span>
+          </div>
+          <div class="acc-b">
+            <p class="note">
+              Build a résumé right here — nothing you type ever leaves this device. Autosaves as you go;
+              download a PDF whenever it's ready.
+            </p>
+            <div id="resumeBuilderRoot"></div>
+          </div>
+        </section>
+
         <section class="acc collapsed" data-p="desktop">
           <div class="acc-h">
             <span class="ic">⚙</span><span class="tt">Account &amp; settings</span><span class="chev">▾</span>
@@ -1312,6 +1491,26 @@
                 <button class="save" id="signIn">Sign in with JobHakken</button>
                 <button class="secondary" id="signOut" hidden>Sign out</button>
                 <span class="status" id="authStatus"></span>
+              </div>
+            </div>
+
+            <div class="setblk">
+              <h3 class="sec-h">
+                💾 Back up &amp; restore
+                <span class="info"
+                  ><span aria-hidden="true">i</span
+                  ><span class="pop"
+                    >Saves your profile, the answers you've taught the extension, every question it has seen, your
+                    résumés and cover-letter template to a single file on this computer. Reinstalling no longer costs
+                    you that. <b>The file includes your AI key</b>, so keep it private — don't attach it to an issue or
+                    paste it into a chat.</span
+                  ></span
+                >
+              </h3>
+              <div class="bar" style="position: static; border: none; margin: 4px 0 8px; padding: 0">
+                <button class="save" id="backupExport">Save a backup file</button>
+                <button class="secondary" id="backupImport">Restore from a file</button>
+                <span class="status" id="backupStatus"></span>
               </div>
             </div>
 
@@ -1345,6 +1544,14 @@
                 <label for="aiBase">Base URL</label
                 ><input id="aiBase" type="text" placeholder="https://your-endpoint/v1" autocomplete="off" />
               </div>
+              <label style="display: block; margin: 6px 0 2px; font-size: 12.5px">
+                <input type="checkbox" id="aiRemember" />
+                Remember this key on this device
+                <span style="opacity: 0.7"
+                  >— otherwise it's kept in memory only and you re-enter it after a browser restart or an extension
+                  update.</span
+                >
+              </label>
               <div class="bar" style="position: static; border: none; margin-top: 12px; padding: 0">
                 <button class="save" id="aiSave">Save key</button>
                 <button class="secondary" id="aiClear" hidden>Remove key</button>
